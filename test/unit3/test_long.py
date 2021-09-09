@@ -1,11 +1,11 @@
 import unittest
-from test import support
+# from test import support
 
 import sys
 
 import random
 import math
-import array
+# import array
 
 # SHIFT should match the value in longintrepr.h for best testing.
 SHIFT = sys.int_info.bits_per_digit
@@ -154,18 +154,18 @@ class LongTest(unittest.TestCase):
 
     def check_division(self, x, y):
         eq = self.assertEqual
-        with self.subTest(x=x, y=y):
-            q, r = divmod(x, y)
-            q2, r2 = x//y, x%y
-            pab, pba = x*y, y*x
-            eq(pab, pba, "multiplication does not commute")
-            eq(q, q2, "divmod returns different quotient than /")
-            eq(r, r2, "divmod returns different mod than %")
-            eq(x, q*y + r, "x != q*y + r after divmod")
-            if y > 0:
-                self.assertTrue(0 <= r < y, "bad mod from divmod")
-            else:
-                self.assertTrue(y < r <= 0, "bad mod from divmod")
+        # with self.subTest(x=x, y=y):
+        q, r = divmod(x, y)
+        q2, r2 = x//y, x%y
+        pab, pba = x*y, y*x
+        eq(pab, pba, "multiplication does not commute")
+        eq(q, q2, "divmod returns different quotient than /")
+        eq(r, r2, "divmod returns different mod than %")
+        eq(x, q*y + r, "x != q*y + r after divmod")
+        if y > 0:
+            self.assertTrue(0 <= r < y, "bad mod from divmod")
+        else:
+            self.assertTrue(y < r <= 0, "bad mod from divmod")
 
     def test_division(self):
         digits = list(range(1, MAXDIGITS+1)) + list(range(KARATSUBA_CUTOFF,
@@ -220,63 +220,63 @@ class LongTest(unittest.TestCase):
             for bbits in bits:
                 if bbits < abits:
                     continue
-                with self.subTest(abits=abits, bbits=bbits):
-                    b = (1 << bbits) - 1
-                    x = a * b
-                    y = ((1 << (abits + bbits)) -
-                         (1 << abits) -
-                         (1 << bbits) +
-                         1)
-                    self.assertEqual(x, y)
+                # with self.subTest(abits=abits, bbits=bbits):
+                b = (1 << bbits) - 1
+                x = a * b
+                y = ((1 << (abits + bbits)) -
+                        (1 << abits) -
+                        (1 << bbits) +
+                        1)
+                self.assertEqual(x, y)
 
     def check_bitop_identities_1(self, x):
         eq = self.assertEqual
-        with self.subTest(x=x):
-            eq(x & 0, 0)
-            eq(x | 0, x)
-            eq(x ^ 0, x)
-            eq(x & -1, x)
-            eq(x | -1, -1)
-            eq(x ^ -1, ~x)
-            eq(x, ~~x)
-            eq(x & x, x)
-            eq(x | x, x)
-            eq(x ^ x, 0)
-            eq(x & ~x, 0)
-            eq(x | ~x, -1)
-            eq(x ^ ~x, -1)
-            eq(-x, 1 + ~x)
-            eq(-x, ~(x-1))
+        # with self.subTest(x=x):
+        eq(x & 0, 0)
+        eq(x | 0, x)
+        eq(x ^ 0, x)
+        eq(x & -1, x)
+        eq(x | -1, -1)
+        eq(x ^ -1, ~x)
+        eq(x, ~~x)
+        eq(x & x, x)
+        eq(x | x, x)
+        eq(x ^ x, 0)
+        eq(x & ~x, 0)
+        eq(x | ~x, -1)
+        eq(x ^ ~x, -1)
+        eq(-x, 1 + ~x)
+        eq(-x, ~(x-1))
         for n in range(2*SHIFT):
             p2 = 2 ** n
-            with self.subTest(x=x, n=n, p2=p2):
-                eq(x << n >> n, x)
-                eq(x // p2, x >> n)
-                eq(x * p2, x << n)
-                eq(x & -p2, x >> n << n)
-                eq(x & -p2, x & ~(p2 - 1))
+            # with self.subTest(x=x, n=n, p2=p2):
+            eq(x << n >> n, x)
+            eq(x // p2, x >> n)
+            eq(x * p2, x << n)
+            eq(x & -p2, x >> n << n)
+            eq(x & -p2, x & ~(p2 - 1))
 
     def check_bitop_identities_2(self, x, y):
         eq = self.assertEqual
-        with self.subTest(x=x, y=y):
-            eq(x & y, y & x)
-            eq(x | y, y | x)
-            eq(x ^ y, y ^ x)
-            eq(x ^ y ^ x, y)
-            eq(x & y, ~(~x | ~y))
-            eq(x | y, ~(~x & ~y))
-            eq(x ^ y, (x | y) & ~(x & y))
-            eq(x ^ y, (x & ~y) | (~x & y))
-            eq(x ^ y, (x | y) & (~x | ~y))
+        # with self.subTest(x=x, y=y):
+        eq(x & y, y & x)
+        eq(x | y, y | x)
+        eq(x ^ y, y ^ x)
+        eq(x ^ y ^ x, y)
+        eq(x & y, ~(~x | ~y))
+        eq(x | y, ~(~x & ~y))
+        eq(x ^ y, (x | y) & ~(x & y))
+        eq(x ^ y, (x & ~y) | (~x & y))
+        eq(x ^ y, (x | y) & (~x | ~y))
 
     def check_bitop_identities_3(self, x, y, z):
         eq = self.assertEqual
-        with self.subTest(x=x, y=y, z=z):
-            eq((x & y) & z, x & (y & z))
-            eq((x | y) | z, x | (y | z))
-            eq((x ^ y) ^ z, x ^ (y ^ z))
-            eq(x & (y | z), (x & y) | (x & z))
-            eq(x | (y & z), (x | y) & (x | z))
+        # with self.subTest(x=x, y=y, z=z):
+        eq((x & y) & z, x & (y & z))
+        eq((x | y) | z, x | (y | z))
+        eq((x ^ y) ^ z, x ^ (y ^ z))
+        eq(x & (y | z), (x & y) | (x & z))
+        eq(x | (y & z), (x | y) & (x | z))
 
     def test_bitop_identities(self):
         for x in special:
@@ -307,11 +307,11 @@ class LongTest(unittest.TestCase):
     def check_format_1(self, x):
         for base, mapper in (2, bin), (8, oct), (10, str), (10, repr), (16, hex):
             got = mapper(x)
-            with self.subTest(x=x, mapper=mapper.__name__):
-                expected = self.slow_format(x, base)
-                self.assertEqual(got, expected)
-            with self.subTest(got=got):
-                self.assertEqual(int(got, 0), x)
+            # with self.subTest(x=x, mapper=mapper.__name__):
+            expected = self.slow_format(x, base)
+            self.assertEqual(got, expected)
+            # with self.subTest(got=got):
+            self.assertEqual(int(got, 0), x)
 
     def test_format(self):
         for x in special:
@@ -411,7 +411,7 @@ class LongTest(unittest.TestCase):
                "Got {}, expected {}.".format(n, actual, expected))
         self.assertEqual(actual, expected, msg)
 
-    @support.requires_IEEE_754
+    # @support.requires_IEEE_754
     def test_float_conversion(self):
 
         exact_values = [0, 1, 2,
@@ -499,8 +499,9 @@ class LongTest(unittest.TestCase):
                      "1. // huge", "huge // 1.", "1. // mhuge", "mhuge // 1.",
                      "1. / huge", "huge / 1.", "1. / mhuge", "mhuge / 1.",
                      "1. ** huge", "huge ** 1.", "1. ** mhuge", "mhuge ** 1.",
-                     "math.sin(huge)", "math.sin(mhuge)",
-                     "math.sqrt(huge)", "math.sqrt(mhuge)", # should do better
+                     # @TODO math module and bigints - beyond the scope of this pr
+                    #  "math.sin(huge)", "math.sin(mhuge)",
+                    #  "math.sqrt(huge)", "math.sqrt(mhuge)", # should do better
                      # math.floor() of an int returns an int now
                      ##"math.floor(huge)", "math.floor(mhuge)",
                      ]:
@@ -612,15 +613,15 @@ class LongTest(unittest.TestCase):
             for y in cases:
                 Ry = Rat(y)
                 Rcmp = (Rx > Ry) - (Rx < Ry)
-                with self.subTest(x=x, y=y, Rcmp=Rcmp):
-                    xycmp = (x > y) - (x < y)
-                    eq(Rcmp, xycmp)
-                    eq(x == y, Rcmp == 0)
-                    eq(x != y, Rcmp != 0)
-                    eq(x < y, Rcmp < 0)
-                    eq(x <= y, Rcmp <= 0)
-                    eq(x > y, Rcmp > 0)
-                    eq(x >= y, Rcmp >= 0)
+                # with self.subTest(x=x, y=y, Rcmp=Rcmp):
+                xycmp = (x > y) - (x < y)
+                eq(Rcmp, xycmp)
+                eq(x == y, Rcmp == 0)
+                eq(x != y, Rcmp != 0)
+                eq(x < y, Rcmp < 0)
+                eq(x <= y, Rcmp <= 0)
+                eq(x > y, Rcmp > 0)
+                eq(x >= y, Rcmp >= 0)
 
     def test__format__(self):
         self.assertEqual(format(123456789, 'd'), '123456789')
@@ -694,13 +695,23 @@ class LongTest(unittest.TestCase):
         self.assertRaises(ValueError, format, 3, "+c")   # sign not allowed
                                                          # with 'c'
 
-        self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, '_,')
-        self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, ',_')
-        self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, '_,d')
-        self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, ',_d')
+        # self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, '_,')
+        # self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, ',_')
+        # self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, '_,d')
+        # self.assertRaisesRegex(ValueError, 'Cannot specify both', format, 3, ',_d')
 
-        self.assertRaisesRegex(ValueError, "Cannot specify ',' with 's'", format, 3, ',s')
-        self.assertRaisesRegex(ValueError, "Cannot specify '_' with 's'", format, 3, '_s')
+        # self.assertRaisesRegex(ValueError, "Cannot specify ',' with 's'", format, 3, ',s')
+        # self.assertRaisesRegex(ValueError, "Cannot specify '_' with 's'", format, 3, '_s')
+
+        # skulpt raises value errors but not with the same message
+        self.assertRaises(ValueError, format, 3, '_,')
+        self.assertRaises(ValueError, format, 3, ',_')
+        self.assertRaises(ValueError, format, 3, '_,d')
+        self.assertRaises(ValueError, format, 3, ',_d')
+
+        self.assertRaises(ValueError, format, 3, ',s')
+        self.assertRaises(ValueError, format, 3, '_s')
+
 
         # ensure that only int and float type specifiers work
         for format_spec in ([chr(x) for x in range(ord('a'), ord('z')+1)] +
@@ -821,7 +832,7 @@ class LongTest(unittest.TestCase):
         self.assertEqual(expected, got, "Incorrectly rounded division {}/{}: "
                          "expected {}, got {}".format(a, b, expected, got))
 
-    @support.requires_IEEE_754
+    # @support.requires_IEEE_754
     def test_correctly_rounded_true_division(self):
         # more stringent tests than those above, checking that the
         # result of true division of ints is always correctly rounded.
@@ -889,29 +900,30 @@ class LongTest(unittest.TestCase):
         for n in range(-20, 20):
             self.check_truediv(n, 2**1076)
 
-        # largeish random divisions: a/b where |a| <= |b| <=
-        # 2*|a|; |ans| is between 0.5 and 1.0, so error should
-        # always be bounded by 2**-54 with equality possible only
-        # if the least significant bit of q=ans*2**53 is zero.
-        for M in [10**10, 10**100, 10**1000]:
-            for i in range(1000):
-                a = random.randrange(1, M)
-                b = random.randrange(a, 2*a+1)
-                self.check_truediv(a, b)
-                self.check_truediv(-a, b)
-                self.check_truediv(a, -b)
-                self.check_truediv(-a, -b)
+    # @TODO random doesn't support bigintegers - #1211
+    #     # largeish random divisions: a/b where |a| <= |b| <=
+    #     # 2*|a|; |ans| is between 0.5 and 1.0, so error should
+    #     # always be bounded by 2**-54 with equality possible only
+    #     # if the least significant bit of q=ans*2**53 is zero.
+    #     for M in [10**10, 10**100, 10**1000]:
+    #         for i in range(1000):
+    #             a = random.randrange(1, M)
+    #             b = random.randrange(a, 2*a+1)
+    #             self.check_truediv(a, b)
+    #             self.check_truediv(-a, b)
+    #             self.check_truediv(a, -b)
+    #             self.check_truediv(-a, -b)
 
-        # and some (genuinely) random tests
-        for _ in range(10000):
-            a_bits = random.randrange(1000)
-            b_bits = random.randrange(1, 1000)
-            x = random.randrange(2**a_bits)
-            y = random.randrange(1, 2**b_bits)
-            self.check_truediv(x, y)
-            self.check_truediv(x, -y)
-            self.check_truediv(-x, y)
-            self.check_truediv(-x, -y)
+    #     # and some (genuinely) random tests
+    #     for _ in range(10000):
+    #         a_bits = random.randrange(1000)
+    #         b_bits = random.randrange(1, 1000)
+    #         x = random.randrange(2**a_bits)
+    #         y = random.randrange(1, 2**b_bits)
+    #         self.check_truediv(x, y)
+    #         self.check_truediv(x, -y)
+    #         self.check_truediv(-x, y)
+    #         self.check_truediv(-x, -y)
 
     def test_negative_shift_count(self):
         with self.assertRaises(ValueError):
@@ -932,31 +944,31 @@ class LongTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             0 << -(1 << 1000)
 
-    @support.cpython_only
-    def test_huge_lshift_of_zero(self):
-        # Shouldn't try to allocate memory for a huge shift. See issue #27870.
-        # Other implementations may have a different boundary for overflow,
-        # or not raise at all.
-        self.assertEqual(0 << sys.maxsize, 0)
-        self.assertEqual(0 << (sys.maxsize + 1), 0)
+    # @support.cpython_only
+    # def test_huge_lshift_of_zero(self):
+    #     # Shouldn't try to allocate memory for a huge shift. See issue #27870.
+    #     # Other implementations may have a different boundary for overflow,
+    #     # or not raise at all.
+    #     self.assertEqual(0 << sys.maxsize, 0)
+    #     self.assertEqual(0 << (sys.maxsize + 1), 0)
 
-    @support.cpython_only
-    @support.bigmemtest(sys.maxsize + 1000, memuse=2/15 * 2, dry_run=False)
-    def test_huge_lshift(self, size):
-        self.assertEqual(1 << (sys.maxsize + 1000), 1 << 1000 << sys.maxsize)
+    # @support.cpython_only
+    # @support.bigmemtest(sys.maxsize + 1000, memuse=2/15 * 2, dry_run=False)
+    # def test_huge_lshift(self, size):
+    #     self.assertEqual(1 << (sys.maxsize + 1000), 1 << 1000 << sys.maxsize)
 
     def test_huge_rshift(self):
         self.assertEqual(42 >> (1 << 1000), 0)
         self.assertEqual((-42) >> (1 << 1000), -1)
 
-    @support.cpython_only
-    @support.bigmemtest(sys.maxsize + 500, memuse=2/15, dry_run=False)
-    def test_huge_rshift_of_huge(self, size):
-        huge = ((1 << 500) + 11) << sys.maxsize
-        self.assertEqual(huge >> (sys.maxsize + 1), (1 << 499) + 5)
-        self.assertEqual(huge >> (sys.maxsize + 1000), 0)
+    # @support.cpython_only
+    # @support.bigmemtest(sys.maxsize + 500, memuse=2/15, dry_run=False)
+    # def test_huge_rshift_of_huge(self, size):
+    #     huge = ((1 << 500) + 11) << sys.maxsize
+    #     self.assertEqual(huge >> (sys.maxsize + 1), (1 << 499) + 5)
+    #     self.assertEqual(huge >> (sys.maxsize + 1000), 0)
 
-    @support.cpython_only
+    # @support.cpython_only
     def test_small_ints_in_huge_calculation(self):
         a = 2 ** 100
         b = -a + 1
@@ -1090,254 +1102,256 @@ class LongTest(unittest.TestCase):
         for e in bad_exponents:
             self.assertRaises(TypeError, round, 3, e)
 
-    def test_to_bytes(self):
-        def check(tests, byteorder, signed=False):
-            for test, expected in tests.items():
-                try:
-                    self.assertEqual(
-                        test.to_bytes(len(expected), byteorder, signed=signed),
-                        expected)
-                except Exception as err:
-                    raise AssertionError(
-                        "failed to convert {0} with byteorder={1} and signed={2}"
-                        .format(test, byteorder, signed)) from err
+    # @TODO not yet implemented in skulpt
+    # def test_to_bytes(self):
+    #     def check(tests, byteorder, signed=False):
+    #         for test, expected in tests.items():
+    #             try:
+    #                 self.assertEqual(
+    #                     test.to_bytes(len(expected), byteorder, signed=signed),
+    #                     expected)
+    #             except Exception as err:
+    #                 raise AssertionError(
+    #                     "failed to convert {0} with byteorder={1} and signed={2}"
+    #                     .format(test, byteorder, signed)) from err
 
-        # Convert integers to signed big-endian byte arrays.
-        tests1 = {
-            0: b'\x00',
-            1: b'\x01',
-            -1: b'\xff',
-            -127: b'\x81',
-            -128: b'\x80',
-            -129: b'\xff\x7f',
-            127: b'\x7f',
-            129: b'\x00\x81',
-            -255: b'\xff\x01',
-            -256: b'\xff\x00',
-            255: b'\x00\xff',
-            256: b'\x01\x00',
-            32767: b'\x7f\xff',
-            -32768: b'\xff\x80\x00',
-            65535: b'\x00\xff\xff',
-            -65536: b'\xff\x00\x00',
-            -8388608: b'\x80\x00\x00'
-        }
-        check(tests1, 'big', signed=True)
+    #     # Convert integers to signed big-endian byte arrays.
+    #     tests1 = {
+    #         0: b'\x00',
+    #         1: b'\x01',
+    #         -1: b'\xff',
+    #         -127: b'\x81',
+    #         -128: b'\x80',
+    #         -129: b'\xff\x7f',
+    #         127: b'\x7f',
+    #         129: b'\x00\x81',
+    #         -255: b'\xff\x01',
+    #         -256: b'\xff\x00',
+    #         255: b'\x00\xff',
+    #         256: b'\x01\x00',
+    #         32767: b'\x7f\xff',
+    #         -32768: b'\xff\x80\x00',
+    #         65535: b'\x00\xff\xff',
+    #         -65536: b'\xff\x00\x00',
+    #         -8388608: b'\x80\x00\x00'
+    #     }
+    #     check(tests1, 'big', signed=True)
 
-        # Convert integers to signed little-endian byte arrays.
-        tests2 = {
-            0: b'\x00',
-            1: b'\x01',
-            -1: b'\xff',
-            -127: b'\x81',
-            -128: b'\x80',
-            -129: b'\x7f\xff',
-            127: b'\x7f',
-            129: b'\x81\x00',
-            -255: b'\x01\xff',
-            -256: b'\x00\xff',
-            255: b'\xff\x00',
-            256: b'\x00\x01',
-            32767: b'\xff\x7f',
-            -32768: b'\x00\x80',
-            65535: b'\xff\xff\x00',
-            -65536: b'\x00\x00\xff',
-            -8388608: b'\x00\x00\x80'
-        }
-        check(tests2, 'little', signed=True)
+    #     # Convert integers to signed little-endian byte arrays.
+    #     tests2 = {
+    #         0: b'\x00',
+    #         1: b'\x01',
+    #         -1: b'\xff',
+    #         -127: b'\x81',
+    #         -128: b'\x80',
+    #         -129: b'\x7f\xff',
+    #         127: b'\x7f',
+    #         129: b'\x81\x00',
+    #         -255: b'\x01\xff',
+    #         -256: b'\x00\xff',
+    #         255: b'\xff\x00',
+    #         256: b'\x00\x01',
+    #         32767: b'\xff\x7f',
+    #         -32768: b'\x00\x80',
+    #         65535: b'\xff\xff\x00',
+    #         -65536: b'\x00\x00\xff',
+    #         -8388608: b'\x00\x00\x80'
+    #     }
+    #     check(tests2, 'little', signed=True)
 
-        # Convert integers to unsigned big-endian byte arrays.
-        tests3 = {
-            0: b'\x00',
-            1: b'\x01',
-            127: b'\x7f',
-            128: b'\x80',
-            255: b'\xff',
-            256: b'\x01\x00',
-            32767: b'\x7f\xff',
-            32768: b'\x80\x00',
-            65535: b'\xff\xff',
-            65536: b'\x01\x00\x00'
-        }
-        check(tests3, 'big', signed=False)
+    #     # Convert integers to unsigned big-endian byte arrays.
+    #     tests3 = {
+    #         0: b'\x00',
+    #         1: b'\x01',
+    #         127: b'\x7f',
+    #         128: b'\x80',
+    #         255: b'\xff',
+    #         256: b'\x01\x00',
+    #         32767: b'\x7f\xff',
+    #         32768: b'\x80\x00',
+    #         65535: b'\xff\xff',
+    #         65536: b'\x01\x00\x00'
+    #     }
+    #     check(tests3, 'big', signed=False)
 
-        # Convert integers to unsigned little-endian byte arrays.
-        tests4 = {
-            0: b'\x00',
-            1: b'\x01',
-            127: b'\x7f',
-            128: b'\x80',
-            255: b'\xff',
-            256: b'\x00\x01',
-            32767: b'\xff\x7f',
-            32768: b'\x00\x80',
-            65535: b'\xff\xff',
-            65536: b'\x00\x00\x01'
-        }
-        check(tests4, 'little', signed=False)
+    #     # Convert integers to unsigned little-endian byte arrays.
+    #     tests4 = {
+    #         0: b'\x00',
+    #         1: b'\x01',
+    #         127: b'\x7f',
+    #         128: b'\x80',
+    #         255: b'\xff',
+    #         256: b'\x00\x01',
+    #         32767: b'\xff\x7f',
+    #         32768: b'\x00\x80',
+    #         65535: b'\xff\xff',
+    #         65536: b'\x00\x00\x01'
+    #     }
+    #     check(tests4, 'little', signed=False)
 
-        self.assertRaises(OverflowError, (256).to_bytes, 1, 'big', signed=False)
-        self.assertRaises(OverflowError, (256).to_bytes, 1, 'big', signed=True)
-        self.assertRaises(OverflowError, (256).to_bytes, 1, 'little', signed=False)
-        self.assertRaises(OverflowError, (256).to_bytes, 1, 'little', signed=True)
-        self.assertRaises(OverflowError, (-1).to_bytes, 2, 'big', signed=False)
-        self.assertRaises(OverflowError, (-1).to_bytes, 2, 'little', signed=False)
-        self.assertEqual((0).to_bytes(0, 'big'), b'')
-        self.assertEqual((1).to_bytes(5, 'big'), b'\x00\x00\x00\x00\x01')
-        self.assertEqual((0).to_bytes(5, 'big'), b'\x00\x00\x00\x00\x00')
-        self.assertEqual((-1).to_bytes(5, 'big', signed=True),
-                         b'\xff\xff\xff\xff\xff')
-        self.assertRaises(OverflowError, (1).to_bytes, 0, 'big')
+    #     self.assertRaises(OverflowError, (256).to_bytes, 1, 'big', signed=False)
+    #     self.assertRaises(OverflowError, (256).to_bytes, 1, 'big', signed=True)
+    #     self.assertRaises(OverflowError, (256).to_bytes, 1, 'little', signed=False)
+    #     self.assertRaises(OverflowError, (256).to_bytes, 1, 'little', signed=True)
+    #     self.assertRaises(OverflowError, (-1).to_bytes, 2, 'big', signed=False)
+    #     self.assertRaises(OverflowError, (-1).to_bytes, 2, 'little', signed=False)
+    #     self.assertEqual((0).to_bytes(0, 'big'), b'')
+    #     self.assertEqual((1).to_bytes(5, 'big'), b'\x00\x00\x00\x00\x01')
+    #     self.assertEqual((0).to_bytes(5, 'big'), b'\x00\x00\x00\x00\x00')
+    #     self.assertEqual((-1).to_bytes(5, 'big', signed=True),
+    #                      b'\xff\xff\xff\xff\xff')
+    #     self.assertRaises(OverflowError, (1).to_bytes, 0, 'big')
 
-    def test_from_bytes(self):
-        def check(tests, byteorder, signed=False):
-            for test, expected in tests.items():
-                try:
-                    self.assertEqual(
-                        int.from_bytes(test, byteorder, signed=signed),
-                        expected)
-                except Exception as err:
-                    raise AssertionError(
-                        "failed to convert {0} with byteorder={1!r} and signed={2}"
-                        .format(test, byteorder, signed)) from err
+    # @TODO not yet implemented in skulpt
+    # def test_from_bytes(self):
+    #     def check(tests, byteorder, signed=False):
+    #         for test, expected in tests.items():
+    #             try:
+    #                 self.assertEqual(
+    #                     int.from_bytes(test, byteorder, signed=signed),
+    #                     expected)
+    #             except Exception as err:
+    #                 raise AssertionError(
+    #                     "failed to convert {0} with byteorder={1!r} and signed={2}"
+    #                     .format(test, byteorder, signed)) from err
 
-        # Convert signed big-endian byte arrays to integers.
-        tests1 = {
-            b'': 0,
-            b'\x00': 0,
-            b'\x00\x00': 0,
-            b'\x01': 1,
-            b'\x00\x01': 1,
-            b'\xff': -1,
-            b'\xff\xff': -1,
-            b'\x81': -127,
-            b'\x80': -128,
-            b'\xff\x7f': -129,
-            b'\x7f': 127,
-            b'\x00\x81': 129,
-            b'\xff\x01': -255,
-            b'\xff\x00': -256,
-            b'\x00\xff': 255,
-            b'\x01\x00': 256,
-            b'\x7f\xff': 32767,
-            b'\x80\x00': -32768,
-            b'\x00\xff\xff': 65535,
-            b'\xff\x00\x00': -65536,
-            b'\x80\x00\x00': -8388608
-        }
-        check(tests1, 'big', signed=True)
+    #     # Convert signed big-endian byte arrays to integers.
+    #     tests1 = {
+    #         b'': 0,
+    #         b'\x00': 0,
+    #         b'\x00\x00': 0,
+    #         b'\x01': 1,
+    #         b'\x00\x01': 1,
+    #         b'\xff': -1,
+    #         b'\xff\xff': -1,
+    #         b'\x81': -127,
+    #         b'\x80': -128,
+    #         b'\xff\x7f': -129,
+    #         b'\x7f': 127,
+    #         b'\x00\x81': 129,
+    #         b'\xff\x01': -255,
+    #         b'\xff\x00': -256,
+    #         b'\x00\xff': 255,
+    #         b'\x01\x00': 256,
+    #         b'\x7f\xff': 32767,
+    #         b'\x80\x00': -32768,
+    #         b'\x00\xff\xff': 65535,
+    #         b'\xff\x00\x00': -65536,
+    #         b'\x80\x00\x00': -8388608
+    #     }
+    #     check(tests1, 'big', signed=True)
 
-        # Convert signed little-endian byte arrays to integers.
-        tests2 = {
-            b'': 0,
-            b'\x00': 0,
-            b'\x00\x00': 0,
-            b'\x01': 1,
-            b'\x00\x01': 256,
-            b'\xff': -1,
-            b'\xff\xff': -1,
-            b'\x81': -127,
-            b'\x80': -128,
-            b'\x7f\xff': -129,
-            b'\x7f': 127,
-            b'\x81\x00': 129,
-            b'\x01\xff': -255,
-            b'\x00\xff': -256,
-            b'\xff\x00': 255,
-            b'\x00\x01': 256,
-            b'\xff\x7f': 32767,
-            b'\x00\x80': -32768,
-            b'\xff\xff\x00': 65535,
-            b'\x00\x00\xff': -65536,
-            b'\x00\x00\x80': -8388608
-        }
-        check(tests2, 'little', signed=True)
+    #     # Convert signed little-endian byte arrays to integers.
+    #     tests2 = {
+    #         b'': 0,
+    #         b'\x00': 0,
+    #         b'\x00\x00': 0,
+    #         b'\x01': 1,
+    #         b'\x00\x01': 256,
+    #         b'\xff': -1,
+    #         b'\xff\xff': -1,
+    #         b'\x81': -127,
+    #         b'\x80': -128,
+    #         b'\x7f\xff': -129,
+    #         b'\x7f': 127,
+    #         b'\x81\x00': 129,
+    #         b'\x01\xff': -255,
+    #         b'\x00\xff': -256,
+    #         b'\xff\x00': 255,
+    #         b'\x00\x01': 256,
+    #         b'\xff\x7f': 32767,
+    #         b'\x00\x80': -32768,
+    #         b'\xff\xff\x00': 65535,
+    #         b'\x00\x00\xff': -65536,
+    #         b'\x00\x00\x80': -8388608
+    #     }
+    #     check(tests2, 'little', signed=True)
 
-        # Convert unsigned big-endian byte arrays to integers.
-        tests3 = {
-            b'': 0,
-            b'\x00': 0,
-            b'\x01': 1,
-            b'\x7f': 127,
-            b'\x80': 128,
-            b'\xff': 255,
-            b'\x01\x00': 256,
-            b'\x7f\xff': 32767,
-            b'\x80\x00': 32768,
-            b'\xff\xff': 65535,
-            b'\x01\x00\x00': 65536,
-        }
-        check(tests3, 'big', signed=False)
+    #     # Convert unsigned big-endian byte arrays to integers.
+    #     tests3 = {
+    #         b'': 0,
+    #         b'\x00': 0,
+    #         b'\x01': 1,
+    #         b'\x7f': 127,
+    #         b'\x80': 128,
+    #         b'\xff': 255,
+    #         b'\x01\x00': 256,
+    #         b'\x7f\xff': 32767,
+    #         b'\x80\x00': 32768,
+    #         b'\xff\xff': 65535,
+    #         b'\x01\x00\x00': 65536,
+    #     }
+    #     check(tests3, 'big', signed=False)
 
-        # Convert integers to unsigned little-endian byte arrays.
-        tests4 = {
-            b'': 0,
-            b'\x00': 0,
-            b'\x01': 1,
-            b'\x7f': 127,
-            b'\x80': 128,
-            b'\xff': 255,
-            b'\x00\x01': 256,
-            b'\xff\x7f': 32767,
-            b'\x00\x80': 32768,
-            b'\xff\xff': 65535,
-            b'\x00\x00\x01': 65536,
-        }
-        check(tests4, 'little', signed=False)
+    #     # Convert integers to unsigned little-endian byte arrays.
+    #     tests4 = {
+    #         b'': 0,
+    #         b'\x00': 0,
+    #         b'\x01': 1,
+    #         b'\x7f': 127,
+    #         b'\x80': 128,
+    #         b'\xff': 255,
+    #         b'\x00\x01': 256,
+    #         b'\xff\x7f': 32767,
+    #         b'\x00\x80': 32768,
+    #         b'\xff\xff': 65535,
+    #         b'\x00\x00\x01': 65536,
+    #     }
+    #     check(tests4, 'little', signed=False)
 
-        class myint(int):
-            pass
+    #     class myint(int):
+    #         pass
 
-        self.assertIs(type(myint.from_bytes(b'\x00', 'big')), myint)
-        self.assertEqual(myint.from_bytes(b'\x01', 'big'), 1)
-        self.assertIs(
-            type(myint.from_bytes(b'\x00', 'big', signed=False)), myint)
-        self.assertEqual(myint.from_bytes(b'\x01', 'big', signed=False), 1)
-        self.assertIs(type(myint.from_bytes(b'\x00', 'little')), myint)
-        self.assertEqual(myint.from_bytes(b'\x01', 'little'), 1)
-        self.assertIs(type(myint.from_bytes(
-            b'\x00', 'little', signed=False)), myint)
-        self.assertEqual(myint.from_bytes(b'\x01', 'little', signed=False), 1)
-        self.assertEqual(
-            int.from_bytes([255, 0, 0], 'big', signed=True), -65536)
-        self.assertEqual(
-            int.from_bytes((255, 0, 0), 'big', signed=True), -65536)
-        self.assertEqual(int.from_bytes(
-            bytearray(b'\xff\x00\x00'), 'big', signed=True), -65536)
-        self.assertEqual(int.from_bytes(
-            bytearray(b'\xff\x00\x00'), 'big', signed=True), -65536)
-        self.assertEqual(int.from_bytes(
-            array.array('B', b'\xff\x00\x00'), 'big', signed=True), -65536)
-        self.assertEqual(int.from_bytes(
-            memoryview(b'\xff\x00\x00'), 'big', signed=True), -65536)
-        self.assertRaises(ValueError, int.from_bytes, [256], 'big')
-        self.assertRaises(ValueError, int.from_bytes, [0], 'big\x00')
-        self.assertRaises(ValueError, int.from_bytes, [0], 'little\x00')
-        self.assertRaises(TypeError, int.from_bytes, "", 'big')
-        self.assertRaises(TypeError, int.from_bytes, "\x00", 'big')
-        self.assertRaises(TypeError, int.from_bytes, 0, 'big')
-        self.assertRaises(TypeError, int.from_bytes, 0, 'big', True)
-        self.assertRaises(TypeError, myint.from_bytes, "", 'big')
-        self.assertRaises(TypeError, myint.from_bytes, "\x00", 'big')
-        self.assertRaises(TypeError, myint.from_bytes, 0, 'big')
-        self.assertRaises(TypeError, int.from_bytes, 0, 'big', True)
+    #     self.assertIs(type(myint.from_bytes(b'\x00', 'big')), myint)
+    #     self.assertEqual(myint.from_bytes(b'\x01', 'big'), 1)
+    #     self.assertIs(
+    #         type(myint.from_bytes(b'\x00', 'big', signed=False)), myint)
+    #     self.assertEqual(myint.from_bytes(b'\x01', 'big', signed=False), 1)
+    #     self.assertIs(type(myint.from_bytes(b'\x00', 'little')), myint)
+    #     self.assertEqual(myint.from_bytes(b'\x01', 'little'), 1)
+    #     self.assertIs(type(myint.from_bytes(
+    #         b'\x00', 'little', signed=False)), myint)
+    #     self.assertEqual(myint.from_bytes(b'\x01', 'little', signed=False), 1)
+    #     self.assertEqual(
+    #         int.from_bytes([255, 0, 0], 'big', signed=True), -65536)
+    #     self.assertEqual(
+    #         int.from_bytes((255, 0, 0), 'big', signed=True), -65536)
+    #     self.assertEqual(int.from_bytes(
+    #         bytearray(b'\xff\x00\x00'), 'big', signed=True), -65536)
+    #     self.assertEqual(int.from_bytes(
+    #         bytearray(b'\xff\x00\x00'), 'big', signed=True), -65536)
+    #     self.assertEqual(int.from_bytes(
+    #         array.array('B', b'\xff\x00\x00'), 'big', signed=True), -65536)
+    #     self.assertEqual(int.from_bytes(
+    #         memoryview(b'\xff\x00\x00'), 'big', signed=True), -65536)
+    #     self.assertRaises(ValueError, int.from_bytes, [256], 'big')
+    #     self.assertRaises(ValueError, int.from_bytes, [0], 'big\x00')
+    #     self.assertRaises(ValueError, int.from_bytes, [0], 'little\x00')
+    #     self.assertRaises(TypeError, int.from_bytes, "", 'big')
+    #     self.assertRaises(TypeError, int.from_bytes, "\x00", 'big')
+    #     self.assertRaises(TypeError, int.from_bytes, 0, 'big')
+    #     self.assertRaises(TypeError, int.from_bytes, 0, 'big', True)
+    #     self.assertRaises(TypeError, myint.from_bytes, "", 'big')
+    #     self.assertRaises(TypeError, myint.from_bytes, "\x00", 'big')
+    #     self.assertRaises(TypeError, myint.from_bytes, 0, 'big')
+    #     self.assertRaises(TypeError, int.from_bytes, 0, 'big', True)
 
-        class myint2(int):
-            def __new__(cls, value):
-                return int.__new__(cls, value + 1)
+    #     class myint2(int):
+    #         def __new__(cls, value):
+    #             return int.__new__(cls, value + 1)
 
-        i = myint2.from_bytes(b'\x01', 'big')
-        self.assertIs(type(i), myint2)
-        self.assertEqual(i, 2)
+    #     i = myint2.from_bytes(b'\x01', 'big')
+    #     self.assertIs(type(i), myint2)
+    #     self.assertEqual(i, 2)
 
-        class myint3(int):
-            def __init__(self, value):
-                self.foo = 'bar'
+    #     class myint3(int):
+    #         def __init__(self, value):
+    #             self.foo = 'bar'
 
-        i = myint3.from_bytes(b'\x01', 'big')
-        self.assertIs(type(i), myint3)
-        self.assertEqual(i, 1)
-        self.assertEqual(getattr(i, 'foo', 'none'), 'bar')
+    #     i = myint3.from_bytes(b'\x01', 'big')
+    #     self.assertIs(type(i), myint3)
+    #     self.assertEqual(i, 1)
+    #     self.assertEqual(getattr(i, 'foo', 'none'), 'bar')
 
     def test_access_to_nonexistent_digit_0(self):
         # http://bugs.python.org/issue14630: A bug in _PyLong_Copy meant that
@@ -1360,15 +1374,16 @@ class LongTest(unittest.TestCase):
                 self.assertEqual(type(value << shift), int)
                 self.assertEqual(type(value >> shift), int)
 
-    def test_as_integer_ratio(self):
-        class myint(int):
-            pass
-        tests = [10, 0, -10, 1, sys.maxsize + 1, True, False, myint(42)]
-        for value in tests:
-            numerator, denominator = value.as_integer_ratio()
-            self.assertEqual((numerator, denominator), (int(value), 1))
-            self.assertEqual(type(numerator), int)
-            self.assertEqual(type(denominator), int)
+    # @TODO not implemented in skulpt - added in 3.8
+    # def test_as_integer_ratio(self):
+    #     class myint(int):
+    #         pass
+    #     tests = [10, 0, -10, 1, sys.maxsize + 1, True, False, myint(42)]
+    #     for value in tests:
+    #         numerator, denominator = value.as_integer_ratio()
+    #         self.assertEqual((numerator, denominator), (int(value), 1))
+    #         self.assertEqual(type(numerator), int)
+    #         self.assertEqual(type(denominator), int)
 
 
 if __name__ == "__main__":

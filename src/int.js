@@ -111,14 +111,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             (v, w) => JSBI.numberIfSafe(JSBI.subtract(v, w))
         ),
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
-        nb$divide(other) {
-            if (Sk.__future__.division) {
-                return this.nb$float().nb$divide(other);
-            }
-            return this.nb$floor_divide(other);
-        },
-        nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), JSBI.divide),
-        nb$remainder: numberDivisionSlot((v, w) => v - Math.floor(v / w) * w, JSBI.remainder),
+        nb$divide: trueDivide,
+        nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), BigIntFloorDivide),
+        nb$remainder: numberDivisionSlot(
+            (v, w) => v - Math.floor(v / w) * w,
+            (v, w) => JSBI.subtract(v, JSBI.multiply(w, BigIntFloorDivide(v, w)))
+        ),
         nb$divmod(other) {
             const floor = this.nb$floor_divide(other);
             const remainder = this.nb$remainder(other);
@@ -134,26 +132,27 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$or: numberBitSlot((v, w) => v | w, JSBI.bitwiseOr),
         nb$xor: numberBitSlot((v, w) => v ^ w, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, (v) => (JSBI.lessThan(v, JSBI.__ZERO) ? JSBI.unaryMinus(v) : v)),
+        nb$abs: numberUnarySlot(Math.abs, BigIntAbs),
 
         nb$lshift: numberShiftSlot((v, w) => {
-            if (w < 53) {
-                const tmp = v * 2 * shiftconsts[w];
-                if (numberOrStringWithinThreshold(tmp)) {
-                    return tmp;
-                }
-                return;
+            const tmp = v * 2 * shiftconsts[w];
+            if (numberOrStringWithinThreshold(tmp)) {
+                return tmp;
             }
+            return undefined; // fall through to using BigInt shift
         }, JSBI.leftShift),
         nb$rshift: numberShiftSlot(
             (v, w) => {
                 // Avoid forced signed 32 bit conversion and just divide.
-                return Math.floor(v / shiftconsts[w + 1]);
+                Math.floor(v / shiftconsts[w + 1]);
             },
             (v, w) => JSBI.numberIfSafe(JSBI.signedRightShift(v, w))
         ),
 
-        nb$invert: numberUnarySlot((v) => ~v, JSBI.bitwiseNot),
+        nb$invert: numberUnarySlot(
+            (v) => (Math.abs(v) < 2 ** 31 ? ~v : undefined),
+            (v) => JSBI.numberIfSafe(JSBI.bitwiseNot(v))
+        ),
         nb$power(other, mod) {
             let ret;
             if (mod === undefined) {
@@ -164,19 +163,24 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             if (!(other instanceof Sk.builtin.int_) || (mod !== undefined && !(mod instanceof Sk.builtin.int_))) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
+            const wNeg = other.nb$isnegative();
+            if (wNeg && mod === undefined) {
+                return this.nb$float().nb$power(other.nb$float());
+            }
             let v = this.v;
             let w = other.v;
             if (typeof v === "number" && typeof w === "number") {
                 const power = Math.pow(v, w);
                 if (numberOrStringWithinThreshold(power)) {
-                    ret = w < 0 ? new Sk.builtin.float_(power) : new Sk.builtin.int_(power);
+                    ret = new Sk.builtin.int_(power);
                     if (mod === undefined) {
                         return ret;
                     }
                 }
             }
             if (mod !== undefined) {
-                if (other.nb$isnegative()) {
+                if (wNeg) {
+                    /** @todo - python 3.8 supports this - https://github.com/python/cpython/pull/13266 */
                     throw new Sk.builtin.ValueError(
                         "pow() 2nd argument cannot be negative when 3rd argument specified"
                     );
@@ -216,7 +220,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         bit_length: {
             $meth() {
-                return new Sk.builtin.int_(Sk.builtin.bin(this).sq$length() - 2);
+                let v = this.v;
+                if (v === 0) {
+                    return new Sk.builtin.int_(0);
+                }
+                v = typeof v === "number" ? Math.abs(v) : BigIntAbs(v);
+                return new Sk.builtin.int_(v.toString(2).length);
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -293,33 +302,25 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 ndigits = Sk.misceval.asIndexSized(ndigits);
             }
             const v = this.v;
-            const multiplier = Math.pow(10, -ndigits);
-            let tmp;
-            if (ndigits > 0) {
+            if (ndigits >= 0) {
                 return new Sk.builtin.int_(v);
             }
-            if (typeof v === "number" && Sk.__future__.bankers_rounding) {
-                const num10 = v / multiplier;
-                const rounded = Math.round(num10);
-                const bankRound =
-                    (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
-                const result = bankRound * multiplier;
-                return new Sk.builtin.int_(result);
-            } else if (typeof v === "number") {
-                return new Sk.builtin.int_(Math.round(v / multiplier) * multiplier);
-            } else {
-                const BigMultiplier = JSBI.BigInt(multiplier * 10);
-                const ten = JSBI.BigInt(10);
-                tmp = JSBI.divide(v, BigMultiplier);
-                const undecided = JSBI.divide(tmp, ten);
-                const pt5 = JSBI.subtract(tmp, JSBI.multiply(ten, undecided));
-                if (JSBI.toNumber(pt5) < 5) {
-                    tmp = JSBI.multiply(JSBI.multiply(undecided, ten), BigMultiplier);
-                } else {
-                    JSBI.multiply(JSBI.multiply(JSBI.add(undecided, JSBI.BigInt(1), ten), BigMultiplier));
-                }
-                return new Sk.builtin.int_(tmp);
+            if (typeof v !== "number") {
+                return BigIntRound(v, ndigits);
             }
+            const multiplier = Math.pow(10, -ndigits);
+            if (multiplier / 10 > Math.abs(v)) {
+                return new Sk.builtin.int_(0);
+            }
+            if (!Sk.__future__.bankers_rounding) {
+                return new Sk.builtin.int_(Math.round(v / multiplier) * multiplier);
+            }
+            const num10 = v / multiplier;
+            const rounded = Math.round(num10);
+            const bankRound =
+                (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
+            const result = bankRound * multiplier;
+            return new Sk.builtin.int_(result);
         },
     },
 });
@@ -345,7 +346,7 @@ function numberSlot(number_func, bigint_func) {
      * @param {Sk.builtin.int_|Sk.builtin.object} other
      * @return {Sk.builtin.int_|Sk.builtin.NotImplemented}
      */
-    function doNumberSlot(other) {
+    return function (other) {
         if (!(other instanceof Sk.builtin.int_)) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
@@ -362,8 +363,7 @@ function numberSlot(number_func, bigint_func) {
         v = bigUp(v);
         w = bigUp(w);
         return new Sk.builtin.int_(bigint_func(v, w));
-    }
-    return doNumberSlot;
+    };
 }
 
 function compareSlot(number_func, bigint_func) {
@@ -395,10 +395,15 @@ function numberUnarySlot(number_func, bigint_func) {
      * @return {Sk.builtin.int_}
      */
     function doUnarySlot() {
-        const v = this.v;
+        let v = this.v;
         if (typeof v === "number") {
-            return new Sk.builtin.int_(number_func(v));
+            const res = number_func(v);
+            if (res !== undefined) {
+                return new Sk.builtin.int_(res);
+            }
+            v = bigUp(v);
         }
+        // fallthrough
         return new Sk.builtin.int_(bigint_func(v));
     }
     return doUnarySlot;
@@ -406,6 +411,74 @@ function numberUnarySlot(number_func, bigint_func) {
 
 function cloneSelf() {
     return new Sk.builtin.int_(this.v);
+}
+
+const DBL_MANT_DIG = Math.log2(Number.MAX_SAFE_INTEGER);
+const DBL_MAX_EXP = JSBI.BigInt(Math.floor(Math.log2(Number.MAX_VALUE)));
+const DBL_MIN_EXP = Math.ceil(Math.log2(Number.MIN_VALUE));
+const BIG_2 = JSBI.BigInt(2);
+const BIG_1 = JSBI.BigInt(1);
+const DBL_MIN_OVERFLOW = JSBI.subtract(
+    JSBI.exponentiate(BIG_2, DBL_MAX_EXP),
+    JSBI.exponentiate(BIG_2, JSBI.subtract(DBL_MAX_EXP, JSBI.add(JSBI.BigInt(DBL_MANT_DIG), BIG_1)))
+);
+
+function trueDivide(other) {
+    if (!Sk.__future__.python3) {
+        return this.nb$floor_divide(other);
+    }
+    if (!(other instanceof Sk.builtin.int_)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    let v = this.v;
+    let w = other.v;
+    if (w === 0) {
+        throw new Sk.builtin.ZeroDivisionError("division by zero");
+    }
+    if (typeof v === "number" && typeof w === "number") {
+        return new Sk.builtin.float_(v / w);
+    }
+
+    // slow case do what we gotta do
+    // algorithm taken from test_long.py
+    v = bigUp(v);
+    w = bigUp(w);
+    const negative = JSBI.lessThan(JSBI.bitwiseXor(v, w), JSBI.__ZERO);
+    if (JSBI.equal(v, JSBI.__ZERO)) {
+        return new Sk.builtin.float_(negative ? -0.0 : 0.0);
+    }
+    v = BigIntAbs(v);
+    w = BigIntAbs(w);
+    if (JSBI.greaterThanOrEqual(v, JSBI.multiply(DBL_MIN_OVERFLOW, w))) {
+        throw new Sk.builtin.OverflowError("int/int too large to represent as a float");
+    }
+    let diff = v.toString(2).length - w.toString(2).length;
+    const absBigDiff = JSBI.BigInt(diff < 0 ? -diff : diff);
+
+    if (
+        (diff >= 0 && JSBI.greaterThanOrEqual(v, JSBI.multiply(JSBI.exponentiate(BIG_2, absBigDiff), w))) ||
+        (diff < 0 && JSBI.greaterThanOrEqual(JSBI.multiply(v, JSBI.exponentiate(BIG_2, absBigDiff)), w))
+    ) {
+        diff += 1;
+    }
+    const exp = Math.max(diff, DBL_MIN_EXP) - DBL_MANT_DIG;
+    v = JSBI.leftShift(v, JSBI.BigInt(Math.max(-exp, 0)));
+    w = JSBI.leftShift(w, JSBI.BigInt(Math.max(exp, 0)));
+
+    let q = JSBI.divide(v, w);
+    const r = JSBI.remainder(v, w);
+
+    const doubleR = JSBI.multiply(BIG_2, r);
+    if (JSBI.greaterThan(doubleR, w) || (JSBI.equal(doubleR, w) && JSBI.equal(JSBI.remainder(q, BIG_2), BIG_1))) {
+        q = JSBI.add(q, BIG_1);
+    }
+    q = JSBI.toNumber(q);
+    if (q === Infinity || q === -Infinity) {
+        throw new Sk.builtin.OverflowError("int/int too large to represent as a float");
+    }
+    let res = q * Math.pow(2, exp);
+    res = negative ? -res : res;
+    return new Sk.builtin.float_(res);
 }
 
 function numberDivisionSlot(number_func, bigint_func) {
@@ -433,27 +506,25 @@ function numberShiftSlot(number_func, bigint_func) {
         if (!(other instanceof Sk.builtin.int_)) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        let v = this.v;
-        let w = other.v;
-        if (v === 0) {
-            return new Sk.builtin.int_(this.v);
-        }
-        if (typeof w === "number") {
-            if (w < 0) {
-                throw new Sk.builtin.ValueError("negative shift count");
-            }
-            if (typeof v === "number") {
-                const tmp = number_func(v, w);
-                if (tmp !== undefined) {
-                    return new Sk.builtin.int_(tmp);
-                }
-            }
-            w = JSBI.BigInt(w);
-        } else if (JSBI.lessThan(JSBI.BigInt(0))) {
+        const wNeg = other.nb$isnegative();
+        if (wNeg) {
             throw new Sk.builtin.ValueError("negative shift count");
         }
+        let v = this.v;
+        if (v === 0) {
+            return new Sk.builtin.int_(0);
+        }
+        let w = other.v;
+        if (typeof v === "number" && typeof w === "number" && w < 53) {
+            // we use the shiftconsts below in the implementation for << and >>
+            const ret = number_func(v, w);
+            if (ret !== undefined) {
+                return new Sk.builtin.int_(ret);
+            }
+        }
         v = bigUp(v);
-        return new Sk.builtin.int_(bigint_func(v, w)); // con't convert if safe for leftshift
+        w = bigUp(w);
+        return new Sk.builtin.int_(bigint_func(v, w)); // can't convert if safe for leftshift
     };
 }
 
@@ -464,17 +535,65 @@ function numberBitSlot(number_func, bigint_func) {
         }
         let v = this.v;
         let w = other.v;
-        if (typeof v === "number" && typeof w === "number") {
-            let tmp = number_func(v, w);
-            if (tmp < 0) {
-                tmp = tmp + 4294967296; // convert back to unsigned
-            }
-            return new Sk.builtin.int_(tmp);
+        if (typeof v === "number" && typeof w === "number" && Math.abs(v) < 2 ** 31 && Math.abs(w) < 2 ** 31) {
+            return new Sk.builtin.int_(number_func(v, w));
         }
         v = bigUp(v);
         w = bigUp(w);
         return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
     };
+}
+
+function BigIntAbs(v) {
+    return JSBI.lessThan(v, JSBI.__ZERO) ? JSBI.unaryMinus(v) : v;
+}
+
+function BigIntFloorDivide(v, w) {
+    if (JSBI.greaterThanOrEqual(JSBI.bitwiseXor(v, w), JSBI.__ZERO)) {
+        return JSBI.divide(v, w);
+    }
+    // make the numerator smaller and then subtract 1 from the answer to round down.
+    if (JSBI.lessThan(v, JSBI.__ZERO)) {
+        v = JSBI.add(v, BIG_1);
+    } else {
+        v = JSBI.subtract(v, BIG_1);
+    }
+    return JSBI.subtract(JSBI.divide(v, w), BIG_1);
+}
+
+function BigIntRound(v, ndigits) {
+    // Get absolute versions. We'll deal with the negatives later.
+    const isNeg = JSBI.lessThan(v, JSBI.__ZERO);
+    if (isNeg) {
+        v = JSBI.unaryMinus(v);
+    }
+    const BigMultiplier = JSBI.exponentiate(JSBI.BigInt(10), JSBI.unaryMinus(JSBI.BigInt(ndigits)));
+
+    let result = JSBI.divide(v, BigMultiplier);
+    const rem = JSBI.remainder(v, BigMultiplier);
+
+    // if remainder > half divisor
+    const doubleRem = JSBI.multiply(rem, BIG_2);
+    if (JSBI.greaterThan(doubleRem, BigMultiplier)) {
+        result = JSBI.add(result, BIG_1);
+        // We should have rounded up instead of down.
+    } else if (JSBI.equal(doubleRem, BigMultiplier)) {
+        // If the remainder is exactly half the divisor, it means that the result is
+        // exactly in between two numbers and we need to apply a specific rounding
+        // method.
+        if (!Sk.__future__.bankers_rounding) {
+            result = JSBI.add(result, BIG_1);
+        } else if (JSBI.equal(JSBI.remainder(result, BIG_2), BIG_1)) {
+            // Add 1 if result is odd to get an even return value
+            result = JSBI.add(result, BIG_1);
+        }
+    }
+
+    result = JSBI.multiply(result, BigMultiplier);
+    if (isNeg) {
+        result = JSBI.unaryMinus(result);
+    }
+    return new Sk.builtin.int_(result);
 }
 
 const validUnderscores = /_(?=[^_])/g;
@@ -688,8 +807,8 @@ function fromStrToBigWithBase(s, base) {
         s = s.substring(1);
     }
     base = JSBI.BigInt(base);
-    let power = JSBI.BigInt(1);
-    let num = JSBI.BigInt(0);
+    let power = BIG_1;
+    let num = JSBI.__ZERO;
     let toadd, val;
     for (let i = s.length - 1; i >= 0; i--) {
         val = s.charCodeAt(i);
