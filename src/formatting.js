@@ -85,8 +85,8 @@ let handleInteger = function(m, n, base){
         }
     }
 
-    const converstionType = m[FMT.CONVERSION_TYPE];
-    if (converstionType === "X") {
+    const conversionType = m[FMT.CONVERSION_TYPE];
+    if (conversionType === "X") {
         r = r.toUpperCase(); // floats convert nan to NAN
     }
 
@@ -96,7 +96,7 @@ let handleInteger = function(m, n, base){
         const parts = r.split(".");
         const sep = m[FMT.COMMA];
         if (sep === "," && base !== 10) {
-            throw new Sk.builtin.ValueError(`Cannot specify ',' with '${converstionType}'`);
+            throw new Sk.builtin.ValueError(`Cannot specify ',' with '${conversionType}'`);
         }
         parts[0] = parts[0].replace(base === 10 ? thousandSep : otherBaseSep , sep);
         r = parts.join(".");
