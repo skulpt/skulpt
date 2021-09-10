@@ -10,7 +10,7 @@ def make_stub(fname,fpath):
     modname = fname.replace('.py','')
     if modname not in mymodules:
         f = open(fpath, 'w')
-        f.write('''raise NotImplementedError("%s is not yet implemented in Skulpt")\n''' % modname)
+        f.write('''import _sk_fail; _sk_fail._(%r)\n''' % modname)
         f.close()
 
 

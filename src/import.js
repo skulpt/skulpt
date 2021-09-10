@@ -273,9 +273,15 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
             if (co.filename && co.funcname !== "$builtinmodule") {
                 module["$d"]["__file__"] = new Sk.builtin.str(co.filename);
             }
-
-            return modscope(module["$d"]);
-
+            try {
+                return modscope(module["$d"]);
+            } catch (e) {
+                try {
+                    // don't cache a module if it raised an exception on load
+                    Sk.abstr.objectDelItem(Sk.sysmodules, new Sk.builtin.str(modname));
+                } catch {}
+                throw e;
+            }
         }, function (modlocs) {
             var i;
 
