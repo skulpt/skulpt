@@ -1793,100 +1793,81 @@ Sk.builtin.setTextSize = function setTextSize(size) {
     }
 };
 
+function getRGB(colour) {
+    switch(colour) {
+        case Sk.builtins.YELLOW:
+            return "rgba(181, 137, 0, 1)";
+        case Sk.builtins.ORANGE:
+            return "rgba(203, 75, 22, 1)";
+        case Sk.builtins.RED:
+            return "rgba(220, 50, 47, 1)";
+        case Sk.builtins.MAGENTA:
+            return "rgba(211, 54, 130, 1)";
+        case Sk.builtins.VIOLET:
+            return "rgba(108, 113, 196, 1)";
+        case Sk.builtins.BLUE:
+            return "rgba(38, 139, 210, 1)";
+        case Sk.builtins.CYAN:
+            return "rgba(42, 161, 152, 1)";
+        case Sk.builtins.GREEN:
+            return "rgba(133, 153, 0, 1)";
+        case Sk.builtins.WHITE:
+            return "rgba(253, 246, 227, 1)";
+        // GREY and GRAY are equal to DEFAULT
+        // and if an unknown value is passed
+        // we will use the default gray
+        default:
+            return "rgba(147, 161, 161, 1)";
+        case Sk.builtins.BLACK:
+            return "rgba(0, 0, 0, 1)";
+        case Sk.builtins.DRACULA_BACKGROUND:
+            return "rgba(40, 42, 54, 1)";
+        case Sk.builtins.DRACULA_CURRENT_LINE:
+            return "rgba(68, 71, 90, 1)";
+        case Sk.builtins.DRACULA_SELECTION:
+            return "rgba(68, 71, 90, 1)";
+        case Sk.builtins.DRACULA_FOREGROUND:
+            return "rgba(248, 248, 242, 1)";
+        case Sk.builtins.DRACULA_COMMENT:
+            return "rgba(98, 114, 164, 1)";
+        case Sk.builtins.DRACULA_CYAN:
+            return "rgba(139, 233, 253, 1)";
+        case Sk.builtins.DRACULA_GREEN:
+            return "rgba(80, 250, 123, 1)";
+        case Sk.builtins.DRACULA_ORANGE:
+            return "rgba(255, 184, 108, 1)";
+        case Sk.builtins.DRACULA_PINK:
+            return "rgba(255, 121, 198, 1)";
+        case Sk.builtins.DRACULA_PURPLE:
+            return "rgba(189, 147, 249, 1)";
+        case Sk.builtins.DRACULA_RED:
+            return "rgba(255, 85, 85, 1)";
+        case Sk.builtins.DRACULA_YELLOW:
+            return "rgba(241, 250, 140, 1)";
+    }
+}
+
 Sk.builtin.setTextColour = function setTextColour(colour) {
     Sk.builtin.pyCheckArgsLen("setTextColour", arguments.length, 1, 1);
     colour = Sk.ffi.remapToJs(colour);
-    if (colour === 0) {
-        Sk.PyAngelo.textColour = "rgba(181, 137, 0, 1)";
-    } else if (colour === 1) {
-        Sk.PyAngelo.textColour = "rgba(203, 75, 22, 1)";
-    } else if (colour === 2) {
-        Sk.PyAngelo.textColour = "rgba(220, 50, 47, 1)";
-    } else if (colour === 3) {
-        Sk.PyAngelo.textColour = "rgba(211, 54, 130, 1)";
-    } else if (colour === 4) {
-        Sk.PyAngelo.textColour = "rgba(108, 113, 196, 1)";
-    } else if (colour === 5) {
-        Sk.PyAngelo.textColour = "rgba(38, 139, 210, 1)";
-    } else if (colour === 6) {
-        Sk.PyAngelo.textColour = "rgba(42, 161, 152, 1)";
-    } else if (colour === 7) {
-        Sk.PyAngelo.textColour = "rgba(133, 153, 0, 1)";
-    } else if (colour === 8) {
-        Sk.PyAngelo.textColour = "rgba(253, 246, 227, 1)";
-    } else if (colour === 9) {
-        Sk.PyAngelo.textColour = "rgba(147, 161, 161, 1)";
-    } else if (colour === 10) {
-        Sk.PyAngelo.textColour = "rgba(0, 0, 0, 1)";
-    }
+    const rgb = getRGB(colour);
+    Sk.PyAngelo.textColour = rgb;
 };
 
 Sk.builtin.setHighlightColour = function setHighlightColour(colour) {
     Sk.builtin.pyCheckArgsLen("setHighlightColour", arguments.length, 1, 1);
     colour = Sk.ffi.remapToJs(colour);
-    if (colour === 0) {
-        Sk.PyAngelo.highlightColour = "rgba(181, 137, 0, 1)";
-    } else if (colour === 1) {
-        Sk.PyAngelo.highlightColour = "rgba(203, 75, 22, 1)";
-    } else if (colour === 2) {
-        Sk.PyAngelo.highlightColour = "rgba(220, 50, 47, 1)";
-    } else if (colour === 3) {
-        Sk.PyAngelo.highlightColour = "rgba(211, 54, 130, 1)";
-    } else if (colour === 4) {
-        Sk.PyAngelo.highlightColour = "rgba(108, 113, 196, 1)";
-    } else if (colour === 5) {
-        Sk.PyAngelo.highlightColour = "rgba(38, 139, 210, 1)";
-    } else if (colour === 6) {
-        Sk.PyAngelo.highlightColour = "rgba(42, 161, 152, 1)";
-    } else if (colour === 7) {
-        Sk.PyAngelo.highlightColour = "rgba(133, 153, 0, 1)";
-    } else if (colour === 8) {
-        Sk.PyAngelo.highlightColour = "rgba(253, 246, 227, 1)";
-    } else if (colour === 9) {
-        Sk.PyAngelo.highlightColour = "rgba(147, 161, 161, 1)";
-    } else if (colour === 10) {
-        Sk.PyAngelo.highlightColour = "rgba(0, 0, 0, 1)";
-    }
+    const rgb = getRGB(colour);
+    Sk.PyAngelo.highlightColour = rgb;
 };
 
 Sk.builtin.clear = function clear(colour) {
     Sk.builtin.pyCheckArgsLen("clear", arguments.length, 0, 1);
     Sk.PyAngelo.console.innerHTML = "";
     colour = Sk.ffi.remapToJs(colour);
-    if (colour === 0) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(181, 137, 0, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(181, 137, 0, 1)";
-    } else if (colour === 1) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(203, 75, 22, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(203, 75, 22, 1)";
-    } else if (colour === 2) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(220, 50, 47, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(220, 50, 47, 1)";
-    } else if (colour === 3) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(211, 54, 130, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(211, 54, 130, 1)";
-    } else if (colour === 4) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(108, 113, 196, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(108, 113, 196, 1)";
-    } else if (colour === 5) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(38, 139, 210, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(38, 139, 210, 1)";
-    } else if (colour === 6) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(42, 161, 152, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(42, 161, 152, 1)";
-    } else if (colour === 7) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(133, 153, 0, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(133, 153, 0, 1)";
-    } else if (colour === 8) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(253, 246, 227, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(253, 246, 227, 1)";
-    } else if (colour === 9) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(147, 161, 161, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(147, 161, 161, 1)";
-    } else if (colour === 10) {
-        Sk.PyAngelo.console.style.backgroundColor = "rgba(0, 0, 0, 1)";
-        Sk.PyAngelo.highlightColour = "rgba(0, 0, 0, 1)";
-    }
+    const rgb = getRGB(colour);
+    Sk.PyAngelo.console.style.backgroundColor = rgb;
+    Sk.PyAngelo.highlightColour = rgb;
 };
 
 Sk.builtin.sleep = function sleep(delay) {

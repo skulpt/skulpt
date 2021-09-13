@@ -1015,8 +1015,7 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $meth: Sk.builtin.clear,
         $flags: {
             NamedArgs: ["colour"],
-            // 10 is the constant for the colour BLACK
-            // Defined in PyAngeloSetup.js
+            // 10 is black as defined in pyangelo_globals.js
             Defaults: [new Sk.builtin.int_(10)],
         },
         $textsig: "($module colour /)",

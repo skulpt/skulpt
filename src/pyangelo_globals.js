@@ -50,6 +50,18 @@ Sk.builtins.GRAY = 9;
 Sk.builtins.GREY = 9;
 Sk.builtins.DEFAULT = 9;
 Sk.builtins.BLACK = 10;
+Sk.builtins.DRACULA_BACKGROUND = 11;
+Sk.builtins.DRACULA_CURRENT_LINE = 12;
+Sk.builtins.DRACULA_SELECTION = 13;
+Sk.builtins.DRACULA_FOREGROUND = 14;
+Sk.builtins.DRACULA_COMMENT = 15;
+Sk.builtins.DRACULA_CYAN = 16;
+Sk.builtins.DRACULA_GREEN = 17;
+Sk.builtins.DRACULA_ORANGE = 18;
+Sk.builtins.DRACULA_PINK = 19;
+Sk.builtins.DRACULA_PURPLE = 20;
+Sk.builtins.DRACULA_RED = 21;
+Sk.builtins.DRACULA_YELLOW = 22;
 
 // GLOBAL KEYS
 Sk.builtins.KEY_A = "KeyA";
