@@ -265,7 +265,12 @@ var $builtinmodule = function (name) {
     /*
     Nonzero if a DST timezone is defined.
     */
-    mod.daylight = new Sk.builtin.int_(dst(new Date()) ? 1 : 0);
+    function daylight_check() {
+        const jan = new Date(2002, 0, 1);
+        const jul = new Date(2002, 6, 1);
+        return jan.getTimezoneOffset() != jul.getTimezoneOffset();
+    }
+    mod.daylight = new Sk.builtin.int_(daylight_check() ? 1 : 0);
 
     /*
     A tuple of two strings: the first is the name of the local non-DST timezone, the second is the name of the local
