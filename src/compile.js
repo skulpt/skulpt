@@ -1545,17 +1545,17 @@ Compiler.prototype.cforever = function (s) {
     this.setBlock(next);
 };
 
-Compiler.prototype.crepeatuntil = function (s) {
+Compiler.prototype.cloopuntil = function (s) {
     var body;
     var next;
     var top;
 
-    top = this.newBlock("repeatuntil");
+    top = this.newBlock("loopuntil");
     this._jump(top);
     this.setBlock(top);
 
-    next = this.newBlock("after repeatuntil");
-    body = this.newBlock("repeatuntil body");
+    next = this.newBlock("after looopuntil");
+    body = this.newBlock("loopuntil body");
 
     this.annotateSource(s);
     this._jump(body);
@@ -2856,8 +2856,8 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             return this.cwhile(s);
         case Sk.astnodes.Forever:
             return this.cforever(s);
-        case Sk.astnodes.RepeatUntil:
-            return this.crepeatuntil(s);
+        case Sk.astnodes.LoopUntil:
+            return this.cloopuntil(s);
         case Sk.astnodes.Until:
             return this.cuntil(s);
         case Sk.astnodes.If:

@@ -40,7 +40,7 @@ module Python
           | While(expr test, stmt* body, stmt* orelse)
           -- Start PyAngelo additions
           | Forever(stmt* body)
-          | RepeatUntil(stmt* body, expr test)
+          | LoopUntil(stmt* body, expr test)
           | Until(expr test, stmt* body)
           -- End PyAngelo Additions
           | If(expr test, stmt* body, stmt* orelse)

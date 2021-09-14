@@ -338,10 +338,9 @@ Sk.astnodes.Forever = function Forever(/* {asdl_seq *} */ body, /* {int} */
 }
 
 /** @constructor */
-Sk.astnodes.RepeatUntil = function RepeatUntil(/* {asdl_seq *} */ body, /*
-                                                    {expr_ty} */ test, /* {int}
-                                                    */ lineno, /* {int} */
-                                                    col_offset)
+Sk.astnodes.LoopUntil = function LoopUntil(/* {asdl_seq *} */ body, /*
+                                                {expr_ty} */ test, /* {int} */
+                                                lineno, /* {int} */ col_offset)
 {
     Sk.asserts.assert(lineno !== null && lineno !== undefined);
     Sk.asserts.assert(col_offset !== null && col_offset !== undefined);
@@ -1227,8 +1226,8 @@ Sk.astnodes.Forever.prototype._astname = "Forever";
 Sk.astnodes.Forever.prototype._fields = [
     "body", function(n) { return n.body; }
 ];
-Sk.astnodes.RepeatUntil.prototype._astname = "RepeatUntil";
-Sk.astnodes.RepeatUntil.prototype._fields = [
+Sk.astnodes.LoopUntil.prototype._astname = "LoopUntil";
+Sk.astnodes.LoopUntil.prototype._fields = [
     "body", function(n) { return n.body; },
     "test", function(n) { return n.test; }
 ];
