@@ -43,6 +43,7 @@ require("./str.js");
 
 require("./function.js");
 require("./builtin.js");
+require("./builtin_pyangelo.js");
 require("./errors.js");
 require("./method.js");
 require("./misceval.js");
