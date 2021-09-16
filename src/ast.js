@@ -2029,24 +2029,6 @@ function astForForeverStmt (c, n) {
     Sk.asserts.fail("wrong number of tokens for 'forever' stmt");
 }
 
-function astForLoopUntilStmt (c, n) {
-    /* loopuntil_stmt: 'loop' ':' suite 'until' test */
-    REQ(n, SYM.loopuntil_stmt);
-    if (NCH(n) === 5) {
-        return new Sk.astnodes.LoopUntil(astForSuite(c, CHILD(n, 2)), ast_for_expr(c, CHILD(n, 4)), n.lineno, n.col_offset);
-    }
-    Sk.asserts.fail("wrong number of tokens for 'loopuntil' stmt");
-}
-
-function astForUntilStmt (c, n) {
-    /* until_stmt: 'until' test ':' suite */
-    REQ(n, SYM.until_stmt);
-    if (NCH(n) === 4) {
-        return new Sk.astnodes.Until(ast_for_expr(c, CHILD(n, 1)), astForSuite(c, CHILD(n, 3)), n.lineno, n.col_offset);
-    }
-    Sk.asserts.fail("wrong number of tokens for 'until' stmt");
-}
-
 function astForAugassign (c, n) {
     REQ(n, SYM.augassign);
     n = CHILD(n, 0);
@@ -3232,7 +3214,7 @@ function astForStmt (c, n) {
     }
     else {
         /* compound_stmt: if_stmt | while_stmt | forever_stmt
-         *              | loopuntil_stmt | until_stmt |for_stmt | try_stmt
+         *              | for_stmt | try_stmt
          *              | funcdef | classdef | decorated | async_stmt
         */
         ch = CHILD(n, 0);
@@ -3244,10 +3226,6 @@ function astForStmt (c, n) {
                 return astForWhileStmt(c, ch);
             case SYM.forever_stmt:
                 return astForForeverStmt(c, ch);
-            case SYM.loopuntil_stmt:
-                return astForLoopUntilStmt(c, ch);
-            case SYM.until_stmt:
-                return astForUntilStmt(c, ch);
             case SYM.for_stmt:
                 return astForForStmt(c, ch);
             case SYM.try_stmt:
