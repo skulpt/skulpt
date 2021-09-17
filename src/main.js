@@ -89,6 +89,7 @@ require("./builtindict.js");
 require("./constants.js");
 
 // PyAngelo
+require("./builtins_pyangelo.js");
 require("./pyangelo_globals.js");
 
 /* jshint ignore:end */
