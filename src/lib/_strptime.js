@@ -188,7 +188,7 @@ function $builtinmodule() {
                 } catch {}
                 this.tzname = time_mod.tzname.v.map((x) => x.toString());
                 this.daylight = asnum$(time_mod.daylight);
-                const no_saving = [this.tzname[1].toLowerCase(), "utc", "gmt"];
+                const no_saving = [this.tzname[0].toLowerCase(), "utc", "gmt"];
                 let has_saving;
                 if (this.daylight) {
                     has_saving = [this.tzname[1].toLowerCase()];
