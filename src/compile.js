@@ -2909,7 +2909,7 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
     /* Every annotated class and module should have __annotations__. */
     if (this.u.hasAnnotations) {
-        this.u.varDeclsCode += "$loc.__annotations__ = new Sk.builtin.dict();";
+        this.u.varDeclsCode += "$loc.__annotations__ || ($loc.__annotations__ = new Sk.builtin.dict());";
     }
 };
 
