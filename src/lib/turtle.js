@@ -1321,7 +1321,8 @@ function generateTurtleModule(_target) {
             }
         };
         proto.$register_shape.minArgs = 1;
-
+        proto.$register_shape.co_varnames = ["name", "points"];
+        
         proto.$getshapes = function() {
             return Object.keys(SHAPES);
         };
