@@ -314,6 +314,55 @@ const $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
     };
 
+    function lcm() {
+        const nargs = arguments.length;
+
+        // lcm() without arguments returns 1
+        if (nargs === 0) return new Sk.builtin.int_(1);
+
+        let result = arguments[0];
+        Sk.builtin.pyCheckType("*integers", "integer", Sk.builtin.checkInt(result));
+        result = Sk.builtin.asnum$(result);
+
+        if (nargs === 1) {
+            if (typeof result === "number") {
+                return new Sk.builtin.int_(Math.abs(result));
+            } else {
+                return new Sk.builtin.int_(result);
+            }
+        }
+
+        let i;
+        for (i = 1; i < nargs; ++i) {
+          const argument = arguments[i];
+
+          Sk.builtin.pyCheckType(
+            "*integers",
+            "integer",
+            Sk.builtin.checkInt(argument)
+          );
+
+          // If any of the arguments is zero, then the returned value is 0
+          if (argument === 0) return 0;
+
+          let _argument = Sk.builtin.asnum$(argument);
+
+          if (typeof result === "number" && typeof _argument === "number") {
+            result = (result / gcd(result, _argument)) * _argument;
+          } else {
+            result = JSBI.BigInt(result);
+            _argument = JSBI.BigInt(_argument);
+
+            result = JSBI.multiply(
+              JSBI.divide(result, gcd(result, _argument)),
+              _argument
+            );
+          }
+        }
+
+        return new Sk.builtin.int_(result);
+    };
+
     function ldexp(x, i) {
         // return x * (2**i)
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
@@ -942,6 +991,12 @@ const $builtinmodule = function (name) {
             $flags: { OneArg: true },
             $textsig: "($module, x, /)",
             $doc: "Return True if x is a NaN (not a number), and False otherwise.",
+        },
+        lcm: {
+            $meth: lcm,
+            $flags: {},
+            $textsig: "($module, *integers, /)",
+            $doc: "Return the least common multiple of the specified integer arguments. If all arguments are nonzero, then the returned value is the smallest positive integer that is a multiple of all arguments. If any of the arguments is zero, then the returned value is 0. lcm() without arguments returns 1.",
         },
         ldexp: {
             $meth: ldexp,

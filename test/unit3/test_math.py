@@ -1481,6 +1481,14 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isinf(2**1024))
         self.assertFalse(math.isinf(2**2048))
 
+    def testLcm(self):
+        self.assertEqual(math.lcm(), 1)
+        self.assertEqual(math.lcm(2), 2)
+        self.assertEqual(math.lcm(0), 0)
+        self.assertEqual(math.lcm(576559230871654959816130551884856912003141446781646602790216406874), 576559230871654959816130551884856912003141446781646602790216406874)
+        self.assertEqual(math.lcm(1, 2, 0, 5, 6), 0)
+        self.assertEqual(math.lcm(2, 3, 4, 5, 6), 60)
+
     def test_nan_constant(self):
         self.assertTrue(math.isnan(math.nan))
 
