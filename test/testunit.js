@@ -3,7 +3,7 @@ const path = require('path');
 const program = require('commander');
 const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
-function test (python3, opt) {
+function test (python3, opt, module = undefined) {
     var startime, endtime, elapsed;
 
     // Import Skulpt
@@ -45,6 +45,8 @@ function test (python3, opt) {
         let basename = path.basename(file, ".py");
 
         if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
+            if (module && !basename.endsWith(module)) continue;
+
             modules.push([file, basename]);
         }
     }
@@ -107,7 +109,8 @@ function test (python3, opt) {
 program
     .option('--python3', 'Python 3')
     .option('-o, --opt', 'use optimized skulpt')
+    .option('--module <module>', 'test specific module')
     .parse(process.argv);
 
-test(program.python3, program.opt);
+test(program.python3, program.opt, program.module);
 
