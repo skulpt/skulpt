@@ -315,6 +315,12 @@ const $builtinmodule = function (name) {
     };
 
     function lcm(...args) {
+        function abs(n) {
+            return JSBI.lessThan(result, JSBI.__ZERO)
+                ? new Sk.builtin.int_(JSBI.unaryMinus(result))
+                : new Sk.builtin.int_(result);
+        }
+
         const nargs = args.length;
 
         // lcm() without arguments returns 1
@@ -325,11 +331,7 @@ const $builtinmodule = function (name) {
         result = Sk.builtin.asnum$(result);
 
         if (nargs === 1) {
-            if (typeof result === "number") {
-                return new Sk.builtin.int_(Math.abs(result));
-            } else {
-                return new Sk.builtin.int_(result);
-            }
+            return abs(result);
         }
 
         let i;
@@ -360,7 +362,7 @@ const $builtinmodule = function (name) {
             }
         }
 
-        return new Sk.builtin.int_(result);
+        return abs(result);
     };
 
     function ldexp(x, i) {
