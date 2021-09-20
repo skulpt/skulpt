@@ -346,21 +346,26 @@ const $builtinmodule = function (name) {
         // lcm() without arguments returns 1
         if (nargs === 0) return new Sk.builtin.int_(1);
 
-        let result = Sk.misceval.asIndexOrThrow(args[0]);
+        // Test & convert all arguments
+        let i;
+        for (i = 0; i < nargs; ++i) {
+            args[i] = Sk.misceval.asIndexOrThrow(args[i]);
+        }
 
+        let result = args[0];
         if (nargs === 1) {
             return abs(result);
         }
 
-        let i;
+        let arg;
         for (i = 1; i < nargs; ++i) {
-            let argument = Sk.misceval.asIndexOrThrow(args[i]);
+            arg = args[i];
 
             // If any of the arguments is zero, then the returned value is 0
-            if (argument === 0) return new Sk.builtin.int_(0);
+            if (arg === 0) return new Sk.builtin.int_(0);
 
-            if (typeof result === "number" && typeof argument === "number") {
-                let tmp = (result / _gcd_internal(result, argument)) * argument;
+            if (typeof result === "number" && typeof arg === "number") {
+                let tmp = (result / _gcd_internal(result, arg)) * arg;
                 tmp = Math.abs(tmp);
 
                 // check the size - if we're too big reset the result and then fall through
@@ -371,10 +376,10 @@ const $builtinmodule = function (name) {
 
             // allow fall through - if result gets too big we'll need to redo the calculation with BigInts
             if (typeof result !== "number") {
-                argument = JSBI.BigInt(argument);
+                arg = JSBI.BigInt(arg);
                 result = JSBI.multiply(
-                    JSBI.divide(result, _gcd_internal(result, argument)),
-                    argument
+                    JSBI.divide(result, _gcd_internal(result, arg)),
+                    arg
                 );
             }
         }
