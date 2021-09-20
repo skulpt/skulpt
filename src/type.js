@@ -358,7 +358,7 @@ function best_base_(bases) {
     }
     function solid_base(type) {
         // if we support slots we would need to change this function - for now it just checks for the builtin.
-        if (type.sk$klass === undefined) {
+        if (type.sk$solidBase) {
             return type;
         }
         return solid_base(type.prototype.tp$base);
@@ -369,7 +369,7 @@ function best_base_(bases) {
         base_i = bases[i];
         if (!Sk.builtin.checkClass(base_i)) {
             throw new Sk.builtin.TypeError("bases must be 'type' objects");
-        } else if (base_i.sk$acceptable_as_base_class === false) {
+        } else if (base_i.sk$unacceptableBase) {
             throw new Sk.builtin.TypeError("type '" + base_i.prototype.tp$name + "' is not an acceptable base type");
         }
         candidate = solid_base(base_i); // basically the builtin I think

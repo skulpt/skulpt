@@ -572,5 +572,5 @@ var set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });

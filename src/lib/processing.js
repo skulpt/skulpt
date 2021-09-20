@@ -337,9 +337,12 @@ var $builtinmodule = function (name) {
 
     mod.ellipse = new Sk.builtin.func(function (x, y, r1, r2) {
         mod.processing.ellipse(x.v, y.v, r1.v, r2.v);
-
     });
-
+	
+    mod.circle = new Sk.builtin.func(function(x, y, r) {
+        mod.processing.ellipse(x.v, y.v, r.v, r.v);
+    });
+	
     mod.text = new Sk.builtin.func(function (theText, x, y) {
         mod.processing.text(theText.v, x.v, y.v);
     });

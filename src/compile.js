@@ -620,9 +620,9 @@ Compiler.prototype.ccompare = function (e) {
 
     for (i = 0; i < n; ++i) {
         rhs = this.vexpr(e.comparators[i]);
-        out("$ret = Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true));");
+        out("$ret = Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true);");
         this._checkSuspension(e);
-        out(fres, "=$ret;");
+        out(fres, "=Sk.builtin.bool($ret);");
         this._jumpfalse("$ret", done);
         cur = rhs;
     }
@@ -648,7 +648,7 @@ Compiler.prototype.ccall = function (e) {
         kwarray = [];
         for (let kw of e.keywords) {
             if (hasStars && !Sk.__future__.python3) {
-                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+                throw new Sk.builtin.SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
             }
             if (kw.arg) {
                 kwarray.push("'" + kw.arg.v + "'");
@@ -674,7 +674,7 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self.toString().indexOf(\"Window\") > 0) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        out("if (typeof self === \"undefined\" || self === Sk.global) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
         positionalArgs = "[$gbl.__class__,self]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
@@ -1044,7 +1044,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.FormattedValue:
             return this.cformattedvalue(e);
         case Sk.astnodes.Ellipsis:
-            return this.makeConstant("Sk.builtin.ellipsis");
+            return this.makeConstant("Sk.builtin.Ellipsis");
         default:
             Sk.asserts.fail("unhandled case " + e.constructor.name + " vexpr");
     }
@@ -1069,6 +1069,28 @@ Compiler.prototype.vseqexpr = function (exprs, data) {
     }
     return ret;
 };
+
+
+Compiler.prototype.cannassign = function (s) {
+    const target = s.target;
+    let val = s.value;
+    // perform the actual assignment first
+    if (val) {
+        val = this.vexpr(s.value);
+        this.vexpr(target, val);
+    }
+    switch (target.constructor) {
+        case Sk.astnodes.Name:
+            if (s.simple && (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock || this.u.ste.blockType == Sk.SYMTAB_CONSTS.ModuleBlock)) {
+                this.u.hasAnnotations = true;
+                const val = this.vexpr(s.annotation);
+                let mangled = fixReserved(mangleName(this.u.private_, target.id).v);
+                const key = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
+                this.chandlesubscr(Sk.astnodes.Store, "$loc.__annotations__", key, val);
+            }
+    }
+};
+
 
 Compiler.prototype.caugassign = function (s) {
     var to;
@@ -2411,7 +2433,7 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals;$free=$globals;";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=$globals;";
     this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
@@ -2539,10 +2561,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
             }
             break;
         case Sk.astnodes.AnnAssign:
-            val = this.vexpr(s.value);
-            this.vexpr(s.target, val);
-            this.vexpr(s.annotation);
-            break;
+            return this.cannassign(s);
         case Sk.astnodes.AugAssign:
             return this.caugassign(s);
         case Sk.astnodes.Print:
@@ -2826,7 +2845,13 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     for (; i < stmts.length; ++i) {
         this.vstmt(stmts[i], class_for_super);
     }
+    /* Every annotated class and module should have __annotations__. */
+    if (this.u.hasAnnotations) {
+        this.u.varDeclsCode += "$loc.__annotations__ || ($loc.__annotations__ = new Sk.builtin.dict());";
+    }
 };
+
+
 
 Compiler.prototype.cprint = function (s) {
     var i;

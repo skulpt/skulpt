@@ -700,6 +700,11 @@ Sk.abstr.checkArgsLen = function (func_name, args, minargs, maxargs) {
 Sk.exportSymbol("Sk.abstr.checkArgsLen", Sk.abstr.checkArgsLen);
 
 Sk.abstr.objectFormat = function (obj, format_spec) {
+    if (format_spec === undefined) {
+        format_spec = Sk.builtin.str.$emptystr;
+    } else if (!Sk.builtin.checkString(format_spec)) {
+        throw new Sk.builtin.TypeError("Format specifier must be a string, not " + Sk.abstr.typeName(format_spec));
+    }
     const meth = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$format); // inherited from object so guaranteed to exist
     const result = Sk.misceval.callsimArray(meth, [format_spec]);
     if (!Sk.builtin.checkString(result)) {
@@ -970,6 +975,8 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         Object.defineProperty(child, "sk$baseClass", { value: true, writable: true });
         Object.defineProperty(child.prototype, "sk$builtinBase", { value: child, writable: true });
     }
+    // assume solid base - this can be overridden later in flags
+    Object.defineProperty(child, "sk$solidBase", { value: true, writable: true });
     const mro = [child];
     while (base !== null) {
         mro.push(base);
@@ -1233,7 +1240,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  * - getsets: getset objects `{$get: Function, $set: Function, $doc: string}`,
  * - classmethods: classmethod objects `{$meth: Function, $flags: callmethod, $doc: string, $textsic: string|null}`,
  *
- * - flags: Object allocated directly onto class like `klass.sk$acceptable_as_base_class`
+ * - flags: Object allocated directly onto class like `klass.sk$unacceptableBase`
  * - proto: Object allocated onto the prototype useful for private methods
  * ```
  * See most builtin type objects for examples

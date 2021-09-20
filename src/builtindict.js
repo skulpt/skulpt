@@ -51,6 +51,7 @@ Sk.builtins = {
     "UnicodeDecodeError" : Sk.builtin.UnicodeDecodeError,
     "UnicodeEncodeError" : Sk.builtin.UnicodeEncodeError,
     "NameError"          : Sk.builtin.NameError,
+    "UnboundLocalError"  : Sk.builtin.UnboundLocalError,
     "IOError"            : Sk.builtin.IOError,
     "NotImplementedError": Sk.builtin.NotImplementedError,
     "SystemExit"         : Sk.builtin.SystemExit,
@@ -63,6 +64,7 @@ Sk.builtins = {
     "GeneratorExit"      : Sk.builtin.GeneratorExit,
     "SyntaxError"        : Sk.builtin.SyntaxError,
     "SystemError"        : Sk.builtin.SystemError,
+    "KeyboardInterrupt"  : Sk.builtin.KeyboardInterrupt,
 
     "float_$rw$": Sk.builtin.float_,
     "int_$rw$"  : Sk.builtin.int_,
@@ -123,6 +125,8 @@ Sk.builtins = {
     "property"     : Sk.builtin.property,
     "classmethod"  : Sk.builtin.classmethod,
     "staticmethod" : Sk.builtin.staticmethod,
+
+    "Ellipsis": Sk.builtin.Ellipsis
 };
 
 

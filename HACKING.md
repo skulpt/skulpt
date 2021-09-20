@@ -386,7 +386,7 @@ Sk.builtin.mappingproxy = Sk.asbtr.buildNativeClass("mappingproxy",{
     },
     flags: {
         // flags added to the type object. Not directly accessible by instances
-        sk$acceptable_as_base_class: false,
+        sk$unacceptableBase: true,
     },
 });
 
@@ -411,7 +411,7 @@ Then we look at `dict_iter_` and find that `mappingproxy` needs two private meth
 
 Since these are private methods we add them to the `proto` in the above object literal.
 
-`sk$acceptable_as_base_class` is flag that was added since
+`sk$unacceptableBase` is flag that was added since
 ```python
 >>> class A(mappingproxy): pass
 # TypeError: type 'mappingproxy' is not an acceptable base type
