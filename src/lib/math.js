@@ -195,11 +195,7 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(sum);
     };
 
-    function gcd(a, b) {
-        // non ints not allowed in python 3.7.x
-        Sk.builtin.pyCheckType("a", "integer", Sk.builtin.checkInt(a));
-        Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
-
+    function _gcd_internal(_a, _b) {
         function _gcd(a, b) {
             if (b == 0) {
                 return a;
@@ -213,15 +209,13 @@ const $builtinmodule = function (name) {
             }
             return _biggcd(b, JSBI.remainder(a, b));
         }
-        let _a = Sk.builtin.asnum$(a);
-        let _b = Sk.builtin.asnum$(b);
+
         let res;
         if (typeof _a === "number" && typeof _b === "number") {
             _a = Math.abs(_a);
             _b = Math.abs(_b);
             res = _gcd(_a, _b);
             res = res < 0 ? -res : res; // python only returns positive gcds
-            return new Sk.builtin.int_(res);
         } else {
             _a = JSBI.BigInt(_a);
             _b = JSBI.BigInt(_b);
@@ -229,7 +223,29 @@ const $builtinmodule = function (name) {
             if (JSBI.lessThan(res, JSBI.__ZERO)) {
                 res = JSBI.multiply(res, JSBI.BigInt(-1));
             } 
-            return new Sk.builtin.int_(res.toString()); // int will convert strings
+        }
+
+        return res;
+    };
+
+    function gcd(a, b) {
+        // non ints not allowed in python 3.7.x
+        Sk.builtin.pyCheckType("a", "integer", Sk.builtin.checkInt(a));
+        Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
+
+        let _a = Sk.builtin.asnum$(a);
+        let _b = Sk.builtin.asnum$(b);
+
+        const res = _gcd_internal(_a, _b);
+        // res is positive
+        if (typeof res === "number") {
+            return new Sk.builtin.int_(res);
+        } else {
+            return new Sk.builtin.int_(res.toString());
+            // this is a bit of a hack - we're being lazy and passing a string to int_
+            // the int constructor will then decide if it should be a number or a BigInt depending on the size.
+            // really we should do:
+            // return  JSBI.lessThanOrEqual(res, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) ? new Sk.builtin.int_(Number(res)) : new Sk.builtin.int_(res);
         }
     };
 
@@ -340,13 +356,13 @@ const $builtinmodule = function (name) {
             if (argument === 0) return new Sk.builtin.int_(0);
 
             if (typeof result === "number" && typeof argument === "number") {
-                result = (result / gcd(result, argument)) * argument;
+                result = (result / _gcd_internal(result, argument)) * argument;
             } else {
                 result = JSBI.BigInt(result);
                 argument = JSBI.BigInt(argument);
 
                 result = JSBI.multiply(
-                    JSBI.divide(result, gcd(result, argument)),
+                    JSBI.divide(result, _gcd_internal(result, argument)),
                     argument
                 );
             }
