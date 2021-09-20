@@ -333,7 +333,7 @@ const $builtinmodule = function (name) {
     function lcm(...args) {
         function abs(n) {
             if (typeof n === "number") {
-                return Math.abs(n);
+                return new Sk.builtin.int_(Math.abs(n));
             }
 
             return JSBI.lessThan(n, JSBI.__ZERO)
