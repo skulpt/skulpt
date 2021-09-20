@@ -334,30 +334,30 @@ const $builtinmodule = function (name) {
 
         let i;
         for (i = 1; i < nargs; ++i) {
-          const argument = args[i];
+            const argument = args[i];
 
-          Sk.builtin.pyCheckType(
-            "*integers",
-            "integer",
-            Sk.builtin.checkInt(argument)
-          );
-
-          // If any of the arguments is zero, then the returned value is 0
-          if (argument === 0) return 0;
-
-          let _argument = Sk.builtin.asnum$(argument);
-
-          if (typeof result === "number" && typeof _argument === "number") {
-            result = (result / gcd(result, _argument)) * _argument;
-          } else {
-            result = JSBI.BigInt(result);
-            _argument = JSBI.BigInt(_argument);
-
-            result = JSBI.multiply(
-              JSBI.divide(result, gcd(result, _argument)),
-              _argument
+            Sk.builtin.pyCheckType(
+                "*integers",
+                "integer",
+                Sk.builtin.checkInt(argument)
             );
-          }
+
+            // If any of the arguments is zero, then the returned value is 0
+            if (argument === 0) return 0;
+
+            let _argument = Sk.builtin.asnum$(argument);
+
+            if (typeof result === "number" && typeof _argument === "number") {
+                result = (result / gcd(result, _argument)) * _argument;
+            } else {
+                result = JSBI.BigInt(result);
+                _argument = JSBI.BigInt(_argument);
+
+                result = JSBI.multiply(
+                    JSBI.divide(result, gcd(result, _argument)),
+                    _argument
+                );
+            }
         }
 
         return new Sk.builtin.int_(result);
