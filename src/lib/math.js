@@ -326,9 +326,7 @@ const $builtinmodule = function (name) {
         // lcm() without arguments returns 1
         if (nargs === 0) return new Sk.builtin.int_(1);
 
-        let result = args[0];
-        Sk.builtin.pyCheckType("*integers", "integer", Sk.builtin.checkInt(result));
-        result = Sk.builtin.asnum$(result);
+        let result = Sk.misceval.asIndexOrThrow(args[0]);
 
         if (nargs === 1) {
             return abs(result);
@@ -336,28 +334,20 @@ const $builtinmodule = function (name) {
 
         let i;
         for (i = 1; i < nargs; ++i) {
-            const argument = args[i];
-
-            Sk.builtin.pyCheckType(
-                "*integers",
-                "integer",
-                Sk.builtin.checkInt(argument)
-            );
+            let argument = Sk.misceval.asIndexOrThrow(args[i]);
 
             // If any of the arguments is zero, then the returned value is 0
-            if (argument === 0) return 0;
+            if (argument === 0) return new Sk.builtin.int_(0);
 
-            let _argument = Sk.builtin.asnum$(argument);
-
-            if (typeof result === "number" && typeof _argument === "number") {
-                result = (result / gcd(result, _argument)) * _argument;
+            if (typeof result === "number" && typeof argument === "number") {
+                result = (result / gcd(result, argument)) * argument;
             } else {
                 result = JSBI.BigInt(result);
-                _argument = JSBI.BigInt(_argument);
+                argument = JSBI.BigInt(argument);
 
                 result = JSBI.multiply(
-                    JSBI.divide(result, gcd(result, _argument)),
-                    _argument
+                    JSBI.divide(result, gcd(result, argument)),
+                    argument
                 );
             }
         }
