@@ -32,16 +32,16 @@ if (program.args[0] == "py2") {
     process.exit(1);
 }
 
+const gbl = {__file__: new Sk.builtin.str("<repl>"), __name__: new Sk.builtin.str("__main__")};
+
 Sk.configure({
     output: (args) => { process.stdout.write(args); },
     read: (fname) => { return fs.readFileSync(fname, "utf8"); },
     systemexit: true,
-    retainGlobals: true,
     inputfun: readline,
     __future__: py3 ? Sk.python3 : Sk.python2,
 });
 
-Sk.globals = { __name__: new Sk.builtin.str("__main__")};
 
 var //finds lines starting with "print"
     re = new RegExp("\\s*print"),
@@ -128,7 +128,7 @@ while (true) {
         if (!lines || /^\s*$/.test(lines)) {
             continue;
         } else {
-            Sk.importMainWithBody("repl", false, lines.join("\n"));
+            Sk.misceval.retryOptionalSuspensionOrThrow(Sk.builtin.exec(lines.join("\n"), gbl), "repl does not support suspensions");
         }
     } catch (err) {
         if (err instanceof Sk.builtin.SystemExit) {

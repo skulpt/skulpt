@@ -250,8 +250,8 @@ class IntTestCases(unittest.TestCase):
         # self.assertEqual(int(x=1.2), 1)
         self.assertEqual(int('100', base=2), 4)
         # self.assertEqual(int(x='100', base=2), 4)
-        # self.assertRaises(TypeError, int, base=10)
-        # self.assertRaises(TypeError, int, base=0)
+        self.assertRaises(TypeError, int, base=10)
+        self.assertRaises(TypeError, int, base=0)
 
     def test_int_base_limits(self):
         """Testing the supported limits of the int() base parameter."""
@@ -398,20 +398,20 @@ class IntTestCases(unittest.TestCase):
                 #
                 # self.assertRaises(TypeError, lambda: int(TruncReturnsBadInt()))
 
-    # def test_int_subclass_with_int(self):
-    #     class MyInt(int):
-    #         def __int__(self):
-    #             return 42
-    #
-    #     class BadInt(int):
-    #         def __int__(self):
-    #             return 42.0
-    #
-    #     my_int = MyInt(7)
-    #     self.assertEqual(my_int, 7)
-    #     self.assertEqual(int(my_int), 42)
-    #
-    #     self.assertRaises(TypeError, int, BadInt())
+    def test_int_subclass_with_int(self):
+        class MyInt(int):
+            def __int__(self):
+                return 42
+    
+        class BadInt(int):
+            def __int__(self):
+                return 42.0
+    
+        my_int = MyInt(7)
+        self.assertEqual(my_int, 7)
+        self.assertEqual(int(my_int), 42)
+    
+        self.assertRaises(TypeError, int, BadInt())
 
     def test_int_returns_int_subclass(self):
         class BadInt:

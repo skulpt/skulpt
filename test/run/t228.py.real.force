@@ -1,2 +1,2 @@
 <bound method X.stuff of <__main__.X object>>
-<unbound method X.stuff>
+<function X.stuff>
