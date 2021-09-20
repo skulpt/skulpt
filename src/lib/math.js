@@ -314,13 +314,13 @@ const $builtinmodule = function (name) {
         throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
     };
 
-    function lcm() {
-        const nargs = arguments.length;
+    function lcm(...args) {
+        const nargs = args.length;
 
         // lcm() without arguments returns 1
         if (nargs === 0) return new Sk.builtin.int_(1);
 
-        let result = arguments[0];
+        let result = args[0];
         Sk.builtin.pyCheckType("*integers", "integer", Sk.builtin.checkInt(result));
         result = Sk.builtin.asnum$(result);
 
@@ -334,7 +334,7 @@ const $builtinmodule = function (name) {
 
         let i;
         for (i = 1; i < nargs; ++i) {
-          const argument = arguments[i];
+          const argument = args[i];
 
           Sk.builtin.pyCheckType(
             "*integers",
