@@ -360,11 +360,18 @@ const $builtinmodule = function (name) {
             if (argument === 0) return new Sk.builtin.int_(0);
 
             if (typeof result === "number" && typeof argument === "number") {
-                result = (result / _gcd_internal(result, argument)) * argument;
+                let tmp = (result / _gcd_internal(result, argument)) * argument;
+                tmp = Math.abs(tmp);
+
+                // check the size - if we're too big reset the result and then fall through
+                result = tmp > Number.MAX_SAFE_INTEGER ? JSBI.BigInt(result) : tmp;
             } else {
                 result = JSBI.BigInt(result);
-                argument = JSBI.BigInt(argument);
+            }
 
+            // allow fall through - if result gets too big we'll need to redo the calculation with BigInts
+            if (typeof result !== "number") {
+                argument = JSBI.BigInt(argument);
                 result = JSBI.multiply(
                     JSBI.divide(result, _gcd_internal(result, argument)),
                     argument
