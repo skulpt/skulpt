@@ -332,9 +332,13 @@ const $builtinmodule = function (name) {
 
     function lcm(...args) {
         function abs(n) {
-            return JSBI.lessThan(result, JSBI.__ZERO)
-                ? new Sk.builtin.int_(JSBI.unaryMinus(result))
-                : new Sk.builtin.int_(result);
+            if (typeof n === "number") {
+                return Math.abs(n);
+            }
+
+            return JSBI.lessThan(n, JSBI.__ZERO)
+                ? new Sk.builtin.int_(JSBI.unaryMinus(n))
+                : new Sk.builtin.int_(n);
         }
 
         const nargs = args.length;
