@@ -122,6 +122,12 @@ async function main() {
             [".py"],
             "support/tmp/unit3.js"
         );
+        await buildJsonFile(
+            "unitpyangelo",
+            ["test/pyangelo"],
+            [".py"],
+            "support/tmp/unitpyangelo.js"
+        );
     }
 }
 

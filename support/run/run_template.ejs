@@ -110,6 +110,7 @@ function runit(myDiv, pyver) {
 
 <h3>Canvas</h3>
 <canvas id="canvas" width="500" height="400" tabindex="1"></canvas>
+<pre id="console"></pre>
 <div id="turtle" height="500" width="800"
 	style="border-style: solid; display: none"></div>
 
@@ -121,9 +122,7 @@ function runit(myDiv, pyver) {
 
 </div>
 <script>
-Sk.PyAngelo = {};
-Sk.PyAngelo.canvas = document.getElementById("canvas");
-Sk.PyAngelo.ctx = Sk.PyAngelo.canvas.getContext("2d");
+Sk.PyAngelo.preparePage();
 </script>
 </body>
 </html>

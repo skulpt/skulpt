@@ -1,4 +1,5 @@
 function rununits(myDiv, pyver) {
+    console.log("Running unit tests");
     var mypre = document.getElementById(myDiv+"_pre");
 
     Sk.inputfun = function(prompt) {
@@ -9,17 +10,42 @@ function rununits(myDiv, pyver) {
 
     var dir, units, testfiles;
     if (pyver == "python2") {
-	dir = "test/unit";
-	units = Sk.unit2;
-	testfiles = Sk.unit2files;
+	    dir = "test/unit";
+	    units = Sk.unit2;
+	    testfiles = Sk.unit2files;
     } else if (pyver == "python3") {
-	dir = "test/unit3";
-	units = Sk.unit3;
-	testfiles = Sk.unit3files;
+	    dir = "test/unit3";
+	    units = Sk.unit3;
+	    testfiles = Sk.unit3files;
+    } else if (pyver == "unitpyangelo") {
+	    dir = "test/pyangelo";
+	    units = Sk.unitpyangelo;
+	    testfiles = Sk.unitpyangelofiles;
     }
 
     function outf (text) {
         mypre.appendChild(document.createTextNode(text));
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+    function outf_error (text) {
+        const spanElement = document.createElement('span')
+        spanElement.appendChild(document.createTextNode(text))
+        spanElement.style.color = Sk.PyAngelo.textColour
+        spanElement.style.color = "#DC143C"
+        mypre.appendChild(spanElement)
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function outf_test_result (text) {
+        const spanElement = document.createElement('span')
+        spanElement.appendChild(document.createTextNode(text))
+        spanElement.style.color = Sk.PyAngelo.textColour
+        if (text.includes("failed: 0")) {
+            spanElement.style.color = "#006400"
+        } else {
+            spanElement.style.color = "#DC143C"
+        }
+        mypre.appendChild(spanElement)
         window.scrollTo(0, document.body.scrollHeight);
     }
 
@@ -51,7 +77,7 @@ function rununits(myDiv, pyver) {
     var modules = [];
 
     for (idx = 0; idx < testfiles.length; idx++) {
-	test = testfiles[idx];
+        test = testfiles[idx];
         lastslash = test.lastIndexOf('/');
         module = test.substring(lastslash + 1, test.length - 3);
 
@@ -60,8 +86,8 @@ function rununits(myDiv, pyver) {
 
     function runtest (tests, passed, failed) {
         if (tests.length == 0) {
-            outf("Summary");
-            outf("Passed: " + passed + " Failed: " + failed);
+            outf("Summary: ");
+            outf_test_result("passed: " + passed + " failed: " + failed);
             return;
         }
 
@@ -73,6 +99,9 @@ function rununits(myDiv, pyver) {
         // Print test name
         outf(test[0] + "\n");
 
+        // Reset PyAngelo Data
+        Sk.PyAngelo.reset()
+
         // Run test
         Sk.misceval.asyncToPromise(function() {
             return Sk.importMain(test[1], false, true);
@@ -80,7 +109,7 @@ function rununits(myDiv, pyver) {
             var found;
 
             // Print results
-            outf(Sk.buf);
+            outf_test_result(Sk.buf);
 
             // Check for internal errors
             if (Sk.buf.indexOf("Uncaught Error in") != -1) {
@@ -98,8 +127,8 @@ function rununits(myDiv, pyver) {
             return new Promise(function (resolve) { setTimeout(resolve, 0); });
         }).catch(function (err) {
             failed += 1;
-            outf("UNCAUGHT EXCEPTION: " + err);
-            outf(err.stack);
+            outf_error("UNCAUGHT EXCEPTION: " + err);
+            outf_error(err.stack);
         }).then(function () {
             runtest(tests, passed, failed)
         });

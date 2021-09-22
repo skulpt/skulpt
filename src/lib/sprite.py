@@ -1,19 +1,3 @@
-class Point():
-    def __init__(self, x = 0, y = 0):
-        self.x = x
-        self.y = y
-
-class Colour():
-    def __init__(self, r = 255, g = 255, b = 255, a = 1.0):
-        self.r = r
-        self.g = g
-        self.b = b
-        self.a = a
-
-def getPixelColour(x, y):
-    pixel = _getPixelColour(x, y)
-    return Colour(pixel["0"], pixel["1"], pixel["2"], pixel["3"])
-
 class Sprite:
     def __init__(self, image, x = 0, y = 0, width = 0, height = 0, opacity = 1.0):
         self.x = x
@@ -21,16 +5,16 @@ class Sprite:
         self.opacity = opacity
         self.image = loadImage(image)
         if width == 0:
-            self.width = _getImageWidth(self.image)
+            self.width = self.image.width
         else:
             self.width = width
         if height == 0:
-            self.height = _getImageHeight(self.image)
+            self.height = self.image.height
         else:
             self.height = height
 
     def draw(self, offsetX = 0, offsetY = 0):
-        image(self.image, self.x - offsetX, self.y - offsetY, self.width, self.height, opacity=self.opacity)
+        drawImage(self.image, self.x - offsetX, self.y - offsetY, self.width, self.height, opacity=self.opacity)
 
     def moveBy(self, x, y):
         self.x += x
@@ -67,22 +51,19 @@ class TextSprite(Sprite):
         self.fontName = fontName
         self.setColour(r, g, b)
         # Get Text Width
-        f = _getFont()
-        _setFont(str(self.fontSize) + "px " + self.fontName)
-        textMetrics = _measureText(self.text)
+        textMetrics = measureText(self.text, self.fontSize, self.fontName)
         self.width = abs(textMetrics["actualBoundingBoxLeft"]) + abs(textMetrics["actualBoundingBoxRight"])
         self.height = abs(textMetrics["actualBoundingBoxAscent"]) + abs(textMetrics["actualBoundingBoxDescent"])
-        _setFont(f)
 
     def center(self):
         self.x -= (self.width/2)
         self.y -= (self.height/2)
 
     def draw(self):
-        fs = _getFillStyle()
-        _setFillStyle("rgba(" + str(self.r) + "," + str(self.g) + "," + str(self.b) + "," + str(self.a)+ ")")
+        saveState()
+        fill(self.r, self.g, self.b, self.a)
         text(self.text, self.x, self.y, self.fontSize, self.fontName)
-        _setFillStyle(fs)
+        restoreState()
 
     def setColour(self, r, g, b, a = 1.0):
         self.r = r
@@ -115,21 +96,15 @@ class RectangleSprite(TextSprite):
         self._strokeWeight = weight
 
     def draw(self):
-        fs = _getFillStyle()
-        _setFillStyle("rgba(" + str(self.r) + "," + str(self.g) + "," + str(self.b) + "," + str(self.a)+ ")")
-        ss = _getStrokeStyle()
-        lw = _getLineWidth()
-        _setLineWidth(self._strokeWeight)
-        _setStrokeStyle("rgba(" + str(self.stroke_r) + "," + str(self.stroke_g) + "," + str(self.stroke_b) + "," + str(self.stroke_a)+ ")")
-        ds = _getDoStroke()
-        _setDoStroke(self._doStroke)
-
+        saveState()
+        fill(self.r, self.g, self.b, self.a)
+        strokeWeight(self._strokeWeight)
+        if self._doStroke:
+            stroke(self.stroke_r, self.stroke_g, self.stroke_b, self.stroke_a)
+        else:
+            noStroke()
         self.drawShape()
-
-        _setFillStyle(fs)
-        _setStrokeStyle(ss)
-        _setLineWidth(lw)
-        _setDoStroke(ds)
+        restoreState()
 
     def drawShape(self):
         rect(self.x, self.y, self.width, self.height)

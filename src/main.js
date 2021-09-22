@@ -43,7 +43,6 @@ require("./str.js");
 
 require("./function.js");
 require("./builtin.js");
-require("./builtin_pyangelo.js");
 require("./errors.js");
 require("./method.js");
 require("./misceval.js");
@@ -89,6 +88,6 @@ require("./builtindict.js");
 require("./constants.js");
 
 // PyAngelo
-require("./builtins_pyangelo.js");
+require("./builtin_pyangelo.js");
 
 /* jshint ignore:end */

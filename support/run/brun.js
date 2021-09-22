@@ -54,6 +54,7 @@ function brun (test, fname) {
         // Test file names
         var unit2 = getFileNames('test/unit');
         var unit3 = getFileNames('test/unit3');
+        var unitpyangelo = getFileNames('test/pyangelo');
 
         // Data files
         var filecontents = "";
@@ -69,6 +70,7 @@ function brun (test, fname) {
                 skulpt: skulpt,
                 test2: JSON.stringify(unit2),
                 test3: JSON.stringify(unit3),
+                test4: JSON.stringify(unitpyangelo),
                 files: filecontents
             });
         });
@@ -84,6 +86,14 @@ function brun (test, fname) {
 
         app.get('/test/unit3.js', function (req, res) {
             res.sendFile(path.resolve('support', 'tmp', 'unit3.js'), {}, function (err) {
+                if (err) {
+                    res.sendStatus(404);
+                }
+            });
+        });
+
+        app.get('/test/unitpyangelo.js', function (req, res) {
+            res.sendFile(path.resolve('support', 'tmp', 'unitpyangelo.js'), {}, function (err) {
                 if (err) {
                     res.sendStatus(404);
                 }
