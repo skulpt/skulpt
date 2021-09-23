@@ -1585,7 +1585,6 @@ Sk.PyAngelo.preparePage = function() {
     Sk.PyAngelo.canvas = document.getElementById("canvas");
     Sk.PyAngelo.ctx = Sk.PyAngelo.canvas.getContext("2d");
     Sk.PyAngelo.console = document.getElementById("console");
-    Sk.PyAngelo.debug = document.getElementById("debug");
     Sk.PyAngelo.canvas.addEventListener("keydown", _keydown);
     Sk.PyAngelo.canvas.addEventListener("keyup", _keyup);
     Sk.PyAngelo.canvas.addEventListener("mousemove", _canvasMouseMove);
