@@ -10,32 +10,35 @@ def sleeping_f(x):
     sleep(.01)
     return x
 
-class sleepingEmptyIter:
+class SleepingEmptyIter:
     def __iter__(self):
       return self
     def __next__(self):
       sleep(.01)
       raise StopIteration
 
-class sleepingClass:
+class SleepingClass:
     def __bytes__ (self):
         sleep(.01)
         return b'abc'
+    def __contains__(self, key):
+        sleep(.01)
+        return bool(key)
 
 class Test_Suspensions(unittest.TestCase):
     def test_min_max(self):
         x = [4, 1, 5]
         self.assertEqual(min(sleeping_gen(x)), 1)
         self.assertEqual(min(sleeping_gen(x), key=sleeping_f), 1)
-        self.assertRaises(ValueError, min, sleepingEmptyIter())
+        self.assertRaises(ValueError, min, SleepingEmptyIter())
         with self.assertRaises(ValueError):
-            min(sleepingEmptyIter(), key=sleeping_f)
+            min(SleepingEmptyIter(), key=sleeping_f)
 
         self.assertEqual(max(sleeping_gen(x)), 5)
         self.assertEqual(max(sleeping_gen(x), key=sleeping_f), 5)
-        self.assertRaises(ValueError, max, sleepingEmptyIter())
+        self.assertRaises(ValueError, max, SleepingEmptyIter())
         with self.assertRaises(ValueError):
-            max(sleepingEmptyIter(), key=sleeping_f)
+            max(SleepingEmptyIter(), key=sleeping_f)
     def test_any(self):
         self.assertEqual(any(sleeping_gen([0, 5, 0])), True)
         self.assertEqual(any(sleeping_gen([0, 0, 0])), False)
@@ -52,7 +55,22 @@ class Test_Suspensions(unittest.TestCase):
 
     def test_bytes(self):
         self.assertEqual(bytes(sleeping_gen([1,2,3])), bytes([1,2,3]))
-        self.assertEqual(bytes(sleepingClass()), b'abc')
+        self.assertEqual(bytes(SleepingClass()), b'abc')
+
+    def test_starred_assignment(self):
+        x = [1,2,3]
+        a, b, c = sleeping_gen(x)
+        self.assertEqual([a, b, c], x)
+        a, b, *c = sleeping_gen(x)
+        self.assertEqual((a, b, c), (1, 2, [3]))
+        *a, = sleeping_gen(x)
+        self.assertEqual(a, x)
+
+    def test_dunders(self):
+        x = SleepingClass()
+        # __contains__
+        self.assertFalse(0 in x)
+        self.assertTrue(1 in x)
 
 if __name__ == '__main__':
     unittest.main()

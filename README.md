@@ -4,7 +4,8 @@
 
 Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser! Python that runs on your iPad! Its being used several projects including, [Interactive Python Textbooks](http://interactivepython.org) -- You can see skulpt in action there.  Try out [some turtle graphics examples](http://interactivepython.org/runestone/static/thinkcspy/PythonTurtle/InstancesAHerdofTurtles.html) to see Skulpt in action.
 
-[![Build Status](https://travis-ci.org/skulpt/skulpt.png)](https://travis-ci.org/skulpt/skulpt)
+![Build Status](https://github.com/skulpt/skulpt/actions/workflows/test.yml/badge.svg)
+
 
 ## Origins
 
@@ -54,7 +55,7 @@ Building Skulpt is straightforward:
 2. Install node.js
 3. Install the required dependencies using `npm install`
 4. Navigate to the repository and run `npm run dist`
-5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist`folder
+5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist` folder
 
 
 ### Contributing

@@ -31,8 +31,8 @@ var $builtinmodule = function (name) {
     mod.printable = new Sk.builtin.str(mod.digits.v + mod.letters.v + mod.punctuation.v + " \t\n\r\x0b\x0c");
 
 
-    mod.split = new Sk.builtin.func(function (s, sep, maxsplit) {
-        return Sk.misceval.callsimArray(Sk.builtin.str.prototype['split'], [s, sep, maxsplit]);
+    mod.split = new Sk.builtin.func(function (...args) {
+        return Sk.misceval.callsimArray(Sk.builtin.str.prototype['split'], args);
     });
 
     /* Return a copy of word with only its first character capitalized. */

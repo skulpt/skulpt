@@ -14,7 +14,7 @@ class InputFunTests(unittest.TestCase):
                     if (prompt === "error") {
                         throw new Sk.builtin.ValueError("aarrrggg");
                     }
-                    resolve(Sk.builtin.str(prompt + "testing"));
+                    resolve(new Sk.builtin.str(prompt + "testing"));
                 });
             }
         """)

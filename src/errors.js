@@ -7,567 +7,392 @@
  * skulpt wrapper (i.e., runit) to present the exception message.
  */
 
-
 /**
  * @constructor
- * @param {...Object|null} args
+ * @param {...} args Typically called with a single string argument
  */
-Sk.builtin.BaseException = function (...args) {
-    var o;
-    if (!(this instanceof Sk.builtin.BaseException)) {
-        o = Object.create(Sk.builtin.BaseException.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-
-    this.traceback = [];
-
-    // If args[0] is a string then we're an internal call
-    if (typeof args[0] === "string") {
-        this.args = new Sk.builtin.tuple([new Sk.builtin.str(args[0])]);
-        if (args.length >= 3) {
-            // For errors occurring during normal execution, the line/col/etc
-            // of the error are populated by each stack frame of the runtime code,
-            // but we can seed it with the supplied parameters.
-            this.traceback.push({
-                lineno: args[2],
-                // if !this.args[1], this is an error, and the exception that causes it
-                // probably needs to be fixed, but we mark as "<unknown>" for now
-                filename: args[1] || "<unknown>",
-            });
+const BaseException = Sk.abstr.buildNativeClass("BaseException", {
+    constructor: function BaseException(arg, ...tb) {
+        // internally args is either a string
+        Sk.asserts.assert(this instanceof BaseException, "bad call to exception constructor, use 'new'");
+        // for all internal calls only the first argument is included in args
+        if (typeof arg === "string") {
+            arg = new Sk.builtin.str(arg);
         }
-    } else {
-        this.args = new Sk.builtin.tuple(args);
+        this.args = new Sk.builtin.tuple(arg ? [arg] : []);
+        // if we have tb args then it's an internal call indicating the pre instantiated traceback
+        // we should probably change this at some point because this only happens with SyntaxErrors
+        this.traceback = tb.length >= 2 ? [{ filename: tb[0] || "<unknown>", lineno: tb[1] }] : [];
+        this.cause = null;
+        this.context = null;
+        this.$d = new Sk.builtin.dict();
+    },
+    slots: /**@lends {BaseException}*/ {
+        tp$getattr: Sk.generic.getAttr,
+        tp$doc: "Common base class for all exceptions",
+        tp$new: BaseExc_new,
+        tp$init: BaseExc_init,
+        $r() {
+            let ret = this.tp$name;
+            ret += "(" + this.args.v.map((x) => Sk.misceval.objectRepr(x)).join(", ") + ")";
+            return new Sk.builtin.str(ret);
+        },
+        tp$str: BaseExc_str,
+    },
+    getsets: /**@lends {BaseException}*/ {
+        args: {
+            $get() {
+                return this.args;
+            },
+            $set(v) {
+                checkDeleting(v, "args");
+                this.args = new Sk.builtin.tuple(v);
+            },
+        },
+        __dict__: Sk.generic.getSetDict,
+        /**@todo */
+        // __traceback__: {},
+        // __context__: {},
+        // __cause__: {}
+    },
+    proto: /**@lends {BaseException}*/ {
+        toString() {
+            let ret = this.tp$name;
+            ret += ": " + this.tp$str().v;
+            if (this.traceback.length !== 0) {
+                ret += " on line " + this.traceback[0].lineno;
+            } else {
+                ret += " at <unknown>";
+            }
+            return ret;
+        },
+    },
+});
+
+// will be used when we implement other getsets
+function checkDeleting(v, name) {
+    if (v === undefined) {
+        throw new Sk.builtin.TypeError(`${name} may not be deleted`);
     }
-};
-Sk.abstr.setUpInheritance("BaseException", Sk.builtin.BaseException, Sk.builtin.object);
+}
 
+function BaseExc_new(args, kws) {
+    const instance = new this.constructor();
+    if (this.ht$type) {
+        BaseException.call(instance);
+    }
+    // called from python so do the args here
+    instance.args = new Sk.builtin.tuple(args.slice(0));
+    return instance;
+}
 
-Sk.builtin.BaseException.prototype.$r = function () {
-    let ret = this.tp$name;
-    ret += "(" + this.args.v.map((x) => Sk.misceval.objectRepr(x).v).join(", ") + ")";
-    return new Sk.builtin.str(ret);
-};
+function BaseExc_init(args, kws) {
+    Sk.abstr.checkNoKwargs(Sk.abstr.typeName(this), kws);
+    this.args = new Sk.builtin.tuple(args.slice(0));
+}
 
-Sk.builtin.BaseException.prototype.tp$str = function () {
+function BaseExc_str() {
     if (this.args.v.length <= 1) {
         return new Sk.builtin.str(this.args.v[0]);
     }
     return this.args.$r();
-};
+}
 
-Sk.builtin.BaseException.prototype.toString = function () {
-    let ret = this.tp$name;
-    ret += ": " + this.tp$str().v;
-
-    if (this.traceback.length !== 0) {
-        ret += " on line " + this.traceback[0].lineno;
-    } else {
-        ret += " at <unknown>";
+function complexExtends(base, name, doc, init, descriptors, str) {
+    descriptors || (descriptors = []);
+    const flags = init ? {} : { sk$solidBase: false };
+    const slots = { tp$init: init || BaseExc_init, tp$doc: doc };
+    if (str) {
+        slots.tp$str = str;
     }
 
+    return Sk.abstr.buildNativeClass(name, {
+        base,
+        constructor: function pyExc(...args) {
+            base.apply(this, args);
+            descriptors.forEach((getset, i) => {
+                this["$" + getset] = Sk.ffi.remapToPy(args[i]);
+            });
+        },
+        slots,
+        getsets: Object.fromEntries(
+            descriptors.map((getset) => [
+                getset,
+                {
+                    $get() {
+                        return this["$" + getset] || Sk.builtin.none.none$;
+                    },
+                    $set(v) {
+                        this["$" + getset] = v || Sk.builtin.none.none$;
+                    },
+                },
+            ])
+        ),
+        flags,
+    });
+}
 
-    return ret;
+function simpleExtends(base, name, doc) {
+    const tp$init = base.prototype.tp$init;
+    const slots = { tp$doc: doc, tp$init };
+    if (tp$init === BaseExc_init) {
+        slots.tp$new = BaseExc_new;
+    }
+    return Sk.abstr.buildNativeClass(name, {
+        base,
+        constructor: function pyExc(...args) {
+            base.apply(this, args);
+        },
+        slots,
+        flags: {
+            sk$solidBase: false,
+        },
+    });
+}
+
+const SystemExit = simpleExtends(BaseException, "SystemExit", "Request to exit from the interpreter.");
+const KeyboardInterrupt = simpleExtends(BaseException, "KeyboardInterrupt", "Program interrupted by user.");
+const GeneratorExit = simpleExtends(BaseException, "GeneratorExit", "Request that a generator exit.");
+
+const Exception = simpleExtends(BaseException, "Exception", "Common base class for all non-exit exceptions.");
+
+const StopIteration = complexExtends(
+    Exception,
+    "StopIteration",
+    "Signal the end from iterator.__next__().",
+    function init(args, kws) {
+        BaseExc_init.call(this, args, kws);
+        this.$value = args[0] || Sk.builtin.none.none$;
+    },
+    ["value"]
+);
+
+const StopAsyncIteration = simpleExtends(Exception, "StopAsyncIteration", "Signal the end from iterator.__anext__().");
+
+const ArithmeticError = simpleExtends(Exception, "ArithmeticError", "Base class for arithmetic errors.");
+const FloatingPointError = simpleExtends(ArithmeticError, "FloatingPointError", "Floating point operation failed.");
+const OverflowError = simpleExtends(ArithmeticError, "OverflowError", "Result too large to be represented.");
+const ZeroDivisionError = simpleExtends(
+    ArithmeticError,
+    "ZeroDivisionError",
+    "Second argument to a division or modulo operation was zero."
+);
+
+const AssertionError = simpleExtends(Exception, "AssertionError", "Assertion failed.");
+const AttributeError = simpleExtends(Exception, "AttributeError", "Attribute not found.");
+const BufferError = simpleExtends(Exception, "BufferError", "Buffer error.");
+const EOFError = simpleExtends(Exception, "EOFError", "Read beyond end of file.");
+
+const ImportError = complexExtends(
+    Exception,
+    "ImportError",
+    "Import can't find module, or can't find name in module.",
+    function init(args, kws) {
+        BaseExc_init.call(this, args);
+        const [name, path] = Sk.abstr.copyKeywordsToNamedArgs("ImportError", ["name", "path"], [], kws);
+        this.$name = name;
+        this.$path = path;
+        if (args.length === 1) {
+            this.$msg = args[0];
+        }
+    },
+    ["msg", "name", "path"],
+    function str() {
+        if (Sk.builtin.checkString(this.$msg)) {
+            return this.$msg;
+        }
+        return BaseExc_str.call(this);
+    }
+);
+
+const ModuleNotFoundError = simpleExtends(ImportError, "ModuleNotFoundError", "Module not found.");
+
+const LookupError = simpleExtends(Exception, "LookupError", "Base class for lookup errors.");
+const IndexError = simpleExtends(LookupError, "IndexError", "Sequence index out of range.");
+const KeyError = complexExtends(LookupError, "KeyError", "Mapping key not found.", null, null, function str() {
+    if (this.args.v.length === 1) {
+        return this.args.v[0].$r(); // prevents printing an empty string
+    }
+    return BaseExc_str.call(this);
+});
+
+const MemoryError = simpleExtends(Exception, "MemoryError", "Out of memory.");
+
+const NameError = simpleExtends(Exception, "NameError", "Name not found globally.");
+const UnboundLocalError = simpleExtends(
+    NameError,
+    "UnboundLocalError",
+    "Local name referenced but not bound to a value."
+);
+
+const OSError = complexExtends(Exception, "OSError", "Base class for I/O related errors.", function (args, kws) {
+    BaseExc_init.call(this, args, kws);
+});
+// const BlockingIOError = simpleExtends(OSError, "BlockingIOError", "I/O operation would block.");
+// const ChildProcessError = simpleExtends(OSError, "ChildProcessError", "Child process error.");
+// const ConnectionError = simpleExtends(OSError, "ConnectionError", "Connection error.");
+// const BrokenPipeError = simpleExtends(ConnectionError, "BrokenPipeError", "Broken pipe.");
+// const ConnectionAbortedError = simpleExtends(ConnectionError, "ConnectionAbortedError", "Connection aborted.");
+// const ConnectionRefusedError = simpleExtends(ConnectionError, "ConnectionRefusedError", "Connection refused.");
+// const ConnectionResetError = simpleExtends(ConnectionError, "ConnectionResetError", "Connection reset.");
+// const FileExistsError = simpleExtends(OSError, "FileExistsError", "File already exists.");
+const FileNotFoundError = simpleExtends(OSError, "FileNotFoundError", "File not found.");
+// const InterruptedError = simpleExtends(OSError, "InterruptedError", "Interrupted by signal.");
+// const IsADirectoryError = simpleExtends(OSError, "IsADirectoryError", "Operation doesn't work on directories.");
+// const NotADirectoryError = simpleExtends(OSError, "NotADirectoryError", "Operation only works on directories.");
+// const PermissionError = simpleExtends(OSError, "PermissionError", "Not enough permissions.");
+// const ProcessLookupError = simpleExtends(OSError, "ProcessLookupError", "Process not found.");
+const TimeoutError = simpleExtends(OSError, "TimeoutError", "Timeout expired.");
+
+const ReferenceError = simpleExtends(Exception, "ReferenceError", "Weak ref proxy used after referent went away.");
+
+const RuntimeError = simpleExtends(Exception, "RuntimeError", "Unspecified run-time error.");
+const NotImplementedError = simpleExtends(
+    RuntimeError,
+    "NotImplementedError",
+    "Method or function hasn't been implemented yet."
+);
+const RecursionError = simpleExtends(RuntimeError, "RecursionError", "Recursion limit exceeded.");
+
+const SyntaxError = complexExtends(
+    Exception,
+    "SyntaxError",
+    "Invalid syntax.",
+    function init(args, kws) {
+        BaseExc_init.call(this, args, kws);
+        if (args.length >= 1) {
+            this.$msg = args[0];
+        }
+        if (args.length === 2) {
+            const info = new Sk.builtin.tuple(args[1]).v;
+            this.$filename = info[0];
+            this.$lineno = info[1];
+            this.$offset = info[2];
+            this.$text = info[3];
+        }
+    },
+    ["msg", "filename", "lineno", "offset", "text" /*"print_file_and_line"*/],
+    function str() {
+        return BaseExc_str.call(this);
+    }
+);
+const IndentationError = simpleExtends(SyntaxError, "IndentationError", "Improper indentation.");
+const TabError = simpleExtends(IndentationError, "TabError", "Improper mixture of spaces and tabs.");
+
+const SystemError = simpleExtends(Exception, "SystemError", "Internal error in the Skulpt interpreter.");
+
+const TypeError = simpleExtends(Exception, "TypeError", "Inappropriate argument type.");
+const ValueError = simpleExtends(Exception, "ValueError", "Inappropriate argument value (of correct type).");
+
+const UnicodeError = simpleExtends(ValueError, "UnicodeError", "Unicode related error.");
+// these have some extra args - for now just keep them as simple extends
+const UnicodeDecodeError = simpleExtends(UnicodeError, "UnicodeDecodeError", "Unicode decoding error.");
+const UnicodeEncodeError = simpleExtends(UnicodeError, "UnicodeEncodeError", "Unicode encoding error.");
+// const UnicodeTranslateError = simpleExtends(UnicodeError, "UnicodeTranslateError", "Unicode translation error.");
+
+/**@todo we should support warnings */
+// const Warning = simpleExtends(Exception, "Warning", "Base class for warning categories.");
+// const DeprecationWarning = simpleExtends(Warning, "DeprecationWarning", "Base class for warnings about deprecated features.");
+// const PendingDeprecationWarning = simpleExtends(Warning, "PendingDeprecationWarning", "Base class for warnings about features which will be deprecated\nin the future.");
+// const RuntimeWarning = simpleExtends(Warning, "RuntimeWarning", "Base class for warnings about dubious runtime behavior.");
+// const SyntaxWarning = simpleExtends(Warning, "SyntaxWarning", "Base class for warnings about dubious syntax.");
+// const UserWarning = simpleExtends(Warning, "UserWarning", "Base class for warnings generated by user code.");
+// const FutureWarning = simpleExtends(Warning, "FutureWarning", "Base class for warnings about constructs that will change semantically\nin the future.");
+// const ImportWarning = simpleExtends(Warning, "ImportWarning", "Base class for warnings about probable mistakes in module imports");
+// const UnicodeWarning = simpleExtends(Warning, "UnicodeWarning", "Base class for warnings about Unicode related problems, mostly\nrelated to conversion problems.");
+// const BytesWarning = simpleExtends(Warning, "BytesWarning", "Base class for warnings about bytes and buffer related problems, mostly\nrelated to conversion from str or comparing to str.");
+// const ResourceWarning = simpleExtends(Warning, "ResourceWarning", "Base class for warnings about resource usage.");
+
+const pyExc = {
+    BaseException,
+    SystemExit,
+    KeyboardInterrupt,
+    GeneratorExit,
+    Exception,
+    StopIteration,
+    StopAsyncIteration,
+    ArithmeticError,
+    FloatingPointError,
+    OverflowError,
+    ZeroDivisionError,
+    AssertionError,
+    AttributeError,
+    BufferError,
+    EOFError,
+    ImportError,
+    ModuleNotFoundError,
+    LookupError,
+    IndexError,
+    KeyError,
+    MemoryError,
+    NameError,
+    UnboundLocalError,
+    OSError,
+    IOError: OSError,
+    // BlockingIOError,
+    // ChildProcessError,
+    // ConnectionError,
+    // BrokenPipeError,
+    // ConnectionAbortedError,
+    // ConnectionRefusedError,
+    // ConnectionResetError,
+    // FileExistsError,
+    FileNotFoundError,
+    // InterruptedError,
+    // IsADirectoryError,
+    // NotADirectoryError,
+    // PermissionError,
+    // ProcessLookupError,
+    TimeoutError,
+    ReferenceError,
+    RuntimeError,
+    NotImplementedError,
+    RecursionError,
+    SyntaxError,
+    IndentationError,
+    TabError,
+    SystemError,
+    TypeError,
+    ValueError,
+    UnicodeError,
+    UnicodeDecodeError,
+    UnicodeEncodeError,
+    // UnicodeTranslateError,
+    // Warning,
+    // DeprecationWarning,
+    // PendingDeprecationWarning,
+    // RuntimeWarning,
+    // SyntaxWarning,
+    // UserWarning,
+    // FutureWarning,
+    // ImportWarning,
+    // UnicodeWarning,
+    // BytesWarning,
+    // ResourceWarning,
 };
 
-// Create a descriptor to return the 'args' of an exception.
-// This is a hack to get around a weird mismatch between builtin
-// objects and proper types
-Sk.builtin.BaseException.prototype.args = {
-    tp$descr_get: function(self, clstype) {
-        return self.args;
-    }
-};
+Object.assign(Sk.builtin, pyExc);
 
-Sk.exportSymbol("Sk.builtin.BaseException", Sk.builtin.BaseException);
-
-/**
- * @constructor
- * @extends Sk.builtin.BaseException
- * @param {...*} args
- */
-Sk.builtin.Exception = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.Exception)) {
-        o = Object.create(Sk.builtin.Exception.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.BaseException.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("Exception", Sk.builtin.Exception, Sk.builtin.BaseException);
-Sk.exportSymbol("Sk.builtin.Exception", Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.AssertionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.AssertionError)) {
-        o = Object.create(Sk.builtin.AssertionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("AssertionError", Sk.builtin.AssertionError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.AssertionError", Sk.builtin.AssertionError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.AttributeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.AttributeError)) {
-        o = Object.create(Sk.builtin.AttributeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("AttributeError", Sk.builtin.AttributeError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.ImportError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ImportError)) {
-        o = Object.create(Sk.builtin.ImportError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("ImportError", Sk.builtin.ImportError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.IndentationError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IndentationError)) {
-        o = Object.create(Sk.builtin.IndentationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("IndentationError", Sk.builtin.IndentationError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.IndexError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IndexError)) {
-        o = Object.create(Sk.builtin.IndexError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("IndexError", Sk.builtin.IndexError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.LookupError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.LookupError)) {
-        o = Object.create(Sk.builtin.LookupError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("LookupError", Sk.builtin.LookupError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.LookupError", Sk.builtin.LookupError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.KeyError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.KeyError)) {
-        o = Object.create(Sk.builtin.KeyError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.LookupError.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("KeyError", Sk.builtin.KeyError, Sk.builtin.LookupError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.NameError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NameError)) {
-        o = Object.create(Sk.builtin.NameError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("NameError", Sk.builtin.NameError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.UnboundLocalError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnboundLocalError)) {
-        o = Object.create(Sk.builtin.UnboundLocalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("UnboundLocalError", Sk.builtin.UnboundLocalError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.OverflowError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.OverflowError)) {
-        o = Object.create(Sk.builtin.OverflowError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("OverflowError", Sk.builtin.OverflowError, Sk.builtin.Exception);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.SyntaxError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SyntaxError)) {
-        o = Object.create(Sk.builtin.SyntaxError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SyntaxError", Sk.builtin.SyntaxError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.RuntimeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.RuntimeError)) {
-        o = Object.create(Sk.builtin.RuntimeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("RuntimeError", Sk.builtin.RuntimeError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.RuntimeError", Sk.builtin.RuntimeError);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.SuspensionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SuspensionError)) {
-        o = Object.create(Sk.builtin.SuspensionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SuspensionError", Sk.builtin.SuspensionError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.SuspensionError", Sk.builtin.SuspensionError);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.BaseException
- * @param {...*} args
- */
-Sk.builtin.SystemExit = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SystemExit)) {
-        o = Object.create(Sk.builtin.SystemExit.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.BaseException.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SystemExit", Sk.builtin.SystemExit, Sk.builtin.BaseException);
-Sk.exportSymbol("Sk.builtin.SystemExit", Sk.builtin.SystemExit);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.TypeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TypeError)) {
-        o = Object.create(Sk.builtin.TypeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("TypeError", Sk.builtin.TypeError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.TypeError", Sk.builtin.TypeError);
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.ValueError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ValueError)) {
-        o = Object.create(Sk.builtin.ValueError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("ValueError", Sk.builtin.ValueError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.ValueError", Sk.builtin.ValueError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.ZeroDivisionError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ZeroDivisionError)) {
-        o = Object.create(Sk.builtin.ZeroDivisionError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("ZeroDivisionError", Sk.builtin.ZeroDivisionError, Sk.builtin.Exception);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.TimeLimitError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.TimeLimitError)) {
-        o = Object.create(Sk.builtin.TimeLimitError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("TimeLimitError", Sk.builtin.TimeLimitError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.TimeLimitError", Sk.builtin.TimeLimitError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.IOError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.IOError)) {
-        o = Object.create(Sk.builtin.IOError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("IOError", Sk.builtin.IOError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.IOError", Sk.builtin.IOError);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.NotImplementedError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NotImplementedError)) {
-        o = Object.create(Sk.builtin.NotImplementedError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("NotImplementedError", Sk.builtin.NotImplementedError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.NotImplementedError", Sk.builtin.NotImplementedError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.NegativePowerError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.NegativePowerError)) {
-        o = Object.create(Sk.builtin.NegativePowerError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("NegativePowerError", Sk.builtin.NegativePowerError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.NegativePowerError", Sk.builtin.NegativePowerError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {*} nativeError
- * @param {...*} args
- */
-Sk.builtin.ExternalError = function (nativeError, args) {
-    var o;
-    if (!(this instanceof Sk.builtin.ExternalError)) {
-        o = Object.create(Sk.builtin.ExternalError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    // Make the first argument a string, so it can be printed in Python without errors,
-    // but save a reference to the real thing for Javascript consumption
-    args = Array.prototype.slice.call(arguments);
-    this.nativeError = args[0];
-    if (!(args[0] instanceof Sk.builtin.str)) {
-        args[0] = ""+args[0];
-    }
-    Sk.builtin.Exception.apply(this, args);
-};
-Sk.abstr.setUpInheritance("ExternalError", Sk.builtin.ExternalError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.ExternalError", Sk.builtin.ExternalError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.OperationError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.OperationError)) {
-        o = Object.create(Sk.builtin.OperationError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("OperationError", Sk.builtin.OperationError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.OperationError", Sk.builtin.OperationError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.SystemError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.SystemError)) {
-        o = Object.create(Sk.builtin.SystemError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("SystemError", Sk.builtin.SystemError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.SystemError", Sk.builtin.SystemError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.UnicodeDecodeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnicodeDecodeError)) {
-        o = Object.create(Sk.builtin.UnicodeDecodeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("UnicodeDecodeError", Sk.builtin.UnicodeDecodeError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.UnicodeDecodeError", Sk.builtin.UnicodeDecodeError);
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.UnicodeEncodeError = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.UnicodeEncodeError)) {
-        o = Object.create(Sk.builtin.UnicodeEncodeError.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("UnicodeEncodeError", Sk.builtin.UnicodeEncodeError, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.UnicodeEncodeError", Sk.builtin.UnicodeEncodeError);
-
-
-/**
- * @constructor
- * @extends Sk.builtin.Exception
- * @param {...*} args
- */
-Sk.builtin.StopIteration = function (args) {
-    var o;
-    if (!(this instanceof Sk.builtin.StopIteration)) {
-        o = Object.create(Sk.builtin.StopIteration.prototype);
-        o.constructor.apply(o, arguments);
-        return o;
-    }
-    Sk.builtin.Exception.apply(this, arguments);
-};
-Sk.abstr.setUpInheritance("StopIteration", Sk.builtin.StopIteration, Sk.builtin.Exception);
-Sk.exportSymbol("Sk.builtin.StopIteration", Sk.builtin.StopIteration);
-
+Sk.builtin.ExternalError = Sk.abstr.buildNativeClass("ExternalError", {
+    constructor: function ExternalError(...args) {
+        this.nativeError = args[0];
+        if (!Sk.builtin.checkString(this.nativeError)) {
+            args[0] = this.nativeError.toString();
+            if (args[0].startsWith("RangeError: Maximum call")) {
+                args[0] = "Maximum call stack size exceeded";
+                return new RecursionError(...args);
+            }
+        }
+        Exception.apply(this, args);
+    },
+    base: Exception,
+});
 
 // TODO: Extract into sys.exc_info(). Work out how the heck
 // to find out what exceptions are being processed by parent stack frames...
-Sk.builtin.getExcInfo = function(e) {
-    var v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
-
+Sk.builtin.getExcInfo = function (e) {
+    const v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
     // TODO create a Traceback object for the third tuple element
 
     return new Sk.builtin.tuple(v);
 };
-// NOT exported

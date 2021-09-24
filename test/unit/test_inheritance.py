@@ -8,8 +8,8 @@ object_methods = ["__repr__", "__str__", "__hash__", "__eq__", "__ne__",
 numeric_methods = ["__abs__", "__neg__", "__pos__", "__int__", "__long__",
     "__float__", "__add__", "__radd__", "__sub__", "__rsub__", "__mul__",
     "__rmul__", "__div__", "__rdiv__", "__floordiv__", "__rfloordiv__",
-    "__mod__", "__rmod__", "__divmod__", "__rdivmod__", "__pow__", "__rpow__",
-    "__coerce__"]
+    "__mod__", "__rmod__", "__divmod__", "__rdivmod__", "__pow__", "__rpow__",]
+    # "__coerce__"]
 
 sequence_methods = ["__len__", "__iter__", "__contains__", "__getitem__",
     "__add__", "__mul__", "__rmul__"]

@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const minify = require('babel-minify');
+const { minify } = require('terser');
 
 /**
  * If this optional file exists in the top level directory, it will be
@@ -22,29 +22,34 @@ const minify = require('babel-minify');
  */
 const excludeFileName = "libexcludes.json";
 
-function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
-    dirs.forEach((dir) => {
+async function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
+    await Promise.all(dirs.map(async (dir) => {
         let files = fs.readdirSync(dir);
 
-        files.forEach((file) => {
+        await Promise.all(files.map(async (file) => {
             let fullname = dir + '/' + file;
 
             if (!excludes.includes(fullname)) {
                 let stat = fs.statSync(fullname)
 
                 if (recursive && stat.isDirectory()) {
-                    processDirectories([fullname], recursive, exts, ret, minifyjs, excludes);
+                    await processDirectories([fullname], recursive, exts, ret, minifyjs, excludes);
                 } else if (stat.isFile()) {
                     let ext = path.extname(file);
                     if (exts.includes(ext)) {
                         let contents = fs.readFileSync(fullname, 'utf8');
                         if (minifyjs && (ext == ".js")) {
-                            let result = minify(contents, {
-                                mangle: {
-                                    keepFnName: true,
+                            let result = await minify(contents, {
+                                compress: {
+                                    keep_classnames: true,
+                                    keep_fnames: true,
+                                    drop_debugger: false,
+                                    typeofs: false,
                                 },
-                                deadcode: {
-                                    keepFnName: true,
+                                mangle: {
+                                    keep_classnames: true,
+                                    keep_fnames: true,
+                                    safari10: true,
                                 },
                             });
                             contents = result.code;
@@ -53,12 +58,12 @@ function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes) {
                     }
                 }
             }
-        });
-    });
+        }));
+    }));
 };
 
 
-function buildJsonFile(name, dirs, exts, outfile, options) {
+async function buildJsonFile(name, dirs, exts, outfile, options) {
     options = options || {};
     let recursive = options.recursive || false;
     let minifyjs = options.minifyjs || false;
@@ -68,35 +73,61 @@ function buildJsonFile(name, dirs, exts, outfile, options) {
 
     ret.files = {};
 
-    processDirectories(dirs, recursive, exts, ret, minifyjs, excludes);
+    await processDirectories(dirs, recursive, exts, ret, minifyjs, excludes);
 
     let contents = "Sk." + name + "=" + JSON.stringify(ret);
     fs.writeFileSync(outfile, contents, 'utf8');
     console.log("Updated " + outfile + ".");
 }
 
-if (process.argv.includes("internal")) {
-    buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
-} else if (process.argv.includes("builtin")) {
-    let excludes = [];
-    if (fs.existsSync(excludeFileName)) {
-        excludes = JSON.parse(fs.readFileSync(excludeFileName));
-    }
-    let opts = {
-        recursive: true,
-        minifyjs: true,
-        excludes: excludes
-    };
+async function main() {
+    if (process.argv.includes("internal")) {
+        // await buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
+    } else if (process.argv.includes("builtin")) {
+        let excludes = [];
+        if (fs.existsSync(excludeFileName)) {
+            excludes = JSON.parse(fs.readFileSync(excludeFileName));
+        }
+        let opts = {
+            recursive: true,
+            minifyjs: true,
+            excludes: excludes
+        };
 
-    buildJsonFile("builtinFiles", ["src/builtin", "src/lib"], [".js", ".py"], "dist/skulpt-stdlib.js", opts)
-} else if (process.argv.includes("unit2")) {
-    if (!fs.existsSync("support/tmp")) {
-	fs.mkdirSync("support/tmp");
+        await buildJsonFile(
+            "builtinFiles",
+            ["src/builtin", "src/lib"],
+            [".js", ".py"],
+            "dist/skulpt-stdlib.js",
+            opts
+        );
+    } else if (process.argv.includes("unit2")) {
+        if (!fs.existsSync("support/tmp")) {
+            fs.mkdirSync("support/tmp");
+        }
+        await buildJsonFile(
+            "unit2",
+            ["test/unit"],
+            [".py"],
+            "support/tmp/unit2.js",
+            { recursive: true }
+        );
+    } else if (process.argv.includes("unit3")) {
+        if (!fs.existsSync("support/tmp")) {
+            fs.mkdirSync("support/tmp");
+        }
+        await buildJsonFile(
+            "unit3",
+            ["test/unit3"],
+            [".py"],
+            "support/tmp/unit3.js"
+        );
     }
-    buildJsonFile("unit2", ["test/unit"], [".py"], "support/tmp/unit2.js", { recursive: true });
-} else if (process.argv.includes("unit3")) {
-    if (!fs.existsSync("support/tmp")) {
-	fs.mkdirSync("support/tmp");
-    }
-    buildJsonFile("unit3", ["test/unit3"], [".py"], "support/tmp/unit3.js");
 }
+
+main().then(() => {
+    console.log("wrapmodules done");
+}).catch((err) => {
+    console.log("wrapmodules FAILED");
+    console.log(err);
+});
