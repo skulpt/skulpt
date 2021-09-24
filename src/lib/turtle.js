@@ -1310,18 +1310,18 @@ function generateTurtleModule(_target) {
         proto.$setup.minArgs     = 0;
         proto.$setup.co_varnames = ["width", "height", "startx", "starty"];
 
-        proto.$register_shape = proto.$addshape = function(name, points) {
-            if (!points) {
+        proto.$register_shape = proto.$addshape = function(name, shape) {
+            if (!shape) {
                 return getAsset(name).then(function(asset) {
                     SHAPES[name] = asset;
                 });
             }
             else {
-                SHAPES[name] = points;
+                SHAPES[name] = shape;
             }
         };
         proto.$register_shape.minArgs = 1;
-        proto.$register_shape.co_varnames = ["name", "points"];
+        proto.$register_shape.co_varnames = ["name", "shape"];
         
         proto.$getshapes = function() {
             return Object.keys(SHAPES);
