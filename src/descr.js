@@ -19,7 +19,7 @@ function buildDescriptor(type_name, repr_name, descr_options) {
             d$check: descriptorCheck,
             d$set_check: descriptorSetCheck,
         }),
-        flags: { sk$acceptable_as_base_class: false },
+        flags: { sk$unacceptableBase: true },
     });
     return descr;
 }

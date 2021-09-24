@@ -846,7 +846,7 @@ function buildDictIterClass(typename, iternext, reversed) {
         methods: {
             __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
         },
-        flags: { sk$acceptable_as_base_class: false },
+        flags: { sk$unacceptableBase: true },
         proto: { next$item: itemIterNextCheckSize },
     });
 }

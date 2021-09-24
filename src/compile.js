@@ -623,9 +623,9 @@ Compiler.prototype.ccompare = function (e) {
 
     for (i = 0; i < n; ++i) {
         rhs = this.vexpr(e.comparators[i]);
-        out("$ret = Sk.builtin.bool(Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true));");
+        out("$ret = Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true);");
         this._checkSuspension(e);
-        out(fres, "=$ret;");
+        out(fres, "=Sk.builtin.bool($ret);");
         this._jumpfalse("$ret", done);
         cur = rhs;
     }
@@ -2909,7 +2909,7 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
     /* Every annotated class and module should have __annotations__. */
     if (this.u.hasAnnotations) {
-        this.u.varDeclsCode += "$loc.__annotations__ = new Sk.builtin.dict();";
+        this.u.varDeclsCode += "$loc.__annotations__ || ($loc.__annotations__ = new Sk.builtin.dict());";
     }
 };
 

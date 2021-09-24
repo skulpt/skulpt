@@ -1,19 +1,39 @@
 function $builtinmodule() {
     // set up some constants
-    const pyInt = Sk.builtin.int_;
-    const pyNone = Sk.builtin.none.none$;
-    const pyNotImplemented = Sk.builtin.NotImplemented.NotImplemented$;
-    const pyFloat = Sk.builtin.float_;
-    const pyStr = Sk.builtin.str;
-    const pyBytes = Sk.builtin.bytes;
-    const pyTuple = Sk.builtin.tuple;
-    const pyTrue = Sk.builtin.bool.true$;
-    const pyCall = Sk.misceval.callsimArray;
-    const pyCallOrSuspend = Sk.misceval.callsimOrSuspendArray;
-
-    const { isTrue, richCompareBool, asIndexOrThrow, asIndexSized, objectRepr, opAllowsEquality } = Sk.misceval;
+    const {
+        isTrue,
+        richCompareBool,
+        asIndexOrThrow,
+        asIndexSized,
+        objectRepr,
+        opAllowsEquality,
+        callsimArray: pyCall,
+        callsimOrSuspendArray: pyCallOrSuspend,
+    } = Sk.misceval;
     const { numberBinOp, typeName, buildNativeClass, checkArgsLen, objectHash, copyKeywordsToNamedArgs } = Sk.abstr;
-    const { TypeError, ValueError, OverflowError, ZeroDivisionError, NotImplementedError, checkNumber, checkFloat, checkString, checkInt, asnum$, round } = Sk.builtin;
+    const {
+        int_: pyInt,
+        float_: pyFloat,
+        str: pyStr,
+        bytes: pyBytes,
+        tuple: pyTuple,
+        bool: { true$: pyTrue },
+        none: { none$: pyNone },
+        NotImplemented: { NotImplemented$: pyNotImplemented },
+        TypeError,
+        ValueError,
+        OverflowError,
+        ZeroDivisionError,
+        NotImplementedError,
+        checkNumber,
+        checkFloat,
+        checkString,
+        checkInt,
+        asnum$,
+        round,
+        getattr,
+    } = Sk.builtin;
+    const { remapToPy: toPy, remapToJs: toJs } = Sk.ffi;
     const intRound = (val) => round(val).nb$int(); // because python 2 returns a float.
     const binOp = numberBinOp;
 
@@ -461,7 +481,12 @@ function $builtinmodule() {
             }
         }
 
-        function _check_date_fields(year, month, day) {
+        function _check_date_fields(year, month = null, day = null) {
+            if (month === null || day === null) {
+                const arg = day === null ? "day" : "month";
+                const pos = day === null ? "3" : "2";
+                throw new TypeError(`function missing required argument '${arg}' (pos ${pos})`);
+            }
             year = asIndexOrThrow(year);
             month = asIndexOrThrow(month);
             day = asIndexOrThrow(day);
@@ -768,12 +793,14 @@ function $builtinmodule() {
                     $flags: { NoArgs: true },
                     $doc: "Total seconds in the duration.",
                 },
-                // __reduce__: {
-                //     $meth: __reduce__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce__() -> (cls, state)",
-                // },
+                __reduce__: {
+                    $meth() {
+                        return new pyTuple([this.ob$type, new pyTuple(this.$getState().map((x) => toPy(x)))]);
+                    },
+                    $flags: { NoArgs: true },
+                    $textsig: null,
+                    $doc: "__reduce__() -> (cls, state)",
+                },
             },
             getsets: {
                 days: {
@@ -830,7 +857,22 @@ function $builtinmodule() {
             },
             slots: {
                 tp$new(args, kws) {
-                    let [year, month, day] = copyKeywordsToNamedArgs("date", ["year", "month", "day"], args, kws, [pyNone, pyNone]);
+                    let [year, month, day] = copyKeywordsToNamedArgs("date", ["year", "month", "day"], args, kws, [
+                        null,
+                        null,
+                    ]);
+                    let asBytes;
+                    if (
+                        month === null &&
+                        year instanceof pyBytes &&
+                        (asBytes = year.valueOf()).length === 4 &&
+                        1 <= asBytes[2] &&
+                        asBytes[2] <= 12
+                    ) {
+                        const self = new this.constructor();
+                        self.$setState(asBytes);
+                        return self;
+                    }
                     [year, month, day] = _check_date_fields(year, month, day);
                     if (this === date.prototype) {
                         return new date(year, month, day);
@@ -1080,12 +1122,14 @@ function $builtinmodule() {
                     $textsig: null,
                     $doc: "Return date with new specified fields.",
                 },
-                // __reduce__: {
-                //     $meth: __reduce__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce__() -> (cls, state)",
-                // },
+                __reduce__: {
+                    $meth() {
+                        return new pyTuple([this.ob$type, new pyTuple([this.$getState()])]);
+                    },
+                    $flags: { NoArgs: true },
+                    $textsig: null,
+                    $doc: "__reduce__() -> (cls, state)",
+                },
             },
             getsets: {
                 year: {
@@ -1116,6 +1160,13 @@ function $builtinmodule() {
                 $getState() {
                     const [yhi, ylo] = $divMod(this.$year, 256);
                     return new pyBytes([yhi, ylo, this.$month, this.$day]);
+                },
+                $setState(bytes) {
+                    const [yhi, ylo, month, day] = bytes;
+                    const year = yhi * 256 + ylo;
+                    this.$year = year;
+                    this.$month = month;
+                    this.$day = day;
                 },
                 $toOrdinal() {
                     return _ymd2ord(this.$year, this.$month, this.$day);
@@ -1194,12 +1245,33 @@ function $builtinmodule() {
                     $textsig: null,
                     $doc: "datetime in UTC -> datetime in local time.",
                 },
-                // __reduce__: {
-                //     $meth: __reduce__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "-> (cls, state)",
-                // },
+                __reduce__: {
+                    $meth() {
+                        let args, state;
+                        const getinitargs = getattr(this, new pyStr("__getinitargs__"), pyNone);
+                        if (getinitargs !== pyNone) {
+                            args = pyCall(getinitargs, []);
+                        } else {
+                            args = new pyTuple();
+                        }
+
+                        const getstate = getattr(this, new pyStr("__getstate__"), pyNone);
+                        if (getstate !== pyNone) {
+                            state = pyCall(getstate, []);
+                        } else {
+                            state = getattr(this, new pyStr("__dict__"), pyNone);
+                            state = isTrue(state) ? state : pyNone;
+                        }
+                        if (state === pyNone) {
+                            return new pyTuple([this.ob$type, args]);
+                        } else {
+                            return new pyTuple([this.ob$type, args, state]);
+                        }
+                    },
+                    $flags: { NoArgs: true },
+                    $textsig: null,
+                    $doc: "-> (cls, state)",
+                },
             },
         }));
 
@@ -1259,6 +1331,17 @@ function $builtinmodule() {
                         kws,
                         [int0, int0, int0, int0, pyNone, int0]
                     );
+                    let asBytes;
+                    if (
+                        hour instanceof pyBytes &&
+                        (asBytes = hour.valueOf()).length === 6 &&
+                        (asBytes[0] & 0x7f) < 24
+                    ) {
+                        // copy support
+                        const self = new this.constructor();
+                        self.$setState(asBytes, minute === int0 ? pyNone : minute);
+                        return self;
+                    }
                     [hour, minute, second, microsecond, fold] = _check_time_fields(hour, minute, second, microsecond, fold);
                     _check_tzinfo_arg(tzinfo);
                     if (this === time.prototype) {
@@ -1435,18 +1518,22 @@ function $builtinmodule() {
                     $textsig: null,
                     $doc: "Return time with new specified fields.",
                 },
-                // __reduce_ex__: {
-                //     $meth: __reduce_ex__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce_ex__(proto) -> (cls, state)",
-                // },
-                // __reduce__: {
-                //     $meth: __reduce__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce__() -> (cls, state)",
-                // },
+                __reduce_ex__: {
+                    $meth(protocol) {
+                        return new pyTuple([this.ob$type, new pyTuple(this.$getState(toJs(protocol)))]);
+                    },
+                    $flags: { OneArg: true },
+                    $textsig: null,
+                    $doc: "__reduce_ex__(proto) -> (cls, state)",
+                },
+                __reduce__: {
+                    $meth() {
+                        return this.tp$getattr(new pyStr("__reduce_ex__")).tp$call([new pyInt(2)]);
+                    },
+                    $flags: { NoArgs: true },
+                    $textsig: null,
+                    $doc: "__reduce__() -> (cls, state)",
+                },
             },
             classmethods: {
                 fromisoformat: {
@@ -1530,11 +1617,11 @@ function $builtinmodule() {
                     const off = pyCall(this.tp$getattr(str_utcoff));
                     return _format_offset(off);
                 },
-                $getState() {
+                $getState(protocol = 3) {
                     let [_, us3] = $divMod(this.$micro, 256);
                     let [us1, us2] = $divMod(_, 256);
                     let h = this.$hour;
-                    if (this.$fold) {
+                    if (this.$fold && protocol > 3) {
                         h += 128;
                     }
                     const basestate = new pyBytes([h, this.$min, this.$sec, us1, us2, us3]);
@@ -1544,11 +1631,25 @@ function $builtinmodule() {
                         return [basestate, this.$tzinfo];
                     }
                 },
+                $setState(bytes, tzinfo) {
+                    const [h, min, sec, us1, us2, us3] = bytes;
+                    if (h > 127) {
+                        this.$fold = 1;
+                        this.$hour = h - 128;
+                    } else {
+                        this.$fold = 0;
+                        this.$hour = h;
+                    }
+                    this.$min = min;
+                    this.$sec = sec;
+                    this.$micro = (((us1 << 8) | us2) << 8) | us3;
+                    this.$tzinfo = tzinfo;
+                },
             },
         }));
 
         time.prototype.min = new time(0, 0, 0);
-        time.prototype.max = new time(23, 59, 999999);
+        time.prototype.max = new time(23, 59, 59, 999999);
         time.prototype.resolution = new timedelta();
 
         const datetime = (mod.datetime = buildNativeClass("datetime.datetime", {
@@ -1573,8 +1674,19 @@ function $builtinmodule() {
                         ["year", "month", "day", "hour", "minute", "second", "microsecond", "tzinfo", "fold"],
                         args,
                         kws,
-                        [int0, int0, int0, int0, pyNone, int0]
+                        [null, null, int0, int0, int0, int0, pyNone, int0]
                     );
+                    let asBytes;
+                    if (
+                        year instanceof pyBytes &&
+                        (asBytes = year.valueOf()).length === 10 &&
+                        (asBytes[2] & 0x7f) <= 12
+                    ) {
+                        // copy support
+                        const self = new this.constructor();
+                        self.$setState(asBytes, month === null ? pyNone : month);
+                        return self;
+                    }
                     [year, month, day] = _check_date_fields(year, month, day);
                     [hour, minute, second, microsecond, fold] = _check_time_fields(hour, minute, second, microsecond, fold);
                     _check_tzinfo_arg(tzinfo);
@@ -1895,18 +2007,22 @@ function $builtinmodule() {
                     $textsig: null,
                     $doc: "tz -> convert to local time in new timezone tz\n",
                 },
-                // __reduce_ex__: {
-                //     $meth: __reduce_ex__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce_ex__(proto) -> (cls, state)",
-                // },
-                // __reduce__: {
-                //     $meth: __reduce__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "__reduce__() -> (cls, state)",
-                // },
+                __reduce_ex__: {
+                    $meth(protocol) {
+                        return new pyTuple([this.ob$type, new pyTuple(this.$getState(toJs(protocol)))]);
+                    },
+                    $flags: { OneArg: true },
+                    $textsig: null,
+                    $doc: "__reduce_ex__(proto) -> (cls, state)",
+                },
+                __reduce__: {
+                    $meth() {
+                        return this.tp$getattr(new pyStr("__reduce_ex__")).tp$call([new pyInt(2)]);
+                    },
+                    $flags: { NoArgs: true },
+                    $textsig: null,
+                    $doc: "__reduce__() -> (cls, state)",
+                },
             },
             classmethods: {
                 now: {
@@ -2178,12 +2294,12 @@ function $builtinmodule() {
                     const zone = localtm.tp$getattr(new pyStr("tm_zone"));
                     return new timezone(timedelta.tp$call([int0, gmtoff]), zone);
                 },
-                $getState() {
+                $getState(protocol = 3) {
                     let [yhi, ylo] = $divMod(this.$year, 256);
                     let [_, us3] = $divMod(this.$micro, 256);
                     let [us1, us2] = $divMod(_, 256);
                     let m = this.$month;
-                    if (this.$fold) {
+                    if (this.$fold && protocol > 3) {
                         m += 128;
                     }
                     const basestate = new pyBytes([yhi, ylo, m, this.$day, this.$hour, this.$min, this.$sec, us1, us2, us3]);
@@ -2192,6 +2308,23 @@ function $builtinmodule() {
                     } else {
                         return [basestate, this.$tzinfo];
                     }
+                },
+                $setState(bytes, tzinfo) {
+                    const [yhi, ylo, m, day, hour, min, sec, us1, us2, us3] = bytes;
+                    if (m > 127) {
+                        this.$fold = 1;
+                        this.$month = m - 128;
+                    } else {
+                        this.$fold = 0;
+                        this.$month = m;
+                    }
+                    this.$year = yhi * 256 + ylo;
+                    this.$day = day;
+                    this.$hour = hour;
+                    this.$min = min;
+                    this.$sec = sec;
+                    this.$micro = (((us1 << 8) | us2) << 8) | us3;
+                    this.$tzinfo = tzinfo;
                 },
             },
         }));
@@ -2321,12 +2454,16 @@ function $builtinmodule() {
                     $textsig: null,
                     $doc: "datetime in UTC -> datetime in local time.",
                 },
-                // __getinitargs__: {
-                //     $meth: __getinitargs__,
-                //     $flags: {},
-                //     $textsig: null,
-                //     $doc: "pickle support",
-                // },
+                __getinitargs__: {
+                    $meth() {
+                        /** @todo - copy doesn't recognize getinitargs yet */
+                        if (this.$name === pyNone) {
+                            return new pyTuple([this.$offset]);
+                        }
+                        return new pyTuple([this.$offset, this.$name]);
+                    },
+                    $flags: { NoArgs: true },
+                }
             },
             proto: {
                 $maxoffset: new timedelta(0, 86399, 999999),

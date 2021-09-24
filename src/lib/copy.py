@@ -13,6 +13,18 @@ try:
     long
 except NameError:
     long = int
+try:
+    bytes
+except NameError:
+    bytes = str
+
+def check_notimplemented_state(x):
+    getstate = getattr(x, "__getstate__", None)
+    setstate = getattr(x, "__setstate__", None)
+    initargs = getattr(x, "__getinitargs__", None)
+    if getstate or setstate or initargs:
+        raise NotImplementedError("Skulpt does not yet support copying with user-defined __getstate__, __setstate__ or __getinitargs__()")
+
 
 def copy(x):
     cls = type(x)
@@ -21,18 +33,10 @@ def copy(x):
     copier = getattr(cls, "__copy__", None)
     if copier:
         return copier(x)
-    if cls in (type(None), int, float, bool, str, tuple, type, frozenset, long):
+    if cls in (type(None), int, float, bool, str, bytes, tuple, type, frozenset, long):
         return x
     if (cls == list) or (cls == dict) or (cls == set) or (cls == slice):
         return cls(x)
-    try:
-        getstate = getattr(x, "__getstate__", None)
-        setstate = getattr(x, "__setstate__", None)
-        initargs = getattr(x, "__getinitargs__", None)
-    except:
-        reductor = False
-    if getstate or setstate or initargs:
-        raise NotImplementedError("Skulpt does not yet support copying with user-defined __getstate__, __setstate__ or __getinitargs__()")
     reductor = getattr(x, "__reduce_ex__", None)
     if reductor:
         rv = reductor(4)
@@ -41,6 +45,7 @@ def copy(x):
         if reductor:
             rv = reductor()
         elif str(cls)[1:6] == "class":
+            check_notimplemented_state(x)
             copier = _copy_inst
             return copier(x)
         else:
@@ -81,19 +86,8 @@ def deepcopy(x, memo=None, _nil=[]):
     if y is not _nil:
         return y
     cls = type(x)
-    try:
-        getstate = getattr(x, "__getstate__", None)
-        setstate = getattr(x, "__setstate__", None)
-        initargs = getattr(x, "__getinitargs__", None)
-    except:
-        reductor = False
-    if getstate or setstate or initargs:
-        raise NotImplementedError("Skulpt does not yet support copying with user-defined __getstate__, __setstate__ or __getinitargs__()")
     copier = _deepcopy_dispatch.get(cls)
     if copier:
-        y = copier(x, memo)
-    elif str(cls)[1:6] == "class":
-        copier = _deepcopy_dispatch["InstanceType"]
         y = copier(x, memo)
     else:
         try:
@@ -111,13 +105,19 @@ def deepcopy(x, memo=None, _nil=[]):
                 if reductor:
                     rv = reductor(2)
                 else:
+                    rv = None
                     reductor = getattr(x, "__reduce__", None)
                     if reductor:
                         rv = reductor()
+                    elif str(cls)[1:6] == "class":
+                        check_notimplemented_state(x)
+                        copier = _deepcopy_dispatch["InstanceType"]
+                        y = copier(x, memo)
                     else:
                         raise Error(
                             "un(deep)copyable object of type %s" % cls)
-                y = _reconstruct(x, rv, 1, memo)
+                if rv is not None:
+                    y = _reconstruct(x, rv, 1, memo)
     memo[idx] = y
     _keep_alive(x, memo) # Make sure x lives at least as long as d
     return y
@@ -131,7 +131,7 @@ d[int] = _deepcopy_atomic
 d[float] = _deepcopy_atomic
 d[bool] = _deepcopy_atomic
 d[complex] = _deepcopy_atomic
-# d[bytes] = _deepcopy_atomic
+d[bytes] = _deepcopy_atomic
 d[str] = _deepcopy_atomic
 # try:
 # d[types.CodeType] = _deepcopy_atomic

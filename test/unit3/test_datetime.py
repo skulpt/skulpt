@@ -415,21 +415,21 @@ class TestTimeZone(unittest.TestCase):
     #         tz_copy = unpickler.loads(pickler.dumps(tz, proto))
     #         self.assertIs(tz_copy, tz)
 
-    # def test_copy(self):
-    #     for tz in self.ACDT, self.EST, timezone.min, timezone.max:
-    #         tz_copy = copy.copy(tz)
-    #         self.assertEqual(tz_copy, tz)
-    #     tz = timezone.utc
-    #     tz_copy = copy.copy(tz)
-    #     self.assertIs(tz_copy, tz)
+    def test_copy(self):
+        for tz in self.ACDT, self.EST, timezone.min, timezone.max:
+            tz_copy = copy.copy(tz)
+            self.assertEqual(tz_copy, tz)
+        tz = timezone.utc
+        tz_copy = copy.copy(tz)
+        self.assertIs(tz_copy, tz)
 
-    # def test_deepcopy(self):
-    #     for tz in self.ACDT, self.EST, timezone.min, timezone.max:
-    #         tz_copy = copy.deepcopy(tz)
-    #         self.assertEqual(tz_copy, tz)
-    #     tz = timezone.utc
-    #     tz_copy = copy.deepcopy(tz)
-    #     self.assertIs(tz_copy, tz)
+    def test_deepcopy(self):
+        for tz in self.ACDT, self.EST, timezone.min, timezone.max:
+            tz_copy = copy.deepcopy(tz)
+            self.assertEqual(tz_copy, tz)
+        tz = timezone.utc
+        tz_copy = copy.deepcopy(tz)
+        self.assertIs(tz_copy, tz)
 
     def test_offset_boundaries(self):
         # Test timedeltas close to the boundaries
@@ -5963,9 +5963,39 @@ class ZoneInfo(tzinfo):
 
 
 
-def load_tests(loader, standard_tests, pattern):
-    standard_tests.addTest(ZoneInfoCompleteTest())
-    return standard_tests
+# def load_tests(loader, standard_tests, pattern):
+#     standard_tests.addTest(ZoneInfoCompleteTest())
+#     return standard_tests
+
+
+# Skulpt only since we don't test pickle
+class CopySupport(unittest.TestCase):
+
+    def min_max_support(self, cls, copy):
+        self.assertEqual(cls.max, copy(cls.max))
+        self.assertEqual(cls.min, copy(cls.min))
+
+    def copy_support(self, copy=None):
+        now = datetime.today()
+        self.assertEqual(now, copy(now))
+        utcnow = datetime.utcnow()
+        self.assertEqual(utcnow, copy(utcnow))
+        self.min_max_support(datetime, copy)
+
+        today = date.today()
+        self.assertEqual(today, copy(today))
+        self.min_max_support(date, copy)
+        self.min_max_support(time, copy)
+        self.min_max_support(timedelta, copy)
+
+        now = datetime.now(timezone.utc)
+        self.assertEqual(now, copy(now))
+
+    def test_copy(self):
+        self.copy_support(copy=copy.copy)
+
+    def test_deepcopy(self):
+        self.copy_support(copy=copy.deepcopy)
 
 
 if __name__ == "__main__":

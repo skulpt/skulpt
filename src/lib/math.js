@@ -195,11 +195,7 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(sum);
     };
 
-    function gcd(a, b) {
-        // non ints not allowed in python 3.7.x
-        Sk.builtin.pyCheckType("a", "integer", Sk.builtin.checkInt(a));
-        Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
-
+    function _gcd_internal(_a, _b) {
         function _gcd(a, b) {
             if (b == 0) {
                 return a;
@@ -213,15 +209,13 @@ const $builtinmodule = function (name) {
             }
             return _biggcd(b, JSBI.remainder(a, b));
         }
-        let _a = Sk.builtin.asnum$(a);
-        let _b = Sk.builtin.asnum$(b);
+
         let res;
         if (typeof _a === "number" && typeof _b === "number") {
             _a = Math.abs(_a);
             _b = Math.abs(_b);
             res = _gcd(_a, _b);
             res = res < 0 ? -res : res; // python only returns positive gcds
-            return new Sk.builtin.int_(res);
         } else {
             _a = JSBI.BigInt(_a);
             _b = JSBI.BigInt(_b);
@@ -229,7 +223,29 @@ const $builtinmodule = function (name) {
             if (JSBI.lessThan(res, JSBI.__ZERO)) {
                 res = JSBI.multiply(res, JSBI.BigInt(-1));
             } 
-            return new Sk.builtin.int_(res.toString()); // int will convert strings
+        }
+
+        return res;
+    };
+
+    function gcd(a, b) {
+        // non ints not allowed in python 3.7.x
+        Sk.builtin.pyCheckType("a", "integer", Sk.builtin.checkInt(a));
+        Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
+
+        let _a = Sk.builtin.asnum$(a);
+        let _b = Sk.builtin.asnum$(b);
+
+        const res = _gcd_internal(_a, _b);
+        // res is positive
+        if (typeof res === "number") {
+            return new Sk.builtin.int_(res);
+        } else {
+            return new Sk.builtin.int_(res.toString());
+            // this is a bit of a hack - we're being lazy and passing a string to int_
+            // the int constructor will then decide if it should be a number or a BigInt depending on the size.
+            // really we should do:
+            // return  JSBI.lessThanOrEqual(res, JSBI.BigInt(Number.MAX_SAFE_INTEGER)) ? new Sk.builtin.int_(Number(res)) : new Sk.builtin.int_(res);
         }
     };
 
@@ -312,6 +328,63 @@ const $builtinmodule = function (name) {
 
     function isqrt(x) {
         throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
+    };
+
+    function lcm(...args) {
+        function abs(n) {
+            if (typeof n === "number") {
+                return new Sk.builtin.int_(Math.abs(n));
+            }
+
+            return JSBI.lessThan(n, JSBI.__ZERO)
+                ? new Sk.builtin.int_(JSBI.unaryMinus(n))
+                : new Sk.builtin.int_(n);
+        }
+
+        const nargs = args.length;
+
+        // lcm() without arguments returns 1
+        if (nargs === 0) return new Sk.builtin.int_(1);
+
+        // Test & convert all arguments
+        let i;
+        for (i = 0; i < nargs; ++i) {
+            args[i] = Sk.misceval.asIndexOrThrow(args[i]);
+        }
+
+        let result = args[0];
+        if (nargs === 1) {
+            return abs(result);
+        }
+
+        let arg;
+        for (i = 1; i < nargs; ++i) {
+            arg = args[i];
+
+            // If any of the arguments is zero, then the returned value is 0
+            if (arg === 0) return new Sk.builtin.int_(0);
+
+            if (typeof result === "number" && typeof arg === "number") {
+                let tmp = (result / _gcd_internal(result, arg)) * arg;
+                tmp = Math.abs(tmp);
+
+                // check the size - if we're too big reset the result and then fall through
+                result = tmp > Number.MAX_SAFE_INTEGER ? JSBI.BigInt(result) : tmp;
+            } else {
+                result = JSBI.BigInt(result);
+            }
+
+            // allow fall through - if result gets too big we'll need to redo the calculation with BigInts
+            if (typeof result !== "number") {
+                arg = JSBI.BigInt(arg);
+                result = JSBI.multiply(
+                    JSBI.divide(result, _gcd_internal(result, arg)),
+                    arg
+                );
+            }
+        }
+
+        return abs(result);
     };
 
     function ldexp(x, i) {
@@ -942,6 +1015,12 @@ const $builtinmodule = function (name) {
             $flags: { OneArg: true },
             $textsig: "($module, x, /)",
             $doc: "Return True if x is a NaN (not a number), and False otherwise.",
+        },
+        lcm: {
+            $meth: lcm,
+            $flags: { MinArgs: 0 },
+            $textsig: "($module, *integers, /)",
+            $doc: "Return the least common multiple of the specified integer arguments. If all arguments are nonzero, then the returned value is the smallest positive integer that is a multiple of all arguments. If any of the arguments is zero, then the returned value is 0. lcm() without arguments returns 1.",
         },
         ldexp: {
             $meth: ldexp,
