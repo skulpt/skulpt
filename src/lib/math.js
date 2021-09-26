@@ -430,8 +430,35 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.tuple([new Sk.builtin.float_(d), new Sk.builtin.float_(i)]);
     };
 
-    function perm(x) {
-        throw new Sk.builtin.NotImplementedError("math.perm() is not yet implemented in Skulpt");
+    function perm(n, k) {
+        if (k === undefined || Sk.builtin.checkNone(k)) {
+            return factorial(n);
+        }
+        n = Sk.misceval.asIndexOrThrow(n);
+        k = Sk.misceval.asIndexOrThrow(k);
+        if (n < 0) {
+            throw new Sk.builtin.ValueError("n must be an non-negative integer");
+        }
+        if (k < 0) {
+            throw new Sk.builtin.ValueError("k must be a non-negative integer");
+        }
+        if (k > n) {
+            return new Sk.builtin.int_(0);
+        }
+        if (k === 0) {
+            return new Sk.builtin.int_(1);
+        }
+        if (k > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("k must not exceed " + Number.MAX_SAFE_INTEGER);
+        }
+        const one = new Sk.builtin.int_(1);
+        n = new Sk.builtin.int_(n);
+        let tot = n;
+        for (let i = 1; i < k; i++) {
+            n = n.nb$subtract(one);
+            tot = tot.nb$multiply(n);
+        }
+        return tot;
     };
 
     function prod(x) {
@@ -1064,6 +1091,12 @@ const $builtinmodule = function (name) {
             $flags: {OneArg: true},
             $textsig: "($module, x, /)",
             $doc: "Return the fractional and integer parts of x.\n\nBoth results carry the sign of x and are floats."
+        },
+        perm: {
+            $meth: perm,
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: "($module, n, k=None, /)",
+            $doc: "'Number of ways to choose k items from n items without repetition and with order.\n\nEvaluates to n! / (n - k)! when k <= n and evaluates\nto zero when k > n.\n\nIf k is not specified or is None, then k defaults to n\nand the function returns n!.\n\nRaises TypeError if either of the arguments are not integers.\nRaises ValueError if either of the arguments are negative.'"
         },
         pow: {
             $meth: pow,
