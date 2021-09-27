@@ -358,8 +358,50 @@ const $builtinmodule = function (name) {
         }
     };
 
-    function isqrt(x) {
-        throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
+    function bigint_isqrt(n_js) {
+        // Algorithm taken from:
+        // https://github.com/python/cpython/blob/main/Modules/mathmodule.c#L1598-L1618
+        let c = n_js.toString(2).length; // bitlength of a positive bigint
+        c = Math.floor((c - 1) / 2);
+        let s = c.toString(2).length; // bitlength
+        const one = JSBI.BigInt(1);
+        const two = JSBI.BigInt(2);
+        const cBigInt = JSBI.BigInt(c);
+        const twoC = JSBI.multiply(two, cBigInt);
+        let a = one;
+        let d = JSBI.BigInt(0);
+        while (s > 0) {
+            s--;
+            let e = d;
+            d = JSBI.signedRightShift(cBigInt, JSBI.BigInt(s));
+            const leftShiftAmount = JSBI.subtract(JSBI.subtract(d, e), one);
+            const leftPart = JSBI.leftShift(a, leftShiftAmount);
+            const rightShiftAmount = JSBI.add(JSBI.subtract(JSBI.subtract(twoC, e), d), one);
+            const rightPart = JSBI.signedRightShift(n_js, rightShiftAmount);
+            a = JSBI.add(leftPart, JSBI.divide(rightPart, a));
+        }
+        let res = a;
+        if (JSBI.greaterThan(JSBI.multiply(res, res), n_js)) {
+            res = JSBI.subtract(res, one);
+        }
+        if (JSBI.lessThanOrEqual(res, JSBI.BigInt(Number.MAX_SAFE_INTEGER))) {
+            res = Number(res);
+        }
+        return new Sk.builtin.int_(res);
+    }
+
+    function isqrt(n) {
+        let n_js = Sk.misceval.asIndexOrThrow(n);
+        if (n_js < 0) {
+            throw new Sk.builtin.ValueError("isqrt() argument must be nonnegative");
+        }
+        if (n_js == 0) {
+            return new Sk.builtin.int_(0);
+        }
+        if (typeof(n_js) === "number") {
+            return new Sk.builtin.int_(Math.floor(Math.sqrt(n_js)));
+        }
+        return bigint_isqrt(n_js);
     };
 
     function lcm(...args) {
@@ -1080,6 +1122,12 @@ const $builtinmodule = function (name) {
             $flags: { OneArg: true },
             $textsig: "($module, x, /)",
             $doc: "Return True if x is a NaN (not a number), and False otherwise.",
+        },
+        isqrt: {
+            $meth: isqrt,
+            $flags: { OneArg: true },
+            $textsig: "($module, n, /)",
+            $doc: "Return the integer part of the square root of the input.",
         },
         lcm: {
             $meth: lcm,
