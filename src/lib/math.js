@@ -18,8 +18,40 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.ceil(_x));
     };
 
-    function comb(x, y) {
-        throw new Sk.builtin.NotImplementedError("math.comb() is not yet implemented in Skulpt");
+    function comb(n, k) {
+        let n_js = Sk.misceval.asIndexOrThrow(n);
+        let k_js = Sk.misceval.asIndexOrThrow(k);
+        if (n_js < 0) {
+            throw new Sk.builtin.ValueError("n must be an non-negative integer");
+        }
+        if (k_js < 0) {
+            throw new Sk.builtin.ValueError("k must be a non-negative integer");
+        }
+        if (k_js > n) {
+            return new Sk.builtin.int_(0);
+        }
+        n = new Sk.builtin.int_(n_js);
+        k = new Sk.builtin.int_(k_js);
+        let temp = Sk.ffi.remapToJs(n.nb$subtract(k));
+        if (temp < k_js) {
+            k_js = temp;
+        }
+        if (k_js === 0) {
+            return new Sk.builtin.int_(1);
+        }
+        if (k_js > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("min(n - k, k) must not exceed " + Number.MAX_SAFE_INTEGER);
+        }
+
+        const one = new Sk.builtin.int_(1);
+        let tot = n;
+        for (let i = 1; i < k_js; i++) {
+            n = n.nb$subtract(one);
+            temp = new Sk.builtin.int_(i + 1);
+            tot = tot.nb$multiply(n);
+            tot = tot.nb$floor_divide(temp);
+        }
+        return tot;
     };
 
     const get_sign = function (n) {
@@ -886,6 +918,12 @@ const $builtinmodule = function (name) {
             $flags: { OneArg: true },
             $textsig: "($module, x, /)",
             $doc: "Return the ceiling of x as an Integral.\n\nThis is the smallest integer >= x.",
+        },
+        comb: {
+            $meth: comb,
+            $flags: { MinArgs: 2, MaxArgs: 2 },
+            $textsig: "($module, n, k=None, /)",
+            $doc: "Number of ways to choose k items from n items without repetition and with order.\n\nEvaluates to n! / (n - k)! when k <= n and evaluates\nto zero when k > n.\n\nIf k is not specified or is None, then k defaults to n\nand the function returns n!.\n\nRaises TypeError if either of the arguments are not integers.\nRaises ValueError if either of the arguments are negative.",
         },
         copysign: {
             $meth: copysign,
