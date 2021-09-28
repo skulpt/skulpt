@@ -535,8 +535,68 @@ const $builtinmodule = function (name) {
         return tot;
     };
 
-    function prod(x) {
-        throw new Sk.builtin.NotImplementedError("math.prod() is not yet implemented in Skulpt");
+    function prod(args, kwargs) {
+        Sk.abstr.checkArgsLen("prod", args, 1, 1);
+        args = Sk.abstr.copyKeywordsToNamedArgs("prod", [null, "start"], args, kwargs, [new Sk.builtin.int_(1)]);
+
+        const it = Sk.abstr.iter(args[0]);
+        let tot = args[1];
+
+        function fastProdInt() {
+            return Sk.misceval.iterFor(it, (i) => {
+                if (i.constructor === Sk.builtin.int_) {
+                    tot = tot.nb$multiply(i);
+                } else if (i.constructor === Sk.builtin.float_) {
+                    tot = tot.nb$float().nb$multiply(i);
+                    return new Sk.misceval.Break("float");
+                } else {
+                    tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+                    return new Sk.misceval.Break("slow");
+                }
+            });
+        }
+
+        function fastProdFloat() {
+            return Sk.misceval.iterFor(it, (i) => {
+                if (i.constructor === Sk.builtin.float_ || i.constructor === Sk.builtin.int_) {
+                    tot = tot.nb$multiply(i);
+                } else {
+                    tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+                    return new Sk.misceval.Break("slow");
+                }
+            });
+        }
+
+        function slowProd() {
+            return Sk.misceval.iterFor(it, (i) => {
+                tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+            });
+        }
+
+        let prodType;
+        if (tot.constructor === Sk.builtin.int_) {
+            prodType = fastProdInt();
+        } else if (tot.constructor === Sk.builtin.float_) {
+            prodType = "float";
+        } else {
+            prodType = "slow";
+        }
+
+        return Sk.misceval.chain(
+            prodType,
+            (prodType) => {
+                if (prodType === "float") {
+                    return fastProdFloat();
+                }
+                return prodType;
+            },
+            (prodType) => {
+                if (prodType === "slow") {
+                    return slowProd();
+                }
+            },
+            () => tot
+        );
     };
 
     function remainder(x, y) {
@@ -1183,6 +1243,12 @@ const $builtinmodule = function (name) {
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($module, n, k=None, /)",
             $doc: "'Number of ways to choose k items from n items without repetition and with order.\n\nEvaluates to n! / (n - k)! when k <= n and evaluates\nto zero when k > n.\n\nIf k is not specified or is None, then k defaults to n\nand the function returns n!.\n\nRaises TypeError if either of the arguments are not integers.\nRaises ValueError if either of the arguments are negative.'"
+        },
+        prod: {
+            $meth: prod,
+            $flags: { FastCall: true },
+            $textsig: "($module, iterable, /, *, start=1)",
+            $doc: "Calculate the product of all the elements in the input iterable. The default start value for the product is 1.\n\nWhen the iterable is empty, return the start value. This function is intended specifically for use with numeric values and may reject non-numeric types."
         },
         pow: {
             $meth: pow,
