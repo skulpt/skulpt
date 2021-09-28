@@ -18,8 +18,40 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.float_(Math.ceil(_x));
     };
 
-    function comb(x, y) {
-        throw new Sk.builtin.NotImplementedError("math.comb() is not yet implemented in Skulpt");
+    function comb(n, k) {
+        let n_js = Sk.misceval.asIndexOrThrow(n);
+        let k_js = Sk.misceval.asIndexOrThrow(k);
+        if (n_js < 0) {
+            throw new Sk.builtin.ValueError("n must be an non-negative integer");
+        }
+        if (k_js < 0) {
+            throw new Sk.builtin.ValueError("k must be a non-negative integer");
+        }
+        if (k_js > n) {
+            return new Sk.builtin.int_(0);
+        }
+        n = new Sk.builtin.int_(n_js);
+        k = new Sk.builtin.int_(k_js);
+        let temp = Sk.ffi.remapToJs(n.nb$subtract(k));
+        if (temp < k_js) {
+            k_js = temp;
+        }
+        if (k_js === 0) {
+            return new Sk.builtin.int_(1);
+        }
+        if (k_js > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("min(n - k, k) must not exceed " + Number.MAX_SAFE_INTEGER);
+        }
+
+        const one = new Sk.builtin.int_(1);
+        let tot = n;
+        for (let i = 1; i < k_js; i++) {
+            n = n.nb$subtract(one);
+            temp = new Sk.builtin.int_(i + 1);
+            tot = tot.nb$multiply(n);
+            tot = tot.nb$floor_divide(temp);
+        }
+        return tot;
     };
 
     const get_sign = function (n) {
@@ -326,8 +358,50 @@ const $builtinmodule = function (name) {
         }
     };
 
-    function isqrt(x) {
-        throw new Sk.builtin.NotImplementedError("math.isqrt() is not yet implemented in Skulpt");
+    function bigint_isqrt(n_js) {
+        // Algorithm taken from:
+        // https://github.com/python/cpython/blob/main/Modules/mathmodule.c#L1598-L1618
+        let c = n_js.toString(2).length; // bitlength of a positive bigint
+        c = Math.floor((c - 1) / 2);
+        let s = c.toString(2).length; // bitlength
+        const one = JSBI.BigInt(1);
+        const two = JSBI.BigInt(2);
+        const cBigInt = JSBI.BigInt(c);
+        const twoC = JSBI.multiply(two, cBigInt);
+        let a = one;
+        let d = JSBI.BigInt(0);
+        while (s > 0) {
+            s--;
+            let e = d;
+            d = JSBI.signedRightShift(cBigInt, JSBI.BigInt(s));
+            const leftShiftAmount = JSBI.subtract(JSBI.subtract(d, e), one);
+            const leftPart = JSBI.leftShift(a, leftShiftAmount);
+            const rightShiftAmount = JSBI.add(JSBI.subtract(JSBI.subtract(twoC, e), d), one);
+            const rightPart = JSBI.signedRightShift(n_js, rightShiftAmount);
+            a = JSBI.add(leftPart, JSBI.divide(rightPart, a));
+        }
+        let res = a;
+        if (JSBI.greaterThan(JSBI.multiply(res, res), n_js)) {
+            res = JSBI.subtract(res, one);
+        }
+        if (JSBI.lessThanOrEqual(res, JSBI.BigInt(Number.MAX_SAFE_INTEGER))) {
+            res = Number(res);
+        }
+        return new Sk.builtin.int_(res);
+    }
+
+    function isqrt(n) {
+        let n_js = Sk.misceval.asIndexOrThrow(n);
+        if (n_js < 0) {
+            throw new Sk.builtin.ValueError("isqrt() argument must be nonnegative");
+        }
+        if (n_js == 0) {
+            return new Sk.builtin.int_(0);
+        }
+        if (typeof(n_js) === "number") {
+            return new Sk.builtin.int_(Math.floor(Math.sqrt(n_js)));
+        }
+        return bigint_isqrt(n_js);
     };
 
     function lcm(...args) {
@@ -430,12 +504,99 @@ const $builtinmodule = function (name) {
         return new Sk.builtin.tuple([new Sk.builtin.float_(d), new Sk.builtin.float_(i)]);
     };
 
-    function perm(x) {
-        throw new Sk.builtin.NotImplementedError("math.perm() is not yet implemented in Skulpt");
+    function perm(n, k) {
+        if (k === undefined || Sk.builtin.checkNone(k)) {
+            return factorial(n);
+        }
+        n = Sk.misceval.asIndexOrThrow(n);
+        k = Sk.misceval.asIndexOrThrow(k);
+        if (n < 0) {
+            throw new Sk.builtin.ValueError("n must be an non-negative integer");
+        }
+        if (k < 0) {
+            throw new Sk.builtin.ValueError("k must be a non-negative integer");
+        }
+        if (k > n) {
+            return new Sk.builtin.int_(0);
+        }
+        if (k === 0) {
+            return new Sk.builtin.int_(1);
+        }
+        if (k > Number.MAX_SAFE_INTEGER) {
+            throw new Sk.builtin.OverflowError("k must not exceed " + Number.MAX_SAFE_INTEGER);
+        }
+        const one = new Sk.builtin.int_(1);
+        n = new Sk.builtin.int_(n);
+        let tot = n;
+        for (let i = 1; i < k; i++) {
+            n = n.nb$subtract(one);
+            tot = tot.nb$multiply(n);
+        }
+        return tot;
     };
 
-    function prod(x) {
-        throw new Sk.builtin.NotImplementedError("math.prod() is not yet implemented in Skulpt");
+    function prod(args, kwargs) {
+        Sk.abstr.checkArgsLen("prod", args, 1, 1);
+        args = Sk.abstr.copyKeywordsToNamedArgs("prod", [null, "start"], args, kwargs, [new Sk.builtin.int_(1)]);
+
+        const it = Sk.abstr.iter(args[0]);
+        let tot = args[1];
+
+        function fastProdInt() {
+            return Sk.misceval.iterFor(it, (i) => {
+                if (i.constructor === Sk.builtin.int_) {
+                    tot = tot.nb$multiply(i);
+                } else if (i.constructor === Sk.builtin.float_) {
+                    tot = tot.nb$float().nb$multiply(i);
+                    return new Sk.misceval.Break("float");
+                } else {
+                    tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+                    return new Sk.misceval.Break("slow");
+                }
+            });
+        }
+
+        function fastProdFloat() {
+            return Sk.misceval.iterFor(it, (i) => {
+                if (i.constructor === Sk.builtin.float_ || i.constructor === Sk.builtin.int_) {
+                    tot = tot.nb$multiply(i);
+                } else {
+                    tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+                    return new Sk.misceval.Break("slow");
+                }
+            });
+        }
+
+        function slowProd() {
+            return Sk.misceval.iterFor(it, (i) => {
+                tot = Sk.abstr.numberBinOp(tot, i, "Mult");
+            });
+        }
+
+        let prodType;
+        if (tot.constructor === Sk.builtin.int_) {
+            prodType = fastProdInt();
+        } else if (tot.constructor === Sk.builtin.float_) {
+            prodType = "float";
+        } else {
+            prodType = "slow";
+        }
+
+        return Sk.misceval.chain(
+            prodType,
+            (prodType) => {
+                if (prodType === "float") {
+                    return fastProdFloat();
+                }
+                return prodType;
+            },
+            (prodType) => {
+                if (prodType === "slow") {
+                    return slowProd();
+                }
+            },
+            () => tot
+        );
     };
 
     function remainder(x, y) {
@@ -887,6 +1048,12 @@ const $builtinmodule = function (name) {
             $textsig: "($module, x, /)",
             $doc: "Return the ceiling of x as an Integral.\n\nThis is the smallest integer >= x.",
         },
+        comb: {
+            $meth: comb,
+            $flags: { MinArgs: 2, MaxArgs: 2 },
+            $textsig: "($module, n, k=None, /)",
+            $doc: "Number of ways to choose k items from n items without repetition and with order.\n\nEvaluates to n! / (n - k)! when k <= n and evaluates\nto zero when k > n.\n\nIf k is not specified or is None, then k defaults to n\nand the function returns n!.\n\nRaises TypeError if either of the arguments are not integers.\nRaises ValueError if either of the arguments are negative.",
+        },
         copysign: {
             $meth: copysign,
             $flags: { MinArgs: 2, MaxArgs: 2 },
@@ -1016,6 +1183,12 @@ const $builtinmodule = function (name) {
             $textsig: "($module, x, /)",
             $doc: "Return True if x is a NaN (not a number), and False otherwise.",
         },
+        isqrt: {
+            $meth: isqrt,
+            $flags: { OneArg: true },
+            $textsig: "($module, n, /)",
+            $doc: "Return the integer part of the square root of the input.",
+        },
         lcm: {
             $meth: lcm,
             $flags: { MinArgs: 0 },
@@ -1064,6 +1237,18 @@ const $builtinmodule = function (name) {
             $flags: {OneArg: true},
             $textsig: "($module, x, /)",
             $doc: "Return the fractional and integer parts of x.\n\nBoth results carry the sign of x and are floats."
+        },
+        perm: {
+            $meth: perm,
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+            $textsig: "($module, n, k=None, /)",
+            $doc: "'Number of ways to choose k items from n items without repetition and with order.\n\nEvaluates to n! / (n - k)! when k <= n and evaluates\nto zero when k > n.\n\nIf k is not specified or is None, then k defaults to n\nand the function returns n!.\n\nRaises TypeError if either of the arguments are not integers.\nRaises ValueError if either of the arguments are negative.'"
+        },
+        prod: {
+            $meth: prod,
+            $flags: { FastCall: true },
+            $textsig: "($module, iterable, /, *, start=1)",
+            $doc: "Calculate the product of all the elements in the input iterable. The default start value for the product is 1.\n\nWhen the iterable is empty, return the start value. This function is intended specifically for use with numeric values and may reject non-numeric types."
         },
         pow: {
             $meth: pow,
