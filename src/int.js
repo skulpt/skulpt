@@ -16,10 +16,15 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function int_(x) {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
-        if (typeof x === "number" || JSBI.__isBigInt(x)) {
+        if (typeof x === "number") {
+            if (v > -6 && v < 257) {
+                return INTERNED_INT[v];
+            }
+            v = x;
+        } else if (JSBI.__isBigInt(x)) {
             v = x;
         } else if (x === undefined) {
-            v = 0;
+            return INT_ZERO;
         } else if (typeof x === "string") {
             v = stringToNumberOrBig(x);
         } else if (x.nb$int) {
@@ -45,10 +50,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 x = args[0];
                 base = Sk.builtin.none.none$;
             } else {
-                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [
-                    new Sk.builtin.int_(0),
-                    Sk.builtin.none.none$,
-                ]);
+                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [INT_ZERO, Sk.builtin.none.none$]);
                 x = args[0];
                 base = args[1];
             }
@@ -206,7 +208,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         imag: {
             $get() {
-                return new Sk.builtin.int_(0);
+                return INT_ZERO;
             },
             $doc: "the imaginary part of a complex number",
         },
@@ -872,3 +874,10 @@ Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
 });
 
 const intProto = Sk.builtin.int_.prototype;
+
+
+const INT_INTERNED = [];
+for (let i = -5; i < 257; i++) {
+    INT_INTERNED[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
+}
+const INT_ZERO = INT_INTERNED[0];

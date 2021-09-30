@@ -409,33 +409,12 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
     }
 
     // handle identity and membership comparisons
+    // no longer called from compile code - left here for backwards compatibliity
     if (op === "Is") {
-        if (v_type === w_type) {
-            if (v === w) {
-                return true;
-            } else if (v_type === Sk.builtin.float_) {
-                return v.v === w.v;
-            } else if (v_type === Sk.builtin.int_) {
-                if (typeof v.v === "number" && typeof v.v === "number") {
-                    return v.v === w.v;
-                }
-                return JSBI.equal(JSBI.BigInt(v.v), JSBI.BigInt(w.v));
-            }
-        }
-        return false;
+        return v === w;
     }
 
     if (op === "IsNot") {
-        if (v_type !== w_type) {
-            return true;
-        } else if (v_type === Sk.builtin.float_) {
-            return v.v !== w.v;
-        } else if (v_type === Sk.builtin.int_) {
-            if (typeof v.v === "number" && typeof v.v === "number") {
-                return v.v !== w.v;
-            }
-            return JSBI.notEqual(JSBI.BigInt(v.v), JSBI.BigInt(w.v));
-        }
         return v !== w;
     }
 
@@ -468,7 +447,7 @@ Sk.misceval.richCompareBool = function (v, w, op, canSuspend) {
             return Sk.misceval.isTrue(ret);
         }
     }
-    if ((ret = v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
+    if ((ret= v[shortcut](w)) !== Sk.builtin.NotImplemented.NotImplemented$) {
         return Sk.misceval.isTrue(ret); 
     // techincally this is not correct along with the compile code see #1252
         // richcompare slots could return any pyObject ToDo - would require changing compile code
