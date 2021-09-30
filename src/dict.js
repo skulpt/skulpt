@@ -853,7 +853,7 @@ function buildDictIterClass(typename, iternext, reversed) {
 
 function itemIterNextCheckSize() {
     if (this.$version !== this.$orig.$version) {
-        if (this.$len !== this.$orig.get$size()) {
+        if (this.$seq.length !== this.$orig.get$size()) {
             throw new Sk.builtin.RuntimeError("dict changed size during iteration");
         }
         throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
