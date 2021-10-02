@@ -1306,7 +1306,7 @@ Sk.builtins["clear"] = new Sk.builtin.sk_method(
         $name: "clear",
         $flags: {
             NamedArgs: ["colour"],
-            Defaults: [Sk.builtins.DRACULA_BACKGROUND],
+            Defaults: [11],
         },
         $textsig: "($module colour /)",
         $doc:
