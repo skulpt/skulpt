@@ -56,7 +56,19 @@ Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 Sk.misceval.retryOptionalSuspensionOrThrow = function (susp, message) {
     while (susp instanceof Sk.misceval.Suspension) {
         if (!susp.optional) {
-            throw new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
+            const err = new Sk.builtin.SuspensionError(message || "Cannot call a function that blocks or suspends here");
+            let prev_susp = susp;
+            const tb = [];
+            while (prev_susp != null) {
+                if (prev_susp.$lineno) {
+                    // compile code added attributes so fill the traceback
+                    tb.push({ filename: prev_susp.$filename, lineno: prev_susp.$lineno, colno: prev_susp.$colno });
+                }
+                prev_susp = prev_susp.child;
+            }
+            tb.reverse();
+            err.traceback.push(...tb);
+            throw err;
         }
         susp = susp.resume();
     }
