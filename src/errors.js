@@ -373,6 +373,9 @@ const pyExc = {
 
 Object.assign(Sk.builtin, pyExc);
 
+
+Sk.builtin.SuspensionError = simpleExtends(Exception, "SuspensionError", "Unsupported Suspension in code.");
+
 Sk.builtin.ExternalError = Sk.abstr.buildNativeClass("ExternalError", {
     constructor: function ExternalError(...args) {
         this.nativeError = args[0];
