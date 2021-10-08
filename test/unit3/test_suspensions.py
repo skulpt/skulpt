@@ -25,6 +25,12 @@ class SleepingClass:
         sleep(.01)
         return bool(key)
 
+class SleepingDunderFail:
+    # __iter__ can't suspend (__next__ can)
+    def __iter__(self):
+        sleep(0.01)
+        return iter([0, 1, 2])
+
 class Test_Suspensions(unittest.TestCase):
     def test_min_max(self):
         x = [4, 1, 5]
@@ -71,6 +77,16 @@ class Test_Suspensions(unittest.TestCase):
         # __contains__
         self.assertFalse(0 in x)
         self.assertTrue(1 in x)
+    
+    def test_suspension_error(self):
+        x = SleepingDunderFail()
+        with self.assertRaises(Exception) as e:
+            for i in x:
+                pass
+        self.assertIn("Cannot call a function that blocks or suspends", str(e.exception))
+        self.assertTrue(repr(e.exception).startswith("SuspensionError"))
+
+
 
 if __name__ == '__main__':
     unittest.main()
