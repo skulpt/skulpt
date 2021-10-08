@@ -1352,6 +1352,9 @@ function strBytesRemainder(rhs) {
         }
     };
     ret = this.$jsstr().replace(regex, replFunc);
+    if (rhs instanceof Sk.builtin.tuple && index < rhs.sq$length()) {
+        throw new Sk.builtin.TypeError("not all arguments converted during string formatting");
+    }
     return new strBytesConstructor(ret);
 };
 

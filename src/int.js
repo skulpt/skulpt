@@ -92,7 +92,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         nb$ispositive() {
             const v = this.v;
-            return typeof v === "number" ? v < 0 : JSBI.greaterThanOrEqual(v, JSBI.__ZERO);
+            return typeof v === "number" ? v >= 0 : JSBI.greaterThanOrEqual(v, JSBI.__ZERO);
         },
         nb$bool() {
             return this.v !== 0; // should be fine not to check BigInt here

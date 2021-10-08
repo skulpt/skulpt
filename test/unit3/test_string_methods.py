@@ -2,12 +2,15 @@
 import unittest
 import re
 
+
 class StringMethodsTests(unittest.TestCase):
     def test_concat(self):
         self.assertEqual("O" + "K", "OK")
+
         def test(t):
             t = "O" + t
             return t
+
         self.assertEqual(test("K"), "OK")
         self.assertRaises(TypeError, lambda x: "s" + x, None)
 
@@ -25,23 +28,27 @@ class StringMethodsTests(unittest.TestCase):
         b = x[0:]
         self.assertEqual(a, "")
         self.assertEqual(b, x)
+
         def badsplice(x):
             return "abc"[x]
-        self.assertRaises(TypeError, lambda x:"abc"[x], 1.5)
+
+        self.assertRaises(TypeError, lambda x: "abc"[x], 1.5)
         s = "01234"
         self.assertEqual(s[-6:0], "")
         self.assertEqual(s[-6:], "01234")
         self.assertEqual(s[-6:-3], "01")
         self.assertEqual(s[-6:20], "01234")
+
         def foo(x, y):
             return "01234"[x:y]
-        self.assertRaises(TypeError, foo, "hi", [0,4])
+
+        self.assertRaises(TypeError, foo, "hi", [0, 4])
         self.assertRaises(TypeError, foo, -3000, 4.5)
 
     def test_len(self):
         self.assertEqual(len("abc"), 3)
         self.assertEqual(len(""), 0)
-        self.assertEqual(len(""*10), 0)
+        self.assertEqual(len("" * 10), 0)
 
     def test_contains(self):
         self.assertTrue("x" in "xyz")
@@ -58,32 +65,37 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(repr("weewaa"), "'weewaa'")
 
     def test_multiplication(self):
-        self.assertEqual("a"*15, "aaaaaaaaaaaaaaa")
-        self.assertEqual("dog"*19, "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog")
-        self.assertEqual(40*"weee", "weeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweee")
+        self.assertEqual("a" * 15, "aaaaaaaaaaaaaaa")
+        self.assertEqual("dog" * 19, "dogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdogdog")
+        self.assertEqual(40 * "weee",
+                         "weeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweeeweee")
 
         def foo(x, y):
             return x * y
-        self.assertRaises(TypeError,  foo, "a", "b")
-        self.assertRaises(TypeError,  foo, "a", 3.4)
-        self.assertRaises(TypeError,  foo, 3.4,  "a")
-        self.assertRaises(TypeError,  foo, "a", [2])
-        self.assertRaises(TypeError,  foo, [2], "b")
+
+        self.assertRaises(TypeError, foo, "a", "b")
+        self.assertRaises(TypeError, foo, "a", 3.4)
+        self.assertRaises(TypeError, foo, 3.4, "a")
+        self.assertRaises(TypeError, foo, "a", [2])
+        self.assertRaises(TypeError, foo, [2], "b")
 
     def test_percent_operator(self):
         self.assertEqual("formatting with just %d argument" % 1, "formatting with just 1 argument")
-        
-        self.assertEqual("%r is a repr and %s is a string" % ("this","this"), "'this' is a repr and this is a string")
-        self.assertEqual("I can also use a %(structure)s to format." % {'structure':'dictionary'}, "I can also use a dictionary to format.")
-        self.assertEqual("+%s+" % "hello","+hello+")
+
+        self.assertEqual("%r is a repr and %s is a string" % ("this", "this"), "'this' is a repr and this is a string")
+        self.assertEqual("I can also use a %(structure)s to format." % {'structure': 'dictionary'},
+                         "I can also use a dictionary to format.")
+        self.assertEqual("+%s+" % "hello", "+hello+")
         self.assertEqual("+%d+" % 10, "+10+")
-        self.assertEqual(("%c" % "a"),"a")
-        self.assertEqual('%c' % 34,'"')
-        self.assertEqual('%c' % 36,'$')
-        self.assertEqual('%d' % 10,"10")
-        self.assertEqual('%c' % 0x7f,'\x7f')
+        self.assertEqual(("%c" % "a"), "a")
+        self.assertEqual('%c' % 34, '"')
+        self.assertEqual('%c' % 36, '$')
+        self.assertEqual('%d' % 10, "10")
+        self.assertEqual('%c' % 0x7f, '\x7f')
+
         def f(x):
             return str("f(%s) called" % x)
+
         self.assertEqual(f(3), "f(3) called")
         self.assertEqual('%d' % 10.2, "10")
         self.assertEqual('%c' % 0x7f, '\x7f')
@@ -92,15 +104,17 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual('%-10s' % 'hello', "hello     ")
 
     def test_number_precision(self):
-        self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10,1.23,-1.23), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
-        self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+        self.assertEqual("%d %i %o %x %X %e %E %f %F" % (12, -12, -0O7, 0x4a, -0x4a, 2.3e10, 2.3E-10, 1.23, -1.23),
+                         "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10 1.230000 -1.230000")
+        self.assertEqual("%g %G %g %G" % (.00000123, .00000123, 1.4, -1.4), "1.23e-06 1.23E-06 1.4 -1.4")
         self.assertEqual("%g" % (.00000012), "1.2e-07")
         self.assertEqual("%g" % (.0000012), "1.2e-06")
         self.assertEqual("%g" % (.000012), "1.2e-05")
         self.assertEqual("%g %g" % (.0000012, .000012), "1.2e-06 1.2e-05")
         self.assertEqual("%g" % (.00012), "0.00012")
-        self.assertEqual("%d %i %o %x %X %e %E" % (12,-12,-0O7,0x4a,-0x4a,2.3e10,2.3E-10), "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
-        self.assertEqual("%g %G %g %G" % (.00000123,.00000123,1.4,-1.4), "1.23e-06 1.23E-06 1.4 -1.4")
+        self.assertEqual("%d %i %o %x %X %e %E" % (12, -12, -0O7, 0x4a, -0x4a, 2.3e10, 2.3E-10),
+                         "12 -12 -7 4a -4A 2.300000e+10 2.300000E-10")
+        self.assertEqual("%g %G %g %G" % (.00000123, .00000123, 1.4, -1.4), "1.23e-06 1.23E-06 1.4 -1.4")
 
     def test_encoding(self):
         # Unicode snowman: BMP emoji
@@ -192,7 +206,8 @@ class StringMethodsTests(unittest.TestCase):
 
             def __iter__(self):
                 # Gets pre-empted by __bytes__
-                return iter([1,2,3,4])
+                return iter([1, 2, 3, 4])
+
         self.assertEqual(bytes(C()), b'hello')
 
         # Construct from iterables
@@ -202,6 +217,7 @@ class StringMethodsTests(unittest.TestCase):
         # or give up
         class D:
             pass
+
         self.assertRaises(TypeError, lambda: bytes(D()))
 
         # Concatenate
@@ -209,7 +225,7 @@ class StringMethodsTests(unittest.TestCase):
         self.assertRaises(TypeError, lambda: b'x' + 'y')
 
         # Repeat
-        self.assertEqual(b'x'*3, b'xxx')
+        self.assertEqual(b'x' * 3, b'xxx')
 
         # Search
         self.assertTrue(b'y' in b'xyz')
@@ -236,6 +252,10 @@ class StringMethodsTests(unittest.TestCase):
         self.assertEqual(bytes.fromhex('2Ef0 F1f2 '), b'.\xf0\xf1\xf2')
         self.assertEqual(b'\xf0\xf1\xf2'.hex(), 'f0f1f2')
 
+    def test_divmod_error(self):
+        self.assertRaises(TypeError, lambda: "123d" % 321)
+        self.assertEqual('%(a)s' % {'a': 'foo', 'b': 'bar'}, 'foo')
+
+
 if __name__ == '__main__':
     unittest.main()
-    
