@@ -81,13 +81,16 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         // number slots
         nb$int() {
             let v = this.v;
+            if (!Number.isFinite(v)) {
+                if (v === Infinity || v === -Infinity) {
+                    throw new Sk.builtin.OverflowError("cannot convert float infinity to integer");
+                }
+                throw new Sk.builtin.ValueError("cannot convert float NaN to integer");
+            }
             if (v < 0) {
                 v = Math.ceil(v);
             } else {
                 v = Math.floor(v);
-            }
-            if (!Number.isInteger(v)) {
-                throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this) + " to integer");
             }
             if (Sk.builtin.int_.withinThreshold(v)) {
                 return new Sk.builtin.int_(v);
@@ -139,12 +142,12 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         nb$ispositive() {
             return this.v >= 0;
         },
-        ob$eq: numberSlot((v, w) => v == w),
-        ob$ne: numberSlot((v, w) => v != w),
-        ob$gt: numberSlot((v, w) => v > w),
-        ob$ge: numberSlot((v, w) => v >= w),
-        ob$lt: numberSlot((v, w) => v < w),
-        ob$le: numberSlot((v, w) => v <= w),
+        ob$eq: compareSlot((v, w) => v == w, JSBI.EQ),
+        ob$ne: compareSlot((v, w) => v != w, JSBI.NE),
+        ob$gt: compareSlot((v, w) => v > w, JSBI.GT),
+        ob$ge: compareSlot((v, w) => v >= w, JSBI.GE),
+        ob$lt: compareSlot((v, w) => v < w, JSBI.LT),
+        ob$le: compareSlot((v, w) => v <= w, JSBI.LE),
     },
     getsets: /**@lends {Sk.builtin.float_.prototype} */ {
         real: {
@@ -351,6 +354,26 @@ function numberSlot(f) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
         return f(v, w);
+    };
+}
+
+function compareSlot(doCompare, JSBI_ALT) {
+    return function (other) {
+        const v = this.v;
+        const w = other.v;
+        if (typeof w === "number") {
+            // pass
+        } else if (!JSBI.__isBigInt(w)) {
+            // not a number or a bigint
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        } else if (JSBI_ALT !== undefined) {
+            // if we're here we have JSBI.BigInt rather than a window.BigInt
+            // use the JSBI.EQ, JSBI.NE functions which are faster for comparisons
+            // use ==, >= etc will compare the strings which is not what we want
+            // if we have a window.BigInt just use ==, >= etc i.e. fall through to doCompare
+            return JSBI_ALT(v, w);
+        }
+        return doCompare(v, w);
     };
 }
 

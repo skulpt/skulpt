@@ -473,7 +473,7 @@ const $builtinmodule = function (name) {
         const _i = Sk.builtin.asnum$(i);
 
         if (_x == Infinity || _x == -Infinity || _x == 0 || isNaN(_x)) {
-            return x;
+            return new Sk.builtin.float_(_x);
         }
         const res = _x * Math.pow(2, _i);
         if (!isFinite(res)) {
@@ -759,7 +759,7 @@ const $builtinmodule = function (name) {
 
         let _x = Sk.builtin.asnum$(x);
         let res;
-        if (_x < 0) {
+        if (_x <= 0) {
             throw new Sk.builtin.ValueError("math domain error");
         } else if (Sk.builtin.checkFloat(x) || _x < Number.MAX_SAFE_INTEGER) {
             res = Math.log2(_x);
@@ -779,7 +779,7 @@ const $builtinmodule = function (name) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
         let _x = Sk.builtin.asnum$(x);
         let res;
-        if (_x < 0) {
+        if (_x <= 0) {
             throw new Sk.builtin.ValueError("math domain error");
         } else if (Sk.builtin.checkFloat(x) || _x < Number.MAX_SAFE_INTEGER) {
             res = Math.log10(_x);
