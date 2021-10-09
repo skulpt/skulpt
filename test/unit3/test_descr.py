@@ -3413,9 +3413,7 @@ order (MRO) for bases """
             # __slots__ = ["__dict__", "__weakref__"]
             __slots__ = ["__dict__"]
 
-        # skulpt implementation detail means that this wont work
-        # for cls, cls2 in ((G, H), (G, I), (I, H), (Q, R), (R, Q)):
-        for cls, cls2 in ((Q, R), (R, Q)): 
+        for cls, cls2 in ((G, H), (G, I), (I, H), (Q, R), (R, Q)):
             x = cls()
             x.a = 1
             x.__class__ = cls2
