@@ -146,6 +146,9 @@ Sk.configure = function (options) {
     Sk.killableFor = options["killableFor"] || false;
     Sk.asserts.assert(typeof Sk.killableFor === "boolean");
 
+    Sk.killableForever = options["killableForever"] || false;
+    Sk.asserts.assert(typeof Sk.killableForever === "boolean");
+
     Sk.signals = typeof options["signals"] !== undefined ? options["signals"] : null;
     if (Sk.signals === true) {
         Sk.signals = {
