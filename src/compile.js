@@ -1392,19 +1392,6 @@ Compiler.prototype.cwhile = function (s) {
         this._jump(top);
         this.setBlock(top);
 
-        next = this.newBlock("after while");
-        orelse = s.orelse.length > 0 ? this.newBlock("while orelse") : null;
-        body = this.newBlock("while body");
-
-        this.annotateSource(s);
-        this._jumpfalse(this.vexpr(s.test), orelse ? orelse : next);
-        this._jump(body);
-
-        this.pushBreakBlock(next);
-        this.pushContinueBlock(top);
-
-        this.setBlock(body);
-
         if ((Sk.debugging || Sk.killableWhile) && this.u.canSuspend) {
             var suspType = "Sk.delay";
             var debugBlock = this.newBlock("debug breakpoint for line "+s.lineno);
@@ -1418,6 +1405,19 @@ Compiler.prototype.cwhile = function (s) {
             this.setBlock(debugBlock);
             this.u.doesSuspend = true;
         }
+
+        next = this.newBlock("after while");
+        orelse = s.orelse.length > 0 ? this.newBlock("while orelse") : null;
+        body = this.newBlock("while body");
+
+        this.annotateSource(s);
+        this._jumpfalse(this.vexpr(s.test), orelse ? orelse : next);
+        this._jump(body);
+
+        this.pushBreakBlock(next);
+        this.pushContinueBlock(top);
+
+        this.setBlock(body);
 
         this.vseqstmt(s.body);
 
