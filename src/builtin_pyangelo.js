@@ -1355,6 +1355,10 @@ initPoint.co_argcount = 3;
 
 const pointClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(initPoint);
+    $loc.__repr__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("Point(" + self.x + ", " + self.y + ")");
+    });
+    $loc.__str__ = $loc.__repr__;
 
     // allow direct access to x/y properties
     $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
@@ -1393,6 +1397,10 @@ initColour.co_argcount = 5;
 
 const colourClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(initColour);
+    $loc.__repr__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("Colour(" + self.r + ", " + self.g + ", " + self.b + ", " + self.a + ")");
+    });
+    $loc.__str__ = $loc.__repr__;
 
     // allow direct access to r, g, b, a properties
     $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
@@ -1444,6 +1452,12 @@ const imageClass = function ($gbl, $loc) {
             })
         };
         return susp;
+    });
+    $loc.__repr__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("Image(" + self.file + ")");
+    });
+    $loc.__str__ = new Sk.builtin.func(function (self) {
+        return new Sk.builtin.str("Image Object - file: " + self.file + ", width: " + self.width + ", height: " + self.height);
     });
 
     // allow direct access to height/width properties

@@ -13,6 +13,12 @@ class Sprite:
         else:
             self.height = height
 
+    def __repr__(self):
+        return f"Sprite(\"{self.image.file}\", {self.x}, {self.y}, {self.width}, {self.height}, {self.opacity})"
+
+    def __str__(self):
+        return f"Sprite Object - image: {self.image.file}, x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height}, opacity: {self.opacity}"
+
     def draw(self, offsetX = 0, offsetY = 0):
         drawImage(self.image, self.x - offsetX, self.y - offsetY, self.width, self.height, opacity=self.opacity)
 
@@ -55,6 +61,12 @@ class TextSprite(Sprite):
         self.width = abs(textMetrics["actualBoundingBoxLeft"]) + abs(textMetrics["actualBoundingBoxRight"])
         self.height = abs(textMetrics["actualBoundingBoxAscent"]) + abs(textMetrics["actualBoundingBoxDescent"])
 
+    def __repr__(self):
+        return f"TextSprite({self.text}, {self.x}, {self.y}, {self.fontSize}, {self.fontName}, {self.r}, {self.g}, {self.b}, {self.a})"
+
+    def __str__(self):
+        return f"TextSprite Object - text: {self.text}, x: {self.x}, y: {self.y}, fontSize: {self.fontSize}, fontName: {self.fontName}, r: {self.r}, g: {self.g}, b: {self.b}, a: {self.a}"
+
     def center(self):
         self.x -= (self.width/2)
         self.y -= (self.height/2)
@@ -81,6 +93,12 @@ class RectangleSprite(TextSprite):
         self.strokeWeight(1)
         self.stroke(0, 0, 0, 1)
         self.noStroke()
+
+    def __repr__(self):
+        return f"RectangleSprite({self.x}, {self.y}, {self.width}, {self.height}, {self.r}, {self.g}, {self.b}, {self.a})"
+
+    def __str__(self):
+        return f"RectangleSprite Object - x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height}, r: {self.r}, g: {self.g}, b: {self.b}, a: {self.a}"
 
     def noStroke(self):
         self._doStroke = False
@@ -120,6 +138,12 @@ class CircleSprite(RectangleSprite):
         self.stroke(0, 0, 0, 1)
         self.noStroke()
 
+    def __repr__(self):
+        return f"CircleSprite({self.x}, {self.y}, {self.radius}, {self.r}, {self.g}, {self.b}, {self.a})"
+
+    def __str__(self):
+        return f"CircleSprite Object - x: {self.x}, y: {self.y}, radius: {self.radius}, r: {self.r}, g: {self.g}, b: {self.b}, a: {self.a}"
+
     def leftBoundary(self):
         return self.x - self.radius
 
@@ -145,6 +169,12 @@ class EllipseSprite(RectangleSprite):
         self.strokeWeight(1)
         self.stroke(0, 0, 0, 1)
         self.noStroke()
+
+    def __repr__(self):
+        return f"EllipseSprite({self.x}, {self.y}, {self.radiusX}, {self.radiusY}, {self.r}, {self.g}, {self.b}, {self.a})"
+
+    def __str__(self):
+        return f"EllipseSprite Object - x: {self.x}, y: {self.y}, radiusX: {self.radiusX}, radiusY: {self.radiusY}, r: {self.r}, g: {self.g}, b: {self.b}, a: {self.a}"
 
     def leftBoundary(self):
         return self.x - self.radiusX
