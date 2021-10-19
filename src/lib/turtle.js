@@ -42,6 +42,35 @@ function generateTurtleModule(_target) {
         _mouseHandler,
         _assets;
 
+    const _tg_classes = ["ScrolledCanvas", "TurtleScreen", "Screen",
+        "RawTurtle", "Turtle", "RawPen", "Pen", "Shape", "Vec2D"].map((x) => new Sk.builtin.str(x));
+    const _tg_screen_functions = ["addshape", "bgcolor", "bgpic", "bye",
+        "clearscreen", "colormode", "delay", "exitonclick", "getcanvas",
+        "getshapes", "listen", "mainloop", "mode", "numinput",
+        "onkey", "onkeypress", "onkeyrelease", "onscreenclick", "ontimer",
+        "register_shape", "resetscreen", "screensize", "setup",
+        "setworldcoordinates", "textinput", "title", "tracer", "turtles", "update",
+        "window_height", "window_width"].map((x) => new Sk.builtin.str(x));
+    const _tg_turtle_functions = ["back", "backward", "begin_fill", "begin_poly", "bk",
+        "circle", "clear", "clearstamp", "clearstamps", "clone", "color",
+        "degrees", "distance", "dot", "down", "end_fill", "end_poly", "fd",
+        "fillcolor", "filling", "forward", "get_poly", "getpen", "getscreen", "get_shapepoly",
+        "getturtle", "goto", "heading", "hideturtle", "home", "ht", "isdown",
+        "isvisible", "left", "lt", "onclick", "ondrag", "onrelease", "pd",
+        "pen", "pencolor", "pendown", "pensize", "penup", "pos", "position",
+        "pu", "radians", "right", "reset", "resizemode", "rt",
+        "seth", "setheading", "setpos", "setposition", "settiltangle",
+        "setundobuffer", "setx", "sety", "shape", "shapesize", "shapetransform", "shearfactor", "showturtle",
+        "speed", "st", "stamp", "tilt", "tiltangle", "towards",
+        "turtlesize", "undo", "undobufferentries", "up", "width",
+        "write", "xcor", "ycor"].map((x) => new Sk.builtin.str(x));
+    const _tg_utilities = ["write_docstringdict", "done"].map((x) => new Sk.builtin.str(x));
+
+    /** @todo make sure these are all implemented or comment them out above */
+    _module.__all__ = new Sk.builtin.list(
+        [].concat(_tg_classes, _tg_screen_functions, _tg_turtle_functions, _tg_utilities)
+    );
+
     // Ensure that the turtle DOM target has a tabindex
     // so that it can accept keyboard focus and events
     if (!_target.hasAttribute("tabindex")) {
@@ -507,7 +536,6 @@ function generateTurtleModule(_target) {
                     speed   : this._computed_speed,
                     down    : this._down,
                     shown   : this._shown,
-                    colorMode : this._colorMode,
                     context : function() {
                         return self.getPaper();
                     }
@@ -2318,25 +2346,35 @@ function generateTurtleModule(_target) {
         }
     }
 
-    for(var key in Turtle.prototype) {
-        if (/^\$[a-z_]+/.test(key)) {
-            addModuleMethod(Turtle, _module, key, ensureAnonymous);
-        }
-    }
 
-    // add Screen method aliases to the main turtle module
+    // add Screen and Turtle method aliases to the main turtle module
     // to allow things like:
     //   import turtle
     //   turtle.mainloop()
-    addModuleMethod(Screen, _module, "$mainloop", getScreen);
-    addModuleMethod(Screen, _module, "$done", getScreen);
-    addModuleMethod(Screen, _module, "$bye", getScreen);
-    addModuleMethod(Screen, _module, "$tracer", getScreen);
-    addModuleMethod(Screen, _module, "$update", getScreen);
-    addModuleMethod(Screen, _module, "$delay", getScreen);
-    addModuleMethod(Screen, _module, "$window_width", getScreen);
-    addModuleMethod(Screen, _module, "$window_height", getScreen);    
-    addModuleMethod(Screen, _module, "$title", getScreen);
+
+    _tg_screen_functions.forEach((pyName) => {
+        try {
+            addModuleMethod(Screen, _module, "$" + pyName.$mangled, getScreen);
+        } catch {
+            // debugging only
+            if (Turtle.prototype["$" + pyName.$mangled]) {
+                console.error(pyName + " is on Turtle but should be on Screen");
+            } else {
+                console.error(pyName + " is not implemented");
+            }
+        }
+    });
+    _tg_turtle_functions.forEach((pyName) => {
+        try {
+            addModuleMethod(Turtle, _module, "$" + pyName.$mangled, ensureAnonymous);
+        } catch {
+            if (Screen.prototype["$" + pyName.$mangled]) {
+                console.error(pyName + " is on Screen but should be on Turtle");
+            } else {
+                console.error(pyName + " is not implemented");
+            }
+        }
+    });
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
