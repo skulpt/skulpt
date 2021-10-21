@@ -2351,7 +2351,7 @@ function generateTurtleModule(_target) {
     // addModuleMethod(Screen, _module, "$colormode", getScreen);
     addModuleMethod(Screen, _module, "$resetscreen", getScreen);
     addModuleMethod(Screen, _module, "$setup", getScreen);
-    addModuleMethod(Screen, _module, "turtles", getScreen);
+    addModuleMethod(Screen, _module, "$turtles", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
