@@ -4,12 +4,59 @@
  *  Implementation of the Python operator module.
  */
 function $builtinmodule(name) {
+    const {
+        builtin: {
+            bool: pyBool,
+            int_: pyInt,
+            str: pyStr,
+            list: pyList,
+            tuple: pyTuple,
+            abs: pyAbs,
+            len: pyLen,
+            none: { none$: pyNone },
+            NotImplemented: { NotImplemented$: pyNotImplemented },
+            checkString,
+            checkInt,
+            TypeError: pyTypeError,
+            ValueError,
+        },
+        abstr: {
+            numberBinOp,
+            numberUnaryOp,
+            numberInplaceBinOp,
+            buildNativeClass,
+            setUpModuleMethods,
+            checkNoKwargs,
+            checkArgsLen,
+            gattr: objectGetAttr,
+            objectGetItem,
+            objectSetItem,
+            objectDelItem,
+            lookupSpecial,
+            sequenceConcat,
+            sequenceInPlaceConcat,
+            sequenceContains,
+            sequenceGetCountOf,
+            sequenceGetIndexOf,
+            typeName,
+        },
+        misceval: {
+            objectRepr,
+            richCompareBool,
+            chain: chainOrSuspend,
+            callsimArray: pyCall,
+            callsimOrSuspendArray: pyCallOrSuspend,
+            asIndexOrThrow,
+        },
+        generic: { objectGetAttr: genericGetAttr },
+    } = Sk;
+
     const operator = {
-        __name__: new Sk.builtin.str("operator"),
-        __doc__: new Sk.builtin.str(
+        __name__: new pyStr("operator"),
+        __doc__: new pyStr(
             "Operator interface.\n\nThis module exports a set of functions implemented in javascript corresponding\nto the intrinsic operators of Python.  For example, operator.add(x, y)\nis equivalent to the expression x+y.  The function names are those\nused for special methods; variants without leading and trailing\n'__' are also provided for convenience."
         ),
-        __all__: new Sk.builtin.list(
+        __all__: new pyList(
             [
                 "abs",
                 "add",
@@ -65,11 +112,11 @@ function $builtinmodule(name) {
                 "truediv",
                 "truth",
                 "xor",
-            ].map((x) => new Sk.builtin.str(x))
+            ].map((x) => new pyStr(x))
         ),
     };
 
-    operator.itemgetter = Sk.abstr.buildNativeClass("operator.itemgetter", {
+    operator.itemgetter = buildNativeClass("operator.itemgetter", {
         constructor: function itemgetter(items) {
             this.items = items;
             this.oneitem = items.length === 1;
@@ -77,37 +124,37 @@ function $builtinmodule(name) {
             this.in$repr = false;
         },
         slots: {
-            tp$getattr: Sk.generic.getAttr,
+            tp$getattr: genericGetAttr,
             tp$new(args, kwargs) {
-                Sk.abstr.checkNoKwargs("itemgetter", kwargs);
-                Sk.abstr.checkArgsLen("itemgetter", args, 1);
+                checkNoKwargs("itemgetter", kwargs);
+                checkArgsLen("itemgetter", args, 1);
                 return new operator.itemgetter(args);
             },
             tp$call(args, kwargs) {
-                Sk.abstr.checkNoKwargs("itemgetter", kwargs);
-                Sk.abstr.checkArgsLen("itemgetter", args, 1, 1);
+                checkNoKwargs("itemgetter", kwargs);
+                checkArgsLen("itemgetter", args, 1, 1);
                 const obj = args[0];
                 if (this.oneitem) {
-                    return Sk.abstr.objectGetItem(obj, this.item, true);
+                    return objectGetItem(obj, this.item, true);
                 }
-                return new Sk.builtin.tuple(this.items.map((x) => Sk.abstr.objectGetItem(obj, x)));
+                return new pyTuple(this.items.map((x) => objectGetItem(obj, x)));
             },
             tp$doc: "Return a callable object that fetches the given item(s) from its operand.\n\
             After f = itemgetter(2), the call f(r) returns r[2].\n\
             After g = itemgetter(2, 5, 3), the call g(r) returns (r[2], r[5], r[3])",
             $r() {
                 if (this.in$repr) {
-                    return new Sk.builtin.str(this.tp$name + "(...)");
+                    return new pyStr(this.tp$name + "(...)");
                 }
                 this.in$repr = true;
-                const ret = this.tp$name + "(" + this.items.map((x) => Sk.misceval.objectRepr(x)).join(", ") + ")";
+                const ret = this.tp$name + "(" + this.items.map((x) => objectRepr(x)).join(", ") + ")";
                 this.in$repr = false;
                 return ret;
             },
         },
     });
 
-    operator.attrgetter = Sk.abstr.buildNativeClass("operator.attrgetter", {
+    operator.attrgetter = buildNativeClass("operator.attrgetter", {
         constructor: function attrgetter(attrs) {
             this.attrs = attrs;
             this.oneattr = attrs.length === 1;
@@ -115,23 +162,19 @@ function $builtinmodule(name) {
             this.in$repr = false;
         },
         slots: {
-            tp$getattr: Sk.generic.getAttr,
+            tp$getattr: genericGetAttr,
             tp$new(args, kwargs) {
-                Sk.abstr.checkNoKwargs("attrgetter", kwargs);
-                Sk.abstr.checkArgsLen("attrgetter", args, 1);
+                checkNoKwargs("attrgetter", kwargs);
+                checkArgsLen("attrgetter", args, 1);
                 const attrs = [];
                 for (let i = 0; i < args.length; i++) {
                     const attr = args[i];
-                    if (!Sk.builtin.checkString(attr)) {
-                        throw new Sk.builtin.TypeError("attribute name must be a string");
+                    if (!checkString(attr)) {
+                        throw new pyTypeError("attribute name must be a string");
                     }
-                    if (attr.v.includes(".")) {
-                        attrs.push(
-                            attr
-                                .$jsstr()
-                                .split(".")
-                                .map((x) => new Sk.builtin.str(x))
-                        );
+                    const jsAttr = attr.toString();
+                    if (jsAttr.includes(".")) {
+                        attrs.push(jsAttr.split(".").map((x) => new pyStr(x)));
                     } else {
                         attrs.push([attr]);
                     }
@@ -139,30 +182,29 @@ function $builtinmodule(name) {
                 return new operator.attrgetter(attrs);
             },
             tp$call(args, kwargs) {
-                Sk.abstr.checkNoKwargs("attrgetter", kwargs);
-                Sk.abstr.checkArgsLen("attrgetter", args, 1, 1);
+                checkNoKwargs("attrgetter", kwargs);
+                checkArgsLen("attrgetter", args, 1, 1);
                 const obj = args[0];
                 if (this.oneattr) {
-                    return this.attr.reduce((obj, attr) => Sk.abstr.gattr(obj, attr), obj);
+                    return this.attr.reduce((obj, attr) => objectGetAttr(obj, attr), obj);
                 }
-                const ret = this.attrs.map((attrs) => attrs.reduce((obj, attr) => Sk.abstr.gattr(obj, attr), obj));
-                return new Sk.builtin.tuple(ret);
+                const ret = this.attrs.map((attrs) => attrs.reduce((obj, attr) => objectGetAttr(obj, attr), obj));
+                return new pyTuple(ret);
             },
-            tp$doc:
-                "attrgetter(attr, ...) --> attrgetter object\n\nReturn a callable object that fetches the given attribute(s) from its operand.\nAfter f = attrgetter('name'), the call f(r) returns r.name.\nAfter g = attrgetter('name', 'date'), the call g(r) returns (r.name, r.date).\nAfter h = attrgetter('name.first', 'name.last'), the call h(r) returns\n(r.name.first, r.name.last).",
+            tp$doc: "attrgetter(attr, ...) --> attrgetter object\n\nReturn a callable object that fetches the given attribute(s) from its operand.\nAfter f = attrgetter('name'), the call f(r) returns r.name.\nAfter g = attrgetter('name', 'date'), the call g(r) returns (r.name, r.date).\nAfter h = attrgetter('name.first', 'name.last'), the call h(r) returns\n(r.name.first, r.name.last).",
             $r() {
                 if (this.in$repr) {
-                    return new Sk.builtin.str(this.tp$name + "(...)");
+                    return new pyStr(this.tp$name + "(...)");
                 }
                 this.in$repr = true;
-                const ret = this.tp$name + "(" + this.items.map((x) => Sk.misceval.objectRepr(x)).join(", ") + ")";
+                const ret = this.tp$name + "(" + this.items.map((x) => objectRepr(x)).join(", ") + ")";
                 this.in$repr = false;
                 return ret;
             },
         },
     });
 
-    operator.methodcaller = Sk.abstr.buildNativeClass("operator.methodcaller", {
+    operator.methodcaller = buildNativeClass("operator.methodcaller", {
         constructor: function methodcaller($name, args, kwargs) {
             this.$name = $name;
             this.args = args;
@@ -170,34 +212,33 @@ function $builtinmodule(name) {
             this.in$repr = false;
         },
         slots: {
-            tp$getattr: Sk.generic.getAttr,
+            tp$getattr: genericGetAttr,
             tp$new(args, kwargs) {
-                Sk.abstr.checkArgsLen("methodcaller", args, 1);
+                checkArgsLen("methodcaller", args, 1);
                 const $name = args[0];
-                if (!Sk.builtin.checkString($name)) {
-                    throw new Sk.builtin.TypeError("method name must be a string");
+                if (!checkString($name)) {
+                    throw new pyTypeError("method name must be a string");
                 }
                 return new operator.methodcaller($name, args.slice(1), kwargs);
             },
             tp$call(args, kwargs) {
-                Sk.abstr.checkNoKwargs("methodcaller", kwargs);
-                Sk.abstr.checkArgsLen("methodcaller", args, 1, 1);
+                checkNoKwargs("methodcaller", kwargs);
+                checkArgsLen("methodcaller", args, 1, 1);
                 const obj = args[0];
-                return Sk.misceval.chain(Sk.abstr.gattr(obj, this.$name, true), (method) =>
-                    Sk.misceval.callsimOrSuspendArray(method, this.args, this.kwargs)
+                return chainOrSuspend(objectGetAttr(obj, this.$name, true), (method) =>
+                    pyCallOrSuspend(method, this.args, this.kwargs)
                 );
             },
-            tp$doc:
-                "methodcaller(name, ...) --> methodcaller object\n\nReturn a callable object that calls the given method on its operand.\nAfter f = methodcaller('name'), the call f(r) returns r.name().\nAfter g = methodcaller('name', 'date', foo=1), the call g(r) returns\nr.name('date', foo=1).",
+            tp$doc: "methodcaller(name, ...) --> methodcaller object\n\nReturn a callable object that calls the given method on its operand.\nAfter f = methodcaller('name'), the call f(r) returns r.name().\nAfter g = methodcaller('name', 'date', foo=1), the call g(r) returns\nr.name('date', foo=1).",
             $r() {
                 if (this.in$repr) {
-                    return new Sk.builtin.str(this.tp$name + "(...)");
+                    return new pyStr(this.tp$name + "(...)");
                 }
                 this.in$repr = true;
-                let ret = [Sk.misceval.objectRepr(this.$name)];
-                ret.push(...this.args.map((x) => Sk.misceval.objectRepr(x)));
+                let ret = [objectRepr(this.$name)];
+                ret.push(...this.args.map((x) => objectRepr(x)));
                 for (let i = 0; i < this.kwargs.length; i += 2) {
-                    ret.push(this.kwargs[i] + "=" + Sk.misceval.objectRepr(this.kwargs[i + 1]));
+                    ret.push(this.kwargs[i] + "=" + objectRepr(this.kwargs[i + 1]));
                 }
                 ret = this.tp$name + "(" + ret.join(", ") + ")";
                 this.in$repr = false;
@@ -206,291 +247,224 @@ function $builtinmodule(name) {
         },
     });
 
-    Sk.abstr.setUpModuleMethods("operator", operator, {
+    const BINOP_CALL_FLAGS = { MinArgs: 2, MaxArgs: 2 };
+    const BINOP_TEXTSIG = "($module, a, b, /)";
+    const UOP_CALL_FLAGS = { OneArg: true };
+    const UOP_TEXTSIG = "($module, a, /)";
+
+    setUpModuleMethods("operator", operator, {
         lt: {
-            $meth: function lt(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "Lt"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "Lt")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a < b.",
         },
         le: {
-            $meth: function le(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "LtE"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "LtE")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a <= b.",
         },
         eq: {
-            $meth: function eq(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "Eq"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a,b) => pyBool(richCompareBool(a, b, "Eq")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a == b.",
         },
         ne: {
-            $meth: function ne(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "NotEq"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "NotEq")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a != b.",
         },
         ge: {
-            $meth: function ge(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "GtE"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "GtE")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a >= b.",
         },
         gt: {
-            $meth: function gt(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "Gt"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "Gt")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a > b.",
         },
         not_: {
-            $meth: function not_(obj) {
-                return Sk.abstr.numberUnaryOp(obj, "Not");
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => numberUnaryOp(obj, "Not"),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as not a.",
         },
         truth: {
-            $meth: function truth(obj) {
-                return Sk.builtin.bool(obj);
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => pyBool(obj),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Return True if a is true, False otherwise.",
         },
         is_: {
-            $meth: function is_(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "Is"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "Is")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a is b.",
         },
         is_not: {
-            $meth: function is_not(a, b) {
-                return Sk.builtin.bool(Sk.misceval.richCompareBool(a, b, "IsNot"));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(richCompareBool(a, b, "IsNot")),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a is not b.",
         },
         abs: {
-            $meth: function abs(obj) {
-                return Sk.builtin.abs(obj);
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => pyAbs(obj),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as abs(a).",
         },
         add: {
-            $meth: function add(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Add");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Add"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a + b.",
         },
         and_: {
-            $meth: function and_(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "BitAnd");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "BitAnd"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a & b.",
         },
         floordiv: {
-            $meth: function floordiv(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "FloorDiv");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "FloorDiv"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a // b.",
         },
         index: {
-            $meth: function index(a) {
-                return new Sk.builtin.int_(Sk.misceval.asIndexOrThrow(a));
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (a) => new pyInt(asIndexOrThrow(a)),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as a.__index__()",
         },
         inv: {
-            $meth: function inv(obj) {
-                return Sk.abstr.numberUnaryOp(obj, "Invert");
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => numberUnaryOp(obj, "Invert"),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as ~a.",
         },
         invert: {
-            $meth: function invert(obj) {
-                return Sk.abstr.numberUnaryOp(obj, "Invert");
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => numberUnaryOp(obj, "Invert"),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as ~a.",
         },
         lshift: {
-            $meth: function lshift(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "LShift");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "LShift"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a << b.",
         },
         mod: {
-            $meth: function mod(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Mod");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Mod"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a % b.",
         },
         mul: {
-            $meth: function mul(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Mult");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Mult"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a * b.",
         },
         matmul: {
-            $meth: function matmul(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "MatMult");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "MatMult"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a @ b.",
         },
         neg: {
-            $meth: function neg(obj) {
-                return Sk.abstr.numberUnaryOp(obj, "USub");
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => numberUnaryOp(obj, "USub"),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as -a.",
         },
         or_: {
-            $meth: function or_(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "BitOr");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "BitOr"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a | b.",
         },
         pos: {
-            $meth: function pos(obj) {
-                return Sk.abstr.numberUnaryOp(obj, "UAdd");
-            },
-            $flags: { OneArg: true },
-            $textsig: "($module, a, /)",
+            $meth: (obj) => numberUnaryOp(obj, "UAdd"),
+            $flags: UOP_CALL_FLAGS,
+            $textsig: UOP_TEXTSIG,
             $doc: "Same as +a.",
         },
         pow: {
-            $meth: function pow(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Pow");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Pow"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a ** b.",
         },
         rshift: {
-            $meth: function rshift(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "RShift");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "RShift"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a >> b.",
         },
         sub: {
-            $meth: function sub(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Sub");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Sub"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a - b.",
         },
         truediv: {
-            $meth: function div(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "Div");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "Div"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a / b.",
         },
         xor: {
-            $meth: function xor(a, b) {
-                return Sk.abstr.numberBinOp(a, b, "BitXor");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberBinOp(a, b, "BitXor"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a ^ b.",
         },
         concat: {
-            $meth: function concat(a, b) {
-                return Sk.abstr.sequenceConcat(a, b);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => sequenceConcat(a, b),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a + b, for a and b sequences.",
         },
         contains: {
-            $meth: function contains(a, b) {
-                return Sk.builtin.bool(Sk.abstr.sequenceContains(a, b));
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => pyBool(sequenceContains(a, b)),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as b in a (note reversed operands).",
         },
         countOf: {
-            $meth: function countOf(a, b) {
-                return Sk.abstr.sequenceGetCountOf(a, b);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => sequenceGetCountOf(a, b),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Return the number of times b occurs in a.",
         },
         delitem: {
-            $meth: function delitem(a, b) {
-                return Sk.misceval.chain(Sk.abstr.objectDelItem(a, b, true), () => Sk.builtin.none.none$);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => chainOrSuspend(objectDelItem(a, b, true), () => pyNone),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as del a[b].",
         },
         getitem: {
-            $meth: function getitem(a, b) {
-                return Sk.abstr.objectGetItem(a, b);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => objectGetItem(a, b),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a[b].",
         },
         indexOf: {
-            $meth: function indexOf(a, b) {
-                return Sk.abstr.sequenceGetIndexOf(a, b);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => sequenceGetIndexOf(a, b),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Return the first index of b in a.",
         },
         setitem: {
-            $meth: function setitem(a, b, c) {
-                return Sk.misceval.chain(Sk.abstr.objectSetItem(a, b, c, true), () => Sk.builtin.none.none$);
-            },
+            $meth: (a, b, c) => chainOrSuspend(objectSetItem(a, b, c, true), () => pyNone),
             $flags: { MinArgs: 3, MaxArgs: 3 },
             $textsig: "($module, a, b, c, /)",
             $doc: "Same as a[b] = c.",
@@ -498,155 +472,126 @@ function $builtinmodule(name) {
         length_hint: {
             $meth: function length_hint(obj, d) {
                 if (d === undefined) {
-                    d = new Sk.builtin.int_(0);
-                } else if (!Sk.builtin.checkInt(d)) {
-                    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(d) + "' object cannot be interpreted as an integer");
+                    d = new pyInt(0);
+                } else if (!checkInt(d)) {
+                    throw new pyTypeError("'" + typeName(d) + "' object cannot be interpreted as an integer");
                 }
                 try {
-                    return Sk.builtin.len(obj);
+                    return pyLen(obj);
                 } catch (e) {
-                    if (!(e instanceof Sk.builtin.TypeError)) {
+                    if (!(e instanceof pyTypeError)) {
                         throw e;
                     }
                 }
-                const func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$length_hint);
+                const func = lookupSpecial(obj, pyStr.$length_hint);
                 if (func === undefined) {
                     return d;
                 }
                 let val;
                 try {
-                    val = Sk.misceval.callsimArray(func, []);
+                    val = pyCall(func, []);
                 } catch (e) {
-                    if (!(e instanceof Sk.builtin.TypeError)) {
+                    if (!(e instanceof pyTypeError)) {
                         throw e;
                     }
                     return d;
                 }
-                if (val === Sk.builtin.NotImplemented.NotImplemented$) {
+                if (val === pyNotImplemented) {
                     return d;
                 }
-                if (!Sk.builtin.checkInt(val)) {
-                    throw new Sk.builtin.TypeError("__length_hint__ must be an integer, not " + Sk.abstr.typeName(val));
+                if (!checkInt(val)) {
+                    throw new pyTypeError("__length_hint__ must be an integer, not " + typeName(val));
                 } else if (val.nb$isnegative()) {
-                    throw new Sk.builtin.ValueError("__length_hint__() should return >= 0");
+                    throw new ValueError("__length_hint__() should return >= 0");
                 }
                 return val;
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($module, obj, default=0, /)",
-            $doc:
-                "Return an estimate of the number of items in obj.\n\nThis is useful for presizing containers when building from an iterable.\n\nIf the object supports len(), the result will be exact.\nOtherwise, it may over- or under-estimate by an arbitrary amount.\nThe result will be an integer >= 0.",
+            $doc: "Return an estimate of the number of items in obj.\n\nThis is useful for presizing containers when building from an iterable.\n\nIf the object supports len(), the result will be exact.\nOtherwise, it may over- or under-estimate by an arbitrary amount.\nThe result will be an integer >= 0.",
         },
         iadd: {
-            $meth: function iadd(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Add");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Add"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a += b.",
         },
         iand: {
-            $meth: function iand(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "BitAnd");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "BitAnd"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a &= b.",
         },
         iconcat: {
-            $meth: function iconcat(a, b) {
-                return Sk.abstr.sequenceInPlaceConcat(a, b);
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => sequenceInPlaceConcat(a, b),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a += b, for a and b sequences.",
         },
         ifloordiv: {
-            $meth: function ifloordiv(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "FloorDiv");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "FloorDiv"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a //= b.",
         },
         ilshift: {
-            $meth: function ilshift(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "LShift");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "LShift"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a <<= b.",
         },
         imod: {
-            $meth: function imod(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Mod");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Mod"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a %= b.",
         },
         imul: {
-            $meth: function imul(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Mult");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Mult"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a *= b.",
         },
         imatmul: {
-            $meth: function imatmul(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "MatMult");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "MatMult"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a @= b.",
         },
         ior: {
-            $meth: function ior(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "BitOr");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "BitOr"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a |= b.",
         },
         ipow: {
-            $meth: function ipow(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Pow");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Pow"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a **= b.",
         },
         irshift: {
-            $meth: function irshift(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "RShift");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "RShift"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a >>= b.",
         },
         isub: {
-            $meth: function isub(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Sub");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Sub"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a -= b.",
         },
         itruediv: {
-            $meth: function idiv(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "Div");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "Div"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a /= b.",
         },
         ixor: {
-            $meth: function ixor(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "BitXor");
-            },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
-            $textsig: "($module, a, b, /)",
+            $meth: (a, b) => numberInplaceBinOp(a, b, "BitXor"),
+            $flags: BINOP_CALL_FLAGS,
+            $textsig: BINOP_TEXTSIG,
             $doc: "Same as a ^= b.",
         },
     });
@@ -697,7 +642,7 @@ function $builtinmodule(name) {
         __sub__: operator.sub,
         __truediv__: operator.truediv,
         __xor__: operator.xor,
-        _abs: Sk.builtins.abs,
+        _abs: pyAbs,
         // py2
         div: operator.truediv,
         __div__: operator.truediv,
