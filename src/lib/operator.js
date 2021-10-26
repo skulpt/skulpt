@@ -339,7 +339,7 @@ function $builtinmodule(name) {
             $meth: function invert(obj) {
                 return Sk.abstr.numberUnaryOp(obj, "Invert");
             },
-            $flags: { MinArgs: 2, MaxArgs: 2 },
+            $flags: { OneArg: true },
             $textsig: "($module, a, /)",
             $doc: "Same as ~a.",
         },
@@ -510,19 +510,27 @@ function $builtinmodule(name) {
                     }
                 }
                 const func = Sk.abstr.lookupSpecial(obj, Sk.builtin.str.$length_hint);
-                if (func !== undefined) {
-                    const val = Sk.misceval.callsimArray(func, []);
-                    if (val === Sk.builtin.NotImplemented.NotImplemented$) {
-                        return d;
-                    }
-                    if (!Sk.builtin.checkInteger(val)) {
-                        throw new Sk.builtin.TypeError("__length_hint__ must be an integer, not " + Sk.abstr.typeName(val));
-                    } else if (val.nb$isnegative()) {
-                        throw new Sk.builtin.TypeError("__length_hint__() should return >= 0");
-                    }
-                    return val;
+                if (func === undefined) {
+                    return d;
                 }
-                return d;
+                let val;
+                try {
+                    val = Sk.misceval.callsimArray(func, []);
+                } catch (e) {
+                    if (!(e instanceof Sk.builtin.TypeError)) {
+                        throw e;
+                    }
+                    return d;
+                }
+                if (val === Sk.builtin.NotImplemented.NotImplemented$) {
+                    return d;
+                }
+                if (!Sk.builtin.checkInt(val)) {
+                    throw new Sk.builtin.TypeError("__length_hint__ must be an integer, not " + Sk.abstr.typeName(val));
+                } else if (val.nb$isnegative()) {
+                    throw new Sk.builtin.ValueError("__length_hint__() should return >= 0");
+                }
+                return val;
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($module, obj, default=0, /)",
@@ -547,15 +555,7 @@ function $builtinmodule(name) {
         },
         iconcat: {
             $meth: function iconcat(a, b) {
-                if (a.sq$inplace_concat !== undefined) {
-                    return a.sq$inplace_concat(b);
-                } else if (a.sq$concat !== undefined) {
-                    return a.sq$concat(b);
-                }
-                if (!Sk.builtin.checkSequence(a) || !Sk.builtin.checkSequence(b)) {
-                    throw new Sk.builtin.TypeError(Sk.abstr.typeName(a) + " object can't be concatenated");
-                }
-                return Sk.abstr.numberInplaceBinOp(a, b, "Add");
+                return Sk.abstr.sequenceInPlaceConcat(a, b);
             },
             $flags: { MinArgs: 2, MaxArgs: 2 },
             $textsig: "($module, a, b, /)",
@@ -619,7 +619,7 @@ function $builtinmodule(name) {
         },
         irshift: {
             $meth: function irshift(a, b) {
-                return Sk.abstr.numberInplaceBinOp(a, b, "LRhift");
+                return Sk.abstr.numberInplaceBinOp(a, b, "RShift");
             },
             $flags: { MinArgs: 2, MaxArgs: 2 },
             $textsig: "($module, a, b, /)",

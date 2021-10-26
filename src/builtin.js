@@ -447,7 +447,7 @@ Sk.builtin.abs = function abs(x) {
     if (x.nb$abs) {
         return x.nb$abs();
     }
-    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
+    throw new Sk.builtin.TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
 // fabs belongs in the math module but has been a Skulpt builtin since 41665a97d (2012).
