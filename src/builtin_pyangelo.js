@@ -1339,6 +1339,70 @@ Sk.builtins["sleep"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
+Sk.builtin.constrain = function constrain(n, low, high) {
+    Sk.builtin.pyCheckArgsLen("constrain", arguments.length, 3, 3);
+    Sk.builtin.pyCheckType("n", "number", Sk.builtin.checkNumber(n));
+    Sk.builtin.pyCheckType("low", "number", Sk.builtin.checkNumber(low));
+    Sk.builtin.pyCheckType("high", "number", Sk.builtin.checkNumber(high));
+    n = Sk.ffi.remapToJs(n);
+    low = Sk.ffi.remapToJs(low);
+    high = Sk.ffi.remapToJs(high);
+    return Sk.ffi.remapToPy(Math.max(Math.min(n, high), low));
+};
+
+Sk.builtins["constrain"] = new Sk.builtin.sk_method(
+    {
+        $meth: Sk.builtin.constrain,
+        $flags: { MinArgs: 3, MaxArgs: 3 },
+        $textsig: "($module, n, low, high /)",
+        $doc:
+            "Constrains a value between a minimum and maximum value.",
+    },
+    null,
+    "builtins"
+);
+
+Sk.builtin.mapToRange = function mapToRange(n, start1, stop1, start2, stop2, withinBounds=false) {
+    Sk.builtin.pyCheckArgsLen("mapToRange", arguments.length, 5, 6);
+    Sk.builtin.pyCheckType("n", "number", Sk.builtin.checkNumber(n));
+    Sk.builtin.pyCheckType("start1", "number", Sk.builtin.checkNumber(start1));
+    Sk.builtin.pyCheckType("stop1", "number", Sk.builtin.checkNumber(stop1));
+    Sk.builtin.pyCheckType("start2", "number", Sk.builtin.checkNumber(start2));
+    Sk.builtin.pyCheckType("stop2", "number", Sk.builtin.checkNumber(stop2));
+    Sk.builtin.pyCheckType("withinBounds", "bool", Sk.builtin.checkBool(withinBounds));
+    n = Sk.ffi.remapToJs(n);
+    start1 = Sk.ffi.remapToJs(start1);
+    stop1 = Sk.ffi.remapToJs(stop1);
+    start2 = Sk.ffi.remapToJs(start2);
+    stop2 = Sk.ffi.remapToJs(stop2);
+    withinBounds = Sk.ffi.remapToJs(withinBounds);
+
+    const newval = (n - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+    if (!withinBounds) {
+        return Sk.ffi.remapToPy(newval);
+    }
+    if (start2 < stop2) {
+        return Sk.ffi.remapToPy(Sk.builtin.constrain(newval, start2, stop2));
+    } else {
+        return Sk.ffi.remapToPy(Sk.builtin.constrain(newval, stop2, start2));
+    }
+};
+
+Sk.builtins["mapToRange"] = new Sk.builtin.sk_method(
+    {
+        $meth: Sk.builtin.mapToRange,
+        $flags: {
+            NamedArgs: [null, null, null, null, null, "withinBounds"],
+            Defaults: [Sk.builtin.bool.false$],
+        },
+        $textsig: "($module, n, start1, stop1, start2, stop2, withinBounds /)",
+        $doc:
+            "Re-maps a number from one range to another.",
+    },
+    null,
+    "builtins"
+);
+
 // PyAngelo Classes
 const initPoint = function (self, x, y) {
     Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 3);

@@ -1,8 +1,8 @@
 import unittest
 
-class LineTestCase(unittest.TestCase):
+class CircleTestCase(unittest.TestCase):
 
-    def test_line(self):
+    def test_circle(self):
         setCanvasSize(200, 200, CARTESIAN)
         bgColour = 0
         circleColour = 255
@@ -20,7 +20,7 @@ class LineTestCase(unittest.TestCase):
         self.assertEqual(c.g, bgColour)
         self.assertEqual(c.b, bgColour)
 
-    def test_lineParameterTypes(self):
+    def test_circleParameterTypes(self):
         with self.assertRaises(TypeError):
             circle()
         with self.assertRaises(TypeError):
