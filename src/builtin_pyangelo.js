@@ -1403,6 +1403,31 @@ Sk.builtins["mapToRange"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
+Sk.builtin.dist = function dist(x1, y1, x2, y2) {
+    Sk.builtin.pyCheckArgsLen("dist", arguments.length, 4, 4);
+    Sk.builtin.pyCheckType("x1", "number", Sk.builtin.checkNumber(x1));
+    Sk.builtin.pyCheckType("y1", "number", Sk.builtin.checkNumber(y1));
+    Sk.builtin.pyCheckType("x2", "number", Sk.builtin.checkNumber(x2));
+    Sk.builtin.pyCheckType("y2", "number", Sk.builtin.checkNumber(y2));
+    x1 = Sk.ffi.remapToJs(x1);
+    y1 = Sk.ffi.remapToJs(y1);
+    x2 = Sk.ffi.remapToJs(x2);
+    y2 = Sk.ffi.remapToJs(y2);
+    return Sk.ffi.remapToPy(Math.hypot(x2 - x1, y2 - y1));
+};
+
+Sk.builtins["dist"] = new Sk.builtin.sk_method(
+    {
+        $meth: Sk.builtin.dist,
+        $flags: { MinArgs: 4, MaxArgs: 4 },
+        $textsig: "($module, x1, y1, x2, y2 /)",
+        $doc:
+            "Returns the distance between two points.",
+    },
+    null,
+    "builtins"
+);
+
 // PyAngelo Classes
 const initPoint = function (self, x, y) {
     Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 3);
