@@ -43,11 +43,11 @@ Sk.builtins["setCanvasSize"] = new Sk.builtin.sk_method(
         $name: "setCanvasSize",
         $flags: {
             NamedArgs: [null, null, "yAxisMode"],
-            Defaults: [2],
+            Defaults: [1],
         },
         $textsig: "($module, w, h, yAxisMode /)",
         $doc:
-            "Sets the size of the canvas that all drawings are written to. The first parameter specifies the width in pixels and the second the height. The thrid parameter specifies the direction of the y axis. The constant CARTESIAN can be used to specify the y axis acts like a regular cartesian plane in maths, and JAVASCRIPT can be used to specify a traditional javascript y-axis that moves down the screen.",
+            "Sets the size of the canvas that all drawings are written to. The first parameter specifies the width in pixels and the second the height. The thrid parameter specifies the direction of the y axis. The constant CARTESIAN can be used to specify the y axis acts like a regular cartesian plane in maths, and JAVASCRIPT can be used to specify a traditional javascript y-axis that moves down the screen. The default value for yAxisMode is CARTESIAN.",
     },
     null,
     "builtins"
