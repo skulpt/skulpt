@@ -1428,6 +1428,25 @@ Sk.builtins["dist"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
+Sk.builtin.say = function say(words) {
+    Sk.builtin.pyCheckArgsLen("say", arguments.length, 1, 1);
+    Sk.builtin.pyCheckType("words", "string", Sk.builtin.checkString(words));
+    words = Sk.ffi.remapToJs(words);
+    speechSynthesis.speak(new SpeechSynthesisUtterance(words));
+};
+
+Sk.builtins["say"] = new Sk.builtin.sk_method(
+    {
+        $meth: Sk.builtin.say,
+        $flags: { OneArg: true },
+        $textsig: "($module, words /)",
+        $doc:
+            "Says the words using text to speech technology.",
+    },
+    null,
+    "builtins"
+);
+
 // PyAngelo Classes
 const initPoint = function (self, x, y) {
     Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 3);
