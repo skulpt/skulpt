@@ -14,6 +14,30 @@ class B(A):
     def __init__(self, foo):
         super().__init__(foo)
 
+i = 0
+def foo():
+    global i
+    try:
+        return
+    finally:
+        i += 1
+        raise Exception("foo")
+
+
+class Foo:
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        global i
+        i += 1
+        raise Exception("foo")
+
+
+def foo_context():
+    with Foo():
+        return
+
+
 
 class TestSuper(unittest.TestCase):
     def test_bug_1345(self):
@@ -22,6 +46,22 @@ class TestSuper(unittest.TestCase):
             B('foo')
         except Exception:
             self.fail("this shouldn't fail")
+
+    def test_finally_raises(self):
+        def helper(fn):
+            global i
+            try:
+                fn()
+            except Exception:
+                pass
+            self.assertEqual(i, 1)
+            i = 0
+
+        helper(foo)
+        helper(foo_context)
+
+
+
 
 
 if __name__ == "__main__":
