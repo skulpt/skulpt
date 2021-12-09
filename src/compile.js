@@ -1613,10 +1613,14 @@ Compiler.prototype.ctry = function (s) {
 
     if (handlers.length != 0) {
         this.setupExcept(handlers[0]);
+        this.pushExceptBlock(handlers[0]);
     }
     this.vseqstmt(s.body);
     if (handlers.length != 0) {
+        // note that if the try body jumped to a new blk (in the case of a return statement)
+        // then the output of this.endExcept() will be dropped by the compiler
         this.endExcept();
+        this.popExceptBlock();
     }
     this._jump(orelse);
 
@@ -2609,6 +2613,13 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 out("return ", val, ";");
             } else {
                 out("$postfinally={returning:",val,"};");
+                if (this.u.exceptBlocks.length !== 0) {
+                    // we have $exc blks that need to be popped 
+                    // before jumping to the finally body
+                    this.endExcept();
+                }
+                // pop the finally body $exc blk from the $exc array
+                this.endExcept();
                 this._jump(this.peekFinallyBlock().blk);
             }
             break;
