@@ -1188,17 +1188,17 @@ Compiler.prototype.peekFinallyBlock = function() {
 };
 */
 
-Compiler.prototype.pushExceptionHandlerBlock = function(blk, isFinally) {
+Compiler.prototype.pushExceptionHandlerBlock = function (blk, isFinally) {
     Sk.asserts.assert(blk >= 0 && blk < this.u.blocknum);
     Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
-    const excBlock = {blk, isFinally, breakDepth: this.u.breakBlocks.length};
+    const excBlock = { blk, isFinally, breakDepth: this.u.breakBlocks.length };
     this.u.exceptionHandlerBlocks.push(excBlock);
     return excBlock;
-}
+};
 
-Compiler.prototype.popExceptionHandlerBlock = function() {
+Compiler.prototype.popExceptionHandlerBlock = function () {
     this.u.exceptionHandlerBlocks.pop();
-}
+};
 
 Compiler.prototype.closeOutExceptionHandlersAndMaybeJumpToFinally = function(continuingOrBreaking, valueOfPostFinally) {
     // We are emitting code for a continue, break, or return. We need to close out
@@ -1225,7 +1225,7 @@ Compiler.prototype.closeOutExceptionHandlersAndMaybeJumpToFinally = function(con
     // After calling this code, the caller must emit a jump/return to the eventual destination. It will be ignored if we've already
     // jumped to a finally block, or it will fall through efficiently to it if all we did was pop off an exception from the stack.
     return true;
-}
+};
 
 
 Compiler.prototype.setupExcept = function (eb) {
@@ -1644,12 +1644,12 @@ Compiler.prototype.outputFinallyCascade = function (thisFinally) {
           "if($postfinally.returning) {");
 
     if(this.closeOutExceptionHandlersAndMaybeJumpToFinally(false)) {
-        out("return $postfinally.returning;")
+        out("return $postfinally.returning;");
     }
 
     out(  "} else {");
     if (this.closeOutExceptionHandlersAndMaybeJumpToFinally(true)) {
-        out("$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;")
+        out("$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;");
     }
     out(  "}",
         "}");
@@ -1811,7 +1811,7 @@ Compiler.prototype.cwith = function (s, itemIdx) {
 
     // except:
     this.setBlock(exceptionHandler);
-    out("$exc.pop()"); // skip "finally" handler
+    out("$exc.pop();"); // skip "finally" handler
 
     //   if not exit(*sys.exc_info()):
     //     raise
@@ -2582,7 +2582,7 @@ Compiler.prototype.cbreak = function(s) {
     gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
     this.closeOutExceptionHandlersAndMaybeJumpToFinally(true, "{isBreak:true,gotoBlock:"+gotoBlock+"}");
     this._jump(gotoBlock);
-}
+};
 
 /**
  * compiles a statement
