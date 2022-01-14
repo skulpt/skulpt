@@ -15,6 +15,42 @@ class B(A):
     def __init__(self, foo):
         super().__init__(foo)
 
+i = 0
+def foo():
+    global i
+    try:
+        return
+    finally:
+        i += 1
+        raise Exception("foo")
+
+
+def foo2():
+    global i
+    while i < 5:
+        try:
+            try: pass
+            finally: break
+        except:
+            pass
+    i += 1
+    raise Exception("foo")
+
+
+class Foo:
+    def __enter__(self):
+        return self
+    def __exit__(self, *args):
+        global i
+        i += 1
+        raise Exception("foo")
+
+
+def foo3():
+    with Foo():
+        return
+
+
 
 class Meta(type):
     def __call__(cls, *args, **kws):
@@ -454,6 +490,23 @@ class TestGeneratorCells(unittest.TestCase):
         self.assertEqual(list(g), [])
         with self.assertRaises(UnboundLocalError):
             value
+
+    def test_finally_raises(self):
+        def helper(fn):
+            global i
+            try:
+                fn()
+            except Exception:
+                pass
+            self.assertEqual(i, 1)
+            i = 0
+
+        helper(foo)
+        helper(foo2)
+        helper(foo3)
+
+
+
 
 
 if __name__ == "__main__":
