@@ -1146,6 +1146,7 @@ Compiler.prototype.newBlock = function (name) {
     this.u.blocks[ret]._next = null;
     return ret;
 };
+
 Compiler.prototype.setBlock = function (n) {
     Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
     this.u.curblock = n;
@@ -1166,27 +1167,6 @@ Compiler.prototype.pushContinueBlock = function (n) {
 Compiler.prototype.popContinueBlock = function () {
     this.u.continueBlocks.pop();
 };
-/*
-Compiler.prototype.pushExceptBlock = function (n) {
-    Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
-    this.u.exceptBlocks.push(n);
-};
-Compiler.prototype.popExceptBlock = function () {
-    this.u.exceptBlocks.pop();
-};
-
-Compiler.prototype.pushFinallyBlock = function (n) {
-    Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
-    Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
-    this.u.finallyBlocks.push({blk: n, breakDepth: this.u.breakBlocks.length});
-};
-Compiler.prototype.popFinallyBlock = function () {
-    this.u.finallyBlocks.pop();
-};
-Compiler.prototype.peekFinallyBlock = function() {
-    return (this.u.finallyBlocks.length > 0) ? this.u.finallyBlocks[this.u.finallyBlocks.length-1] : undefined;
-};
-*/
 
 Compiler.prototype.pushExceptionHandlerBlock = function (blk, isFinally) {
     Sk.asserts.assert(blk >= 0 && blk < this.u.blocknum);
@@ -1576,52 +1556,6 @@ Compiler.prototype.craise = function (s) {
     } else {
         // re-raise
         out("throw $err;");
-    }
-};
-
-Compiler.prototype.outputFinallyCascade = function (thisFinally) {
-    var nextFinally;
-
-    // What do we do when we're done executing a 'finally' block?
-    // Normally you just fall off the end. If we're 'return'ing,
-    // 'continue'ing or 'break'ing, $postfinally tells us what to do.
-    //
-    // But we might be in a nested pair of 'finally' blocks. If so, we need
-    // to work out whether to jump to the outer finally block.
-    //
-    // (NB we do NOT deal with re-raising exceptions here. That's handled
-    // elsewhere, because 'with' does special things with exceptions.)
-
-    if (this.u.finallyBlocks.length == 0) {
-        // No nested 'finally' block. Easy.
-        out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
-    } else {
-
-        // OK, we're nested. Do we jump straight to the outer 'finally' block?
-        // Depends on how we got here here.
-
-        // Normal execution ($postfinally===undefined)? No, we're done here.
-
-        // Returning ($postfinally.returning)? Yes, we want to execute all the
-        // 'finally' blocks on the way out.
-
-        // Breaking ($postfinally.isBreak)? It depends. Is the outer 'finally'
-        // block inside or outside the loop we're breaking out of? We compare
-        // its breakDepth to ours to find out. If we're at the same breakDepth,
-        // we're both inside the innermost loop, so we both need to execute.
-        // ('continue' is the same thing as 'break' for us)
-
-        nextFinally = this.peekFinallyBlock();
-
-        out("if($postfinally!==undefined) {",
-            "if ($postfinally.returning",
-            (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
-
-            "$blk=",nextFinally.blk,";continue;",
-            "} else {",
-            "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
-            "}",
-            "}");
     }
 };
 
