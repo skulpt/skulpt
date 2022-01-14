@@ -2568,7 +2568,7 @@ Compiler.prototype.ccontinue = function (s) {
         throw new Sk.builtin.SyntaxError("'continue' outside loop", this.filename, s.lineno);
     }
     // todo; continue out of exception blocks?
-    gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
+    const gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
     Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
     this.closeOutExceptionHandlersAndMaybeJumpToFinally(true, "{isBreak:true,gotoBlock:"+gotoBlock+"}");
     this._jump(gotoBlock);
@@ -2578,7 +2578,7 @@ Compiler.prototype.cbreak = function(s) {
     if (this.u.breakBlocks.length === 0) {
         throw new Sk.builtin.SyntaxError("'break' outside loop", this.filename, s.lineno);
     }
-    gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
+    const gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
     this.closeOutExceptionHandlersAndMaybeJumpToFinally(true, "{isBreak:true,gotoBlock:"+gotoBlock+"}");
     this._jump(gotoBlock);
 };
