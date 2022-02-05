@@ -754,35 +754,9 @@ Sk.builtin.type.prototype.tp$methods = /**@lends {Sk.builtin.type.prototype}*/ {
     },
     __dir__: {
         $meth: function __dir__() {
-            const seen = new Set();
-            const dir = [];
-            function push_or_continue(attr) {
-                if (attr in Sk.reservedWords_) {
-                    return;
-                }
-                attr = Sk.unfixReserved(attr);
-                if (attr.indexOf("$") !== -1) {
-                    return;
-                }
-                if (!seen.has(attr)) {
-                    seen.add(attr);
-                    dir.push(new Sk.builtin.str(attr));
-                }
-            }
-            if (this.prototype.sk$prototypical) {
-                for (let attr in this.prototype) {
-                    push_or_continue(attr);
-                }
-            } else {
-                const mro = this.prototype.tp$mro;
-                for (let i = 0; i < mro.length; i++) {
-                    const attrs = Object.getOwnPropertyNames(mro[i].prototype);
-                    for (let j = 0; j < attrs.length; j++) {
-                        push_or_continue(attrs[j]);
-                    }
-                }
-            }
-            return new Sk.builtin.list(dir);
+            const dict = new Sk.builtin.dict([]);
+            this.$mergeClassDict(dict);
+            return new Sk.builtin.list(dict.sk$asarray());
         },
         $flags: { NoArgs: true },
         $doc: "Specialized __dir__ implementation for types.",
