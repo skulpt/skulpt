@@ -1864,6 +1864,7 @@ Sk.subSlots = {
         nb$int: "__int__",
         nb$long: "__long__",
         nb$float: "__float__",
+        nb$index: "__index__",
         nb$add: "__add__",
         nb$reflected_add: "__radd__",
         nb$inplace_add: "__iadd__",
@@ -2072,6 +2073,7 @@ Sk.dunderToSkulpt = {
     __pos__: "nb$positive",
     __int__: "nb$int",
     __float__: "nb$float",
+    __index__: "nb$index",
 
     __add__: "nb$add",
     __radd__: "nb$reflected_add",

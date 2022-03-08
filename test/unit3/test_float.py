@@ -1,12 +1,89 @@
+# TODO include the rest of the tests for this file
 import sys
 import unittest
 import math
+import time
 
 from test_grammar import (VALID_UNDERSCORE_LITERALS, INVALID_UNDERSCORE_LITERALS)
 
 
 INF = float("inf")
 NAN = float("nan")
+
+
+
+class FloatSubclass(float):
+    pass
+
+class OtherFloatSubclass(float):
+    pass
+class GeneralFloatCases(unittest.TestCase):
+    def test_floatconversion(self):
+        # Make sure that calls to __float__() work properly
+        class Foo1(object):
+            def __float__(self):
+                return 42.
+
+        class Foo2(float):
+            def __float__(self):
+                return 42.
+
+        class Foo3(float):
+            def __new__(cls, value=0.):
+                return float.__new__(cls, 2*value)
+
+            def __float__(self):
+                return self
+
+        class Foo4(float):
+            def __float__(self):
+                return 42
+
+        # Issue 5759: __float__ not called on str subclasses (though it is on
+        # unicode subclasses).
+        class FooStr(str):
+            def __float__(self):
+                return float(str(self)) + 1
+
+        self.assertEqual(float(Foo1()), 42.)
+        self.assertEqual(float(Foo2()), 42.)
+        # with self.assertWarns(DeprecationWarning):
+        #     self.assertEqual(float(Foo3(21)), 42.)
+        self.assertRaises(TypeError, float, Foo4(42))
+        self.assertEqual(float(FooStr('8')), 9.)
+
+        class Foo5:
+            def __float__(self):
+                return ""
+        self.assertRaises(TypeError, time.sleep, Foo5())
+
+        # Issue #24731
+        class F:
+            def __float__(self):
+                return OtherFloatSubclass(42.)
+        # with self.assertWarns(DeprecationWarning):
+        #     self.assertEqual(float(F()), 42.)
+        # with self.assertWarns(DeprecationWarning):
+        #     self.assertIs(type(float(F())), float)
+        # with self.assertWarns(DeprecationWarning):
+        #     self.assertEqual(FloatSubclass(F()), 42.)
+        # with self.assertWarns(DeprecationWarning):
+        #     self.assertIs(type(FloatSubclass(F())), FloatSubclass)
+
+        class MyIndex:
+            def __init__(self, value):
+                self.value = value
+            def __index__(self):
+                return self.value
+
+        self.assertEqual(float(MyIndex(42)), 42.0)
+        self.assertRaises(OverflowError, float, MyIndex(2**2000))
+
+        class MyInt:
+            def __int__(self):
+                return 42
+
+        self.assertRaises(TypeError, float, MyInt())
 
 
 class FloatTestCases(unittest.TestCase):

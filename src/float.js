@@ -61,8 +61,10 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             // is args always an empty list?
             if (arg === undefined) {
                 x = new Sk.builtin.float_(0.0);
-            } else if (arg.nb$float) {
+            } else if (arg.nb$float !== undefined) {
                 x = arg.nb$float();
+            } else if (arg.nb$index !== undefined) {
+                x = new Sk.builtin.int_(arg.nb$index()).nb$float();
             } else if (Sk.builtin.checkString(arg)) {
                 x = _str_to_float(arg.v);
             }
