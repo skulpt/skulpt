@@ -507,6 +507,10 @@ function $allocateSlots() {
             }
         });
     }
+    if (proto.hasOwnProperty("__eq__") && !proto.hasOwnProperty("__hash__")) {
+        // https://docs.python.org/3/reference/datamodel.html#object.__hash__
+        proto.tp$hash = proto.__hash__ = Sk.builtin.none.none$;
+    }
 }
 
 function $allocateSlot(dunder, dunderFunc) {
