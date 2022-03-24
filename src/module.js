@@ -37,6 +37,8 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
                     }
                 );
                 return canSuspend ? res : Sk.misceval.retryOptionalSuspensionOrThrow(res);
+            } else {
+                this.check$initializing(pyName);
             }
         },
         tp$setattr: Sk.generic.setAttr,
@@ -89,6 +91,15 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
         },
     },
     proto: {
+        check$initializing(attr) {
+            if (this.$initializing) {
+                const msg =
+                    "partially initialized " +
+                    `module ${this.get$name()} has no attribute '${attr.toString()}' ` +
+                    "(most likely due to a circular import)";
+                throw new Sk.builtin.AttributeError(msg);
+            }
+        },
         init$dict(name, doc) {
             this.$d.__name__ = name;
             this.$d.__doc__ = doc;
