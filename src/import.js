@@ -495,7 +495,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             var i;
             var fromName;
             var leafModule;
-            const chainedImports = [null];
+            var importChain;
 
             leafModule = Sk.sysmodules.mp$subscript(
                 new Sk.builtin.str((relativeToPackageName || "") +
@@ -508,13 +508,13 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
                 // "ret" is the module we're importing from
                 // Only import from file system if we have not found the fromName in the current module
                 if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
-                    chainedImports.push(() =>
+                    importChain = Sk.misceval.chain(importChain, () => 
                         Sk.importModuleInternal_(fromName, undefined, undefined, undefined, leafModule, true, true)
                     );
                 }
             }
 
-            return Sk.misceval.chain(...chainedImports, function () {
+            return Sk.misceval.chain(importChain, function() {
                 // if there's a fromlist we want to return the leaf module
                 // (ret), not the toplevel namespace
                 Sk.asserts.assert(leafModule);
