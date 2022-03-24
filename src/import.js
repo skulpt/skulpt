@@ -283,32 +283,38 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 module["$d"]["__file__"] = new Sk.builtin.str(co.filename);
             }
             const packageInitializing = relativeToPackage && relativeToPackage.$initializing;
-            module.$initializing = true;
-            if (relativeToPackage && !packageInitializing) {
-                relativeToPackage.$initializing = true;
-            }
-            try {
-                return modscope(module["$d"]);
-            } catch (e) {
-                try {
-                    // don't cache a module if it raised an exception on load
-                    Sk.abstr.objectDelItem(Sk.sysmodules, pyModName);
-                } catch {}
-                if (relativeToPackage) {
-                    try {
-                        relativeToPackage.tp$setattr(pyAttrName, undefined);
-                    } catch {}
-                }
-                throw e;
-            } finally {
-                module.$initializing = false;
+            const setInitializing = (v) => {
+                module.$initializing = v;
                 if (relativeToPackage && !packageInitializing) {
-                    relativeToPackage.$initializing = false;
+                    relativeToPackage.$initializing = v;
                 }
-            }
+            };
+
+            setInitializing(true);
+            // our module might suspend so we need to wrap it in a suspendable try catch
+            // we can only setInitializing to false once the suspensions have completed
+            return Sk.misceval.tryCatch(
+                () =>
+                    Sk.misceval.chain(modscope(module["$d"]), (rv) => {
+                        setInitializing(false);
+                        return rv;
+                    }),
+                (e) => {
+                    try {
+                        // don't cache a module if it raised an exception on load
+                        Sk.abstr.objectDelItem(Sk.sysmodules, pyModName);
+                    } catch {}
+                    if (relativeToPackage) {
+                        try {
+                            relativeToPackage.tp$setattr(pyAttrName, undefined);
+                        } catch {}
+                    }
+                    setInitializing(false);
+                    throw e;
+                }
+            );
         }, function (modlocs) {
             var i;
-
             if (modlocs === undefined) {
                 if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
                     return undefined;
