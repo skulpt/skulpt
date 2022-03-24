@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * @constructor
  * @extends {Sk.builtin.object}
  * @description
@@ -8,9 +8,9 @@
  * It assumed that a number passed it is within `Number.MaxSafeInteger`
  * Similarly if a BigInt is passed it is assumed that this is larger than `Number.MaxSafeInteger`
  * Internal code like `float.nb$int` checks the resulting JS instance before calling `new Sk.builtin.int_`
- * 
+ *
  * @param  {number|JSBI|string=} x
- * 
+ *
  */
 Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function int_(x) {
@@ -31,8 +31,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     },
     slots: /** @lends {Sk.builtin.int_.prototype}*/ {
         tp$as_number: true,
-        tp$doc:
-            "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4",
+        tp$doc: "int(x=0) -> integer\nint(x, base=10) -> integer\n\nConvert a number or string to an integer, or return 0 if no arguments\nare given.  If x is a number, return x.__int__().  For floating point\nnumbers, this truncates towards zero.\n\nIf x is not a number or if base is given, then x must be a string,\nbytes, or bytearray instance representing an integer literal in the\ngiven base.  The literal can be preceded by '+' or '-' and be surrounded\nby whitespace.  The base defaults to 10.  Valid bases are 0 and 2-36.\nBase 0 means to interpret the base from the string as an integer literal.\n>>> int('0b100', base=0)\n4",
         $r() {
             return new Sk.builtin.str(this.v.toString());
         },
@@ -46,7 +45,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 x = args[0];
                 base = Sk.builtin.none.none$;
             } else {
-                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [new Sk.builtin.int_(0), Sk.builtin.none.none$]);
+                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [
+                    new Sk.builtin.int_(0),
+                    Sk.builtin.none.none$,
+                ]);
                 x = args[0];
                 base = args[1];
             }
@@ -90,7 +92,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         nb$ispositive() {
             const v = this.v;
-            return typeof v === "number" ? v < 0 : JSBI.greaterThanOrEqual(v, JSBI.__ZERO);
+            return typeof v === "number" ? v >= 0 : JSBI.greaterThanOrEqual(v, JSBI.__ZERO);
         },
         nb$bool() {
             return this.v !== 0; // should be fine not to check BigInt here
@@ -109,18 +111,19 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             (v, w) => JSBI.numberIfSafe(JSBI.subtract(v, w))
         ),
         nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
-        nb$divide(other) {
-            if (Sk.__future__.division) {
-                return this.nb$float().nb$divide(other);
-            }
-            return this.nb$floor_divide(other);
-        },
-        nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), JSBI.divide),
-        nb$remainder: numberDivisionSlot((v, w) => v - Math.floor(v / w) * w, JSBI.remainder),
+        nb$divide: trueDivide,
+        nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), BigIntFloorDivide),
+        nb$remainder: numberDivisionSlot(
+            (v, w) => v - Math.floor(v / w) * w,
+            (v, w) => JSBI.subtract(v, JSBI.multiply(w, BigIntFloorDivide(v, w)))
+        ),
         nb$divmod(other) {
             const floor = this.nb$floor_divide(other);
             const remainder = this.nb$remainder(other);
-            if (floor === Sk.builtin.NotImplemented.NotImplemented$ || remainder === Sk.builtin.NotImplemented.NotImplemented$) {
+            if (
+                floor === Sk.builtin.NotImplemented.NotImplemented$ ||
+                remainder === Sk.builtin.NotImplemented.NotImplemented$
+            ) {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
             return new Sk.builtin.tuple([floor, remainder]);
@@ -129,60 +132,68 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         nb$or: numberBitSlot((v, w) => v | w, JSBI.bitwiseOr),
         nb$xor: numberBitSlot((v, w) => v ^ w, JSBI.bitwiseXor),
 
-        nb$abs: numberUnarySlot(Math.abs, (v) => (JSBI.lessThan(v, JSBI.__ZERO) ? JSBI.unaryMinus(v) : v)),
+        nb$abs: numberUnarySlot(Math.abs, BigIntAbs),
 
         nb$lshift: numberShiftSlot((v, w) => {
-            if (w < 53) {
-                const tmp = v * 2 * shiftconsts[w];
-                if (numberOrStringWithinThreshold(tmp)) {
-                    return tmp;
-                }
-                return;
+            const tmp = v * 2 * shiftconsts[w];
+            if (numberOrStringWithinThreshold(tmp)) {
+                return tmp;
             }
+            return undefined; // fall through to using BigInt shift
         }, JSBI.leftShift),
         nb$rshift: numberShiftSlot(
             (v, w) => {
                 // Avoid forced signed 32 bit conversion and just divide.
-                return Math.floor(v / shiftconsts[w+1]);
+                Math.floor(v / shiftconsts[w + 1]);
             },
             (v, w) => JSBI.numberIfSafe(JSBI.signedRightShift(v, w))
         ),
 
-        nb$invert: numberUnarySlot((v) => ~v, JSBI.bitwiseNot),
+        nb$invert: numberUnarySlot(
+            (v) => (Math.abs(v) < 2 ** 31 ? ~v : undefined),
+            (v) => JSBI.numberIfSafe(JSBI.bitwiseNot(v))
+        ),
         nb$power(other, mod) {
             let ret;
+            if (mod === undefined) {
+                // pass
+            } else if (Sk.builtin.checkNone(mod)) {
+                mod = undefined;
+            }
+            if (!(other instanceof Sk.builtin.int_) || (mod !== undefined && !(mod instanceof Sk.builtin.int_))) {
+                return Sk.builtin.NotImplemented.NotImplemented$;
+            }
+            const wNeg = other.nb$isnegative();
+            if (wNeg && mod === undefined) {
+                return this.nb$float().nb$power(other.nb$float());
+            }
+            let v = this.v;
+            let w = other.v;
+            if (typeof v === "number" && typeof w === "number") {
+                const power = Math.pow(v, w);
+                if (numberOrStringWithinThreshold(power)) {
+                    ret = new Sk.builtin.int_(power);
+                    if (mod === undefined) {
+                        return ret;
+                    }
+                }
+            }
             if (mod !== undefined) {
-                if (Sk.builtin.checkNone(mod)) {
-                    mod = undefined;
+                if (wNeg) {
+                    /** @todo - python 3.8 supports this - https://github.com/python/cpython/pull/13266 */
+                    throw new Sk.builtin.ValueError(
+                        "pow() 2nd argument cannot be negative when 3rd argument specified"
+                    );
+                } else if (mod.v === 0) {
+                    throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
                 }
+                if (ret !== undefined) {
+                    return ret.nb$remainder(mod);
+                }
+                return new Sk.builtin.int_(JSBI.powermod(bigUp(v), bigUp(w), bigUp(mod.v)));
             }
-            if (other instanceof Sk.builtin.int_ && (mod === undefined || mod instanceof Sk.builtin.int_)) {
-                let v = this.v;
-                let w = other.v;
-                if (typeof v === "number" && typeof w === "number") {
-                    const power = Math.pow(v, w);
-                    if (numberOrStringWithinThreshold(power)) {
-                        ret = w < 0 ? new Sk.builtin.float_(power) : new Sk.builtin.int_(power);
-                        if (mod === undefined) {
-                            return ret;
-                        }
-                    }
-                }
-                if (mod !== undefined) {
-                    if (other.nb$isnegative()) {
-                        throw new Sk.builtin.ValueError("pow() 2nd argument cannot be negative when 3rd argument specified");
-                    } else if (mod.v === 0) {
-                        throw new Sk.builtin.ValueError("pow() 3rd argument cannot be 0");
-                    }
-                    if (ret !== undefined) {
-                        return ret.nb$remainder(mod);
-                    }
-                    return new Sk.builtin.int_(JSBI.powermod(bigUp(v), bigUp(w), bigUp(mod.v)));
-                }
-                // if we're here then we've fallen through so do bigint exponentiate
-                return new Sk.builtin.int_(JSBI.exponentiate(bigUp(v), bigUp(w)));
-            }
-            return Sk.builtin.NotImplemented.NotImplemented$;
+            // if we're here then we've fallen through so do bigint exponentiate
+            return new Sk.builtin.int_(JSBI.exponentiate(bigUp(v), bigUp(w)));
         },
         nb$long() {
             return new Sk.builtin.lng(this.v);
@@ -209,7 +220,12 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         bit_length: {
             $meth() {
-                return new Sk.builtin.int_(Sk.builtin.bin(this).sq$length() - 2);
+                let v = this.v;
+                if (v === 0) {
+                    return new Sk.builtin.int_(0);
+                }
+                v = typeof v === "number" ? Math.abs(v) : BigIntAbs(v);
+                return new Sk.builtin.int_(v.toString(2).length);
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -221,8 +237,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             },
             $flags: { FastCall: true },
             $textsig: "($self, /, length, byteorder, *, signed=False)",
-            $doc:
-                "Return an array of bytes representing an integer.\n\n  length\n    Length of bytes object to use.  An OverflowError is raised if the\n    integer is not representable with the given number of bytes.\n  byteorder\n    The byte order used to represent the integer.  If byteorder is 'big',\n    the most significant byte is at the beginning of the byte array.  If\n    byteorder is 'little', the most significant byte is at the end of the\n    byte array.  To request the native byte order of the host system, use\n    `sys.byteorder' as the byte order value.\n  signed\n    Determines whether two's complement is used to represent the integer.\n    If signed is False and a negative integer is given, an OverflowError\n    is raised.",
+            $doc: "Return an array of bytes representing an integer.\n\n  length\n    Length of bytes object to use.  An OverflowError is raised if the\n    integer is not representable with the given number of bytes.\n  byteorder\n    The byte order used to represent the integer.  If byteorder is 'big',\n    the most significant byte is at the beginning of the byte array.  If\n    byteorder is 'little', the most significant byte is at the end of the\n    byte array.  To request the native byte order of the host system, use\n    `sys.byteorder' as the byte order value.\n  signed\n    Determines whether two's complement is used to represent the integer.\n    If signed is False and a negative integer is given, an OverflowError\n    is raised.",
         },
         __trunc__: {
             $meth: cloneSelf,
@@ -287,32 +302,25 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 ndigits = Sk.misceval.asIndexSized(ndigits);
             }
             const v = this.v;
-            const multiplier = Math.pow(10, -ndigits);
-            let tmp;
-            if (ndigits > 0) {
+            if (ndigits >= 0) {
                 return new Sk.builtin.int_(v);
             }
-            if (typeof v === "number" && Sk.__future__.bankers_rounding) {
-                const num10 = v / multiplier;
-                const rounded = Math.round(num10);
-                const bankRound = (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
-                const result = bankRound * multiplier;
-                return new Sk.builtin.int_(result);
-            } else if (typeof v === "number") {
-                return new Sk.builtin.int_(Math.round(v / multiplier) * multiplier);
-            } else {
-                const BigMultiplier = JSBI.BigInt(multiplier * 10);
-                const ten = JSBI.BigInt(10);
-                tmp = JSBI.divide(v, BigMultiplier);
-                const undecided = JSBI.divide(tmp, ten);
-                const pt5 = JSBI.subtract(tmp, JSBI.multiply(ten, undecided));
-                if (JSBI.toNumber(pt5) < 5) {
-                    tmp = JSBI.multiply(JSBI.multiply(undecided, ten), BigMultiplier);
-                } else {
-                    JSBI.multiply(JSBI.multiply(JSBI.add(undecided, JSBI.BigInt(1), ten), BigMultiplier));
-                }
-                return new Sk.builtin.int_(tmp);
+            if (typeof v !== "number") {
+                return BigIntRound(v, ndigits);
             }
+            const multiplier = Math.pow(10, -ndigits);
+            if (multiplier / 10 > Math.abs(v)) {
+                return new Sk.builtin.int_(0);
+            }
+            if (!Sk.__future__.bankers_rounding) {
+                return new Sk.builtin.int_(Math.round(v / multiplier) * multiplier);
+            }
+            const num10 = v / multiplier;
+            const rounded = Math.round(num10);
+            const bankRound =
+                (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
+            const result = bankRound * multiplier;
+            return new Sk.builtin.int_(result);
         },
     },
 });
@@ -320,80 +328,84 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
 Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
 /**
  * A function that will return either a number or a BigInt
- * 
+ *
  * There are two functions passed to this slot the quick function where both int values are number
  * and the JSBI.BigInt version of the same function
  * The fall through case where one or both of the int values is a bigint
  * @ignore
- * 
+ *
  * @private
- * 
+ *
  * @param {Function} number_func
  * @param {Function} bigint_func
  */
 function numberSlot(number_func, bigint_func) {
     /**
-    * @this {Sk.builtin.int_}
-    * 
-    * @param {Sk.builtin.int_|Sk.builtin.object} other 
-    * @return {Sk.builtin.int_|Sk.builtin.NotImplemented}
-    */
-    function doNumberSlot(other) {
-        if (other instanceof Sk.builtin.int_) {
-            /**@type {number|JSBI} */
-            let v = this.v;
-            /**@type {number|JSBI} */
-            let w = other.v;
-            if (typeof v === "number" && typeof w === "number") {
-                const res = number_func(v, w);
-                if (numberOrStringWithinThreshold(res)) {
-                    return new Sk.builtin.int_(res);
-                }
-            }
-            v = bigUp(v);
-            w = bigUp(w);
-            return new Sk.builtin.int_(bigint_func(v, w));
+     * @this {Sk.builtin.int_}
+     *
+     * @param {Sk.builtin.int_|Sk.builtin.object} other
+     * @return {Sk.builtin.int_|Sk.builtin.NotImplemented}
+     */
+    return function (other) {
+        if (!(other instanceof Sk.builtin.int_)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        /**@type {number|JSBI} */
+        let v = this.v;
+        /**@type {number|JSBI} */
+        let w = other.v;
+        if (typeof v === "number" && typeof w === "number") {
+            const res = number_func(v, w);
+            if (numberOrStringWithinThreshold(res)) {
+                return new Sk.builtin.int_(res);
+            }
+        }
+        v = bigUp(v);
+        w = bigUp(w);
+        return new Sk.builtin.int_(bigint_func(v, w));
     };
-    return doNumberSlot;
 }
 
 function compareSlot(number_func, bigint_func) {
     return function (other) {
-        if (other instanceof Sk.builtin.int_) {
-            let v = this.v;
-            let w = other.v;
-            if (typeof v === "number" && typeof w === "number") {
-                return number_func(v, w);
-            }
-            v = bigUp(v);
-            w = bigUp(w);
-            return bigint_func(v, w);
+        if (!(other instanceof Sk.builtin.int_)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        let v = this.v;
+        let w = other.v;
+        if (typeof v === "number" && typeof w === "number") {
+            return number_func(v, w);
+        }
+        v = bigUp(v);
+        w = bigUp(w);
+        return bigint_func(v, w);
     };
 }
 
 /**
- * 
- * @param {function(number): number} number_func 
- * @param {function(JSBI): JSBI} bigint_func 
+ *
+ * @param {function(number): number} number_func
+ * @param {function(JSBI): JSBI} bigint_func
  * @ignore
- * 
+ *
  */
 function numberUnarySlot(number_func, bigint_func) {
     /**
      * @this {Sk.builtin.int_}
      * @return {Sk.builtin.int_}
      */
-    function doUnarySlot () {
-        const v = this.v;
+    function doUnarySlot() {
+        let v = this.v;
         if (typeof v === "number") {
-            return new Sk.builtin.int_(number_func(v));
+            const res = number_func(v);
+            if (res !== undefined) {
+                return new Sk.builtin.int_(res);
+            }
+            v = bigUp(v);
         }
+        // fallthrough
         return new Sk.builtin.int_(bigint_func(v));
-    };
+    }
     return doUnarySlot;
 }
 
@@ -401,75 +413,188 @@ function cloneSelf() {
     return new Sk.builtin.int_(this.v);
 }
 
+const DBL_MANT_DIG = Math.log2(Number.MAX_SAFE_INTEGER);
+const DBL_MAX_EXP = JSBI.BigInt(Math.floor(Math.log2(Number.MAX_VALUE)));
+const DBL_MIN_EXP = Math.ceil(Math.log2(Number.MIN_VALUE));
+const BIG_2 = JSBI.BigInt(2);
+const BIG_1 = JSBI.BigInt(1);
+const DBL_MIN_OVERFLOW = JSBI.subtract(
+    JSBI.exponentiate(BIG_2, DBL_MAX_EXP),
+    JSBI.exponentiate(BIG_2, JSBI.subtract(DBL_MAX_EXP, JSBI.add(JSBI.BigInt(DBL_MANT_DIG), BIG_1)))
+);
+
+function trueDivide(other) {
+    if (!Sk.__future__.python3) {
+        return this.nb$floor_divide(other);
+    }
+    if (!(other instanceof Sk.builtin.int_)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    let v = this.v;
+    let w = other.v;
+    if (w === 0) {
+        throw new Sk.builtin.ZeroDivisionError("division by zero");
+    }
+    if (typeof v === "number" && typeof w === "number") {
+        return new Sk.builtin.float_(v / w);
+    }
+
+    // slow case do what we gotta do
+    // algorithm taken from test_long.py
+    v = bigUp(v);
+    w = bigUp(w);
+    const negative = JSBI.lessThan(JSBI.bitwiseXor(v, w), JSBI.__ZERO);
+    if (JSBI.equal(v, JSBI.__ZERO)) {
+        return new Sk.builtin.float_(negative ? -0.0 : 0.0);
+    }
+    v = BigIntAbs(v);
+    w = BigIntAbs(w);
+    if (JSBI.greaterThanOrEqual(v, JSBI.multiply(DBL_MIN_OVERFLOW, w))) {
+        throw new Sk.builtin.OverflowError("int/int too large to represent as a float");
+    }
+    let diff = v.toString(2).length - w.toString(2).length;
+    const absBigDiff = JSBI.BigInt(diff < 0 ? -diff : diff);
+
+    if (
+        (diff >= 0 && JSBI.greaterThanOrEqual(v, JSBI.multiply(JSBI.exponentiate(BIG_2, absBigDiff), w))) ||
+        (diff < 0 && JSBI.greaterThanOrEqual(JSBI.multiply(v, JSBI.exponentiate(BIG_2, absBigDiff)), w))
+    ) {
+        diff += 1;
+    }
+    const exp = Math.max(diff, DBL_MIN_EXP) - DBL_MANT_DIG;
+    v = JSBI.leftShift(v, JSBI.BigInt(Math.max(-exp, 0)));
+    w = JSBI.leftShift(w, JSBI.BigInt(Math.max(exp, 0)));
+
+    let q = JSBI.divide(v, w);
+    const r = JSBI.remainder(v, w);
+
+    const doubleR = JSBI.multiply(BIG_2, r);
+    if (JSBI.greaterThan(doubleR, w) || (JSBI.equal(doubleR, w) && JSBI.equal(JSBI.remainder(q, BIG_2), BIG_1))) {
+        q = JSBI.add(q, BIG_1);
+    }
+    q = JSBI.toNumber(q);
+    if (q === Infinity || q === -Infinity) {
+        throw new Sk.builtin.OverflowError("int/int too large to represent as a float");
+    }
+    let res = q * Math.pow(2, exp);
+    res = negative ? -res : res;
+    return new Sk.builtin.float_(res);
+}
+
 function numberDivisionSlot(number_func, bigint_func) {
     return function (other) {
-        if (other instanceof Sk.builtin.int_) {
-            let v = this.v;
-            let w = other.v;
-            if (w === 0) {
-                throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
-            }
-            if (typeof v === "number" && typeof w === "number") {
-                // it's integer division so no need to check if the number got bigger!
-                return new Sk.builtin.int_(number_func(v, w));
-            }
-            v = bigUp(v);
-            w = bigUp(w);
-            return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
+        if (!(other instanceof Sk.builtin.int_)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        let v = this.v;
+        let w = other.v;
+        if (w === 0) {
+            throw new Sk.builtin.ZeroDivisionError("integer division or modulo by zero");
+        }
+        if (typeof v === "number" && typeof w === "number") {
+            // it's integer division so no need to check if the number got bigger!
+            return new Sk.builtin.int_(number_func(v, w));
+        }
+        v = bigUp(v);
+        w = bigUp(w);
+        return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
     };
 }
 
 function numberShiftSlot(number_func, bigint_func) {
     return function (other) {
-        if (other instanceof Sk.builtin.int_) {
-            let v = this.v;
-            let w = other.v;
-            if (v === 0) {
-                return new Sk.builtin.int_(this.v);
-            }
-            if (typeof w === "number") {
-                if (w < 0) {
-                    throw new Sk.builtin.ValueError("negative shift count");
-                }
-                if (typeof v === "number") {
-                    const tmp = number_func(v, w);
-                    if (tmp !== undefined) {
-                        return new Sk.builtin.int_(tmp);
-                    }
-                }
-                w = JSBI.BigInt(w);
-            } else if (JSBI.lessThan(JSBI.BigInt(0))) {
-                throw new Sk.builtin.ValueError("negative shift count");
-            }
-            v = bigUp(v);
-            return new Sk.builtin.int_(bigint_func(v, w)); // con't convert if safe for leftshift
+        if (!(other instanceof Sk.builtin.int_)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        const wNeg = other.nb$isnegative();
+        if (wNeg) {
+            throw new Sk.builtin.ValueError("negative shift count");
+        }
+        let v = this.v;
+        if (v === 0) {
+            return new Sk.builtin.int_(0);
+        }
+        let w = other.v;
+        if (typeof v === "number" && typeof w === "number" && w < 53) {
+            // we use the shiftconsts below in the implementation for << and >>
+            const ret = number_func(v, w);
+            if (ret !== undefined) {
+                return new Sk.builtin.int_(ret);
+            }
+        }
+        v = bigUp(v);
+        w = bigUp(w);
+        return new Sk.builtin.int_(bigint_func(v, w)); // can't convert if safe for leftshift
     };
 }
 
 function numberBitSlot(number_func, bigint_func) {
     return function (other) {
-        if (other instanceof Sk.builtin.int_) {
-            let v = this.v;
-            let w = other.v;
-            if (typeof v === "number" && typeof w === "number") {
-                let tmp = number_func(v, w);
-                if (tmp < 0) {
-                    tmp = tmp + 4294967296; // convert back to unsigned
-                }
-                return new Sk.builtin.int_(tmp);
-            }
-            v = bigUp(v);
-            w = bigUp(w);
-            return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
+        if (!(other instanceof Sk.builtin.int_)) {
+            return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        return Sk.builtin.NotImplemented.NotImplemented$;
+        let v = this.v;
+        let w = other.v;
+        if (typeof v === "number" && typeof w === "number" && Math.abs(v) < 2 ** 31 && Math.abs(w) < 2 ** 31) {
+            return new Sk.builtin.int_(number_func(v, w));
+        }
+        v = bigUp(v);
+        w = bigUp(w);
+        return new Sk.builtin.int_(JSBI.numberIfSafe(bigint_func(v, w)));
     };
 }
 
+function BigIntAbs(v) {
+    return JSBI.lessThan(v, JSBI.__ZERO) ? JSBI.unaryMinus(v) : v;
+}
+
+function BigIntFloorDivide(v, w) {
+    if (JSBI.greaterThanOrEqual(JSBI.bitwiseXor(v, w), JSBI.__ZERO)) {
+        return JSBI.divide(v, w);
+    }
+    // make the numerator smaller and then subtract 1 from the answer to round down.
+    if (JSBI.lessThan(v, JSBI.__ZERO)) {
+        v = JSBI.add(v, BIG_1);
+    } else {
+        v = JSBI.subtract(v, BIG_1);
+    }
+    return JSBI.subtract(JSBI.divide(v, w), BIG_1);
+}
+
+function BigIntRound(v, ndigits) {
+    // Get absolute versions. We'll deal with the negatives later.
+    const isNeg = JSBI.lessThan(v, JSBI.__ZERO);
+    if (isNeg) {
+        v = JSBI.unaryMinus(v);
+    }
+    const BigMultiplier = JSBI.exponentiate(JSBI.BigInt(10), JSBI.unaryMinus(JSBI.BigInt(ndigits)));
+
+    let result = JSBI.divide(v, BigMultiplier);
+    const rem = JSBI.remainder(v, BigMultiplier);
+
+    // if remainder > half divisor
+    const doubleRem = JSBI.multiply(rem, BIG_2);
+    if (JSBI.greaterThan(doubleRem, BigMultiplier)) {
+        result = JSBI.add(result, BIG_1);
+        // We should have rounded up instead of down.
+    } else if (JSBI.equal(doubleRem, BigMultiplier)) {
+        // If the remainder is exactly half the divisor, it means that the result is
+        // exactly in between two numbers and we need to apply a specific rounding
+        // method.
+        if (!Sk.__future__.bankers_rounding) {
+            result = JSBI.add(result, BIG_1);
+        } else if (JSBI.equal(JSBI.remainder(result, BIG_2), BIG_1)) {
+            // Add 1 if result is odd to get an even return value
+            result = JSBI.add(result, BIG_1);
+        }
+    }
+
+    result = JSBI.multiply(result, BigMultiplier);
+    if (isNeg) {
+        result = JSBI.unaryMinus(result);
+    }
+    return new Sk.builtin.int_(result);
+}
 
 const validUnderscores = /_(?=[^_])/g;
 /**
@@ -596,9 +721,9 @@ Sk.str2number = function (s, base) {
 Sk.builtin.int_.py2$methods = {};
 
 /**
- * 
- * @param {string} s 
- * @param {number=} base 
+ *
+ * @param {string} s
+ * @param {number=} base
  */
 Sk.longFromStr = function (s, base) {
     if (Sk.__future__.python3) {
@@ -609,7 +734,6 @@ Sk.longFromStr = function (s, base) {
     }
 };
 Sk.exportSymbol("Sk.longFromStr", Sk.longFromStr);
-
 
 function numberOrStringWithinThreshold(v) {
     return v <= Number.MAX_SAFE_INTEGER && v >= -Number.MAX_SAFE_INTEGER;
@@ -626,14 +750,12 @@ function stringToNumberOrBig(s) {
 
 Sk.builtin.int_.stringToNumberOrBig = stringToNumberOrBig;
 
-
 function bigUp(v) {
     if (typeof v === "number") {
         return JSBI.BigInt(v);
     }
     return v;
 }
-
 
 function getInt(x, base) {
     let func, res;
@@ -659,12 +781,16 @@ function getInt(x, base) {
         res = Sk.misceval.callsimArray(func, []);
         // check return type of magic methods
         if (!Sk.builtin.checkInt(res)) {
-            throw new Sk.builtin.TypeError(Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")");
+            throw new Sk.builtin.TypeError(
+                Sk.builtin.str.$trunc.$jsstr() + " returned non-Integral (type " + Sk.abstr.typeName(x) + ")"
+            );
         }
         return new Sk.builtin.int_(res.v);
     }
 
-    throw new Sk.builtin.TypeError("int() argument must be a string, a bytes-like object or a number, not '" + Sk.abstr.typeName(x) + "'");
+    throw new Sk.builtin.TypeError(
+        "int() argument must be a string, a bytes-like object or a number, not '" + Sk.abstr.typeName(x) + "'"
+    );
 }
 
 /**
@@ -681,8 +807,8 @@ function fromStrToBigWithBase(s, base) {
         s = s.substring(1);
     }
     base = JSBI.BigInt(base);
-    let power = JSBI.BigInt(1);
-    let num = JSBI.BigInt(0);
+    let power = BIG_1;
+    let num = JSBI.__ZERO;
     let toadd, val;
     for (let i = s.length - 1; i >= 0; i--) {
         val = s.charCodeAt(i);
@@ -707,81 +833,31 @@ function fromStrToBigWithBase(s, base) {
 }
 
 const shiftconsts = [
-    0.5,
-    1,
-    2,
-    4,
-    8,
-    16,
-    32,
-    64,
-    128,
-    256,
-    512,
-    1024,
-    2048,
-    4096,
-    8192,
-    16384,
-    32768,
-    65536,
-    131072,
-    262144,
-    524288,
-    1048576,
-    2097152,
-    4194304,
-    8388608,
-    16777216,
-    33554432,
-    67108864,
-    134217728,
-    268435456,
-    536870912,
-    1073741824,
-    2147483648,
-    4294967296,
-    8589934592,
-    17179869184,
-    34359738368,
-    68719476736,
-    137438953472,
-    274877906944,
-    549755813888,
-    1099511627776,
-    2199023255552,
-    4398046511104,
-    8796093022208,
-    17592186044416,
-    35184372088832,
-    70368744177664,
-    140737488355328,
-    281474976710656,
-    562949953421312,
-    1125899906842624,
-    2251799813685248,
-    4503599627370496,
-    9007199254740992,
+    0.5, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288,
+    1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824,
+    2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944,
+    549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832,
+    70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248,
+    4503599627370496, 9007199254740992,
 ];
-
 
 /**
  * @constructor
  *
  * @description
- * This is only for backward compatibility with py2. 
+ * This is only for backward compatibility with py2.
  * We take the approach of using a trivial subclass with int and overriding a few methods
  *
- * @param {number|string|JSBI} x 
+ * @param {number|string|JSBI} x
  * @extends {Sk.builtin.int_}
  * @ignore
  */
 Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
     base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
-    constructor: function lng (x) {
+    constructor: function lng(x) {
         Sk.builtin.int_.call(this, x);
     },
-    slots: /** @lends {Sk.builtin.lng.prototype} */{
+    slots: /** @lends {Sk.builtin.lng.prototype} */ {
         $r() {
             return new Sk.builtin.str(this.v.toString() + "L");
         },
