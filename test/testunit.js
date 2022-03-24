@@ -40,14 +40,24 @@ function test (python3, opt, module = undefined) {
     var modules = [];
 
     for (var idx = 0; idx < files.length; idx++) {
-        let file = dir + '/' + files[idx];
+        let file = dir + "/" + files[idx];
         let stat = fs.statSync(file);
         let basename = path.basename(file, ".py");
 
-        if (stat.isFile() && basename.startsWith("test_") && (path.extname(file) == ".py")) {
-            if (module && !basename.endsWith(module)) continue;
+        if (stat.isFile() && basename.startsWith("test_") && path.extname(file) == ".py") {
+            if (module && !basename.endsWith(module)) {
+                continue;
+            }
 
             modules.push([file, basename]);
+        } else if (stat.isDirectory() && basename.startsWith("test_")) {
+            if (!fs.statSync(file + "/__init__.py").isFile()) {
+                continue;
+            }
+            if (module && !basename.endsWith(module)) {
+                continue;
+            }
+            modules.push([file + ".py", path.basename(file + ".py", ".py")]);
         }
     }
 
@@ -113,4 +123,3 @@ program
     .parse(process.argv);
 
 test(program.python3, program.opt, program.module);
-

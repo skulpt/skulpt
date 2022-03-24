@@ -97,8 +97,12 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
             this.$d.__loader__ = Sk.builtin.none.none$;
         },
         sk$attrError() {
-            const name = this.get$name();
-            return name === undefined ? "module" : "module " + name;
+            let name = this.get$name();
+            name = name === undefined ? "module" : "module " + name;
+            if (this.$initializing) {
+                name = "(most likely due to a circular import) partially initialized " + name;
+            }
+            return name;
         },
         get$name() {
             const name = this.tp$getattr(Sk.builtin.str.$name);
