@@ -501,24 +501,9 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
 
                 // "ret" is the module we're importing from
                 // Only import from file system if we have not found the fromName in the current module
-                if (fromName != "*") {
-                    // use hasattr to support lazy module attributes
-                    // and modules.tp$getattr might throw if still initializing
-                    chainedImports.push(
-                        () => Sk.builtin.hasattr(leafModule, new Sk.builtin.str(fromName)),
-                        (rv) => {
-                            if (!Sk.misceval.isTrue(rv)) {
-                                return Sk.importModuleInternal_(
-                                    fromName,
-                                    undefined,
-                                    undefined,
-                                    undefined,
-                                    leafModule,
-                                    true,
-                                    true
-                                );
-                            }
-                        }
+                if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
+                    chainedImports.push(() =>
+                        Sk.importModuleInternal_(fromName, undefined, undefined, undefined, leafModule, true, true)
                     );
                 }
             }
