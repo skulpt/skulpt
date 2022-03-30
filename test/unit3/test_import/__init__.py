@@ -69,7 +69,6 @@ class CircularImportTests(unittest.TestCase):
             "partially initialized module ",
             str(cm.exception)
         )
-        print(cm.exception)
         self.assertIn(".circular_imports.from_cycle1'", str(cm.exception))
         self.assertIn("(most likely due to a circular import)", str(cm.exception))
 
