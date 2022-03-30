@@ -184,7 +184,6 @@ function tp$new(args, kwargs) {
         slotNames = [...slotSet].sort((a, b) => a.toString().localeCompare(b.toString()));
         createSlots(slotNames, klass);
     }
-    klassProto.ht$slots = slotNames || null; // sorted Array or null
     
     if (wantDict && !protoHasDict) {
         // we only add the __dict__ descriptor if we defined it in the __slots__
@@ -192,8 +191,14 @@ function tp$new(args, kwargs) {
         klassProto.__dict__ = new Sk.builtin.getset_descriptor(klass, subtype_dict_getset_description);
         protoHasDict = true;
     }
-    // a flag added to every heaptype prototype for quick lookup in the klass constructor
-    klassProto.sk$hasDict = protoHasDict;
+
+    Object.defineProperties(klassProto, {
+        // sorted array or null
+        ht$slots: { value: slotNames || null, writable: true },
+        // a flag added to every heaptype prototype for quick lookup in the klass constructor
+        sk$hasDict: { value: protoHasDict, writable: true },
+    });
+
 
     dict.$items().forEach(([key, val]) => {
         if (slotSet && slotSet.has(key)) {
@@ -449,9 +454,9 @@ function best_base_(bases) {
 function createSlots(slotNames, klass) {
     const klassProto = klass.prototype;
     const nextSlotIdx = klassProto.sk$nslots || 0;
-    klassProto.sk$nslots = nextSlotIdx + slotNames.length;
+    Object.defineProperty(klassProto, "sk$nslots", { value: nextSlotIdx + slotNames.length, writable: true });
     if (slotNames.length) {
-        klass.sk$solidSlotBase = true;
+        Object.defineProperty(klass, "sk$solidSlotBase", { value: true, writable: true });
     }
 
     slotNames.forEach((slotName, i) => {

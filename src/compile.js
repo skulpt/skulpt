@@ -668,6 +668,7 @@ Compiler.prototype.ccompare = function (e) {
 
 Compiler.prototype.ccall = function (e) {
     var func = this.vexpr(e.func);
+    var kwarray = null;
     // Okay, here's the deal. We have some set of positional args
     // and we need to unpack them. We have some set of keyword args
     // and we need to unpack those too. Then we make a call.
@@ -2092,9 +2093,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
         }
         const sup_i = kwarg ? 1 : 0;
-        for (let i=0; i < funcArgs.length; i++) {
-            const sup = i === sup_i ? "$sup = " : ""
-            this.u.varDeclsCode += ","+sup+funcArgs[i]+"=$args["+i+"]";
+        for (let i = 0; i < funcArgs.length; i++) {
+            const sup = i === sup_i ? "$sup = " : "";
+            this.u.varDeclsCode += "," + sup + funcArgs[i] + "=$args[" + i + "]";
         }
         this.u.varDeclsCode += ";\n";
     }
@@ -2556,7 +2557,6 @@ Compiler.prototype.cclass = function (s) {
 
     this.exitScope();
 
-    // todo; metaclass
     out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, ");");
     this._checkSuspension();
 
