@@ -319,7 +319,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
                     return undefined;
                 } else {
-                    throw new Sk.builtin.ImportError("No module named " + name);
+                    throw new Sk.builtin.ModuleNotFoundError("No module named " + Sk.misceval.objectRepr(new Sk.builtin.str(name)));
                 }
             }
 
@@ -424,6 +424,7 @@ Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
 Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     //print("Importing: ", JSON.stringify(name), JSON.stringify(fromlist), level);
     //if (name == "") { debugger; }
+    name = name.toString();
 
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.
@@ -437,7 +438,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     var relativeToPackageName;
     var relativeToPackageNames;
 
-    if (level === undefined) {
+    if (level == null) {
         level = Sk.__future__.absolute_import ? 0 : -1;
     }
 
@@ -447,7 +448,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             // Trim <level> packages off the end
             relativeToPackageNames = relativeToPackageName.split(".");
             if (level-1 >= relativeToPackageNames.length) {
-                throw new Sk.builtin.ValueError("Attempted relative import beyond toplevel package");
+                throw new Sk.builtin.ImportError("Attempted relative import beyond toplevel package");
             }
             relativeToPackageNames.length -= level-1;
             relativeToPackageName = relativeToPackageNames.join(".");
@@ -457,7 +458,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     }
 
     if (level > 0 && relativeToPackage === undefined) {
-        throw new Sk.builtin.ValueError("Attempted relative import in non-package");
+        throw new Sk.builtin.ImportError("Attempted relative import in non-package");
     }
 
     var dottedName = name.split(".");
