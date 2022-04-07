@@ -72,6 +72,24 @@ class AttrTest(unittest.TestCase):
 
 class BuiltinTest(unittest.TestCase):
 
+    def test_import(self):
+        __import__('sys')
+        __import__('time')
+        __import__('string')
+        __import__(name='sys')
+        __import__(name='time', level=0)
+        self.assertRaises(ImportError, __import__, 'spamspam')
+        self.assertRaises(TypeError, __import__, 1, 2, 3, 4)
+        self.assertRaises(ValueError, __import__, '')
+        self.assertRaises(TypeError, __import__, 'sys', name='sys')
+        # Relative import outside of a package with no __package__ or __spec__ (bpo-37409).
+        self.assertRaises(ImportError, __import__, '',
+                            {'__package__': None, '__spec__': None, '__name__': '__main__'},
+                            locals={}, fromlist=('foo',), level=1)
+        # embedded null character
+        self.assertRaises(ModuleNotFoundError, __import__, 'string\x00')
+
+
     def test_abs(self):
         # int
         self.assertEqual(abs(0), 0)

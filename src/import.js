@@ -319,7 +319,7 @@ Sk.importModuleInternal_ = function (name, dumpJS, modname, suppliedPyBody, rela
                 if (returnUndefinedOnTopLevelNotFound && !topLevelModuleToReturn) {
                     return undefined;
                 } else {
-                    throw new Sk.builtin.ImportError("No module named " + name);
+                    throw new Sk.builtin.ModuleNotFoundError("No module named " + Sk.misceval.objectRepr(new Sk.builtin.str(name)));
                 }
             }
 
@@ -424,6 +424,7 @@ Sk.importBuiltinWithBody = function (name, dumpJS, body, canSuspend) {
 Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     //print("Importing: ", JSON.stringify(name), JSON.stringify(fromlist), level);
     //if (name == "") { debugger; }
+    name = name.toString();
 
     // Save the Sk.globals variable importModuleInternal_ may replace it when it compiles
     // a Python language module.
@@ -437,7 +438,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     var relativeToPackageName;
     var relativeToPackageNames;
 
-    if (level === undefined) {
+    if (level == null) {
         level = Sk.__future__.absolute_import ? 0 : -1;
     }
 
@@ -447,7 +448,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
             // Trim <level> packages off the end
             relativeToPackageNames = relativeToPackageName.split(".");
             if (level-1 >= relativeToPackageNames.length) {
-                throw new Sk.builtin.ValueError("Attempted relative import beyond toplevel package");
+                throw new Sk.builtin.ImportError("Attempted relative import beyond toplevel package");
             }
             relativeToPackageNames.length -= level-1;
             relativeToPackageName = relativeToPackageNames.join(".");
@@ -457,7 +458,7 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
     }
 
     if (level > 0 && relativeToPackage === undefined) {
-        throw new Sk.builtin.ValueError("Attempted relative import in non-package");
+        throw new Sk.builtin.ImportError("Attempted relative import in non-package");
     }
 
     var dottedName = name.split(".");
@@ -492,29 +493,26 @@ Sk.builtin.__import__ = function (name, globals, locals, fromlist, level) {
         } else {
             // try to load from-names as modules from the file system
             // if they are not present on the module itself
-            var i;
-            var fromName;
-            var leafModule;
             const chainedImports = [null];
 
-            leafModule = Sk.sysmodules.mp$subscript(
+            const leafModule = Sk.sysmodules.mp$subscript(
                 new Sk.builtin.str((relativeToPackageName || "") +
                     ((relativeToPackageName && name) ? "." : "") +
                     name));
 
-            for (i = 0; i < fromlist.length; i++) {
-                fromName = fromlist[i];
+            for (let i = 0; i < fromlist.length; i++) {
+                const fromName = fromlist[i];
 
                 // "ret" is the module we're importing from
                 // Only import from file system if we have not found the fromName in the current module
-                if (fromName != "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
+                if (fromName !== "*" && leafModule.tp$getattr(new Sk.builtin.str(fromName)) === undefined) {
                     chainedImports.push(() =>
                         Sk.importModuleInternal_(fromName, undefined, undefined, undefined, leafModule, true, true)
                     );
                 }
             }
 
-            return Sk.misceval.chain(...chainedImports, function () {
+            return Sk.misceval.chain(...chainedImports, function() {
                 // if there's a fromlist we want to return the leaf module
                 // (ret), not the toplevel namespace
                 Sk.asserts.assert(leafModule);
