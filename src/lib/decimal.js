@@ -26,12 +26,14 @@ function decimalImpl(requiredModules) {
     const {
         builtin: {
             bool: pyBool,
+            bool: { true$: pyTrue, false$: pyFalse },
             complex: pyComplex,
             float_: pyFloat,
             func: pyFunc,
             int_: pyInt,
             none: { none$: pyNone },
             str: pyStr,
+            tuple: pyTuple,
             ArithmeticError,
             ZeroDivisionError,
             TypeError,
@@ -242,10 +244,10 @@ function decimalImpl(requiredModules) {
     /**** Decimal class ***************************/
 
     const Decimal = buildNativeClass("decimal.Decimal", {
-        constructor: function Decimal(exp = 0, sign = 0, int = "0", is_special = false) {
-            this._exp = exp;
-            this._sign = sign;
+        constructor: function Decimal(int = "0", sign = 0, exp = 0, is_special = false) {
             this._int = int;
+            this._sign = sign;
+            this._exp = exp;
             this._is_special = is_special;
         },
         slots: {
@@ -430,32 +432,42 @@ function decimalImpl(requiredModules) {
                 doc: "Fused multiply-add.  Return self*other+third with no rounding of the\nintermediate product self*other.\n\n    >>> Decimal(2).fma(3, 5)\n    Decimal('11')\n\n\n",
             },
             is_canonical: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyTrue;
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is canonical and False otherwise.  Currently,\na Decimal instance is always canonical, so this operation always returns\nTrue.\n\n",
             },
             is_finite: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyBool(!this._is_special);
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is a finite number, and False if the argument\nis infinite or a NaN.\n\n",
             },
             is_infinite: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return this._exp === "F";
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is either positive or negative infinity and\nFalse otherwise.\n\n",
             },
             is_nan: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyBool(this.$isNan());
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is a (quiet or signaling) NaN and False\notherwise.\n\n",
             },
             is_qnan: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyBool(this.$isNan() && !this.$isSnan());
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is a quiet NaN, and False otherwise.\n\n",
             },
@@ -463,25 +475,34 @@ function decimalImpl(requiredModules) {
                 meth() {
                     return pyBool(this.$isSnan());
                 },
-                flags: 0,
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is a signaling NaN and False otherwise.\n\n",
             },
             is_signed: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyBool(this._sign === 1);
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument has a negative sign and False otherwise.\nNote that both zeros and NaNs can carry signs.\n\n",
             },
             is_zero: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return pyBool(!this._is_special && this._int === "0");
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return True if the argument is a (positive or negative) zero and False\notherwise.\n\n",
             },
             is_normal: {
-                meth() {},
-                flags: 0,
+                meth(context) {
+                    if (this._is_special || !this.nb$bool()) {
+                        return pyFalse;
+                    }
+                    // pass
+                },
+                flags: { NamedArgs: ["context"], Defaults: [pyNone] },
                 textsig: "($self, /, context=None)",
                 doc: "Return True if the argument is a normal finite non-zero number with an\nadjusted exponent greater than or equal to Emin. Return False if the\nargument is zero, subnormal, infinite or a NaN.\n\n",
             },
@@ -492,7 +513,9 @@ function decimalImpl(requiredModules) {
                 doc: "Return True if the argument is subnormal, and False otherwise. A number is\nsubnormal if it is non-zero, finite, and has an adjusted exponent less\nthan Emin.\n\n",
             },
             adjusted: {
-                meth() {},
+                meth() {
+                    return new pyInt(this.$adjusted());
+                },
                 flags: 0,
                 textsig: "($self, /)",
                 doc: "Return the adjusted exponent of the number.  Defined as exp + digits - 1.\n\n",
@@ -512,8 +535,10 @@ function decimalImpl(requiredModules) {
                 doc: "Return self.\n\n",
             },
             radix: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    return new Decimal("10");
+                },
+                flags: { NoArgs: true },
                 textsig: "($self, /)",
                 doc: "Return Decimal(10), the radix (base) in which the Decimal class does\nall its arithmetic. Included for compatibility with the specification.\n\n",
             },
@@ -542,8 +567,8 @@ function decimalImpl(requiredModules) {
                 doc: "Return the digit-wise inversion of the (logical) operand.\n\n",
             },
             number_class: {
-                meth() {},
-                flags: 0,
+                meth(context) {},
+                flags: { NamedArgs: ["context"], Defaults: [pyNone] },
                 textsig: "($self, /, context=None)",
                 doc: "Return a string describing the class of the operand.  The returned value\nis one of the following ten strings:\n\n    * '-Infinity', indicating that the operand is negative infinity.\n    * '-Normal', indicating that the operand is a negative normal number.\n    * '-Subnormal', indicating that the operand is negative and subnormal.\n    * '-Zero', indicating that the operand is a negative zero.\n    * '+Zero', indicating that the operand is a positive zero.\n    * '+Subnormal', indicating that the operand is positive and subnormal.\n    * '+Normal', indicating that the operand is a positive normal number.\n    * '+Infinity', indicating that the operand is positive infinity.\n    * 'NaN', indicating that the operand is a quiet NaN (Not a Number).\n    * 'sNaN', indicating that the operand is a signaling NaN.\n\n\n",
             },
@@ -630,15 +655,20 @@ function decimalImpl(requiredModules) {
                     if (this.ob$type === Decimal) {
                         return this;
                     }
-                    return pyCall(this)
+                    return pyCall(this, [this.tp$str()]);
                 },
-                flags: 0,
+                flags: { NoArgs: true },
                 textsig: null,
                 doc: null,
             },
             __deepcopy__: {
-                meth() {},
-                flags: 0,
+                meth(_memo) {
+                    if (this.ob$type === Decimal) {
+                        return this;
+                    }
+                    return pyCall(this, [this.tp$str()]);
+                },
+                flags: { OneArg: true },
                 textsig: null,
                 doc: null,
             },
@@ -649,7 +679,9 @@ function decimalImpl(requiredModules) {
                 doc: null,
             },
             __reduce__: {
-                meth() {},
+                meth() {
+                    return new pyTuple([this.ob$type, new pyTuple([this.tp$str()])]);
+                },
                 flags: 0,
                 textsig: null,
                 doc: null,
@@ -684,7 +716,7 @@ function decimalImpl(requiredModules) {
                 meth() {
                     return pyCall(pyComplex, [this.nb$float()]);
                 },
-                flags: 0,
+                flags: { NoArgs: true },
                 textsig: null,
                 doc: null,
             },
@@ -716,6 +748,12 @@ function decimalImpl(requiredModules) {
             },
         },
         proto: {
+            $adjusted() {
+                if (typeof this._exp === "number") {
+                    return this._exp + this._int.length - 1;
+                }
+                return 0;
+            },
             $isNan() {
                 if (this._is_special) {
                     const exp = this._exp;
@@ -739,9 +777,9 @@ function decimalImpl(requiredModules) {
                 }
                 return 0;
             },
-            $checkNans(other=null, context=null) {
+            $checkNans(other = null, context = null) {
                 // pass
-            }
+            },
         },
     });
 
