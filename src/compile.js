@@ -1101,7 +1101,7 @@ Compiler.prototype.cannassign = function (s) {
             if (s.simple && (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock || this.u.ste.blockType == Sk.SYMTAB_CONSTS.ModuleBlock)) {
                 this.u.hasAnnotations = true;
                 const val = this.vexpr(s.annotation);
-                let mangled = fixReserved(mangleName(this.u.private_, target.id).v);
+                let mangled = mangleName(this.u.private_, target.id).v;
                 const key = this.makeConstant("new Sk.builtin.str('" + mangled + "')");
                 this.chandlesubscr(Sk.astnodes.Store, "$loc.__annotations__", key, val);
             }

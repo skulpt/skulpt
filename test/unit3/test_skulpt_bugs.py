@@ -41,5 +41,14 @@ class TestRegressions(unittest.TestCase):
 
 
 
+class An:
+    name: str
+    __foo: int
+
+class TestAnnotations(unittest.TestCase):
+    def test_bug_1428(self):
+        annotations = An.__annotations__
+        self.assertEqual(annotations, {"name": str, "_An__foo": int})
+
 if __name__ == "__main__":
     unittest.main()
