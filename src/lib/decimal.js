@@ -38,15 +38,28 @@ function decimalImpl(requiredModules) {
             ZeroDivisionError,
             TypeError,
             ValueError,
+            OverflowError,
+            checkInt,
+            checkFloat,
         },
         abstr: { buildNativeClass, objectGetItem: pyGetItem },
-        misceval: { buildClass, callsimArray: pyCall },
+        misceval: { buildClass, callsimArray: pyCall, callsimOrSuspendArray: pyCallOrSuspend, isTrue, richCompareBool },
         ffi: { remapToPy: toPy },
     } = Sk;
 
+    const eq = (a, b) => richCompareBool(a, b, "Eq");
+
+    const _0 = new pyInt(0);
+    const _1 = new pyInt(1);
     const _10 = new pyInt(10);
 
+    const _1_0 = new pyFloat(1);
+
+    const STR = Object.fromEntries(["as_integer_ratio", "bit_length"].map((x) => [x, new pyStr(x)]));
+
     const { sys, math } = requiredModules;
+
+    const _math = math.$d;
 
     const __all__ = [
         // Two major classes
@@ -112,14 +125,14 @@ function decimalImpl(requiredModules) {
         __all__: toPy(__all__),
     };
 
-    const ROUND_DOWN = "ROUND_DOWN";
-    const ROUND_HALF_UP = "ROUND_HALF_UP";
-    const ROUND_HALF_EVEN = "ROUND_HALF_EVEN";
-    const ROUND_CEILING = "ROUND_CEILING";
-    const ROUND_FLOOR = "ROUND_FLOOR";
-    const ROUND_UP = "ROUND_UP";
-    const ROUND_HALF_DOWN = "ROUND_HALF_DOWN";
-    const ROUND_05UP = "ROUND_05UP";
+    const ROUND_DOWN = new pyStr("ROUND_DOWN");
+    const ROUND_HALF_UP = new pyStr("ROUND_HALF_UP");
+    const ROUND_HALF_EVEN = new pyStr("ROUND_HALF_EVEN");
+    const ROUND_CEILING = new pyStr("ROUND_CEILING");
+    const ROUND_FLOOR = new pyStr("ROUND_FLOOR");
+    const ROUND_UP = new pyStr("ROUND_UP");
+    const ROUND_HALF_DOWN = new pyStr("ROUND_HALF_DOWN");
+    const ROUND_05UP = new pyStr("ROUND_05UP");
 
     const MAX_PREC = 425000000;
     const MAX_EMAX = 425000000;
@@ -242,6 +255,18 @@ function decimalImpl(requiredModules) {
     /** @todo Contexts Management */
 
     /**** Decimal class ***************************/
+
+    /**
+     *
+     * @param {number} sign
+     * @param {string} coefficient
+     * @param {number} exponent
+     * @param {boolean} special
+     * @returns
+     */
+    function _decFromTriple(sign, coefficient, exponent, special = false) {
+        return new Decimal(coefficient, sign, exponent, special);
+    }
 
     const Decimal = buildNativeClass("decimal.Decimal", {
         constructor: function Decimal(int = "0", sign = 0, exp = 0, is_special = false) {
@@ -645,7 +670,20 @@ function decimalImpl(requiredModules) {
                 doc: "Return a tuple representation of the number.\n\n",
             },
             as_integer_ratio: {
-                meth() {},
+                meth() {
+                    this.$specialFail("convert", "to integer ratio");
+                    if (!this.nb$bool()) {
+                        return new pyTuple([_0, _1]);
+                    }
+                    let n = new pyInt(this._int).valueOf();
+                    let d;
+                    if (this._exp > 0) {
+                        [n, d] = [n * (10 ** this._exp), 1];
+                    } else {
+                        /** @TODO */
+                    }
+
+                },
                 flags: 0,
                 textsig: "($self, /)",
                 doc: "Decimal.as_integer_ratio() -> (int, int)\n\nReturn a pair of integers, whose ratio is exactly equal to the original\nDecimal and with a positive denominator. The ratio is in lowest terms.\nRaise OverflowError on infinities and a ValueError on NaNs.\n\n",
@@ -687,20 +725,26 @@ function decimalImpl(requiredModules) {
                 doc: null,
             },
             __round__: {
-                meth() {},
-                flags: 0,
+                meth(n) {},
+                flags: { NamedArgs: ["n"], Defaults: [pyNone] },
                 textsig: null,
                 doc: null,
             },
             __ceil__: {
-                meth() {},
+                meth() {
+                    this.$specialFail("round");
+                    return new pyInt(this.$rescale(0, ROUND_CEILING));
+                },
                 flags: 0,
                 textsig: null,
                 doc: null,
             },
             __floor__: {
-                meth() {},
-                flags: 0,
+                meth() {
+                    this.$specialFail("round");
+                    return new pyInt(this.$rescale(0, ROUND_FLOOR));
+                },
+                flags: { NoArgs: true },
                 textsig: null,
                 doc: null,
             },
@@ -729,8 +773,35 @@ function decimalImpl(requiredModules) {
         },
         classmethods: {
             from_float: {
-                meth() {},
-                flags: 0,
+                meth(f) {
+                    let sign, k, coeff;
+                    if (checkInt(f)) {
+                        sign = f.nb$ispositive() ? 0 : 1;
+                        k = 0;
+                        coeff = f.nb$abs().toString();
+                    } else if (checkFloat(f)) {
+                        if (isTrue(pyCall(_math.isinf, [f])) || isTrue(pyCall(_math.isnan, [f]))) {
+                            return pyCall(this, [f.$r()]);
+                        }
+                        if (eq(pyCall(_math.copysign, [_1_0, f]), _1_0)) {
+                            sign = 0;
+                        } else {
+                            sign = 1;
+                        }
+                        const [n, d] = pyCall(f.nb$abs().tp$getattr(STR.as_integer_ratio)).valueOf();
+                        k = pyCall(d.tp$getattr(STR.bit_length), []).nb$subtract(_1).valueOf();
+                        coeff = n.valueOf() * 5 ** k;
+                    } else {
+                        throw new TypeError("argument must be int or float.");
+                    }
+
+                    const rv = _decFromTriple(sign, coeff, -k);
+                    if (this === Decimal) {
+                        return rv;
+                    }
+                    return pyCallOrSuspend(this, [rv]);
+                },
+                flags: { OneArg: true },
                 textsig: "($type, f, /)",
                 doc: "Class method that converts a float to a decimal number, exactly.\nSince 0.1 is not exactly representable in binary floating point,\nDecimal.from_float(0.1) is not the same as Decimal('0.1').\n\n    >>> Decimal.from_float(0.1)\n    Decimal('0.1000000000000000055511151231257827021181583404541015625')\n    >>> Decimal.from_float(float('nan'))\n    Decimal('NaN')\n    >>> Decimal.from_float(float('inf'))\n    Decimal('Infinity')\n    >>> Decimal.from_float(float('-inf'))\n    Decimal('-Infinity')\n\n\n",
             },
@@ -748,6 +819,15 @@ function decimalImpl(requiredModules) {
             },
         },
         proto: {
+            $specialFail(msgAction, msgSuffix="") {
+                msgSuffix && (msgSuffix = " " + msgSuffix);
+                if (this._is_special) {
+                    if (this.$isNan()) {
+                        throw new ValueError(`cannot ${msgAction} NaN${msgSuffix}`);
+                    }
+                    throw new OverflowError(`cannot ${msgAction} Infinity${msgSuffix}`);
+                }
+            },
             $adjusted() {
                 if (typeof this._exp === "number") {
                     return this._exp + this._int.length - 1;

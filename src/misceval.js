@@ -811,6 +811,8 @@ Sk.exportSymbol("Sk.misceval.callsim", Sk.misceval.callsim);
  * @param {Array=} args an array of arguments to pass to the func
  * @param {Array=} kws an array of string/pyObject pairs to pass to the func as kwargs
  * 
+ * @returns {any}
+ * 
  * @description
  * Call a pyObject - if the object is not callable will throw a TypeError
  * Requires args to be a Javascript array.
