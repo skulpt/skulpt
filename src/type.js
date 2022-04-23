@@ -218,37 +218,30 @@ function tp$new(args, kwargs) {
         klassProto.ht$qualname = qualname;
     }
 
+    const proto = klass.prototype;
     // make __init_subclass__ a classmethod
-    if (klass.prototype.hasOwnProperty("__init_subclass__")) {
-        const initsubclass = klass.prototype.__init_subclass__;
-        if (initsubclass instanceof Sk.builtin.func) {
-            // initsubclass is an implied classmethod
-            klass.prototype.__init_subclass__ = new Sk.builtin.classmethod(initsubclass);
-        }
-    }
+    overrideImplied(proto, "__init_subclass__", "classmethod");
     // make __new__ a static method
-    if (klassProto.hasOwnProperty("__new__")) {
-        const newf = klassProto.__new__;
-        if (newf instanceof Sk.builtin.func) {
-            // __new__ is an implied staticmethod
-            klassProto.__new__ = new Sk.builtin.staticmethod(newf);
-        }
-    }
-
+    overrideImplied(proto, "__new__", "staticmethod");
     // make __classgetitem__ a class method
-    if (klass.prototype.hasOwnProperty("__class_getitem__")) {
-        const fn = klass.prototype.__class_getitem__;
-        if (fn instanceof Sk.builtin.func) {
-            // __class_getitem__ is an implied staticmethod
-            klass.prototype.__class_getitem__ = new Sk.builtin.classmethod(fn);
-        }
-    }
+    overrideImplied(proto, "__class_getitem__", "classmethod");
+
     klass.$allocateSlots();
 
     set_names(klass);
     init_subclass(klass, kwargs);
 
     return klass;
+}
+
+
+function overrideImplied(proto, dunder, implied) {
+    if (proto.hasOwnProperty(dunder)) {
+        const fn = proto[dunder];
+        if (fn instanceof Sk.builtin.func) {
+            proto[dunder] = new Sk.builtin[implied](fn);
+        }
+    }
 }
 
 /**
