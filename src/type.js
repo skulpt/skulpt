@@ -234,6 +234,15 @@ function tp$new(args, kwargs) {
             klassProto.__new__ = new Sk.builtin.staticmethod(newf);
         }
     }
+
+    // make __classgetitem__ a class method
+    if (klass.prototype.hasOwnProperty("__class_getitem__")) {
+        const fn = klass.prototype.__class_getitem__;
+        if (fn instanceof Sk.builtin.func) {
+            // __class_getitem__ is an implied staticmethod
+            klass.prototype.__class_getitem__ = new Sk.builtin.classmethod(fn);
+        }
+    }
     klass.$allocateSlots();
 
     set_names(klass);
