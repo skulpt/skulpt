@@ -62,7 +62,7 @@ function decimalImpl(requiredModules) {
 
     const eq = (a, b) => richCompareBool(a, b, "Eq");
 
-    function *iterJs(iter) {
+    function* iterJs(iter) {
         const it = pyIter(iter);
         let nxt;
         while ((nxt = it.tp$iternext()) !== undefined) {
@@ -283,12 +283,12 @@ function decimalImpl(requiredModules) {
 
     /**
      *
-     * 
+     *
      * @param {number} sign
      * @param {string} coefficient
      * @param {number|string} exponent
      * @param {boolean} special
-     * 
+     *
      * @returns
      */
     function _decFromTriple(sign, coefficient, exponent, special = false) {
@@ -297,14 +297,14 @@ function decimalImpl(requiredModules) {
 
     /**
      * @constructor
-     * 
+     *
      * @param {string} int
      * @param {number} sign
      * @param {number|string} exponent
      * @param {boolean} special
-     * 
+     *
      * @type {any}
-     * 
+     *
      */
     const Decimal = buildNativeClass("decimal.Decimal", {
         constructor: function Decimal(int = "0", sign = 0, exp = 0, is_special = false) {
@@ -436,7 +436,7 @@ function decimalImpl(requiredModules) {
                     if (context === pyNone) {
                         /** @todo context */
                     }
-                    value = pyCall(Decimal.tp$getattr(STR.from_float), [value]);
+                    value = fromFloat(value);
                     self._exp = value._exp;
                     self._sign = value._sign;
                     self._int = value._int;
@@ -1078,16 +1078,21 @@ function decimalImpl(requiredModules) {
                 let self = this;
                 /** @todo _numbers.Rational */
                 if (checkInt(other)) {
-
                     if (!this._is_special) {
                         // self = _decFromTriple(this._sign, new pyInt(this._int).nb$multiply(other).toString(), this._exp);
                     }
                     return [self, pyCall(Decimal, [other])];
                 }
 
-                if (equalityOp && )
-
-
+                if (equalityOp && other instanceof pyComplex && other.imag === 0) {
+                    other = new pyFloat(other.real);
+                }
+                if (checkFloat(other)) {
+                    const context = getContext();
+                    /** @todo context */
+                    return [this, fromFloat(other)];
+                }
+                return [pyNotImplemented, pyNotImplemented];
             },
             $specialFail(msgAction, msgSuffix = "") {
                 msgSuffix && (msgSuffix = " " + msgSuffix);
@@ -1128,14 +1133,555 @@ function decimalImpl(requiredModules) {
                 return 0;
             },
             $checkNans(other = null, context = null) {
+                const selfIsNan = this.$isNan();
+                let otherIsNan;
+                if (other === null) {
+                    otherIsNan = false;
+                } else {
+                    otherIsNan = other.$isNan();
+                }
+
+                if (selfIsNan || otherIsNan) {
+                    if (context === null) {
+                        context = getContext();
+                    }
+                    if (selfIsNan === 2) {
+                        //return context._raise_error(InvalidOperation, 'sNaN', this);
+                    }
+                    if (otherIsNan === 2) {
+                        // return context._raise_error(InvalidOperation, 'sNaN', other);
+                    }
+
+                    if (selfIsNan) {
+                        return self.$fixNan(context);
+                    }
+                    return other.$fixNan(context);
+                }
+                return 0;
                 // pass
             },
         },
     });
 
+    const _from_float = Decimal.tp$getattr(STR.from_float);
+    const fromFloat = (x) => pyCall(_from_float, [x]);
+
+    /****** CONTEXT ******/
+    const _ContextManager = buildClass(
+        decimalMod,
+        (_gbl, loc) => {
+            loc.__init__ = new pyFunc((self, new_context) => {
+                self.new_context = new_context;
+                return pyNone;
+            });
+
+            loc.__enter__ = new pyFunc((self) => {
+                self.saved_context = getContext();
+                setContext(self.new_context);
+                return self.new_context;
+            });
+
+            loc.__exit__ = new pyFunc((self) => {
+                setContext(self.saved_context);
+                return pyNone;
+            });
+        },
+        "_ContextManager",
+        []
+    );
+
+    const Context = buildNativeClass("Context", {
+        constructor: function () {},
+        slots: {
+            tp$new(args, kws) {
+                throw new Error("function not implemented");
+            },
+            $r() {
+                throw new Error("function not implemented");
+            },
+            tp$getattr: genericGetAttr,
+            tp$init(args, kws) {
+                throw new Error("function not implemented");
+            },
+        },
+        $methods: {
+            abs: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the absolute value of x.\n\n",
+            },
+            exp: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return e ** x.\n\n",
+            },
+            ln: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the natural (base e) logarithm of x.\n\n",
+            },
+            log10: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the base 10 logarithm of x.\n\n",
+            },
+            minus: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Minus corresponds to the unary prefix minus operator in Python, but applies\nthe context to the result.\n\n",
+            },
+            next_minus: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the largest representable number smaller than x.\n\n",
+            },
+            next_plus: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the smallest representable number larger than x.\n\n",
+            },
+            normalize: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Reduce x to its simplest form. Alias for reduce(x).\n\n",
+            },
+            plus: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Plus corresponds to the unary prefix plus operator in Python, but applies\nthe context to the result.\n\n",
+            },
+            to_integral: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Identical to to_integral_value(x).\n\n",
+            },
+            to_integral_exact: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Round to an integer. Signal if the result is rounded or inexact.\n\n",
+            },
+            to_integral_value: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Round to an integer.\n\n",
+            },
+            sqrt: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Square root of a non-negative number to context precision.\n\n",
+            },
+            add: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the sum of x and y.\n\n",
+            },
+            compare: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare x and y numerically.\n\n",
+            },
+            compare_signal: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare x and y numerically.  All NaNs signal.\n\n",
+            },
+            divide: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return x divided by y.\n\n",
+            },
+            divide_int: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return x divided by y, truncated to an integer.\n\n",
+            },
+            divmod: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return quotient and remainder of the division x / y.\n\n",
+            },
+            max: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare the values numerically and return the maximum.\n\n",
+            },
+            max_mag: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare the values numerically with their sign ignored.\n\n",
+            },
+            min: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare the values numerically and return the minimum.\n\n",
+            },
+            min_mag: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare the values numerically with their sign ignored.\n\n",
+            },
+            multiply: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the product of x and y.\n\n",
+            },
+            next_toward: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the number closest to x, in the direction towards y.\n\n",
+            },
+            quantize: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return a value equal to x (rounded), having the exponent of y.\n\n",
+            },
+            remainder: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the remainder from integer division.  The sign of the result,\nif non-zero, is the same as that of the original dividend.\n\n",
+            },
+            remainder_near: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return x - y * n, where n is the integer nearest the exact value of x / y\n(if the result is 0 then its sign will be the sign of x).\n\n",
+            },
+            subtract: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the difference between x and y.\n\n",
+            },
+            power: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /, a, b, modulo=None)",
+                $doc: "Compute a**b. If 'a' is negative, then 'b' must be integral. The result\nwill be inexact unless 'a' is integral and the result is finite and can\nbe expressed exactly in 'precision' digits.  In the Python version the\nresult is always correctly rounded, in the C version the result is almost\nalways correctly rounded.\n\nIf modulo is given, compute (a**b) % modulo. The following restrictions\nhold:\n\n    * all three arguments must be integral\n    * 'b' must be nonnegative\n    * at least one of 'a' or 'b' must be nonzero\n    * modulo must be nonzero and less than 10**prec in absolute value\n\n\n",
+            },
+            fma: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, z, /)",
+                $doc: "Return x multiplied by y, plus z.\n\n",
+            },
+            Etiny: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "Return a value equal to Emin - prec + 1, which is the minimum exponent value\nfor subnormal results.  When underflow occurs, the exponent is $set to Etiny.\n\n",
+            },
+            Etop: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "Return a value equal to Emax - prec + 1.  This is the maximum exponent\nif the _clamp field of the context is $set to 1 (IEEE clamp mode).  Etop()\nmust not be negative.\n\n",
+            },
+            radix: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "Return 10.\n\n",
+            },
+            is_canonical: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is canonical, False otherwise.\n\n",
+            },
+            is_finite: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is finite, False otherwise.\n\n",
+            },
+            is_infinite: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is infinite, False otherwise.\n\n",
+            },
+            is_nan: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is a qNaN or sNaN, False otherwise.\n\n",
+            },
+            is_normal: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is a normal number, False otherwise.\n\n",
+            },
+            is_qnan: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is a quiet NaN, False otherwise.\n\n",
+            },
+            is_signed: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is negative, False otherwise.\n\n",
+            },
+            is_snan: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is a signaling NaN, False otherwise.\n\n",
+            },
+            is_subnormal: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is subnormal, False otherwise.\n\n",
+            },
+            is_zero: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return True if x is a zero, False otherwise.\n\n",
+            },
+            _apply: {
+                $meth() {},
+                $flags: 0,
+                $textsig: null,
+                $doc: null,
+            },
+            canonical: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return a new instance of x.\n\n",
+            },
+            copy_abs: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return a copy of x with the sign $set to 0.\n\n",
+            },
+            copy_decimal: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return a copy of Decimal x.\n\n",
+            },
+            copy_negate: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return a copy of x with the sign inverted.\n\n",
+            },
+            logb: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return the exponent of the magnitude of the operand's MSD.\n\n",
+            },
+            logical_invert: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Invert all digits of x.\n\n",
+            },
+            number_class: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Return an indication of the class of x.\n\n",
+            },
+            to_sci_string: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Convert a number to a string using scientific notation.\n\n",
+            },
+            to_eng_string: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, /)",
+                $doc: "Convert a number to a string, using engineering notation.\n\n",
+            },
+            compare_total: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare x and y using their abstract representation.\n\n",
+            },
+            compare_total_mag: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Compare x and y using their abstract representation, ignoring sign.\n\n",
+            },
+            copy_sign: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Copy the sign from y to x.\n\n",
+            },
+            logical_and: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Digit-wise and of x and y.\n\n",
+            },
+            logical_or: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Digit-wise or of x and y.\n\n",
+            },
+            logical_xor: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Digit-wise xor of x and y.\n\n",
+            },
+            rotate: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return a copy of x, rotated by y places.\n\n",
+            },
+            same_quantum: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return True if the two operands have the same exponent.\n\n",
+            },
+            scaleb: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return the first operand after adding the second value to its exp.\n\n",
+            },
+            shift: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, x, y, /)",
+                $doc: "Return a copy of x, shifted by y places.\n\n",
+            },
+            clear_$flags: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "Re$set all $flags to False.\n\n",
+            },
+            clear_traps: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "$set all traps to False.\n\n",
+            },
+            __copy__: {
+                $meth() {},
+                $flags: 0,
+                $textsig: null,
+                $doc: null,
+            },
+            __reduce__: {
+                $meth() {},
+                $flags: 0,
+                $textsig: null,
+                $doc: null,
+            },
+            copy: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, /)",
+                $doc: "Return a duplicate of the context with all $flags cleared.\n\n",
+            },
+            create_decimal: {
+                $meth() {},
+                $flags: 0,
+                $textsig: '($self, num="0", /)',
+                $doc: "Create a new Decimal instance from num, using self as the context. Unlike the\nDecimal constructor, this function observes the context limits.\n\n",
+            },
+            create_decimal_from_float: {
+                $meth() {},
+                $flags: 0,
+                $textsig: "($self, f, /)",
+                $doc: "Create a new Decimal instance from float f.  Unlike the Decimal.from_float()\nclass $method, this function observes the context limits.\n\n",
+            },
+        },
+        class$methods: {},
+        $get$sets: {
+            prec: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+            Emax: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+            Emin: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+            rounding: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+            capitals: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+            clamp: {
+                $get() {
+                    throw new Error("Function not implemented.");
+                },
+                $set() {},
+                $doc: null,
+            },
+        },
+        proto: {},
+    });
 
     class _WorkRep {
-        constructor(value=null) {
+        constructor(value = null) {
             if (value === null) {
                 this.sign = null;
                 this.int = 0;
@@ -1152,7 +1698,6 @@ function decimalImpl(requiredModules) {
         }
     }
 
-
     // ##### crud for parsing strings #############################################
     // #
     // # Regular expression used for parsing numeric strings.  Additional
@@ -1167,9 +1712,9 @@ function decimalImpl(requiredModules) {
     // # at least one decimal digit, possibly after the decimal point.  The
     // # lookahead expression '(?=\d|\.\d)' checks this.
 
-    const _PARSE_STR = /^\s*(?<sign>[+-])?((?=\d|\.\d)(?<int>\d*)(\.(?<frac>\d*))?(E(?<exp>[-+]?\d+))?|Inf(infinity)?|(?<signal>s)?NaN(?<diag>\d*))\s*$/i;
+    const _PARSE_STR =
+        /^\s*(?<sign>[+-])?((?=\d|\.\d)(?<int>\d*)(\.(?<frac>\d*))?(E(?<exp>[-+]?\d+))?|Inf(infinity)?|(?<signal>s)?NaN(?<diag>\d*))\s*$/i;
     const _parser = _PARSE_STR.exec.bind(_PARSE_STR);
-
 
     // ##### Useful Constants (internal use only) ################################
     const _Infinity = new Decimal("0", 0, "F", true);
@@ -1178,7 +1723,7 @@ function decimalImpl(requiredModules) {
     const _Zero = Decimal("0", 0, 0, false);
     const _One = Decimal("1", 0, 0, false);
     const _NegativeOne = Decimal("1", 1, 0, false);
-    
+
     const _SignedInfinity = new pyTuple([_Infinity, _NegativeInfinity]);
 
     // these should all be part of sys.hash_info
@@ -1188,8 +1733,6 @@ function decimalImpl(requiredModules) {
     const _PyHASH_NaN = new pyFloat(Number.NaN).tp$hash();
     const _PyHASH_INF_NEG = new pyFloat(Number.NEGATIVE_INFINITY).tp$hash();
     const _PyHASH_INF_POS = new pyFloat(Number.POSITIVE_INFINITY).tp$hash();
-    
-
 
     Object.assign(decimalMod, {
         Decimal,
@@ -1248,7 +1791,6 @@ function decimalImpl(requiredModules) {
         // # C version: compile time choice that enables the coroutine local context
         // HAVE_CONTEXTVAR,
     });
-
 
     return decimalMod;
 }
