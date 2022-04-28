@@ -1204,7 +1204,7 @@ function decimalImpl(requiredModules) {
                 throw new Error("function not implemented");
             },
         },
-        $methods: {
+        methods: {
             abs: {
                 $meth() {},
                 $flags: 0,
@@ -1632,8 +1632,8 @@ function decimalImpl(requiredModules) {
                 $doc: "Create a new Decimal instance from float f.  Unlike the Decimal.from_float()\nclass $method, this function observes the context limits.\n\n",
             },
         },
-        class$methods: {},
-        $get$sets: {
+        classmethods: {},
+        getsets: {
             prec: {
                 $get() {
                     throw new Error("Function not implemented.");
@@ -1736,7 +1736,7 @@ function decimalImpl(requiredModules) {
 
     Object.assign(decimalMod, {
         Decimal,
-        // Context,
+        Context,
 
         // # Named tuple representation
         // DecimalTuple,

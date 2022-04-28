@@ -25,63 +25,67 @@ with the corresponding argument.
 """
 
 import math
-import os, sys
+# import os, sys
+import sys
 import operator
-import warnings
-import pickle, copy
+# import warnings
+# import pickle
+import copy
 import unittest
-import numbers
-import locale
-from test.support import (run_unittest, run_doctest, is_resource_enabled,
-                          requires_IEEE_754, requires_docstrings)
-from test.support import (import_fresh_module, TestFailed,
-                          run_with_locale, cpython_only,
-                          darwin_malloc_err_warning)
+# import numbers
+# import locale
+# from test.support import (run_unittest, run_doctest, is_resource_enabled,
+#                           requires_IEEE_754, requires_docstrings)
+# from test.support import (import_fresh_module, TestFailed,
+#                           run_with_locale, cpython_only,
+#                           darwin_malloc_err_warning)
 import random
-import inspect
-import threading
-import sysconfig
-_cflags = sysconfig.get_config_var('CFLAGS') or ''
-_config_args = sysconfig.get_config_var('CONFIG_ARGS') or ''
-MEMORY_SANITIZER = (
-    '-fsanitize=memory' in _cflags or
-    '--with-memory-sanitizer' in _config_args
-)
+# import inspect
+# import threading
+# import sysconfig
+# _cflags = sysconfig.get_config_var('CFLAGS') or ''
+# _config_args = sysconfig.get_config_var('CONFIG_ARGS') or ''
+# MEMORY_SANITIZER = (
+#     '-fsanitize=memory' in _cflags or
+#     '--with-memory-sanitizer' in _config_args
+# )
 
-ADDRESS_SANITIZER = (
-    '-fsanitize=address' in _cflags
-)
-
-
-if sys.platform == 'darwin':
-    darwin_malloc_err_warning('test_decimal')
+# ADDRESS_SANITIZER = (
+#     '-fsanitize=address' in _cflags
+# )
 
 
-C = import_fresh_module('decimal', fresh=['_decimal'])
-P = import_fresh_module('decimal', blocked=['_decimal'])
+# if sys.platform == 'darwin':
+#     darwin_malloc_err_warning('test_decimal')
+
+
+# C = import_fresh_module('decimal', fresh=['_decimal'])
+# P = import_fresh_module('decimal', blocked=['_decimal'])
+import decimal as P
 import decimal as orig_sys_decimal
+C = type(P)("CDecimal")
 
 # fractions module must import the correct decimal module.
-cfractions = import_fresh_module('fractions', fresh=['fractions'])
-sys.modules['decimal'] = P
-pfractions = import_fresh_module('fractions', fresh=['fractions'])
-sys.modules['decimal'] = C
-fractions = {C:cfractions, P:pfractions}
-sys.modules['decimal'] = orig_sys_decimal
+# cfractions = import_fresh_module('fractions', fresh=['fractions'])
+# sys.modules['decimal'] = P
+# pfractions = import_fresh_module('fractions', fresh=['fractions'])
+# sys.modules['decimal'] = C
+# fractions = {C:cfractions, P:pfractions}
+# sys.modules['decimal'] = orig_sys_decimal
 
 
 # Useful Test Constant
 Signals = {
-  C: tuple(C.getcontext().flags.keys()) if C else None,
+#   C: tuple(C.getcontext().flags.keys()) if C else None,
   P: tuple(P.getcontext().flags.keys())
 }
 # Signals ordered with respect to precedence: when an operation
 # produces multiple signals, signals occurring later in the list
 # should be handled before those occurring earlier in the list.
 OrderedSignals = {
-  C: [C.Clamped, C.Rounded, C.Inexact, C.Subnormal, C.Underflow,
-      C.Overflow, C.DivisionByZero, C.InvalidOperation,
-      C.FloatOperation] if C else None,
+#   C: [C.Clamped, C.Rounded, C.Inexact, C.Subnormal, C.Underflow,
+#       C.Overflow, C.DivisionByZero, C.InvalidOperation,
+#       C.FloatOperation] if C else None,
   P: [P.Clamped, P.Rounded, P.Inexact, P.Subnormal, P.Underflow,
       P.Overflow, P.DivisionByZero, P.InvalidOperation,
       P.FloatOperation]
@@ -108,7 +112,7 @@ RoundingModes = [
 # Tests are built around these assumed context defaults.
 # test_main() restores the original context.
 ORIGINAL_CONTEXT = {
-  C: C.getcontext().copy() if C else None,
+#   C: C.getcontext().copy() if C else None,
   P: P.getcontext().copy()
 }
 def init(m):
@@ -123,22 +127,29 @@ if __name__ == '__main__':
     file = sys.argv[0]
 else:
     file = __file__
-testdir = os.path.dirname(file) or os.curdir
-directory = testdir + os.sep + TESTDATADIR + os.sep
+# testdir = os.path.dirname(file) or os.curdir
+# directory = testdir + os.sep + TESTDATADIR + os.sep
 
-skip_expected = not os.path.isdir(directory)
+# skip_expected = not os.path.isdir(directory)
 
 # Make sure it actually raises errors when not expected and caught in flags
 # Slower, since it runs some things several times.
 EXTENDEDERRORTEST = False
 
 # Test extra functionality in the C version (-DEXTRA_FUNCTIONALITY).
-EXTRA_FUNCTIONALITY = True if hasattr(C, 'DecClamped') else False
-requires_extra_functionality = unittest.skipUnless(
-  EXTRA_FUNCTIONALITY, "test requires build with -DEXTRA_FUNCTIONALITY")
-skip_if_extra_functionality = unittest.skipIf(
-  EXTRA_FUNCTIONALITY, "test requires regular build")
+# EXTRA_FUNCTIONALITY = True if hasattr(C, 'DecClamped') else False
+# requires_extra_functionality = unittest.skipUnless(
+#   EXTRA_FUNCTIONALITY, "test requires build with -DEXTRA_FUNCTIONALITY")
+# skip_if_extra_functionality = unittest.skipIf(
+#   EXTRA_FUNCTIONALITY, "test requires regular build")
+def skip(fn):
+    return lambda *args, **kws: None
 
+requires_extra_functionality = skip
+
+skip_if_extra_functionality = skip
+
+cpython_only = skip 
 
 class IBMTestCases(unittest.TestCase):
     """Class which tests the Decimal class against the IBM test cases."""
@@ -495,8 +506,8 @@ class IBMTestCases(unittest.TestCase):
     def change_clamp(self, clamp):
         self.context.clamp = clamp
 
-class CIBMTestCases(IBMTestCases):
-    decimal = C
+# class CIBMTestCases(IBMTestCases):
+#     decimal = C
 class PyIBMTestCases(IBMTestCases):
     decimal = P
 
@@ -695,7 +706,7 @@ class ExplicitConstructionTest(unittest.TestCase):
         e = Decimal(d)
         self.assertEqual(str(e), '0')
 
-    @requires_IEEE_754
+    # @requires_IEEE_754
     def test_explicit_from_float(self):
 
         Decimal = self.decimal.Decimal
@@ -843,8 +854,8 @@ class ExplicitConstructionTest(unittest.TestCase):
         for input, expected in test_values.items():
             self.assertEqual(str(Decimal(input)), expected)
 
-class CExplicitConstructionTest(ExplicitConstructionTest):
-    decimal = C
+# class CExplicitConstructionTest(ExplicitConstructionTest):
+#     decimal = C
 class PyExplicitConstructionTest(ExplicitConstructionTest):
     decimal = P
 
@@ -925,8 +936,8 @@ class ImplicitConstructionTest(unittest.TestCase):
             self.assertEqual(eval('Decimal(10)' + sym + 'E()'),
                              '10' + rop + 'str')
 
-class CImplicitConstructionTest(ImplicitConstructionTest):
-    decimal = C
+# class CImplicitConstructionTest(ImplicitConstructionTest):
+#     decimal = C
 class PyImplicitConstructionTest(ImplicitConstructionTest):
     decimal = P
 
@@ -1207,8 +1218,8 @@ class FormatTest(unittest.TestCase):
         a = A.from_float(42)
         self.assertEqual(self.decimal.Decimal, a.a_type)
 
-class CFormatTest(FormatTest):
-    decimal = C
+# class CFormatTest(FormatTest):
+#     decimal = C
 class PyFormatTest(FormatTest):
     decimal = P
 
@@ -1507,8 +1518,8 @@ class ArithmeticOperatorsTest(unittest.TestCase):
         self.assertEqual(Decimal(1).copy_sign(-2), d)
         self.assertRaises(TypeError, Decimal(1).copy_sign, '-2')
 
-class CArithmeticOperatorsTest(ArithmeticOperatorsTest):
-    decimal = C
+# class CArithmeticOperatorsTest(ArithmeticOperatorsTest):
+#     decimal = C
 class PyArithmeticOperatorsTest(ArithmeticOperatorsTest):
     decimal = P
 
@@ -1603,6 +1614,7 @@ class ThreadingTest(unittest.TestCase):
     # Take care executing this test from IDLE, there's an issue in threading
     # that hangs IDLE and I couldn't find it
 
+    @skip
     def test_threading(self):
         DefaultContext = self.decimal.DefaultContext
 
@@ -1642,8 +1654,8 @@ class ThreadingTest(unittest.TestCase):
         DefaultContext.Emin = save_emin
 
 
-class CThreadingTest(ThreadingTest):
-    decimal = C
+# class CThreadingTest(ThreadingTest):
+#     decimal = C
 
 class PyThreadingTest(ThreadingTest):
     decimal = P
@@ -2457,8 +2469,8 @@ class UsabilityTest(unittest.TestCase):
         self.assertEqual(Decimal(-12).fma(45, Decimal(67)),
                          Decimal(-12).fma(Decimal(45), Decimal(67)))
 
-class CUsabilityTest(UsabilityTest):
-    decimal = C
+# class CUsabilityTest(UsabilityTest):
+#     decimal = C
 class PyUsabilityTest(UsabilityTest):
     decimal = P
 
@@ -2804,8 +2816,8 @@ class PythonAPItests(unittest.TestCase):
         self.assertTrue(issubclass(decimal.DivisionUndefined, ZeroDivisionError))
         self.assertTrue(issubclass(decimal.InvalidContext, InvalidOperation))
 
-class CPythonAPItests(PythonAPItests):
-    decimal = C
+# class CPythonAPItests(PythonAPItests):
+#     decimal = C
 class PyPythonAPItests(PythonAPItests):
     decimal = P
 
@@ -3553,8 +3565,8 @@ class ContextAPItests(unittest.TestCase):
         self.assertRaises(TypeError, c.to_integral_value, '10')
         self.assertRaises(TypeError, c.to_integral_value, 10, 'x')
 
-class CContextAPItests(ContextAPItests):
-    decimal = C
+# class CContextAPItests(ContextAPItests):
+#     decimal = C
 class PyContextAPItests(ContextAPItests):
     decimal = P
 
@@ -3684,8 +3696,8 @@ class ContextWithStatement(unittest.TestCase):
                         self.assertEqual(c4.prec, 4)
                         del c4
 
-class CContextWithStatement(ContextWithStatement):
-    decimal = C
+# class CContextWithStatement(ContextWithStatement):
+#     decimal = C
 class PyContextWithStatement(ContextWithStatement):
     decimal = P
 
@@ -3956,8 +3968,8 @@ class ContextFlags(unittest.TestCase):
         self.assertTrue(context.traps[FloatOperation])
         self.assertTrue(context.traps[Inexact])
 
-class CContextFlags(ContextFlags):
-    decimal = C
+# class CContextFlags(ContextFlags):
+#     decimal = C
 class PyContextFlags(ContextFlags):
     decimal = P
 
@@ -4041,8 +4053,8 @@ class SpecialContexts(unittest.TestCase):
             if ex:
                 raise ex
 
-class CSpecialContexts(SpecialContexts):
-    decimal = C
+# class CSpecialContexts(SpecialContexts):
+#     decimal = C
 class PySpecialContexts(SpecialContexts):
     decimal = P
 
@@ -4108,8 +4120,8 @@ class ContextInputValidation(unittest.TestCase):
         self.assertRaises(TypeError, Context, flags=(0,1))
         self.assertRaises(TypeError, Context, traps=(1,0))
 
-class CContextInputValidation(ContextInputValidation):
-    decimal = C
+# class CContextInputValidation(ContextInputValidation):
+#     decimal = C
 class PyContextInputValidation(ContextInputValidation):
     decimal = P
 
