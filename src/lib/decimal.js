@@ -1191,17 +1191,53 @@ function decimalImpl(requiredModules) {
     );
 
     const Context = buildNativeClass("Context", {
-        constructor: function () {},
+        constructor: function () {
+            this.$traps = null;
+            this.$flags = null;
+        },
         slots: {
             tp$new(args, kws) {
-                throw new Error("function not implemented");
+                // throw new Error("function not implemented");
             },
             $r() {
                 throw new Error("function not implemented");
             },
             tp$getattr: genericGetAttr,
             tp$init(args, kws) {
-                throw new Error("function not implemented");
+                const kwList = ["prec", "rounding", "Emin", "Emax", "capitals", "clamp", "flags", "traps"];
+                const [prec, rounding, emin, emax, capitals, clamp, status, traps] = parseArgs(
+                    "Context",
+                    kwList,
+                    args,
+                    kws,
+                    new Array(9).fill(pyNone)
+                );
+
+                if (prec !== pyNone) {
+                    this.$setprec(prec);
+                }
+                if (rounding !== pyNone) {
+                    this.$setround(rounding);
+                }
+                if (emin !== pyNone) {
+                    this.$setemin(rounding);
+                }
+                if (emax !== pyNone) {
+                    this.$setemax(rounding);
+                }
+                if (capitals !== pyNone) {
+                    this.$setcapitals(rounding);
+                }
+                if (clamp !== pyNone) {
+                    this.$setclamp(rounding);
+                }
+                if (traps !== pyNone) {
+                    //pass
+                }
+                if (status !== pyNone) {
+                    // pass
+                }
+                // throw new Error("function not implemented");
             },
         },
         methods: {
