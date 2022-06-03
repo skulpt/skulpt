@@ -221,7 +221,7 @@ Compiler.prototype.outputInterruptTest = function () { // Added by RNL
     if (Sk.execLimit !== null || Sk.yieldLimit !== null && this.u.canSuspend) {
         output += "var $dateNow = Date.now();";
         if (Sk.execLimit !== null) {
-            output += "if ($dateNow - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}";
+            output += "if ($dateNow - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeoutError(Sk.timeoutMsg())}";
         }
         if (Sk.yieldLimit !== null && this.u.canSuspend) {
             output += "if (!$waking && ($dateNow - Sk.lastYield > Sk.yieldLimit)) {";
