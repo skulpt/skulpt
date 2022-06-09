@@ -17,8 +17,8 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
         if (typeof x === "number") {
-            if (v > -6 && v < 257) {
-                return INTERNED_INT[v];
+            if (x > -6 && x < 257) {
+                return INTERNED_INT[x];
             }
             v = x;
         } else if (JSBI.__isBigInt(x)) {
@@ -856,8 +856,12 @@ const shiftconsts = [
  */
 Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
     base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
-    constructor: function lng(x) {
-        Sk.builtin.int_.call(this, x);
+    constructor: function lng (x) {
+        let ret = Sk.builtin.int_.call(this, x);
+        if (ret !== undefined) {
+            // using an interned int
+            this.v = ret.v;
+        }
     },
     slots: /** @lends {Sk.builtin.lng.prototype} */ {
         $r() {
@@ -876,8 +880,8 @@ Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
 const intProto = Sk.builtin.int_.prototype;
 
 
-const INT_INTERNED = [];
+const INTERNED_INT = [];
 for (let i = -5; i < 257; i++) {
-    INT_INTERNED[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
+    INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
-const INT_ZERO = INT_INTERNED[0];
+const INT_ZERO = INTERNED_INT[0];
