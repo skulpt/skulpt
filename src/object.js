@@ -1,4 +1,4 @@
-const hashMap = new Map();
+const hashMap = new WeakMap();
 /**
  *
  * @constructor
