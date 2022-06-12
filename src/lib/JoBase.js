@@ -833,6 +833,9 @@ const $builtinmodule = () => {
     canvas.addEventListener("keydown", keyDown)
     canvas.addEventListener("keyup", keyUp)
 
+    canvas.tabIndex = 0
+    canvas.focus()
+
     const vertexShader = gl.createShader(gl.VERTEX_SHADER)
     const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)
 
