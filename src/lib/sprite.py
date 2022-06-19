@@ -19,8 +19,16 @@ class Sprite:
     def __str__(self):
         return f"Sprite Object - image: {self.image.file}, x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height}, opacity: {self.opacity}"
 
-    def draw(self, offsetX = 0, offsetY = 0):
-        drawImage(self.image, self.x - offsetX, self.y - offsetY, self.width, self.height, opacity=self.opacity)
+    def draw(self, rotation = 0.0):
+        if rotation != 0.0:
+            saveState()
+            translate(self.x + self.width/2, self.y + self.height/2)
+            rotate(rotation)
+            translate(-self.width/2, -self.height/2)
+            drawImage(self.image, 0, 0, self.width, self.height, opacity=self.opacity)
+            restoreState()
+        else:
+            drawImage(self.image, self.x, self.y, self.width, self.height, opacity=self.opacity)
 
     def moveBy(self, x, y):
         self.x += x
@@ -71,10 +79,17 @@ class TextSprite(Sprite):
         self.x -= (self.width/2)
         self.y -= (self.height/2)
 
-    def draw(self):
+    def draw(self, rotation = 0.0):
         saveState()
         fill(self.r, self.g, self.b, self.a)
-        text(self.text, self.x, self.y, self.fontSize, self.fontName)
+        if rotation != 0.0:
+            saveState()
+            translate(self.x + self.width/2, self.y + self.height/2)
+            rotate(rotation)
+            translate(-self.width/2, -self.height/2)
+            text(self.text, 0, 0, self.fontSize, self.fontName)
+        else:
+            text(self.text, self.x, self.y, self.fontSize, self.fontName)
         restoreState()
 
     def setColour(self, r, g, b, a = 1.0):
@@ -113,7 +128,7 @@ class RectangleSprite(TextSprite):
     def strokeWeight(self, weight):
         self._strokeWeight = weight
 
-    def draw(self):
+    def draw(self, rotation):
         saveState()
         fill(self.r, self.g, self.b, self.a)
         strokeWeight(self._strokeWeight)
@@ -121,11 +136,17 @@ class RectangleSprite(TextSprite):
             stroke(self.stroke_r, self.stroke_g, self.stroke_b, self.stroke_a)
         else:
             noStroke()
-        self.drawShape()
+        self.drawShape(rotation)
         restoreState()
 
-    def drawShape(self):
-        rect(self.x, self.y, self.width, self.height)
+    def drawShape(self, rotation):
+        if rotation != 0.0:
+            translate(self.x + self.width/2, self.y + self.height/2)
+            rotate(rotation)
+            translate(-self.width/2, -self.height/2)
+            rect(0, 0, self.width, self.height)
+        else:
+            rect(self.x, self.y, self.width, self.height)
 
 class CircleSprite(RectangleSprite):
     def __init__(self, x, y, radius, r = 255, g = 255, b = 255, a = 1.0):
@@ -156,7 +177,8 @@ class CircleSprite(RectangleSprite):
     def bottomBoundary(self):
         return self.y + self.radius
 
-    def drawShape(self):
+    def drawShape(self, rotation):
+        # Rotating a circle changes nothing visually
         circle(self.x, self.y, self.radius)
 
 class EllipseSprite(RectangleSprite):
@@ -188,5 +210,10 @@ class EllipseSprite(RectangleSprite):
     def bottomBoundary(self):
         return self.y + self.radiusY
 
-    def drawShape(self):
-        ellipse(self.x, self.y, self.radiusX, self.radiusY)
+    def drawShape(self, rotation):
+        if rotation != 0.0:
+            translate(self.x, self.y)
+            rotate(rotation)
+            ellipse(0, 0, self.radiusX, self.radiusY)
+        else:
+            ellipse(self.x, self.y, self.radiusX, self.radiusY)
