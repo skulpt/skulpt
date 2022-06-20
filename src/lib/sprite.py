@@ -1,8 +1,9 @@
 class Sprite:
-    def __init__(self, image, x = 0, y = 0, width = 0, height = 0, opacity = 1.0):
+    def __init__(self, image, x = 0, y = 0, width = 0, height = 0, opacity = 1.0, angle = 0.0):
         self.x = x
         self.y = y
         self.opacity = opacity
+        self.angle = angle
         self.image = loadImage(image)
         if width == 0:
             self.width = self.image.width
@@ -19,11 +20,11 @@ class Sprite:
     def __str__(self):
         return f"Sprite Object - image: {self.image.file}, x: {self.x}, y: {self.y}, width: {self.width}, height: {self.height}, opacity: {self.opacity}"
 
-    def draw(self, rotation = 0.0):
-        if rotation != 0.0:
+    def draw(self):
+        if self.angle != 0.0:
             saveState()
             translate(self.x + self.width/2, self.y + self.height/2)
-            rotate(rotation)
+            rotate(self.angle)
             translate(-self.width/2, -self.height/2)
             drawImage(self.image, 0, 0, self.width, self.height, opacity=self.opacity)
             restoreState()
@@ -56,14 +57,19 @@ class Sprite:
     def contains(self, point):
         return point.x >= self.leftBoundary() and point.x <= self.rightBoundary() and point.y >= self.topBoundary() and point.y <= self.bottomBoundary()
 
+    def rotate(self, angle):
+        self.angle = angle
+
+
 class TextSprite(Sprite):
-    def __init__(self, text, x = 0, y = 0, fontSize = 20, fontName = "Arial", r = 255, g = 255, b = 255, a = 1.0):
+    def __init__(self, text, x = 0, y = 0, fontSize = 20, fontName = "Arial", r = 255, g = 255, b = 255, a = 1.0, angle = 0.0):
         self.text = text
         self.x = x
         self.y = y
         self.fontSize = fontSize
         self.fontName = fontName
-        self.setColour(r, g, b)
+        self.setColour(r, g, b, a)
+        self.angle = angle
         # Get Text Width
         textMetrics = measureText(self.text, self.fontSize, self.fontName)
         self.width = abs(textMetrics["actualBoundingBoxLeft"]) + abs(textMetrics["actualBoundingBoxRight"])
@@ -79,13 +85,13 @@ class TextSprite(Sprite):
         self.x -= (self.width/2)
         self.y -= (self.height/2)
 
-    def draw(self, rotation = 0.0):
+    def draw(self):
         saveState()
         fill(self.r, self.g, self.b, self.a)
-        if rotation != 0.0:
+        if self.angle != 0.0:
             saveState()
             translate(self.x + self.width/2, self.y + self.height/2)
-            rotate(rotation)
+            rotate(self.angle)
             translate(-self.width/2, -self.height/2)
             text(self.text, 0, 0, self.fontSize, self.fontName)
         else:
@@ -99,12 +105,13 @@ class TextSprite(Sprite):
         self.a = a
 
 class RectangleSprite(TextSprite):
-    def __init__(self, x, y, width, height, r = 255, g = 255, b = 255, a = 1.0):
+    def __init__(self, x, y, width, height, r = 255, g = 255, b = 255, a = 1.0, angle = 0.0):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.setColour(r, g, b)
+        self.setColour(r, g, b, a)
+        self.angle = angle
         self.strokeWeight(1)
         self.stroke(0, 0, 0, 1)
         self.noStroke()
@@ -128,7 +135,7 @@ class RectangleSprite(TextSprite):
     def strokeWeight(self, weight):
         self._strokeWeight = weight
 
-    def draw(self, rotation):
+    def draw(self):
         saveState()
         fill(self.r, self.g, self.b, self.a)
         strokeWeight(self._strokeWeight)
@@ -136,25 +143,26 @@ class RectangleSprite(TextSprite):
             stroke(self.stroke_r, self.stroke_g, self.stroke_b, self.stroke_a)
         else:
             noStroke()
-        self.drawShape(rotation)
+        self.drawShape()
         restoreState()
 
-    def drawShape(self, rotation):
-        if rotation != 0.0:
+    def drawShape(self):
+        if self.angle != 0.0:
             translate(self.x + self.width/2, self.y + self.height/2)
-            rotate(rotation)
+            rotate(self.angle)
             translate(-self.width/2, -self.height/2)
             rect(0, 0, self.width, self.height)
         else:
             rect(self.x, self.y, self.width, self.height)
 
 class CircleSprite(RectangleSprite):
-    def __init__(self, x, y, radius, r = 255, g = 255, b = 255, a = 1.0):
+    def __init__(self, x, y, radius, r = 255, g = 255, b = 255, a = 1.0, angle=0):
         self.x = x
         self.y = y
         self.radius = radius
         self.diameter = radius * 2
         self.setColour(r, g, b, a)
+        self.angle = angle
         self.strokeWeight(1)
         self.stroke(0, 0, 0, 1)
         self.noStroke()
@@ -177,17 +185,18 @@ class CircleSprite(RectangleSprite):
     def bottomBoundary(self):
         return self.y + self.radius
 
-    def drawShape(self, rotation):
+    def drawShape(self):
         # Rotating a circle changes nothing visually
         circle(self.x, self.y, self.radius)
 
 class EllipseSprite(RectangleSprite):
-    def __init__(self, x, y, radiusX, radiusY, r = 255, g = 255, b = 255, a = 1.0):
+    def __init__(self, x, y, radiusX, radiusY, r = 255, g = 255, b = 255, a = 1.0, angle = 0.0):
         self.x = x
         self.y = y
         self.radiusX = radiusX
         self.radiusY = radiusY
         self.setColour(r, g, b, a)
+        self.angle = angle
         self.strokeWeight(1)
         self.stroke(0, 0, 0, 1)
         self.noStroke()
@@ -210,10 +219,10 @@ class EllipseSprite(RectangleSprite):
     def bottomBoundary(self):
         return self.y + self.radiusY
 
-    def drawShape(self, rotation):
-        if rotation != 0.0:
+    def drawShape(self):
+        if self.angle != 0.0:
             translate(self.x, self.y)
-            rotate(rotation)
+            rotate(self.angle)
             ellipse(0, 0, self.radiusX, self.radiusY)
         else:
             ellipse(self.x, self.y, self.radiusX, self.radiusY)

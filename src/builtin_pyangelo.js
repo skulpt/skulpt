@@ -328,6 +328,9 @@ Sk.builtin.rotate = function rotate(angle) {
     if (Sk.PyAngelo.angleModeValue == Sk.builtins.DEGREES) {
         a = convertDegreesToRadians(a);
     }
+    if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+        a = a * -1;
+    }
     Sk.PyAngelo.ctx.rotate(a);
 };
 
