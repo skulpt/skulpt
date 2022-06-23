@@ -24,28 +24,6 @@ class RotateAngleModeTestCase(unittest.TestCase):
         self.assertEqual(c.g, rectColour)
         self.assertEqual(c.b, rectColour)
 
-    def test_rotateAngleModeRadiansNegative(self):
-        angleMode(RADIANS)
-        bgColour = 100
-        rectColour = 200
-        setCanvasSize(200, 200, CARTESIAN)
-
-        background(bgColour, bgColour, bgColour)
-        saveState()
-        translate(100, 100)
-        rotate(-1)
-        fill(rectColour, rectColour, rectColour)
-        rect(0, 0, 50, 50)
-        restoreState()
-        c = getPixelColour(125, 110)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
-        c = getPixelColour(95, 150)
-        self.assertEqual(c.r, rectColour)
-        self.assertEqual(c.g, rectColour)
-        self.assertEqual(c.b, rectColour)
-
     def test_rotateAngleModeRadiansPositive(self):
         angleMode(RADIANS)
         bgColour = 100
@@ -59,32 +37,33 @@ class RotateAngleModeTestCase(unittest.TestCase):
         fill(rectColour, rectColour, rectColour)
         rect(0, 0, 50, 50)
         restoreState()
+        c = getPixelColour(125, 110)
+        self.assertEqual(c.r, bgColour)
+        self.assertEqual(c.g, bgColour)
+        self.assertEqual(c.b, bgColour)
+        c = getPixelColour(95, 150)
+        self.assertEqual(c.r, rectColour)
+        self.assertEqual(c.g, rectColour)
+        self.assertEqual(c.b, rectColour)
+
+    def test_rotateAngleModeRadiansNegative(self):
+        angleMode(RADIANS)
+        bgColour = 100
+        rectColour = 200
+        setCanvasSize(200, 200, CARTESIAN)
+
+        background(bgColour, bgColour, bgColour)
+        saveState()
+        translate(100, 100)
+        rotate(-1)
+        fill(rectColour, rectColour, rectColour)
+        rect(0, 0, 50, 50)
+        restoreState()
         c = getPixelColour(110, 125)
         self.assertEqual(c.r, bgColour)
         self.assertEqual(c.g, bgColour)
         self.assertEqual(c.b, bgColour)
         c = getPixelColour(155, 95)
-        self.assertEqual(c.r, rectColour)
-        self.assertEqual(c.g, rectColour)
-        self.assertEqual(c.b, rectColour)
-
-    def test_rotateAngleModeDegreesPositive(self):
-        angleMode(DEGREES)
-        bgColour = 100
-        rectColour = 200
-        setCanvasSize(200, 200, CARTESIAN)
-        background(bgColour, bgColour, bgColour)
-        saveState()
-        translate(100, 100)
-        rotate(90)
-        fill(rectColour, rectColour, rectColour)
-        rect(0, 0, 50, 50)
-        restoreState()
-        c = getPixelColour(125, 125)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
-        c = getPixelColour(125, 75)
         self.assertEqual(c.r, rectColour)
         self.assertEqual(c.g, rectColour)
         self.assertEqual(c.b, rectColour)
@@ -98,6 +77,27 @@ class RotateAngleModeTestCase(unittest.TestCase):
         saveState()
         translate(100, 100)
         rotate(-90)
+        fill(rectColour, rectColour, rectColour)
+        rect(0, 0, 50, 50)
+        restoreState()
+        c = getPixelColour(125, 125)
+        self.assertEqual(c.r, bgColour)
+        self.assertEqual(c.g, bgColour)
+        self.assertEqual(c.b, bgColour)
+        c = getPixelColour(125, 75)
+        self.assertEqual(c.r, rectColour)
+        self.assertEqual(c.g, rectColour)
+        self.assertEqual(c.b, rectColour)
+
+    def test_rotateAngleModeDegreesPositive(self):
+        angleMode(DEGREES)
+        bgColour = 100
+        rectColour = 200
+        setCanvasSize(200, 200, CARTESIAN)
+        background(bgColour, bgColour, bgColour)
+        saveState()
+        translate(100, 100)
+        rotate(90)
         fill(rectColour, rectColour, rectColour)
         rect(0, 0, 50, 50)
         restoreState()

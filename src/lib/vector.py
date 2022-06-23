@@ -1,5 +1,5 @@
-import math
-import random
+from  math import sqrt, cos, sin
+from random import random
 class Vector:
     def __init__(self, x, y):
         self.x = x
@@ -54,7 +54,7 @@ class Vector:
         self.y /= n
     
     def mag(self):
-        return math.sqrt(self.x ** 2 + self.y ** 2)
+        return sqrt(self.x ** 2 + self.y ** 2)
         
     def normalise(self):
         m = self.mag()
@@ -68,5 +68,9 @@ class Vector:
             
     @staticmethod
     def random2D():
-        angleRadians = random.random() * TWO_PI
-        return Vector(math.cos(angleRadians), math.sin(angleRadians))
+        angleRadians = random() * TWO_PI
+        return Vector(cos(angleRadians), sin(angleRadians))
+
+    @staticmethod
+    def fromAngle(angleRadians, length = 1):
+        return Vector(length * cos(angleRadians), length * sin(angleRadians))
