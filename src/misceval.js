@@ -1414,7 +1414,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 
 function update_bases(bases) {
-    // todo
+    /** @todo this function should go through the bases and check for __mro_entries__ */
     return new Sk.builtin.tuple(bases);
 }
 
@@ -1444,7 +1444,7 @@ function do_prepare(meta, _name, _bases, kws, is_class) {
     }
     ns = Sk.misceval.callsimArray(prep, [_name, _bases], kws);
     if (!Sk.builtin.checkMapping(ns)) {
-        throw new Sk.builtin.TypeError(is_class ? meta.prototype.tp$name : "<metaclass>" + ".__prepare__() must be a mapping not '" + Sk.abstr.typeName(ns) + "'");
+        throw new Sk.builtin.TypeError(is_class ? meta.prototype.tp$name : "<metaclass>" + ".__prepare__() must return a mapping not '" + Sk.abstr.typeName(ns) + "'");
     }
     handler = {
         get(target, prop) {
