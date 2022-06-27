@@ -43,6 +43,7 @@ Sk.builtins = {
     "ZeroDivisionError"  : Sk.builtin.ZeroDivisionError,
     "AssertionError"     : Sk.builtin.AssertionError,
     "ImportError"        : Sk.builtin.ImportError,
+    "ModuleNotFoundError": Sk.builtin.ModuleNotFoundError,
     "IndentationError"   : Sk.builtin.IndentationError,
     "IndexError"         : Sk.builtin.IndexError,
     "LookupError"        : Sk.builtin.LookupError,
@@ -128,6 +129,9 @@ Sk.builtins = {
     "Ellipsis": Sk.builtin.Ellipsis
 };
 
+const pyNone = Sk.builtin.none.none$;
+const emptyTuple = new Sk.builtin.tuple();
+const pyZero = new Sk.builtin.int_(0);
 
 Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     // __build_class__: {
@@ -138,11 +142,25 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     // },
 
     __import__: {
-        $meth: Sk.builtin.__import__,
-        $flags: { NamedArgs: ["name", "globals", "locals", "fromlist", "level"] },
+        $meth(name, globals, _locals, formlist, level) {
+            if (!Sk.builtin.checkString(name)) {
+                throw new Sk.builtin.TypeError("__import__() argument 1 must be str, not " + name.tp$name);
+            } else if (name === Sk.builtin.str.$empty && level.v === 0) {
+                throw new Sk.builtin.ValueError("Empty module name");
+            }
+            // check globals - locals is just ignored __import__
+            globals = globLocToJs(globals, "globals") || {};
+            formlist = Sk.ffi.remapToJs(formlist);
+            level = Sk.ffi.remapToJs(level);
+
+            return Sk.builtin.__import__(name, globals, undefined, formlist, level);
+        },
+        $flags: {
+            NamedArgs: ["name", "globals", "locals", "fromlist", "level"],
+            Defaults: [pyNone, pyNone, emptyTuple, pyZero],
+        },
         $textsig: null,
-        $doc:
-            "__import__(name, globals=None, locals=None, fromlist=(), level=0) -> module\n\nImport a module. Because this function is meant for use by the Python\ninterpreter and not for general use, it is better to use\nimportlib.import_module() to programmatically import a module.\n\nThe globals argument is only used to determine the context;\nthey are not modified.  The locals argument is unused.  The fromlist\nshould be a list of names to emulate ``from name import ...'', or an\nempty list to emulate ``import name''.\nWhen importing a module from a package, note that __import__('A.B', ...)\nreturns package A when fromlist is empty, but its submodule B when\nfromlist is not empty.  The level argument is used to determine whether to\nperform absolute or relative imports: 0 is absolute, while a positive number\nis the number of parent directories to search relative to the current module.",
+        $doc: "__import__(name, globals=None, locals=None, fromlist=(), level=0) -> module\n\nImport a module. Because this function is meant for use by the Python\ninterpreter and not for general use, it is better to use\nimportlib.import_module() to programmatically import a module.\n\nThe globals argument is only used to determine the context;\nthey are not modified.  The locals argument is unused.  The fromlist\nshould be a list of names to emulate ``from name import ...'', or an\nempty list to emulate ``import name''.\nWhen importing a module from a package, note that __import__('A.B', ...)\nreturns package A when fromlist is empty, but its submodule B when\nfromlist is not empty.  The level argument is used to determine whether to\nperform absolute or relative imports: 0 is absolute, while a positive number\nis the number of parent directories to search relative to the current module.",
     },
 
     abs: {
