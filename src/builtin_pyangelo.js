@@ -1738,6 +1738,7 @@ Sk.PyAngelo.preparePage = function() {
     Sk.PyAngelo.canvas.addEventListener("mousedown", _canvasMouseDown);
     Sk.PyAngelo.canvas.addEventListener("mouseup", _canvasMouseUp);
     Sk.PyAngelo.console.addEventListener("mousedown", _focusInputElement);
+    window.addEventListener("resize", _resizeWindowVars);
 
     // Add mouse handlers
     function _setMousePosition(ev) {
@@ -1788,6 +1789,11 @@ Sk.PyAngelo.preparePage = function() {
         ev.preventDefault();
         Sk.PyAngelo.keys[ev.code] = false;
         Sk.PyAngelo.keyWasPressed[ev.code] = false;
+    }
+
+    function _resizeWindowVars(ev) {
+        Sk.builtins.windowWidth = window.innerWidth - 15;
+        Sk.builtins.windowHeight = window.innerHeight - 15;
     }
 
     Sk.PyAngelo.reset();
