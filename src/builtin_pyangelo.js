@@ -2,6 +2,7 @@ Sk.PyAngelo = {};
 Sk.PyAngelo.images = {};
 Sk.PyAngelo.keys = {};
 Sk.PyAngelo.keyWasPressed = {};
+Sk.PyAngelo.mouseWasPressed = false;
 Sk.PyAngelo.sounds = {};
 Sk.PyAngelo.fillStates = [];
 Sk.PyAngelo.strokeStates = [];
@@ -1170,6 +1171,27 @@ Sk.builtins["wasKeyPressed"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
+Sk.builtin.wasMousePressed = function wasMousePressed() {
+    if (Sk.PyAngelo.mouseWasPressed) {
+        Sk.PyAngelo.mouseWasPressed = false;
+        return Sk.builtin.bool.true$;
+    }
+    return Sk.builtin.bool.false$;
+};
+
+Sk.builtins["wasMousePressed"] = new Sk.builtin.sk_method(
+    {
+        $meth: Sk.builtin.wasMousePressed,
+        $name: "wasMousePressed",
+        $flags: { NoArgs: true },
+        $textsig: "($module /)",
+        $doc:
+            "Returns true or false depending if the mouse was pressed. This only returns true once per mouse press as opposed to the built-in variable mouseIsPressed which stays true until the mouse is released.",
+    },
+    null,
+    "builtins"
+);
+
 Sk.builtin.setTextSize = function setTextSize(size) {
     Sk.builtin.pyCheckArgsLen("setTextSize", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("size", "integer", Sk.builtin.checkInt(size));
@@ -1703,6 +1725,7 @@ Sk.PyAngelo.reset = function() {
     Sk.builtins.mouseX = new Sk.builtin.int_(0);
     Sk.builtins.mouseY = new Sk.builtin.int_(0);
     Sk.builtins.mouseIsPressed = Sk.builtin.bool.false$;
+    Sk.PyAngelo.mouseWasPressed = false;
 };
 
 Sk.PyAngelo.preparePage = function() {
@@ -1736,6 +1759,7 @@ Sk.PyAngelo.preparePage = function() {
         ev.preventDefault();
         _setMousePosition(ev);
         Sk.builtins.mouseIsPressed = Sk.builtin.bool.true$;
+        Sk.PyAngelo.mouseWasPressed = true;
         Sk.PyAngelo.canvas.focus();
     }
 
@@ -1743,6 +1767,7 @@ Sk.PyAngelo.preparePage = function() {
         ev.preventDefault();
         _setMousePosition(ev);
         Sk.builtins.mouseIsPressed = Sk.builtin.bool.false$;
+        Sk.PyAngelo.mouseWasPressed = false;
     }
 
     function _focusInputElement(ev) {
