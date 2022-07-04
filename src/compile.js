@@ -2562,7 +2562,7 @@ Compiler.prototype.cclass = function (s) {
 
     // apply decorators
 
-    for (let decorator of decos) {
+    for (let decorator of decos.reverse()) {
         out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ", [$ret]);");
         this._checkSuspension();
     }
