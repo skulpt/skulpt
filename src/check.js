@@ -251,7 +251,6 @@ Sk.builtin.checkAnySet = function (arg) {
 Sk.builtin.checkMapping = function (arg) {
     return (
         arg instanceof Sk.builtin.dict ||
-        arg instanceof Sk.builtin.mappingproxy ||
         (arg != null && arg.mp$subscript !== undefined && Sk.abstr.lookupSpecial(arg, Sk.builtin.str.$keys) !== undefined)
     );
 };

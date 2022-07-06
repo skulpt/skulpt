@@ -1094,7 +1094,7 @@ Sk.builtin.format = function format(value, format_spec) {
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
-const idMap = new Map();
+const idMap = new WeakMap();
 let _id = 0;
 Sk.builtin.id = function (obj) {
     const id = idMap.get(obj);
