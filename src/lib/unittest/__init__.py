@@ -191,8 +191,9 @@ class TestCase(object):
             expected_regex = re.compile(expected_regex)
         if not expected_regex.search(text):
             res = False
-            feedback = "Regex didn't match: %r not found in %r" % (
-                repr(expected_regex), text)
+            if feedback == "":
+                feedback = "Regex didn't match: %r not found in %r" % (
+                    repr(expected_regex), text)
         else:
             res = True
         self.appendResult(res, text, expected_regex, feedback)
