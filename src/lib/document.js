@@ -86,8 +86,6 @@ var $builtinmodule = function (name) {
 
         })
 
-        $loc.tp$getattr = Sk.generic.getAttr;
-
         $loc.__setattr__ = new Sk.builtin.func(function (self, key, value) {
             key = Sk.ffi.remapToJs(key);
             if (key === 'innerHTML') {
