@@ -2339,6 +2339,21 @@ function generateTurtleModule(_target) {
     addModuleMethod(Screen, _module, "$window_width", getScreen);
     addModuleMethod(Screen, _module, "$window_height", getScreen);    
     addModuleMethod(Screen, _module, "$title", getScreen);
+    
+    addModuleMethod(Screen, _module, "$onkey", getScreen);
+    addModuleMethod(Screen, _module, "$listen", getScreen);
+    addModuleMethod(Screen, _module, "$register_shape", getScreen);
+    addModuleMethod(Screen, _module, "$clearscreen", getScreen);
+    addModuleMethod(Screen, _module, "$bgcolor", getScreen);
+    addModuleMethod(Screen, _module, "$bgpic", getScreen);
+    addModuleMethod(Screen, _module, "$setworldcoordinates", getScreen);
+    addModuleMethod(Screen, _module, "$ontimer", getScreen);
+    addModuleMethod(Screen, _module, "$onscreenclick", getScreen);
+    addModuleMethod(Screen, _module, "$exitonclick", getScreen);
+    
+    addModuleMethod(Screen, _module, "$resetscreen", getScreen);
+    addModuleMethod(Screen, _module, "$setup", getScreen);
+    addModuleMethod(Screen, _module, "$turtles", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);
