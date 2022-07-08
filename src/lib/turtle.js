@@ -1068,24 +1068,7 @@ function generateTurtleModule(_target) {
         };
         proto.$shape.minArgs     = 0;
         proto.$shape.co_varnames = ["name"];
-        //colormode supported
-        proto.$colormode = function(cmode){
-            if(cmode !== undefined){
-                if(cmode === 255) {
-                    this._colorMode = 255;
-                } else {
-                    this._colorMode = 1.0;
-                }
-                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
-            }
-
-            return this._colorMode;
-        }
-        proto.$colormode.minArgs     = 0;
-        proto.$colormode.co_varnames = ["cmode"];
-        proto.$colormode.returnType = function(value) {
-            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
-        };
+        
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1443,6 +1426,25 @@ function generateTurtleModule(_target) {
         proto.$bgcolor.co_varnames = ["color", "g", "b", "a"];
         proto.$bgcolor.returnType = Types.COLOR;
 
+        //colormode supported, only in screen Class
+        proto.$colormode = function(cmode){
+            if(cmode !== undefined){
+                if(cmode === 255) {
+                    this._colorMode = 255;
+                } else {
+                    this._colorMode = 1.0;
+                }
+                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
+            }
+
+            return this._colorMode;
+        }
+        proto.$colormode.minArgs     = 0;
+        proto.$colormode.co_varnames = ["cmode"];
+        proto.$colormode.returnType = function(value) {
+            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
+        };
+        
         // no-op - just defined for consistency with python version
         proto.$mainloop = proto.$done = function() {
             return undefined;

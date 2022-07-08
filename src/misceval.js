@@ -248,7 +248,7 @@ Sk.misceval.iterator = Sk.abstr.buildIteratorClass("iterator", {
     constructor : function iterator (fn, handlesOwnSuspensions) {
         this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
             let x = fn();
-            if (canSuspend || !x.$isSuspension) {
+            if (canSuspend || x === undefined || !x.$isSuspension) {
                 return x;
             } else {
                 return Sk.misceval.retryOptionalSuspensionOrThrow(x);
@@ -1334,6 +1334,7 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     const _bases = update_bases(bases); // todo this function should go through the bases and check for __mro_entries__
 
     kws = kws || [];
+    bases = bases || [];
     let meta;
     let is_class = true;
     const meta_idx = kws.indexOf("metaclass");
