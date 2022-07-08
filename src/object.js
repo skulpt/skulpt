@@ -1,4 +1,4 @@
-const hashMap = new Map();
+const hashMap = new WeakMap();
 /**
  *
  * @constructor
@@ -95,16 +95,12 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
 
                 if (
                     !(oldto.$isSubType(Sk.builtin.module) && newto.$isSubType(Sk.builtin.module)) &&
-                    (oldto.sk$klass === undefined || newto.sk$klass === undefined)
+                    (oldto.prototype.ht$type === undefined || newto.prototype.ht$type === undefined)
                 ) {
                     throw new Sk.builtin.TypeError(" __class__ assignment only supported for heap types or ModuleType subclasses");
-                } else if (value.prototype.sk$builtinBase !== this.sk$builtinBase) {
-                    throw new Sk.builtin.TypeError(
-                        "__class__ assignment: '" + Sk.abstr.typeName(this) + "' object layout differs from '" + value.prototype.tp$name + "'"
-                    );
                 }
+                checkCompatibleForAssignment(oldto, newto);
                 Object.setPrototypeOf(this, value.prototype);
-                return;
             },
             $doc: "the object's class",
         },
@@ -145,9 +141,17 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             $doc: "Default object formatter.",
         },
     },
+    classmethods: {
+        __init_subclass__: {
+            $meth(args) {
+                return Sk.builtin.none.none$;
+            },
+            $flags: { FastCall: true, NoKwargs: true },
+        },
+    },
     proto: /**@lends {Sk.builtin.object.prototype}*/ {
         valueOf: Object.prototype.valueOf,
-        toString: function() {
+        toString() {
             return this.tp$str().v;
         },
         hasOwnProperty: Object.prototype.hasOwnProperty,
@@ -194,3 +198,59 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
     Sk.abstr.setUpBuiltinMro(Sk.builtin.type);
 })();
 
+function compatibleWithTpBase(child) {
+    const childProto = child.prototype;
+    const parent = childProto.tp$base;
+    if (parent == null) {
+        return false;
+    }
+    const parentProto = parent.prototype;
+    if (parent.sk$solidSlotBase || child.sk$solidSlotBase) {
+        return false;
+    } else if (parentProto.sk$hasDict !== childProto.sk$hasDict) {
+        return false;
+    } else if (parent.sk$solidBase && parent !== Sk.builtin.module) {
+        return false;
+    }
+    return true;
+}
+
+function sameSlotsAdded(a, b) {
+    const aProto = a.prototype;
+    const bProto = b.prototype;
+    const aSlots = aProto.ht$slots;
+    const bSlots = bProto.ht$slots;
+    if (aProto.sk$hasDict !== bProto.sk$hasDict) {
+        return false;
+    }
+    if (aSlots === bSlots) {
+        return true;
+    } else if (aSlots && bSlots) {
+        return aSlots.length === bSlots.length && aSlots.every((s, i) => s === bSlots[i]);
+    }
+    return (aSlots && (aSlots.length || null)) === (bSlots && (bSlots.length || null));
+}
+
+function checkCompatibleForAssignment(newto, oldto) {
+    let newbase = newto;
+    let oldbase = oldto;
+
+    while (compatibleWithTpBase(newbase)) {
+        newbase = newbase.prototype.tp$base;
+    }
+    while (compatibleWithTpBase(oldbase)) {
+        oldbase = oldbase.prototype.tp$base;
+    }
+    if (
+        newbase !== oldbase &&
+        (newbase.prototype.tp$base !== oldbase.prototype.tp$base || !sameSlotsAdded(newbase, oldbase))
+    ) {
+        throw new Sk.builtin.TypeError(
+            "__class__ assignment: '" +
+                oldto.prototype.tp$name +
+                "' object layout differs from '" +
+                newto.prototype.tp$name +
+                "'"
+        );
+    }
+}

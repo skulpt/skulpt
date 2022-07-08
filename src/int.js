@@ -324,6 +324,9 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             const result = bankRound * multiplier;
             return new Sk.builtin.int_(result);
         },
+        valueOf() {
+            return this.v;
+        },
     },
 });
 

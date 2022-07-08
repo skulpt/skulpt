@@ -248,7 +248,7 @@ Sk.misceval.iterator = Sk.abstr.buildIteratorClass("iterator", {
     constructor : function iterator (fn, handlesOwnSuspensions) {
         this.tp$iternext = handlesOwnSuspensions ? fn : function (canSuspend) {
             let x = fn();
-            if (canSuspend || !x.$isSuspension) {
+            if (canSuspend || x === undefined || !x.$isSuspension) {
                 return x;
             } else {
                 return Sk.misceval.retryOptionalSuspensionOrThrow(x);
@@ -1285,6 +1285,12 @@ Sk.misceval.promiseToSuspension = function (promise) {
 };
 Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspension);
 
+
+function _isIE() {
+    const navigator = Sk.global.navigator || {};
+    const ua = navigator.userAgent || "";
+    return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
+}
 /**
  * @function
  * @description
@@ -1302,43 +1308,139 @@ Sk.exportSymbol("Sk.misceval.promiseToSuspension", Sk.misceval.promiseToSuspensi
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases, cell) {
-    // todo; metaclass
-    var klass;
-    var meta = Sk.builtin.type;
+Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
+    const _name = new Sk.builtin.str(name);
+    const _bases = update_bases(bases); // todo this function should go through the bases and check for __mro_entries__
 
-    var l_cell = cell === undefined ? {} : cell;
-    var locals = {};
+    kws = kws || [];
+    bases = bases || [];
+    let meta;
+    let is_class = true;
+    const meta_idx = kws.indexOf("metaclass");
+    if (meta_idx > -1) {
+        meta = kws[meta_idx + 1];
+        // https://twitter.com/Rich_Harris/status/1125850391155965952
+        // the order of key value pairs doesn't matter for kws
+        // and this is orders of magnitured faster than splice
+        kws[meta_idx] = kws[kws.length - 2];
+        kws[meta_idx + 1] = kws[kws.length - 1];
+        kws.pop();
+        kws.pop();
+        is_class = Sk.builtin.checkClass(meta);
+    } else {
+        if (!bases.length) {
+            /* if there are no bases, use type: */
+            meta = Sk.builtin.type;
+        } else {
+            /* else get the type of the first base */
+            meta = bases[0].ob$type;
+        }
+    }
 
-    // init the dict for the class
-    func(globals, locals, l_cell);
-    // ToDo: check if func contains the __meta__ attribute
-    // or if the bases contain __meta__
-    // new Syntax would be different
+    if (is_class) {
+        meta = calculate_meta(meta, bases); // we should do this in type as well
+    }
+    /* else: meta is not a class, so we cannot do the metaclass
+       calculation, so we will use the explicitly given object as it is */
+
+    let ns = null; // namespace
+    let handler; // used as the proxy object handler
+    if (meta !== Sk.builtin.type) {
+        // slow path we have a metaclass use the __prepare__ mechanism
+        [ns, handler] = do_prepare(meta, _name, _bases, kws, is_class);
+    }
+
+    let localsIsProxy = false;
+    let locals = {};
+    if (ns === null) {
+        // fast path no metaclass
+        ns = new Sk.builtin.dict([]);
+    } else if (ns.constructor === Sk.builtin.dict || _isIE()) {
+        // we move the namespace returned from prepare to locals
+        // can't use Proxy in IE since the polyfill doesn't support set
+        const keys = Sk.abstr.iter(Sk.misceval.callsimArray(ns.tp$getattr(Sk.builtin.str.$keys)));
+        for (let key = keys.tp$iternext(); key !== undefined; key = keys.tp$iternext()) {
+            if (Sk.builtin.checkString(key)) {
+                locals[key.toString()] = ns.mp$subscript(key); // ignore non strings
+            }
+        }
+    } else {
+        locals = new Proxy(ns, handler);
+        localsIsProxy = true;
+    }
 
     // file's __name__ is class's __module__
     if (globals["__name__"]) {
         // some js modules haven't set their module name and we shouldn't set a dictionary value to be undefined that should be equivalent to deleting a value;
         locals.__module__ = globals["__name__"];
     }
-    var _name = new Sk.builtin.str(name);
-    var _bases = new Sk.builtin.tuple(bases);
-    var _locals = [];
-    var key;
+    // @todo add qualname here to pass to the code object
 
-    // build array for python dict
-    for (key in locals) {
-        if (!locals.hasOwnProperty(key)) {
-            //The current property key not a direct property of p
-            continue;
-        }
-        _locals.push(new Sk.builtin.str(key)); // push key
-        _locals.push(locals[key]); // push associated value
+    const l_cell = cell === undefined ? {} : cell;
+    // pass the locals to the code object which populates the namespace of the class
+    func(globals, locals, l_cell);
+
+    if (!localsIsProxy) {
+        // put locals object inside the ns dict
+        Object.keys(locals).forEach((key) => {
+            Sk.abstr.objectSetItem(ns, new Sk.builtin.str(key), locals[key]);
+        });
     }
-    _locals = new Sk.builtin.dict(_locals);
 
-    klass = Sk.misceval.callsimArray(meta, [_name, _bases, _locals]);
+    const klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, ns], kws);
 
     return klass;
 };
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
+
+function update_bases(bases) {
+    /** @todo this function should go through the bases and check for __mro_entries__ */
+    return new Sk.builtin.tuple(bases);
+}
+
+function calculate_meta(meta, bases) {
+    let winner = meta;
+    bases.forEach((base) => {
+        let tmptype = base.ob$type;
+        if (winner.$isSubType(tmptype)) {
+            // continue
+        } else if (tmptype.$isSubType(winner)) {
+            winner = tmptype;
+        } else {
+            throw new Sk.builtin.TypeError("metaclass conflict: the metaclass of a derived class must be a (non-strict) subclass of the metaclasses of all its bases");
+        }
+    });
+    return winner;
+}
+
+function do_prepare(meta, _name, _bases, kws, is_class) {
+    // we have a metaclass
+    const prep = meta.tp$getattr(Sk.builtin.str.$prepare);
+    let handler;
+    let ns = null;
+    if (prep === undefined) {
+        // unusual case - the metaclass is not a typeobject
+        return [ns, handler];
+    }
+    ns = Sk.misceval.callsimArray(prep, [_name, _bases], kws);
+    if (!Sk.builtin.checkMapping(ns)) {
+        throw new Sk.builtin.TypeError(is_class ? meta.prototype.tp$name : "<metaclass>" + ".__prepare__() must return a mapping not '" + Sk.abstr.typeName(ns) + "'");
+    }
+    handler = {
+        get(target, prop) {
+            try {
+                return Sk.abstr.objectGetItem(target, new Sk.builtin.str(Sk.unfixReserved(prop)));
+            } catch (e) {
+                if (e instanceof Sk.builtin.KeyError) {
+                    return;
+                }
+                throw e;
+            }
+        },
+        set(target, prop, value) {
+            Sk.abstr.objectSetItem(target, new Sk.builtin.str(Sk.unfixReserved(prop)), value);
+            return true; // Proxy protocol must return true on success
+        },
+    };
+    return [ns, handler];
+}
