@@ -32,6 +32,8 @@ var $builtinmodule = function (name) {
 
     sys.path = Sk.realsyspath;
 
+    sys.getdefaultencoding = new Sk.builtin.func(() => new Sk.builtin.str("utf-8"));
+
     sys.getExecutionLimit = new Sk.builtin.func(function () {
         if (Sk.execLimit === null) {
             return Sk.builtin.none.none$;

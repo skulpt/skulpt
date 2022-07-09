@@ -52,7 +52,7 @@ class Test_Suspensions(unittest.TestCase):
         self.assertEqual(all(sleeping_gen([4, 0, 5])), False)
     def test_sum(self):
         self.assertEqual(sum(sleeping_gen([1, 2, 3])), 6)
-        self.assertIs(sum(sleeping_gen([1, 2.0, 3])), 6.0)
+        self.assertEqual(sum(sleeping_gen([1, 2.0, 3])), 6.0)
         self.assertEqual(sum(sleeping_gen([[1], [2]]), []), [1, 2])
 
     def test_builtin_types(self):
