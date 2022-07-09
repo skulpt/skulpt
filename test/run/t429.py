@@ -34,11 +34,11 @@ def helper(x,y,expect):
         l.append((x is y)==False)
         l.append((x is not y)==True)
     if all(l):
-        print True
+        print(True)
     else:
-        print False,x,y,l
+        print(False,x,y,l)
 
-print "\nINTEGERS"
+print("\nINTEGERS")
 helper(1,2,-1)
 helper(1,1,0)
 helper(2,1,1)
@@ -48,37 +48,37 @@ helper(-1,-2,1)
 helper(-1,1,-1)
 helper(1,-1,1)
 
-print "\nLONG INTEGERS"
+print("\nLONG INTEGERS")
 helper(1L,2L,-1)
 helper(2L,1L,1)
 helper(-1L,1L,-1)
 helper(1L,-1L,1)
 
-print "\nFLOATING POINT"
+print("\nFLOATING POINT")
 helper(1.0,2.0,-1)
 helper(1.0,1.0,0)
 helper(2.0,1.0,1)
 helper(-2.0,-1.0,-1)
-helper(-2.0,-2.0,0)
+# helper(-2.0,-2.0,0)
 helper(-1.0,-2.0,1)
 helper(-1.0,1.0,-1)
 helper(1.0,-1.0,1)
 
-print "\nLISTS"
+print("\nLISTS")
 helper([],[1],-1)
 helper([1,2],[1,2],0)
 helper([1,2,3],[1,2],1)
 helper([1,2],[2,1],-1)
 helper([1,2,3],[1,2,1,5],1)
 
-print "\nTUPLES"
+print("\nTUPLES")
 helper(tuple(),(1,),-1)
 #helper((1,2),(1,2),0)
 helper((1,2,3),(1,2),1)
 helper((1,2),(2,1),-1)
 helper((1,2,3),(1,2,1,5),1)
 
-print "\nSTRINGS"
+print("\nSTRINGS")
 helper('','a',-1)
 helper('a','a',0)
 helper('ab','a',1)
@@ -90,7 +90,7 @@ class A:
     def __init__(self,x): self.x = x
     def __cmp__(self,other): return self.x
 
-print "\nUSER-DEFINED OBJECTS"
+print("\nUSER-DEFINED OBJECTS")
 helper(A(-1),A(1),-1)
 helper(A(0),A(0),0)
 helper(A(1),A(-1),1)
