@@ -242,6 +242,11 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: Sk.builtin.none.none$,
         },
     },
+    proto: {
+        valueOf() {
+            return this.v;
+        }
+    }
 });
 
 function frexp(arg) {

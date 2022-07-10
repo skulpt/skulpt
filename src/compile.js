@@ -221,7 +221,7 @@ Compiler.prototype.outputInterruptTest = function () { // Added by RNL
     if (Sk.execLimit !== null || Sk.yieldLimit !== null && this.u.canSuspend) {
         output += "var $dateNow = Date.now();";
         if (Sk.execLimit !== null) {
-            output += "if ($dateNow - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeLimitError(Sk.timeoutMsg())}";
+            output += "if ($dateNow - Sk.execStart > Sk.execLimit) {throw new Sk.builtin.TimeoutError(Sk.timeoutMsg())}";
         }
         if (Sk.yieldLimit !== null && this.u.canSuspend) {
             output += "if (!$waking && ($dateNow - Sk.lastYield > Sk.yieldLimit)) {";
@@ -316,6 +316,38 @@ Compiler.prototype.cunpackstarstoarray = function(elts, permitEndOnly) {
         // Fast path
         return "[" + elts.map((expr) => this.vexpr(expr)).join(",") + "]";
     }
+};
+
+Compiler.prototype.cunpackkwstoarray = function (keywords, codeobj) {
+        
+    let keywordArgs = "undefined";
+
+    if (keywords && keywords.length > 0) {
+        let hasStars = false;
+        const kwarray = [];
+        for (let kw of keywords) {
+            if (hasStars && !Sk.__future__.python3) {
+                throw new SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
+            }
+            if (kw.arg) {
+                kwarray.push("'" + kw.arg.v + "'");
+                kwarray.push(this.vexpr(kw.value));
+            } else {
+                hasStars = true;
+            }
+        }
+        keywordArgs = "[" + kwarray.join(",") + "]";
+        if (hasStars) {
+            keywordArgs = this._gr("keywordArgs", keywordArgs);
+            for (let kw of keywords) {
+                if (!kw.arg) {
+                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",codeobj,");");
+                    this._checkSuspension();
+                }
+            }
+        }
+    }
+    return keywordArgs;
 };
 
 Compiler.prototype.ctuplelistorset = function(e, data, tuporlist) {
@@ -623,8 +655,15 @@ Compiler.prototype.ccompare = function (e) {
 
     for (i = 0; i < n; ++i) {
         rhs = this.vexpr(e.comparators[i]);
-        out("$ret = Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", e.ops[i].prototype._astname, "', true);");
-        this._checkSuspension(e);
+        const op = e.ops[i];
+        if (op === Sk.astnodes.Is) {
+            out("$ret = ", cur, "===", rhs, ";");
+        } else if (op === Sk.astnodes.IsNot) {
+            out("$ret = ", cur, "!==", rhs, ";");
+        } else{
+            out("$ret = Sk.misceval.richCompareBool(", cur, ",", rhs, ",'", op.prototype._astname, "', true);");
+            this._checkSuspension(e);
+        }
         out(fres, "=Sk.builtin.bool($ret);");
         this._jumpfalse("$ret", done);
         cur = rhs;
@@ -644,7 +683,7 @@ Compiler.prototype.ccall = function (e) {
     // help us here; we do it by hand.
 
     let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
-    let keywordArgs = "undefined";
+    let keywordArgs = this.cunpackkwstoarray(e.keywords, func);
 
     if (e.keywords && e.keywords.length > 0) {
         let hasStars = false;
@@ -677,8 +716,9 @@ Compiler.prototype.ccall = function (e) {
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
         // so we should probably add self to the mangling
         // TODO: feel free to ignore the above
-        out("if (typeof self === \"undefined\" || self === Sk.global) { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
-        positionalArgs = "[$gbl.__class__,self]";
+        this.u.tempsToSave.push("$sup");
+        out("if (typeof $sup === \"undefined\") { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
+        positionalArgs = "[$gbl.__class__,$sup]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
@@ -2059,8 +2099,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         } else {
             this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
         }
-        for (let i=0; i < funcArgs.length; i++) {
-            this.u.varDeclsCode += ","+funcArgs[i]+"=$args["+i+"]";
+        const sup_i = kwarg ? 1 : 0;
+        for (let i = 0; i < funcArgs.length; i++) {
+            const sup = i === sup_i ? "$sup = " : "";
+            this.u.varDeclsCode += "," + sup + funcArgs[i] + "=$args[" + i + "]";
         }
         this.u.varDeclsCode += ";\n";
     }
@@ -2492,6 +2534,7 @@ Compiler.prototype.cclass = function (s) {
 
     bases = this.vseqexpr(s.bases);
 
+    let keywordArgs = this.cunpackkwstoarray(s.keywords);
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
@@ -2521,12 +2564,12 @@ Compiler.prototype.cclass = function (s) {
 
     this.exitScope();
 
-    // todo; metaclass
-    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell);");
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, ");");
+    this._checkSuspension();
 
     // apply decorators
 
-    for (let decorator of decos) {
+    for (let decorator of decos.reverse()) {
         out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ", [$ret]);");
         this._checkSuspension();
     }

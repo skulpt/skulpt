@@ -231,7 +231,9 @@ function $resolveArgs(posargs, kw) {
         let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
         args[totalArgs] = new Sk.builtin.tuple(vararg);
     } else if (nposargs > co_argcount) {
-        throw new Sk.builtin.TypeError(this.$name + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+        const plural_expected = co_argcount == 1 ? "argument" : "arguments";
+        const plural_given = nposargs == 1 ? "was" : "were";
+        throw new Sk.builtin.TypeError(`${this.$name}"() takes ${co_argcount} positional ${plural_expected} but ${nposargs} ${plural_given} given`);
     }
 
     /* Handle keyword arguments */

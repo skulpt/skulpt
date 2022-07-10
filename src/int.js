@@ -16,10 +16,15 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
     constructor: function int_(x) {
         Sk.asserts.assert(this instanceof Sk.builtin.int_, "bad call to int use 'new'");
         let v;
-        if (typeof x === "number" || JSBI.__isBigInt(x)) {
+        if (typeof x === "number") {
+            if (x > -6 && x < 257) {
+                return INTERNED_INT[x];
+            }
+            v = x;
+        } else if (JSBI.__isBigInt(x)) {
             v = x;
         } else if (x === undefined) {
-            v = 0;
+            return INT_ZERO;
         } else if (typeof x === "string") {
             v = stringToNumberOrBig(x);
         } else if (x.nb$int) {
@@ -45,10 +50,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 x = args[0];
                 base = Sk.builtin.none.none$;
             } else {
-                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [
-                    new Sk.builtin.int_(0),
-                    Sk.builtin.none.none$,
-                ]);
+                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [INT_ZERO, Sk.builtin.none.none$]);
                 x = args[0];
                 base = args[1];
             }
@@ -110,7 +112,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             (v, w) => v - w,
             (v, w) => JSBI.numberIfSafe(JSBI.subtract(v, w))
         ),
-        nb$multiply: numberSlot((v, w) => v * w, JSBI.multiply),
+        nb$multiply: numberSlot((v, w) => v * w, (v, w) => v === JSBI.__ZERO || w === JSBI.__ZERO ? 0 : JSBI.multiply(v, w)),
         nb$divide: trueDivide,
         nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), BigIntFloorDivide),
         nb$remainder: numberDivisionSlot(
@@ -206,7 +208,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         },
         imag: {
             $get() {
-                return new Sk.builtin.int_(0);
+                return INT_ZERO;
             },
             $doc: "the imaginary part of a complex number",
         },
@@ -321,6 +323,9 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 (num10 > 0 ? num10 : -num10) % 1 === 0.5 ? (0 === rounded % 2 ? rounded : rounded - 1) : rounded;
             const result = bankRound * multiplier;
             return new Sk.builtin.int_(result);
+        },
+        valueOf() {
+            return this.v;
         },
     },
 });
@@ -854,8 +859,12 @@ const shiftconsts = [
  */
 Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
     base: Sk.builtin.int_, // not technically correct but makes backward compatibility easy
-    constructor: function lng(x) {
-        Sk.builtin.int_.call(this, x);
+    constructor: function lng (x) {
+        let ret = Sk.builtin.int_.call(this, x);
+        if (ret !== undefined) {
+            // using an interned int
+            this.v = ret.v;
+        }
     },
     slots: /** @lends {Sk.builtin.lng.prototype} */ {
         $r() {
@@ -872,3 +881,10 @@ Sk.builtin.lng = Sk.abstr.buildNativeClass("long", {
 });
 
 const intProto = Sk.builtin.int_.prototype;
+
+
+const INTERNED_INT = [];
+for (let i = -5; i < 257; i++) {
+    INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
+}
+const INT_ZERO = INTERNED_INT[0];
