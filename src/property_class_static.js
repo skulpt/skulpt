@@ -49,7 +49,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             const rv = Sk.misceval.callsimOrSuspendArray(this.prop$get, [obj]);
             return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
         },
-        tp$descr_set(obj, value) {
+        tp$descr_set(obj, value, canSuspend) {
             let func;
             if (value == null) {
                 func = this.prop$del;
@@ -64,11 +64,13 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable");
             }
 
+            let rv;
             if (value == null) {
-                return func.tp$call([obj]);
+                rv = func.tp$call([obj]);
             } else {
-                return func.tp$call([obj, value]);
+                rv = func.tp$call([obj, value]);
             }
+            return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
         },
     },
     methods: {
