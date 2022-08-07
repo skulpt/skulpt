@@ -208,9 +208,9 @@ function slotFuncSetDelete(set_name, del_name, error_msg) {
                 return func.d$wrapped.call(this, pyObject, value);
             }
             if (func.tp$descr_get) {
-                func = func.tp$descr_get(this);
+                func = func.tp$descr_get(this, this.ob$type, canSuspend);
             }
-            
+
             if (func !== undefined) {
                 const args = value === undefined ? [pyObject] : [pyObject, value];
                 res = Sk.misceval.callsimOrSuspendArray(func, args);
