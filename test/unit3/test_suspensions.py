@@ -97,7 +97,9 @@ class Test_Suspensions(unittest.TestCase):
         self.assertTrue(repr(e.exception).startswith("SuspensionError"))
     
     def test_suspension_bug_getattribute(self):
-        self.assertEqual(SleepingObjectGetatttr().foo, "foo")
+        obj = SleepingObjectGetatttr()
+        self.assertEqual(obj.foo, "foo")
+        self.assertEqual(SleepingObjectGetatttr._foo.__get__(obj, None), "foo")
 
 
 
