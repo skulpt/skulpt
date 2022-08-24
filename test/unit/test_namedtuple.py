@@ -346,6 +346,12 @@ class TestNamedTuple(unittest.TestCase):
 
         a.w = 5
         self.assertEqual(a.__dict__, {'w': 5})
+    
+    def test_skulpt_bugs(self):
+        P = namedtuple("P", "x, y")
+        # shouldn't fail
+        P.foo = "bar"
+
 
 
 if __name__ == "__main__":
