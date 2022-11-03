@@ -685,32 +685,6 @@ Compiler.prototype.ccall = function (e) {
     let positionalArgs = this.cunpackstarstoarray(e.args, !Sk.__future__.python3);
     let keywordArgs = this.cunpackkwstoarray(e.keywords, func);
 
-    if (e.keywords && e.keywords.length > 0) {
-        let hasStars = false;
-        kwarray = [];
-        for (let kw of e.keywords) {
-            if (hasStars && !Sk.__future__.python3) {
-                throw new Sk.builtin.SyntaxError("Advanced unpacking of function arguments is not supported in Python 2");
-            }
-            if (kw.arg) {
-                kwarray.push("'" + kw.arg.v + "'");
-                kwarray.push(this.vexpr(kw.value));
-            } else {
-                hasStars = true;
-            }
-        }
-        keywordArgs = "[" + kwarray.join(",") + "]";
-        if (hasStars) {
-            keywordArgs = this._gr("keywordArgs", keywordArgs);
-            for (let kw of e.keywords) {
-                if (!kw.arg) {
-                    out("$ret = Sk.abstr.mappingUnpackIntoKeywordArray(",keywordArgs,",",this.vexpr(kw.value),",",func,");");
-                    this._checkSuspension();
-                }
-            }
-        }
-    }
-
     if (Sk.__future__.super_args && e.func.id && e.func.id.v === "super" && positionalArgs === "[]") {
         // make sure there is a self variable
         // note that it's part of the js API spec: https://developer.mozilla.org/en/docs/Web/API/Window/self
