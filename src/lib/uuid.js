@@ -1,141 +1,271 @@
 function $builtinmodule() {
-    const uuid = {
+    const {
+        builtin: {
+            bytes: pyBytes,
+            str: pyStr,
+            int: pyInt,
+            TypeError: pyTypeError,
+            ValueError: pyValueError,
+            NotImplementedError: pyNotImplementedError,
+            none: { none$: pyNone },
+            NotImplemented: { NotImplemented$: pyNotImplemented },
+            len: pyLen,
+        },
+        abstr: { buildNativeClass, checkArgsLen, copyKeywordsToNamedArgs },
+        misceval: { pyCall, richCompareBool },
+    } = Sk;
+
+    const mod = {
         __name__: new pyStr("uuid"),
     };
 
-    // Unique ID creation requires a high quality random # generator. In the browser we therefore
-    // require the crypto API and do not support built-in fallback to lower quality random number
-    // generators (like Math.random()).
+    const fromBytes = pyInt.tp$getattr(new pyStr("from_bytes"));
+    const toBytes = pyInt.tp$getattr(new pyStr("to_bytes"));
+    const _intMax = new pyInt(1).nb$lshift(new pyInt(128));
+    const _0 = new pyInt(0);
+    const _4 = new pyInt(4);
+    const _16 = new pyInt(16);
 
-    let getRandomValues;
+    const _s_big = new pyStr("big");
+    const _s_32bit = new pyStr("%032x");
 
-    const rnds8 = new Uint8Array(16);
+    const lt = (a, b) => richCompareBool(a, b, "Lt");
+    const ge = (a, b) => richCompareBool(a, b, "GtE");
 
-    function rng() {
-        // lazy load so that environments that need to polyfill have a chance to do so
-        if (!getRandomValues) {
-            // getRandomValues needs to be invoked in a context where "this" is a Crypto implementation. Also,
-            // find the complete implementation of crypto (msCrypto) on IE11.
-            getRandomValues =
-                (typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
-                (typeof msCrypto !== "undefined" &&
-                    typeof msCrypto.getRandomValues === "function" &&
-                    msCrypto.getRandomValues.bind(msCrypto));
-        }
-        return getRandomValues(rnds8);
+    function notImplemneted() {
+        throw new pyNotImplementedError("Not yet implemneted in Skulpt");
     }
 
-    const byteToHex = [];
-
-    for (let i = 0; i < 256; ++i) {
-        byteToHex.push((i + 0x100).toString(16).substr(1));
-    }
-
-    function stringify(arr, offset = 0) {
-        // Note: Be careful editing this code!  It's been tuned for performance
-        // and works in ways you may not expect. See https://github.com/uuidjs/uuid/pull/434
-        const uuid = (
-            byteToHex[arr[offset + 0]] +
-            byteToHex[arr[offset + 1]] +
-            byteToHex[arr[offset + 2]] +
-            byteToHex[arr[offset + 3]] +
-            "-" +
-            byteToHex[arr[offset + 4]] +
-            byteToHex[arr[offset + 5]] +
-            "-" +
-            byteToHex[arr[offset + 6]] +
-            byteToHex[arr[offset + 7]] +
-            "-" +
-            byteToHex[arr[offset + 8]] +
-            byteToHex[arr[offset + 9]] +
-            "-" +
-            byteToHex[arr[offset + 10]] +
-            byteToHex[arr[offset + 11]] +
-            byteToHex[arr[offset + 12]] +
-            byteToHex[arr[offset + 13]] +
-            byteToHex[arr[offset + 14]] +
-            byteToHex[arr[offset + 15]]
-        ).toLowerCase();
-
-        // Consistency check for valid UUID.  If this throws, it's likely due to one
-        // of the following:
-        // - One or more input array values don't map to a hex octet (leading to
-        // "undefined" in the uuid)
-        // - Invalid input values for the RFC `version` or `variant` fields
-        if (!validate(uuid)) {
-            throw TypeError("Stringified UUID is invalid");
-        }
-
-        return uuid;
-    }
-
-    function v35(name, version, hashfunc) {
-        function generateUUID(value, namespace, buf, offset) {
-            if (typeof value === "string") {
-                value = stringToBytes(value);
-            }
-
-            if (typeof namespace === "string") {
-                namespace = parse(namespace);
-            }
-
-            if (namespace.length !== 16) {
-                throw TypeError("Namespace must be array-like (16 iterable integer values, 0-255)");
-            }
-
-            // Compute hash of namespace and value, Per 4.3
-            // Future: Use spread syntax when supported on all platforms, e.g. `bytes =
-            // hashfunc([...namespace, ... value])`
-            let bytes = new Uint8Array(16 + value.length);
-            bytes.set(namespace);
-            bytes.set(value, namespace.length);
-            bytes = hashfunc(bytes);
-
-            bytes[6] = (bytes[6] & 0x0f) | version;
-            bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-            return bytes;
-        }
-        // Function#name is not settable on some platforms (#270)
-        try {
-            generateUUID.name = name;
-            // eslint-disable-next-line no-empty
-        } catch (err) {}
-        return generateUUID;
-    }
-
-    import v35 from './v35.js';
-import sha1 from './sha1.js';
-
-const v5 = v35('v5', 0x50, sha1);
-
-    function v4() {
-        const rnds = rnt();
-        // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-        rnds[6] = (rnds[6] & 0x0f) | 0x40;
-        rnds[8] = (rnds[8] & 0x3f) | 0x80;
-    }
-
-    uuid.UUID = buildNativeClass("uuid.UUID", {
-        constructor: function UUID() {},
+    const UUID = (mod.UUID = buildNativeClass("uuid.UUID", {
+        constructor: function () {},
         slots: {
+            tp$init(args, kws) {
+                checkArgsLen("UUID", args, 0, 6);
+                let [hex, bytes, bytes_le, fields, int, version, is_safe] = copyKeywordsToNamedArgs(
+                    "UUID",
+                    ["hex", "bytes", "bytes_le", "fields", , "version", "is_safe"],
+                    args,
+                    kws,
+                    [pyNone, pyNone, pyNone, pyNone, pyNone, pyNone, pyNone]
+                );
+
+                if ([hex, bytes, bytes_le, fields, int].filter((x) => x === pyNone).length !== 4) {
+                    throw new pyTypeError("one of the hex, bytes, bytes_le, fields, or int arguments must be given");
+                }
+
+                if (hex !== pyNone) {
+                    hex = hex.toString().replace("urn:", "").replace("uuid:", "");
+                    let start = 0,
+                        end = hex.length - 1;
+                    while ("{}".indexOf(hex[start] >= 0)) {
+                        start++;
+                    }
+                    while ("{}".indexOf(hex[end] >= 0)) {
+                        end--;
+                    }
+                    hex = hex.slice(start, end + 1);
+                    hex = hex.replaceAll("-", "");
+                    if (hex.length !== 32) {
+                        throw new pyValueError("badly formed hexadecimal UUID string");
+                    }
+                    bytes = [
+                        bytes_le[3],
+                        bytes_le[2],
+                        bytes_le[1],
+                        bytes_le[0],
+                        bytes_le[5],
+                        bytes_le[4],
+                        bytes_le[7],
+                        bytes_le[6],
+                    ];
+                    bytes.push(...bytes_le.slice(8));
+                    bytes = new pyBytes(bytes);
+                }
+
+                if (bytes_le !== pyNone) {
+                    if (!(bytes_le instanceof pyBytes)) {
+                        throw new pyTypeError("bytes_le should be a bytes instance");
+                    }
+                    bytes_le = bytes_le.valueOf();
+                    if (bytes_le.length !== 16) {
+                        throw new pyValueError("bytes_le is not a 16-char string");
+                    }
+                    bytes = new pyBytes();
+                }
+                if (bytes !== pyNone) {
+                    if (!(bytes instanceof pyBytes)) {
+                        throw new pyTypeError("bytes_le should be a bytes instance");
+                    }
+                    if (!bytes.valueOf().length !== 16) {
+                        throw new pyValueError("bytes is not a 16-char string");
+                    }
+                    int = pyCall(fromBytes, [bytes], ["byteorder", _s_big]);
+                }
+
+                if (int !== pyNone) {
+                    if (lt(int, _0) || ge(int, _intMax)) {
+                        throw new pyValueError("int is out of range (need a 128-bit value)");
+                    }
+                }
+
+                this.$int = int;
+                this.$isSafe = is_safe;
+            },
             tp$str() {
-                return new pyStr(stringify(this.$b));
+                const hex = _s_32bit.nb$remainder(this.$int).toString();
+                return new pyStr(
+                    `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
+                );
+            },
+            tp$repr() {
+                const name = this.tp$name;
+                const s = new pyStr(this);
+                return new pyStr(`${name}(${s})`);
+            },
+            tp$hash() {
+                return this.$int.tp$hash();
+            },
+            tp$richcompare(other, op) {
+                if (!(other instanceof UUID)) {
+                    return pyNotImplemented;
+                }
+                return this.$int.tp$richcompare(other, op);
             },
         },
-        getsets: {
-            bytes: {},
-            int: {},
-            hex: {},
+        methods: {
+            __int__: {
+                $meth() {
+                    return this.$int;
+                },
+                $flags: { NoArgs: true },
+            },
         },
-    });
 
-    setUpModuleMethods("uuid", uuid, {
+        getsets: {
+            int: {
+                $get() {
+                    return this.$int;
+                },
+            },
+            is_safe: {
+                $get() {
+                    return this.$isSafe;
+                },
+            },
+            bytes: {
+                $get() {
+                    return pyCall(toBytes, [this.$int, _16, _s_big]);
+                },
+            },
+            bytes_le: {
+                $get() {
+                    const bytes = this.tp$getattr(new pyStr("bytes")).valueOf();
+                    const bytes_le = [bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6]];
+                    bytes_le.push(...bytes.slice(8));
+                    return new pyBytes(bytes_le);
+                },
+            },
+            fields: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            time_low: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            time_mid: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            time_hi_version: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            clock_seq_hi_variant: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            clock_seq_low: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            time: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            clock_seq: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            node: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            hex: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            urn: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            variant: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+            version: {
+                $get() {
+                    return notImplemneted();
+                },
+            },
+        },
+    }));
+
+    setUpModuleMethods("uuid", mod, {
+        uuid1: {
+            $meth() {
+                notImplemneted();
+            },
+            $flags: { FastCall: true },
+        },
+        uuid2: {
+            $meth() {
+                notImplemneted();
+            },
+            $flags: { FastCall: true },
+        },
+        uuid3: {
+            $meth() {
+                notImplemneted();
+            },
+            $flags: { FastCall: true },
+        },
         uuid4: {
             $meth() {
-                const bytes = v4();
-                return new uuid.UUID(bytes);
+                const bytes = new pyBytes(crypto.getRandomValues(new Uint8Array(16)));
+                return pyCall(UUID, [], ["bytes", bytes, "version", _4]);
             },
+            $flags: { NoArgs: true },
+        },
+        uuid4: {
+            $meth() {
+                notImplemneted();
+            },
+            $flags: { FastCall: true },
         },
     });
+
+    return mod;
 }
