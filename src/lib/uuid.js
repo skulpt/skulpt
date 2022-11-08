@@ -3,20 +3,22 @@ function $builtinmodule() {
         builtin: {
             bytes: pyBytes,
             str: pyStr,
-            int: pyInt,
+            int_: pyInt,
             TypeError: pyTypeError,
             ValueError: pyValueError,
             NotImplementedError: pyNotImplementedError,
             none: { none$: pyNone },
             NotImplemented: { NotImplemented$: pyNotImplemented },
-            len: pyLen,
         },
-        abstr: { buildNativeClass, checkArgsLen, copyKeywordsToNamedArgs },
-        misceval: { pyCall, richCompareBool },
+        abstr: { buildNativeClass, checkArgsLen, copyKeywordsToNamedArgs, setUpModuleMethods },
+        misceval: { callsimArray: pyCall, richCompareBool },
     } = Sk;
 
     const mod = {
         __name__: new pyStr("uuid"),
+        RESERVED_NCS: pyNone,
+        RFC_4122: pyNone,
+        RESERVED_FUTURE: pyNone,
     };
 
     const fromBytes = pyInt.tp$getattr(new pyStr("from_bytes"));
@@ -32,7 +34,7 @@ function $builtinmodule() {
     const lt = (a, b) => richCompareBool(a, b, "Lt");
     const ge = (a, b) => richCompareBool(a, b, "GtE");
 
-    function notImplemneted() {
+    function notImplemented() {
         throw new pyNotImplementedError("Not yet implemneted in Skulpt");
     }
 
@@ -43,7 +45,7 @@ function $builtinmodule() {
                 checkArgsLen("UUID", args, 0, 6);
                 let [hex, bytes, bytes_le, fields, int, version, is_safe] = copyKeywordsToNamedArgs(
                     "UUID",
-                    ["hex", "bytes", "bytes_le", "fields", , "version", "is_safe"],
+                    ["hex", "bytes", "bytes_le", "fields", "int" , "version", "is_safe"],
                     args,
                     kws,
                     [pyNone, pyNone, pyNone, pyNone, pyNone, pyNone, pyNone]
@@ -57,16 +59,27 @@ function $builtinmodule() {
                     hex = hex.toString().replace("urn:", "").replace("uuid:", "");
                     let start = 0,
                         end = hex.length - 1;
-                    while ("{}".indexOf(hex[start] >= 0)) {
+                    while ("{}".indexOf(hex[start]) >= 0) {
                         start++;
                     }
-                    while ("{}".indexOf(hex[end] >= 0)) {
+                    while ("{}".indexOf(hex[end]) >= 0) {
                         end--;
                     }
                     hex = hex.slice(start, end + 1);
                     hex = hex.replaceAll("-", "");
                     if (hex.length !== 32) {
                         throw new pyValueError("badly formed hexadecimal UUID string");
+                    }
+                    int = pyCall(pyInt, [new pyStr(hex), _16]);
+                }
+
+                if (bytes_le !== pyNone) {
+                    if (!(bytes_le instanceof pyBytes)) {
+                        throw new pyTypeError("bytes_le should be a bytes instance");
+                    }
+                    bytes_le = bytes_le.valueOf();
+                    if (bytes_le.length !== 16) {
+                        throw new pyValueError("bytes_le is not a 16-char string");
                     }
                     bytes = [
                         bytes_le[3],
@@ -81,27 +94,18 @@ function $builtinmodule() {
                     bytes.push(...bytes_le.slice(8));
                     bytes = new pyBytes(bytes);
                 }
-
-                if (bytes_le !== pyNone) {
-                    if (!(bytes_le instanceof pyBytes)) {
-                        throw new pyTypeError("bytes_le should be a bytes instance");
-                    }
-                    bytes_le = bytes_le.valueOf();
-                    if (bytes_le.length !== 16) {
-                        throw new pyValueError("bytes_le is not a 16-char string");
-                    }
-                    bytes = new pyBytes();
-                }
                 if (bytes !== pyNone) {
                     if (!(bytes instanceof pyBytes)) {
                         throw new pyTypeError("bytes_le should be a bytes instance");
                     }
-                    if (!bytes.valueOf().length !== 16) {
+                    if (bytes.valueOf().length !== 16) {
                         throw new pyValueError("bytes is not a 16-char string");
                     }
                     int = pyCall(fromBytes, [bytes], ["byteorder", _s_big]);
                 }
-
+                if (fields !== pyNone) {
+                    throw new pyNotImplementedError("fields argument is not yet supported");
+                }
                 if (int !== pyNone) {
                     if (lt(int, _0) || ge(int, _intMax)) {
                         throw new pyValueError("int is out of range (need a 128-bit value)");
@@ -129,18 +133,13 @@ function $builtinmodule() {
                 if (!(other instanceof UUID)) {
                     return pyNotImplemented;
                 }
-                return this.$int.tp$richcompare(other, op);
+                return this.$int.tp$richcompare(other.$int, op);
             },
+            tp$as_number: true,
+            nb$int() {
+                return this.$int;
+            }
         },
-        methods: {
-            __int__: {
-                $meth() {
-                    return this.$int;
-                },
-                $flags: { NoArgs: true },
-            },
-        },
-
         getsets: {
             int: {
                 $get() {
@@ -167,67 +166,67 @@ function $builtinmodule() {
             },
             fields: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             time_low: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             time_mid: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             time_hi_version: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             clock_seq_hi_variant: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             clock_seq_low: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             time: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             clock_seq: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             node: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             hex: {
                 $get() {
-                    return notImplemneted();
+                    return _s_32bit.nb$remainder(this.$int);
                 },
             },
             urn: {
                 $get() {
-                    return notImplemneted();
+                    return new pyStr(`urn:uuid:${this}`);
                 },
             },
             variant: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
             version: {
                 $get() {
-                    return notImplemneted();
+                    return notImplemented();
                 },
             },
         },
@@ -236,19 +235,19 @@ function $builtinmodule() {
     setUpModuleMethods("uuid", mod, {
         uuid1: {
             $meth() {
-                notImplemneted();
+                notImplemented();
             },
             $flags: { FastCall: true },
         },
         uuid2: {
             $meth() {
-                notImplemneted();
+                notImplemented();
             },
             $flags: { FastCall: true },
         },
         uuid3: {
             $meth() {
-                notImplemneted();
+                notImplemented();
             },
             $flags: { FastCall: true },
         },
@@ -259,9 +258,9 @@ function $builtinmodule() {
             },
             $flags: { NoArgs: true },
         },
-        uuid4: {
+        uuid5: {
             $meth() {
-                notImplemneted();
+                notImplemented();
             },
             $flags: { FastCall: true },
         },
