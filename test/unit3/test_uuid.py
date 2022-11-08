@@ -687,4 +687,6 @@ class TestUUIDWithoutExtModule(BaseTestUUID, unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main(verbosity=2)
+    # we can't run this since running in node doesn't support the crypto API we need
+    # unittest.main()
+    pass
