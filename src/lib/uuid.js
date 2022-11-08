@@ -81,7 +81,7 @@ function $builtinmodule() {
                         end--;
                     }
                     hex = hex.slice(start, end + 1);
-                    hex = hex.replaceAll("-", "");
+                    hex = hex.replace(/-/g, "");
                     if (hex.length !== 32) {
                         throw new pyValueError("badly formed hexadecimal UUID string");
                     }
