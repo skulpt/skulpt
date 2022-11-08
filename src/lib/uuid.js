@@ -21,6 +21,21 @@ function $builtinmodule() {
         RESERVED_FUTURE: pyNone,
     };
 
+    let crypto = Sk.global.crypto;
+    
+    if (typeof crypto === "undefined") {
+        // polyfill for node so the tests work
+        crypto = {
+            getRandomValues(u8) {
+                let l = u8.length;
+                while (l--) {
+                    u8[l] = Math.floor(Math.random() * 256);
+                }
+                return u8;
+            },
+        };
+    }
+
     const fromBytes = pyInt.tp$getattr(new pyStr("from_bytes"));
     const toBytes = pyInt.tp$getattr(new pyStr("to_bytes"));
     const _intMax = new pyInt(1).nb$lshift(new pyInt(128));
