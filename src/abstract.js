@@ -1022,6 +1022,14 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     });
 };
 
+let fixReserved = (x) => {
+    if (Sk.builtin.str && Sk.builtin.str.$fixReserved) {
+        fixReserved = Sk.builtin.str.$fixReserved;
+        return Sk.builtin.str.$fixReserved(x);
+    }
+    return x;
+};
+
 /**
  * @param {FunctionConstructor} klass 
  * @param {Object=} getsets 
@@ -1034,7 +1042,7 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
     getsets = getsets || klass_proto.tp$getsets || {};
     Object.entries(getsets).forEach(([getset_name, getset_def]) => {
         getset_def.$name = getset_name;
-        klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
+        klass_proto[fixReserved(getset_name)] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
     Object.defineProperty(klass_proto, "tp$getsets", { value: null, writable: true });
 };
@@ -1052,7 +1060,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$methods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.method_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$methods", { value: null, writable: true });
 };
@@ -1070,22 +1078,24 @@ Sk.abstr.setUpClassMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$classmethods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.classmethod_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$classmethods", { value: null, writable: true });
 };
 
-const op2shortcut = Object.entries({
+const op2shortcut = {
     Eq: "ob$eq",
     NotEq: "ob$ne",
     Gt: "ob$gt",
     GtE: "ob$ge",
     Lt: "ob$lt",
     LtE: "ob$le",
-});
+};
+
+const op2shortcutEntries = Object.entries(op2shortcut);
 
 function _set_up_richcompare_wrappers(slots) {
-    op2shortcut.forEach(([op, shortcut]) => {
+    op2shortcutEntries.forEach(([op, shortcut]) => {
         slots[shortcut] = function (other) {
             return this.tp$richcompare(other, op);
         };
@@ -1150,6 +1160,11 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         // Either a klass defines a tp$richcompare slot or ob$eq slots
         // if tp$richcompare is defined then create all the ob$eq slots
         _set_up_richcompare_wrappers(slots);
+    } else if (slots.ob$eq) {
+        // assume if they set one of the slots they set them all!
+        slots.tp$richcompare = function(other, op) {
+            return this[op2shortcut[op]].call(this, other);
+        };
     }
 
     // setup some reflected slots
