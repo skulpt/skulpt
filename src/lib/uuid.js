@@ -10,8 +10,8 @@ function $builtinmodule() {
             none: { none$: pyNone },
             NotImplemented: { NotImplemented$: pyNotImplemented },
         },
-        abstr: { buildNativeClass, checkArgsLen, copyKeywordsToNamedArgs, setUpModuleMethods },
-        misceval: { callsimArray: pyCall, richCompareBool },
+        abstr: { buildNativeClass, checkArgsLen, copyKeywordsToNamedArgs, lookupSpecial, setUpModuleMethods },
+        misceval: { callsimArray: pyCall, objectRepr, richCompareBool },
     } = Sk;
 
     const mod = {
@@ -22,7 +22,7 @@ function $builtinmodule() {
     };
 
     let crypto = Sk.global.crypto;
-    
+
     if (typeof crypto === "undefined") {
         // polyfill for node so the tests work
         crypto = {
@@ -46,11 +46,26 @@ function $builtinmodule() {
     const _s_big = new pyStr("big");
     const _s_32bit = new pyStr("%032x");
 
+    const _r_dash = /-/g;
+
     const lt = (a, b) => richCompareBool(a, b, "Lt");
     const ge = (a, b) => richCompareBool(a, b, "GtE");
 
     function notImplemented() {
         throw new pyNotImplementedError("Not yet implemneted in Skulpt");
+    }
+
+    function switchBytesBytesLe(b) {
+        const t = new Uint8Array(b);
+        t[0] = b[3];
+        t[1] = b[2];
+        t[2] = b[1];
+        t[3] = b[0];
+        t[4] = b[5];
+        t[5] = b[4];
+        t[6] = b[7];
+        t[7] = b[6];
+        return t;
     }
 
     const UUID = (mod.UUID = buildNativeClass("uuid.UUID", {
@@ -60,7 +75,7 @@ function $builtinmodule() {
                 checkArgsLen("UUID", args, 0, 6);
                 let [hex, bytes, bytes_le, fields, int, version, is_safe] = copyKeywordsToNamedArgs(
                     "UUID",
-                    ["hex", "bytes", "bytes_le", "fields", "int" , "version", "is_safe"],
+                    ["hex", "bytes", "bytes_le", "fields", "int", "version", "is_safe"],
                     args,
                     kws,
                     [pyNone, pyNone, pyNone, pyNone, pyNone, pyNone, pyNone]
@@ -81,7 +96,7 @@ function $builtinmodule() {
                         end--;
                     }
                     hex = hex.slice(start, end + 1);
-                    hex = hex.replace(/-/g, "");
+                    hex = hex.replace(_r_dash, "");
                     if (hex.length !== 32) {
                         throw new pyValueError("badly formed hexadecimal UUID string");
                     }
@@ -96,17 +111,7 @@ function $builtinmodule() {
                     if (bytes_le.length !== 16) {
                         throw new pyValueError("bytes_le is not a 16-char string");
                     }
-                    bytes = [
-                        bytes_le[3],
-                        bytes_le[2],
-                        bytes_le[1],
-                        bytes_le[0],
-                        bytes_le[5],
-                        bytes_le[4],
-                        bytes_le[7],
-                        bytes_le[6],
-                    ];
-                    bytes.push(...bytes_le.slice(8));
+                    bytes = switchBytesBytesLe(bytes_le);
                     bytes = new pyBytes(bytes);
                 }
                 if (bytes !== pyNone) {
@@ -136,10 +141,10 @@ function $builtinmodule() {
                     `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
                 );
             },
-            tp$repr() {
-                const name = this.tp$name;
-                const s = new pyStr(this);
-                return new pyStr(`${name}(${s})`);
+            $r() {
+                const name = lookupSpecial(this.ob$type, pyStr.$name);
+                const str = objectRepr(this.tp$str());
+                return new pyStr(`${name}(${str})`);
             },
             tp$hash() {
                 return this.$int.tp$hash();
@@ -153,7 +158,7 @@ function $builtinmodule() {
             tp$as_number: true,
             nb$int() {
                 return this.$int;
-            }
+            },
         },
         getsets: {
             int: {
@@ -174,9 +179,7 @@ function $builtinmodule() {
             bytes_le: {
                 $get() {
                     const bytes = this.tp$getattr(new pyStr("bytes")).valueOf();
-                    const bytes_le = [bytes[3], bytes[2], bytes[1], bytes[0], bytes[5], bytes[4], bytes[7], bytes[6]];
-                    bytes_le.push(...bytes.slice(8));
-                    return new pyBytes(bytes_le);
+                    return new pyBytes(switchBytesBytesLe(bytes));
                 },
             },
             fields: {
