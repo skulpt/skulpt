@@ -50,7 +50,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 x = args[0];
                 base = Sk.builtin.none.none$;
             } else {
-                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [INT_ZERO, Sk.builtin.none.none$]);
+                args = Sk.abstr.copyKeywordsToNamedArgs("int", [null, "base"], args, kwargs, [
+                    INT_ZERO,
+                    Sk.builtin.none.none$,
+                ]);
                 x = args[0];
                 base = args[1];
             }
@@ -112,7 +115,10 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             (v, w) => v - w,
             (v, w) => JSBI.numberIfSafe(JSBI.subtract(v, w))
         ),
-        nb$multiply: numberSlot((v, w) => v * w, (v, w) => v === JSBI.__ZERO || w === JSBI.__ZERO ? 0 : JSBI.multiply(v, w)),
+        nb$multiply: numberSlot(
+            (v, w) => v * w,
+            (v, w) => (v === JSBI.__ZERO || w === JSBI.__ZERO ? 0 : JSBI.multiply(v, w))
+        ),
         nb$divide: trueDivide,
         nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), BigIntFloorDivide),
         nb$remainder: numberDivisionSlot(
@@ -213,6 +219,47 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             $doc: "the imaginary part of a complex number",
         },
     },
+    classmethods: {
+        from_bytes: {
+            $meth(args, kws) {
+                Sk.abstr.checkArgsLen("from_bytes", args, 0, 2);
+                let [bytes, byteorder, signed] = Sk.abstr.copyKeywordsToNamedArgs(
+                    "from_bytes",
+                    ["bytes", "byteorder", "signed"],
+                    args,
+                    kws,
+                    [Sk.builtin.bool.false$]
+                );
+                const littleEndian = isLittleEndian(byteorder);
+                if (!(bytes instanceof Sk.builtin.bytes)) {
+                    // not quite right - we should call pyObjectBytes - which fails on integers
+                    // but good enough for now
+                    bytes = Sk.misceval.callsimArray(Sk.builtin.bytes, [bytes]);
+                }
+                if (Sk.misceval.isTrue(signed)) {
+                    /** @todo - from_bytes with signed=True */
+                    throw new Sk.builtin.NotImplementedError(
+                        "from_bytes with signed=True is not yet implemented in Skulpt"
+                    );
+                }
+                const uint8 = bytes.valueOf();
+                const hex = [];
+                uint8.forEach((x) => {
+                    hex.push(x.toString(16).padStart(2, "0"));
+                });
+                if (littleEndian) {
+                    hex.reverse();
+                }
+                const asInt = new Sk.builtin.int_(JSBI.numberIfSafe(JSBI.BigInt("0x" + (hex.join("") || "0"))));
+                if (this === Sk.builtin.int_) {
+                    return asInt;
+                } else {
+                    return Sk.misceval.callsimArray(this, [asInt]);
+                }
+            },
+            $flags: { FastCall: true },
+        },
+    },
     methods: /** @lends {Sk.builtin.int_.prototype}*/ {
         conjugate: {
             $meth: cloneSelf,
@@ -234,8 +281,55 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             $doc: "Number of bits necessary to represent self in binary.\n\n>>> bin(37)\n'0b100101'\n>>> (37).bit_length()\n6",
         },
         to_bytes: {
-            $meth() {
-                throw new Sk.builtin.NotImplementedError("Not yet implemented in Skulpt");
+            $meth(args, kws) {
+                Sk.abstr.checkArgsLen("to_bytes", args, 0, 2);
+                let [length, byteorder, signed] = Sk.abstr.copyKeywordsToNamedArgs(
+                    "to_bytes",
+                    ["length", "byteorder", "signed"],
+                    args,
+                    kws,
+                    [Sk.builtin.bool.false$]
+                );
+                const littleEndian = isLittleEndian(byteorder);
+                length = Sk.misceval.asIndexSized(length, Sk.builtin.OverflowError);
+                if (length < 0) {
+                    throw new Sk.builtin.ValueError("length argument must be non-negative");
+                }
+                if (Sk.misceval.isTrue(signed)) {
+                    /** @todo - to_bytes with signed=True */
+                    throw new Sk.builtin.NotImplementedError(
+                        "to_bytes with signed=True is not yet implemented in Skulpt"
+                    );
+                }
+                if (this.nb$isnegative()) {
+                    throw new Sk.builtin.OverflowError("can't convert negative int to unsigned");
+                }
+                let hex = JSBI.BigInt(this.v).toString(16);
+                if (hex.length % 2) {
+                    hex = "0" + hex;
+                }
+                const len = hex.length / 2;
+                if (len > length) {
+                    if (length === 0 && hex === "00") {
+                        return new Sk.builtin.bytes();
+                    }
+                    throw new Sk.builtin.OverflowError("int too big to convert");
+                }
+
+                const u8 = new Array(length).fill(0);
+                let i = length - len;
+                let j = 0;
+
+                while (i < length) {
+                    u8[i] = parseInt(hex.slice(j, j + 2), 16);
+                    i += 1;
+                    j += 2;
+                }
+
+                if (littleEndian) {
+                    u8.reverse();
+                }
+                return new Sk.builtin.bytes(u8);
             },
             $flags: { FastCall: true },
             $textsig: "($self, /, length, byteorder, *, signed=False)",
@@ -888,3 +982,18 @@ for (let i = -5; i < 257; i++) {
     INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
 const INT_ZERO = INTERNED_INT[0];
+
+// from_bytes and to_bytes
+function isLittleEndian(byteorder) {
+    if (!Sk.builtin.checkString(byteorder)) {
+        throw new Sk.builtin.TypeError("'byteorder' must be str, not " + Sk.abstr.typeName(byteorder));
+    }
+    byteorder = byteorder.toString();
+    if (byteorder === "little") {
+        return 1;
+    } else if (byteorder === "big") {
+        return 0;
+    } else {
+        throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
+    }
+}
