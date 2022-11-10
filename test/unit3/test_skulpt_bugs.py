@@ -23,6 +23,23 @@ class TestSuper(unittest.TestCase):
         except Exception:
             self.fail("this shouldn't fail")
 
+class TestRegressions(unittest.TestCase):
+    def test_bug_1470(self):
+        global i
+        i = 0
+
+        def g():
+            global i
+            i += 1
+        
+        def f(x):
+            pass
+
+        f(x=g())
+
+        self.assertEqual(i, 1)
+
+
 
 if __name__ == "__main__":
     unittest.main()
