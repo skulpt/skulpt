@@ -24,6 +24,19 @@ function wrapperCallNoArgs(self, args, kwargs) {
     }
     return res;
 }
+
+function wrapperCallNoArgsSuspend(self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkNoArgs(this.$name, args, kwargs);
+    const res = this.call(self, true);
+    return Sk.misceval.chain(res, (res) => {
+        if (res === undefined) {
+            return Sk.builtin.none.none$;
+        }
+        return res;
+    });
+}
+
 /**
  * @param {*} self
  * @param {Array} args
@@ -55,6 +68,18 @@ function wrapperCallOneArg(self, args, kwargs) {
     return res;
 }
 
+function wrapperCallOneArgSuspend(self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkOneArg(this.$name, args, kwargs);
+    const res = this.call(self, args[0], true);
+    return Sk.misceval.chain(res, (res) => {
+        if (res === undefined) {
+            return Sk.builtin.none.none$;
+        }
+        return res;
+    });
+}
+
 /**
  * @param {*} self
  * @param {!Array} args
@@ -81,8 +106,7 @@ function wrapperCallTernary(self, args, kwargs) {
 function wrapperSet(self, args, kwargs) {
     Sk.abstr.checkNoKwargs(this.$name, kwargs);
     Sk.abstr.checkArgsLen(this.$name, args, 2, 2);
-    this.call(self, args[0], args[1]);
-    return Sk.builtin.none.none$;
+    return Sk.misceval.chain(this.call(self, args[0], args[1], true), () => Sk.builtin.none.none$);
 }
 
 /**
@@ -99,10 +123,12 @@ function wrapperRichCompare(self, args, kwargs) {
     return new Sk.builtin.bool(res);
 }
 
-function wrapperCallBack(wrapper, callback) {
-    return function (self,args, kwargs) {
+function wrapperCallBack(wrapper, callback, canSuspend) {
+    return function (self, args, kwargs) {
         const res = wrapper.call(this, self, args, kwargs);
-        return callback(res);
+        return canSuspend
+            ? Sk.misceval.chain(res, callback)
+            : callback(Sk.misceval.retryOptionalSuspensionOrThrow(res));
     };
 }
 
@@ -464,11 +490,13 @@ slots.__getattribute__ = {
         if (!Sk.builtin.checkString(pyName)) {
             throw new Sk.builtin.TypeError("attribute name must be string, not '" + Sk.abstr.typeName(pyName) + "'");
         }
-        const res = this.call(self, pyName);
-        if (res === undefined) {
-            throw new Sk.builtin.AttributeError(Sk.abstr.typeName(self) + " has no attribute " + pyName.$jsstr());
-        }
-        return res;
+        const res = this.call(self, pyName, true);
+        return Sk.misceval.chain(res, (res) => {
+            if (res === undefined) {
+                throw new Sk.builtin.AttributeError(Sk.abstr.typeName(self) + " has no attribute " + pyName.$jsstr());
+            }
+            return res;
+        });
     },
     $textsig: "($self, name, /)",
     $flags: { OneArg: true },
@@ -518,8 +546,7 @@ slots.__setattr__ = {
         Sk.abstr.checkNoKwargs(this.$name, kwargs);
         Sk.abstr.checkArgsLen(this.$name, args, 2, 2);
         hackcheck(self, this);
-        this.call(self, args[0], args[1]);
-        return Sk.builtin.none.none$; 
+        return Sk.misceval.chain(this.call(self, args[0], args[1], true), () => Sk.builtin.none.none$); 
     },
     $textsig: "($self, name, value, /)",
     $flags: { MinArgs: 2, MaxArgs: 2 },
@@ -580,7 +607,7 @@ slots.__get__ = {
         if (obtype === null && obj === null) {
             throw new Sk.builtin.TypeError("__get__(None, None) is invalid");
         }
-        return this.call(self, obj, obtype);
+        return this.call(self, obj, obtype, true);
     },
     $textsig: "($self, instance, owner, /)",
     $flags: { MinArgs: 2, MaxArgs: 2 },
@@ -862,7 +889,7 @@ slots.__len__ = {
             }
         };
     },
-    $wrapper: wrapperCallBack(wrapperCallNoArgs, (res) => new Sk.builtin.int_(res)),
+    $wrapper: wrapperCallBack(wrapperCallNoArgsSuspend, (res) => new Sk.builtin.int_(res), true),
     $flags: { NoArgs: true },
     $textsig: "($self, /)",
     $doc: "Return len(self).",
@@ -893,8 +920,7 @@ slots.__contains__ = {
             return res;
         };
     },
-    // todo - allow for suspensions - but no internal functions suspend here
-    $wrapper: wrapperCallBack(wrapperCallOneArg, (res) => new Sk.builtin.bool(res)),
+    $wrapper: wrapperCallBack(wrapperCallOneArgSuspend, (res) => new Sk.builtin.bool(res), true),
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return key in self.",
@@ -920,7 +946,7 @@ slots.__getitem__ = {
             return canSuspend ? ret : Sk.misceval.retryOptionalSuspensionOrThrow(ret);
         };
     },
-    $wrapper: wrapperCallOneArg,
+    $wrapper: wrapperCallOneArgSuspend,
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return self[key].",
@@ -953,7 +979,7 @@ slots.__delitem__ = {
     $name: "__delitem__",
     $slot_name: "mp$ass_subscript",
     $slot_func: slots.__setitem__.$slot_func,
-    $wrapper: wrapperCallOneArg,
+    $wrapper: wrapperCallOneArgSuspend,
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Delete self[key].",

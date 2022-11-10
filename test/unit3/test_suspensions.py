@@ -31,6 +31,16 @@ class SleepingDunderFail:
         sleep(0.01)
         return iter([0, 1, 2])
 
+class SleepingObjectGetatttr:
+    @property
+    def _foo(self):
+        sleep(.01)
+        return "foo"
+
+    @property
+    def foo(self):
+        return object.__getattribute__(self, "_foo")
+
 class Test_Suspensions(unittest.TestCase):
     def test_min_max(self):
         x = [4, 1, 5]
@@ -85,6 +95,11 @@ class Test_Suspensions(unittest.TestCase):
                 pass
         self.assertIn("Cannot call a function that blocks or suspends", str(e.exception))
         self.assertTrue(repr(e.exception).startswith("SuspensionError"))
+    
+    def test_suspension_bug_getattribute(self):
+        obj = SleepingObjectGetatttr()
+        self.assertEqual(obj.foo, "foo")
+        self.assertEqual(SleepingObjectGetatttr._foo.__get__(obj, None), "foo")
 
 
 
