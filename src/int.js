@@ -230,15 +230,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     kws,
                     [Sk.builtin.bool.false$]
                 );
-                let littleEndian;
-                if (S_LITTLE.ob$eq(byteorder)) {
-                    littleEndian = 1;
-                } else if (S_BIG.ob$eq(byteorder)) {
-                    littleEndian = 0;
-                } else {
-                    throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
-                }
-
+                const littleEndian = isLittleEndian(byteorder);
                 if (!(bytes instanceof Sk.builtin.bytes)) {
                     // not quite right - we should call pyObjectBytes - which fails on integers
                     // but good enough for now
@@ -298,15 +290,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     kws,
                     [Sk.builtin.bool.false$]
                 );
-                let littleEndian;
-                if (S_LITTLE.ob$eq(byteorder)) {
-                    littleEndian = 1;
-                } else if (S_BIG.ob$eq(byteorder)) {
-                    littleEndian = 0;
-                } else {
-                    throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
-                }
-
+                const littleEndian = isLittleEndian(byteorder);
                 length = Sk.misceval.asIndexSized(length, Sk.builtin.OverflowError);
                 if (length < 0) {
                     throw new Sk.builtin.ValueError("length argument must be non-negative");
@@ -998,6 +982,18 @@ for (let i = -5; i < 257; i++) {
     INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
 const INT_ZERO = INTERNED_INT[0];
+
 // from_bytes and to_bytes
-const S_LITTLE = new Sk.builtin.str("little");
-const S_BIG = new Sk.builtin.str("big");
+function isLittleEndian(byteorder) {
+    if (!Sk.builtin.checkString(byteorder)) {
+        throw new Sk.builtin.TypeError("'byteorder' must be str, not " + Sk.abstr.typeName(byteorder));
+    }
+    byteorder = byteorder.toString();
+    if (byteorder === "little") {
+        return 1;
+    } else if (byteorder === "big") {
+        return 0;
+    } else {
+        throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
+    }
+}
