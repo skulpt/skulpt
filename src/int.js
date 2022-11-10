@@ -230,11 +230,15 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     kws,
                     [Sk.builtin.bool.false$]
                 );
-                const s_lit = new Sk.builtin.str("little");
-                const s_big = new Sk.builtin.str("big");
-                if (byteorder !== s_big && byteorder !== s_lit) {
+                let littleEndian;
+                if (S_LITTLE.ob$eq(byteorder)) {
+                    littleEndian = 1;
+                } else if (S_BIG.ob$eq(byteorder)) {
+                    littleEndian = 0;
+                } else {
                     throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
                 }
+
                 if (!(bytes instanceof Sk.builtin.bytes)) {
                     // not quite right - we should call pyObjectBytes - which fails on integers
                     // but good enough for now
@@ -251,7 +255,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 uint8.forEach((x) => {
                     hex.push(x.toString(16).padStart(2, "0"));
                 });
-                if (byteorder === s_lit) {
+                if (littleEndian) {
                     hex.reverse();
                 }
                 const asInt = new Sk.builtin.int_(JSBI.numberIfSafe(JSBI.BigInt("0x" + (hex.join("") || "0"))));
@@ -294,11 +298,15 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     kws,
                     [Sk.builtin.bool.false$]
                 );
-                const s_lit = new Sk.builtin.str("little");
-                const s_big = new Sk.builtin.str("big");
-                if (byteorder !== s_big && byteorder !== s_lit) {
+                let littleEndian;
+                if (S_LITTLE.ob$eq(byteorder)) {
+                    littleEndian = 1;
+                } else if (S_BIG.ob$eq(byteorder)) {
+                    littleEndian = 0;
+                } else {
                     throw new Sk.builtin.ValueError("byteorder must be either 'little' or 'big'");
                 }
+
                 length = Sk.misceval.asIndexSized(length, Sk.builtin.OverflowError);
                 if (length < 0) {
                     throw new Sk.builtin.ValueError("length argument must be non-negative");
@@ -306,7 +314,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 if (Sk.misceval.isTrue(signed)) {
                     /** @todo - to_bytes with signed=True */
                     throw new Sk.builtin.NotImplementedError(
-                        "from_bytes with signed=True is not yet implemented in Skulpt"
+                        "to_bytes with signed=True is not yet implemented in Skulpt"
                     );
                 }
                 if (this.nb$isnegative()) {
@@ -334,7 +342,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                     j += 2;
                 }
 
-                if (byteorder === s_lit) {
+                if (littleEndian) {
                     u8.reverse();
                 }
                 return new Sk.builtin.bytes(u8);
@@ -990,3 +998,6 @@ for (let i = -5; i < 257; i++) {
     INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
 const INT_ZERO = INTERNED_INT[0];
+// from_bytes and to_bytes
+const S_LITTLE = new Sk.builtin.str("little");
+const S_BIG = new Sk.builtin.str("big");
