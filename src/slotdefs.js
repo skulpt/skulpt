@@ -124,9 +124,11 @@ function wrapperRichCompare(self, args, kwargs) {
 }
 
 function wrapperCallBack(wrapper, callback, canSuspend) {
-    return function (self,args, kwargs) {
+    return function (self, args, kwargs) {
         const res = wrapper.call(this, self, args, kwargs);
-        return canSuspend ? Sk.misceval.chain(res, callback) : callback(res);
+        return canSuspend
+            ? Sk.misceval.chain(res, callback)
+            : callback(Sk.misceval.retryOptionalSuspensionOrThrow(res));
     };
 }
 
@@ -918,8 +920,7 @@ slots.__contains__ = {
             return res;
         };
     },
-    // todo - allow for suspensions - but no internal functions suspend here
-    $wrapper: wrapperCallBack(wrapperCallOneArg, (res) => new Sk.builtin.bool(res)),
+    $wrapper: wrapperCallBack(wrapperCallOneArgSuspend, (res) => new Sk.builtin.bool(res), true),
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Return key in self.",
