@@ -619,7 +619,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     args = args.slice(0); // make a copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
-        const name = kwargs[i]; // JS string
+        const name = kwargs[i].toString(); // JS string but account for python string
         const value = kwargs[i + 1]; // Python value
         const idx = varnames.indexOf(name);
 
