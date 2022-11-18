@@ -2073,10 +2073,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         } else {
             this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
         }
-        const sup_i = kwarg ? 1 : 0;
         for (let i = 0; i < funcArgs.length; i++) {
-            const sup = i === sup_i ? "$sup = " : "";
-            this.u.varDeclsCode += "," + sup + funcArgs[i] + "=$args[" + i + "]";
+            this.u.varDeclsCode += "," + funcArgs[i] + "=$args[" + i + "]";
+        }
+        const instanceForSuper = funcArgs[kwarg ? 1 : 0];
+        if (instanceForSuper) {
+            this.u.varDeclsCode += `,$sup=${instanceForSuper}`;
         }
         this.u.varDeclsCode += ";\n";
     }
