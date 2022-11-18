@@ -2493,10 +2493,8 @@ order (MRO) for bases """
         # del junk
 
         # Just make sure these don't blow up!
-        for arg in 2, 2, 2j, 2e0, [2], "2", (2,), {2:2}, type, self.test_dir:
+        for arg in 2, 2, 2j, 2e0, [2], "2", b"2", (2,), {2:2}, type, self.test_dir:
             dir(arg)
-        # for arg in 2, 2, 2j, 2e0, [2], "2", b"2", (2,), {2:2}, type, self.test_dir:
-        #     dir(arg)
 
         # Test dir on new-style classes.  Since these have object as a
         # base class, a lot more gets sucked in.
@@ -2553,34 +2551,32 @@ order (MRO) for bases """
         m2instance.b = 2
         m2instance.a = 1
         self.assertEqual(m2instance.__dict__, "Not a dict!")
-        try:
+        with self.assertRaises(TypeError):
             dir(m2instance)
-        except TypeError:
-            pass
 
         # Two essentially featureless objects, (Ellipsis just inherits stuff
         # from object.
-        # self.assertEqual(dir(object()), dir(Ellipsis))
+        self.assertEqual(dir(object()), dir(Ellipsis))
 
         # Nasty test case for proxied objects
-        # class Wrapper(object):
-        #     def __init__(self, obj):
-        #         self.__obj = obj
-        #     def __repr__(self):
-        #         return "Wrapper(%s)" % repr(self.__obj)
-        #     def __getitem__(self, key):
-        #         return Wrapper(self.__obj[key])
-        #     def __len__(self):
-        #         return len(self.__obj)
-        #     def __getattr__(self, name):
-        #         return Wrapper(getattr(self.__obj, name))
+        class Wrapper(object):
+            def __init__(self, obj):
+                self.__obj = obj
+            def __repr__(self):
+                return "Wrapper(%s)" % repr(self.__obj)
+            def __getitem__(self, key):
+                return Wrapper(self.__obj[key])
+            def __len__(self):
+                return len(self.__obj)
+            def __getattr__(self, name):
+                return Wrapper(getattr(self.__obj, name))
 
-        # class C(object):
-        #     def __getclass(self):
-        #         return Wrapper(type(self))
-        #     __class__ = property(__getclass)
+        class C(object):
+            def __getclass(self):
+                return Wrapper(type(self))
+            __class__ = property(__getclass)
 
-        # dir(C()) # This used to segfault
+        dir(C()) # This used to segfault
 
     def test_supers(self):
         # Testing super...

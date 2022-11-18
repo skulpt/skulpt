@@ -921,6 +921,16 @@ Sk.abstr.lookupSpecial = function (obj, pyName) {
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
+Sk.abstr.lookupAttr = function (obj, pyName) {
+    try {
+        return obj.tp$getattr(pyName);
+    } catch (e) {
+        if (!(e instanceof Sk.builtin.AttributeError)) {
+            throw e;
+        }
+    }
+};
+
 
 Sk.abstr.typeLookup = function (type_obj, pyName) {
     const res = type_obj.$typeLookup(pyName);

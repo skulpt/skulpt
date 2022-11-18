@@ -108,22 +108,19 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
     methods: {
         __dir__: {
             $meth: function __dir__() {
-                let dir = [];
-                if (this.$d) {
-                    if (this.$d instanceof Sk.builtin.dict) {
-                        dir = this.$d.sk$asarray();
-                    } else {
-                        for (let key in this.$d) {
-                            dir.push(new Sk.builtin.str(key));
-                        }
-                    }
+                let dict = Sk.abstr.lookupAttr(this, Sk.builtin.str.$dict);
+                if (dict === undefined) {
+                    dict = new Sk.builtin.dict([]);
+                } else if (!(dict instanceof Sk.builtin.dict)) {
+                    dict = new Sk.builtin.dict([]);
+                } else {
+                    dict = dict.dict$copy();
                 }
-                // here we use the type.__dir__ implementation
-                const type_dir = Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [this.ob$type]);
-                // put the dict keys before the prototype keys
-                dir.push(...type_dir.v);
-                type_dir.v = dir;
-                return type_dir;
+                const cls = Sk.abstr.lookupAttr(this, Sk.builtin.str.$class);
+                if (cls !== undefined) {
+                    cls.$mergeClassDict(dict);
+                }
+                return new Sk.builtin.list(dict.sk$asarray());
             },
             $flags: { NoArgs: true },
             $doc: "Default dir() implementation.",
@@ -159,6 +156,19 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
         // private method used for error messages
         sk$attrError() {
             return "'" + this.tp$name + "' object";
+        },
+        $mergeClassDict(dict) {
+            const classDict = Sk.abstr.lookupAttr(this, Sk.builtin.str.$dict);
+            dict.dict$merge(classDict);
+            const bases = Sk.abstr.lookupAttr(this, Sk.builtin.str.$bases);
+            if (bases === undefined) {
+                return;
+            }
+            const n = Sk.builtin.len(bases).valueOf();
+            for (let i = 0; i < n; i++) {
+                const base = Sk.abstr.objectGetItem(bases, new Sk.builtin.int_(i));
+                base.$mergeClassDict(dict);
+            }
         },
     },
 });
