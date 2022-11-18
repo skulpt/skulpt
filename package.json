@@ -49,7 +49,7 @@
     "clean-webpack-plugin": "^2.0.2",
     "closure-webpack-plugin": "^2.5.0",
     "commander": "^2.20.0",
-    "compression-webpack-plugin": "^2.0.0",
+    "compression-webpack-plugin": "^10.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "ejs": "^3.1.7",
     "eslint": "^5.16.0",
