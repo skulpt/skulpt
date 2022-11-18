@@ -109,6 +109,18 @@ function wrapperSet(self, args, kwargs) {
     return Sk.misceval.chain(this.call(self, args[0], args[1], true), () => Sk.builtin.none.none$);
 }
 
+function wrapperDel(self, args, kwargs) {
+    // this = the wrapped function
+    Sk.abstr.checkOneArg(this.$name, args, kwargs);
+    const res = this.call(self, args[0], undefined, true);
+    return Sk.misceval.chain(res, (res) => {
+        if (res === undefined) {
+            return Sk.builtin.none.none$;
+        }
+        return res;
+    });
+}
+
 /**
  * @param {*} self
  * @param {Array} args
@@ -638,7 +650,7 @@ slots.__delete__ = {
     $name: "__delete__",
     $slot_name: "tp$descr_set",
     $slot_func: slots.__set__.$slot_func,
-    $wrapper: wrapperCallOneArg,
+    $wrapper: wrapperDel,
     $textsig: "($self, instance, /)",
     $flags: { OneArg: true },
     $doc: "Delete an attribute of instance.",
@@ -979,17 +991,7 @@ slots.__delitem__ = {
     $name: "__delitem__",
     $slot_name: "mp$ass_subscript",
     $slot_func: slots.__setitem__.$slot_func,
-    $wrapper: function (self, args, kwargs) {
-        // this = the wrapped function
-        Sk.abstr.checkOneArg(this.$name, args, kwargs);
-        const res = this.call(self, args[0], undefined, true);
-        return Sk.misceval.chain(res, (res) => {
-            if (res === undefined) {
-                return Sk.builtin.none.none$;
-            }
-            return res;
-        });
-    },
+    $wrapper: wrapperDel,
     $textsig: "($self, key, /)",
     $flags: { OneArg: true },
     $doc: "Delete self[key].",
