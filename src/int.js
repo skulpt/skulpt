@@ -421,6 +421,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         valueOf() {
             return this.v;
         },
+        // flag to determine inheritance of ints without instanceof
         sk$int: true,
     },
 });
