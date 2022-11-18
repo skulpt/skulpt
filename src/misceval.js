@@ -92,7 +92,10 @@ Sk.exportSymbol("Sk.misceval.isIndex", Sk.misceval.isIndex);
 function asIndex(index) {
     if (index === null || index === undefined) {
         return;
-    } else if (index.nb$index) {
+    } else if (index.sk$int === true) {
+        // if we're an int or int subclass use the internal value - as per CPython
+        return index.v;
+    } else if (index.nb$index !== undefined) {
         return index.nb$index(); // this slot will check the return value is a number / JSBI.BigInt.
     } else if (typeof index === "number" && Number.isInteger(index)) {
         return index;

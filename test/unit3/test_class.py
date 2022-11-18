@@ -374,15 +374,8 @@ class ClassTests(unittest.TestCase):
         def index(x):
             return [][x]
 
-        # self.assertRaises(TypeError, float, BadTypeClass())
-        self.assertRaises(TypeError, complex, BadTypeClass())
-        # self.assertRaises(TypeError, str, BadTypeClass())
-        # self.assertRaises(TypeError, repr, BadTypeClass())
-        self.assertRaises(TypeError, bin, BadTypeClass())
-        self.assertRaises(TypeError, oct, BadTypeClass())
-        self.assertRaises(TypeError, hex, BadTypeClass())
-        # self.assertRaises(TypeError, bool, BadTypeClass())
-        self.assertRaises(TypeError, index, BadTypeClass())
+        for f in [float, complex, str, repr, bytes, bin, oct, hex, bool, index]:
+            self.assertRaises(TypeError, f, BadTypeClass())
 
 
     def testHashStuff(self):
