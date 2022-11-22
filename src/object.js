@@ -159,7 +159,9 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
         },
         $mergeClassDict(dict) {
             const classDict = Sk.abstr.lookupAttr(this, Sk.builtin.str.$dict);
-            dict.dict$merge(classDict);
+            if (classDict !== undefined) {
+                dict.dict$merge(classDict);
+            }
             const bases = Sk.abstr.lookupAttr(this, Sk.builtin.str.$bases);
             if (bases === undefined) {
                 return;

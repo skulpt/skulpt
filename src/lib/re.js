@@ -77,8 +77,8 @@ var $builtinmodule = function (name) {
         }
 
         maxsplit = Sk.builtin.asnum$(maxsplit);
-        pat = Sk.ffi.unwrapo(pattern);
-        str = Sk.ffi.unwrapo(string);
+        pat = Sk.ffi.remapToJs(pattern);
+        str = Sk.ffi.remapToJs(string);
 
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);
@@ -142,8 +142,8 @@ var $builtinmodule = function (name) {
             throw new Sk.builtin.TypeError("flags must be a number");
         }
 
-        pat = Sk.ffi.unwrapo(pattern);
-        str = Sk.ffi.unwrapo(string);
+        pat = Sk.ffi.remapToJs(pattern);
+        str = Sk.ffi.remapToJs(string);
 
         // Convert pat from Python to Javascript regex syntax
         pat = convert(pat);

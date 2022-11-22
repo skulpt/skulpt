@@ -1333,6 +1333,12 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         }); 
     });
 
+
+    if (type_proto.hasOwnProperty("tp$iter")) {
+        type_proto[Symbol.iterator] = function () {
+            return this.tp$iter()[Symbol.iterator]();
+        };
+    }
     // str might not have been created yet
     if (Sk.builtin.str !== undefined && type_proto.hasOwnProperty("tp$doc") && !type_proto.hasOwnProperty("__doc__")) {
         const docstr = type_proto.tp$doc || null;
@@ -1391,16 +1397,27 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
     iterator.slots.tp$getattr = iterator.slots.tp$getattr || Sk.generic.getAttr;
     let ret = Sk.abstr.buildNativeClass(typename, iterator);
     Sk.abstr.built$iterators.push(ret);
+
+    ret.prototype[Symbol.iterator] = function () {
+        return  {
+            next: () => {
+                const value = this.tp$iternext();
+                const done = value === undefined;
+                return {value, done};
+            }
+        };
+    };
     return ret;
 };
 
 Sk.abstr.built$iterators = [];
 
-Sk.abstr.setUpModuleMethods = function (module_name, module, method_defs) {
+Sk.abstr.setUpModuleMethods = function (module_name, mod, method_defs) {
     Object.entries(method_defs).forEach(([method_name, method_def]) => {
         method_def.$name = method_def.$name || method_name; // operator e.g. some methods share method_defs
-        module[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
+        mod[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
     });
+    return mod;
 };
 
 /**
