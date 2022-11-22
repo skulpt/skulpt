@@ -1050,7 +1050,8 @@ function collections_mod(collections) {
                 const offset = start >= 0 ? start : start < -size ? 0 : size + start;
                 stop = stop >= 0 ? stop : stop < -size ? 0 : size + stop;
                 for (let i = offset; i < stop; i++) {
-                    if (list[(head + i) & mask] === x) {
+                    const v = list[(head + i) & mask];
+                    if (v === x || Sk.misceval.richCompareBool(v, x, "Eq")) {
                         return i;
                     }
                 }
