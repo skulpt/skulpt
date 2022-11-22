@@ -1334,8 +1334,8 @@ Sk.abstr.buildNativeClass = function (typename, options) {
     });
 
 
-    if (typeobject.prototype.hasOwnProperty("tp$iter")) {
-        typeobject.prototype[Symbol.iterator] = function () {
+    if (type_proto.hasOwnProperty("tp$iter")) {
+        type_proto[Symbol.iterator] = function () {
             return this.tp$iter()[Symbol.iterator]();
         };
     }
@@ -1401,11 +1401,9 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
     ret.prototype[Symbol.iterator] = function () {
         return  {
             next: () => {
-                const nxt = this.tp$iternext();
-                if (nxt === undefined) {
-                    return {done: true};
-                }
-                return {value: nxt, done: false};
+                const value = this.tp$iternext();
+                const done = value === undefined;
+                return {value, done};
             }
         };
     };

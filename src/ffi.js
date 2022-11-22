@@ -29,6 +29,9 @@ Sk.ffi = {
     proxy,
 };
 
+const OBJECT_PROTO = Object.prototype;
+const FUNC_PROTO = Function.prototype;
+
 /**
  * maps from Javascript Object/Array/string to Python dict/list/str.
  *
@@ -69,10 +72,7 @@ function toPy(obj, hooks) {
         return new Sk.builtin.list(obj.map((x) => toPy(x, hooks)));
     } else if (type === "object") {
         const constructor = obj.constructor; // it's possible that a library deleted the constructor
-        if (
-            (constructor === Object && Object.getPrototypeOf(obj) === Object.prototype) ||
-            constructor === undefined /* Object.create(null) */
-        ) {
+        if (constructor === Object && Object.getPrototypeOf(obj) === OBJECT_PROTO || constructor === undefined /* Object.create(null) */) {
             return hooks.dictHook ? hooks.dictHook(obj) : toPyDict(obj, hooks);
         } else if (constructor === Uint8Array) {
             return new Sk.builtin.bytes(obj);
@@ -336,26 +336,35 @@ const jsHooks = {
         const _cached = _proxied.get(obj);
         if (_cached) {
             return _cached;
-        } else if (obj.tp$call) {
-            const wrapped = (...args) => {
-                const ret = Sk.misceval.chain(obj.tp$call(args.map((x) => toPy(x, pyHooks))), (res) =>
-                    toJs(res, jsHooks)
-                );
-                if (ret instanceof Sk.misceval.Suspension) {
-                    // better to return a promise here then hope the javascript library will handle a suspension
+        }
+        const pyWrapped = { v: obj, $isPyWrapped: true, unwrap: () => obj };
+        if (obj.tp$call === undefined) {
+            _proxied.set(obj, pyWrapped);
+            return pyWrapped;
+        }
+        const pyWrappedCallable = (...args) => {
+            args = args.map((x) => toPy(x, pyHooks));
+            let ret = Sk.misceval.tryCatch(
+                () => Sk.misceval.chain(obj.tp$call(args), (res) => toJs(res, jsHooks)),
+                (e) => {
+                    if (Sk.uncaughtException) {
+                        Sk.uncaughtException(e);
+                    } else {
+                        throw e;
+                    }
+                }
+            );
+            while (ret instanceof Sk.misceval.Suspension) {
+                // better to return a promise here then hope the javascript library will handle a suspension
+                if (!ret.optional) {
                     return Sk.misceval.asyncToPromise(() => ret);
                 }
-                return ret;
-            };
-            wrapped.v = obj;
-            wrapped.unwrap = () => obj;
-            wrapped.$isPyWrapped = true;
-            _proxied.set(obj, wrapped);
-            return wrapped;
-        }
-        const ret = { v: obj, $isPyWrapped: true, unwrap: () => obj };
-        _proxied.set(obj, ret);
-        return ret;
+                ret = ret.resume();
+            }
+            return ret;
+        };
+        _proxied.set(obj, Object.assign(pyWrappedCallable, pyWrapped));
+        return pyWrappedCallable;
     },
 };
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
@@ -414,7 +423,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
                 }
                 const boundRepr = Sk.misceval.objectRepr(proxy(this.$bound));
                 return new Sk.builtin.str("<bound " + this.tp$name + " '" + this.$name + "' of " + boundRepr + ">");
-            } else if (this.js$proto === Object.prototype) {
+            } else if (this.js$proto === OBJECT_PROTO) {
                 if (this.in$repr) {
                     return new Sk.builtin.str("{...}");
                 }
@@ -454,7 +463,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         tp$as_number: true,
         nb$bool() {
             // we could just check .constructor but some libraries delete it!
-            if (this.js$proto === Object.prototype) {
+            if (this.js$proto === OBJECT_PROTO) {
                 return Object.keys(this.js$wrapped).length > 0;
             } else if (this.sq$length) {
                 return this.sq$length() > 0;
@@ -466,8 +475,8 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
     methods: {
         __dir__: {
             $meth() {
-                const object_dir = Sk.misceval.callsimArray(Sk.builtin.object.prototype.__dir__, [this]).valueOf();
-                return new Sk.builtin.list(object_dir.concat(Array.from(this.$dir, (x) => new Sk.builtin.str(x))));
+                const proxy_dir = Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [JsProxy]).valueOf();
+                return new Sk.builtin.list(proxy_dir.concat(Array.from(this.$dir, (x) => new Sk.builtin.str(x))));
             },
             $flags: { NoArgs: true },
         },
@@ -581,12 +590,16 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
             $dir: {
                 configurable: true,
                 get() {
-                    const dir = new Set();
-                    // loop over enumerable properties
-                    for (let prop in this.js$wrapped) {
-                        dir.add(prop);
+                    const dir = [];
+                    // just looping over enumerable properties can hide a lot of properties
+                    // especially in es6 classes
+                    let obj = this.js$wrapped;
+
+                    while (obj != null && obj !== OBJECT_PROTO && obj !== FUNC_PROTO) {
+                        dir.push(...Object.getOwnPropertyNames(obj));
+                        obj = Object.getPrototypeOf(obj);
                     }
-                    return dir;
+                    return new Set(dir);
                 },
             },
             tp$iter: {
@@ -596,6 +609,12 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
                     if (this.js$wrapped[Symbol.iterator] !== undefined) {
                         return (this.tp$iter = () => {
                             return proxy(this.js$wrapped[Symbol.iterator]());
+                        });
+                    } else {
+                        return (this.tp$iter = () => {
+                            // we could set it to undefined but because we have a __getitem__
+                            // python tries to use seq_iter which will result in a 0 LookupError, which is confusing
+                            throw new Sk.builtin.TypeError(Sk.misceval.objectRepr(this) + " is not iterable");
                         });
                     }
                 },
@@ -681,7 +700,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
                         // if the function object has a prototype with more than just constructor, intention is to be used as a constructor
                         return (this.is$type = true);
                     }
-                    return (this.is$type = Object.getPrototypeOf(proto) !== Object.prototype);
+                    return (this.is$type = Object.getPrototypeOf(proto) !== OBJECT_PROTO);
                     // we could be a subclass with only constructor on the prototype
                     // if our prototype's __proto__ is Object.prototype then we are the most base function
                     // the most likely option is that `this` should be whatever `this.$bound` is, rather than using new
@@ -700,7 +719,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
 
 const is_constructor = /^class|^function[a-zA-Z\d\(\)\{\s]+\[native code\]\s+\}$/;
 
-const getFunctionBody = Function.prototype.toString;
+const getFunctionBody = FUNC_PROTO.toString;
 const noNewNeeded = new Set([Number, String, Symbol, Boolean]);
 // Some js builtins that shouldn't be called with new
 // these are unlikely to be proxied by the user but you never know
