@@ -485,7 +485,8 @@ function remainder(v, w) {
 
 function power(v, w) {
     if (v < 0 && w % 1 !== 0) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+        // let complex deal with it - like CPython does
+        return new Sk.builtin.complex(v, 0).nb$power(new Sk.builtin.complex(w, 0));
     }
     if (v === 0 && w < 0) {
         throw new Sk.builtin.ZeroDivisionError("0.0 cannot be raised to a negative power");

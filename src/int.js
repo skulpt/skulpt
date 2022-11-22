@@ -218,6 +218,14 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             },
             $doc: "the imaginary part of a complex number",
         },
+        numerator: {
+            $get: cloneSelf,
+        },
+        denominator: {
+            $get() {
+                return INT_ONE;
+            }
+        }
     },
     classmethods: {
         from_bytes: {
@@ -986,6 +994,7 @@ for (let i = -5; i < 257; i++) {
     INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
 const INT_ZERO = INTERNED_INT[0];
+const INT_ONE = INTERNED_INT[1];
 
 // from_bytes and to_bytes
 function isLittleEndian(byteorder) {

@@ -75,21 +75,21 @@ var $builtinmodule = function (name) {
     });
 
     const float_info_fields = {
-        "max": "DBL_MAX -- maximum representable finite float",
-        "max_exp": "DBL_MAX_EXP -- maximum int e such that radix**(e-1) is representable",
-        "max_10_exp": "DBL_MAX_10_EXP -- maximum int e such that 10**e is representable",
-        "min": "DBL_MIN -- Minimum positive normalized float",
-        "min_exp": "DBL_MIN_EXP -- minimum int e such that radix**(e-1) is a normalized float",
-        "min_10_exp": "DBL_MIN_10_EXP -- minimum int e such that 10**e is a normalized",
-        "dig": "DBL_DIG -- digits",
-        "mant_dig": "DBL_MANT_DIG -- mantissa digits",
-        "epsilon": "DBL_EPSILON -- Difference between 1 and the next representable float",
-        "radix": "FLT_RADIX -- radix of exponent",
-        "rounds": "FLT_ROUNDS -- rounding mode"
+        max: "DBL_MAX -- maximum representable finite float",
+        max_exp: "DBL_MAX_EXP -- maximum int e such that radix**(e-1) is representable",
+        max_10_exp: "DBL_MAX_10_EXP -- maximum int e such that 10**e is representable",
+        min: "DBL_MIN -- Minimum positive normalized float",
+        min_exp: "DBL_MIN_EXP -- minimum int e such that radix**(e-1) is a normalized float",
+        min_10_exp: "DBL_MIN_10_EXP -- minimum int e such that 10**e is a normalized",
+        dig: "DBL_DIG -- digits",
+        mant_dig: "DBL_MANT_DIG -- mantissa digits",
+        epsilon: "DBL_EPSILON -- Difference between 1 and the next representable float",
+        radix: "FLT_RADIX -- radix of exponent",
+        rounds: "FLT_ROUNDS -- rounding mode",
     };
     
-    const float_info_type = Sk.builtin.make_structseq('sys', 'float_info', float_info_fields);
-    sys.float_info = new float_info_type([
+    const FloatInfoType = Sk.builtin.make_structseq("sys", "float_info", float_info_fields);
+    sys.float_info = new FloatInfoType([
         Number.MAX_VALUE,
         Math.floor(Math.log2(Number.MAX_VALUE)),
         Math.floor(Math.log10(Number.MAX_VALUE)),
@@ -101,14 +101,35 @@ var $builtinmodule = function (name) {
         Number.EPSILON,
         2,
         1,
-    ].map(x => Sk.ffi.remapToPy(x)))
+    ].map(x => Sk.ffi.remapToPy(x)));
 
     const int_info_fields = {
         bits_per_digit: "size of a digit in bits",
         sizeof_digit: "size in bytes of the C type used to represent a digit"
-    }
-    const int_info_type = Sk.builtin.make_structseq('sys', 'int_info', int_info_fields);
-    sys.int_info = new int_info_type([30, 4].map((x) => Sk.ffi.remapToPy(x)));
+    };
+    const IntInfoType = Sk.builtin.make_structseq("sys", "int_info", int_info_fields);
+    sys.int_info = new IntInfoType([30, 4].map((x) => Sk.ffi.remapToPy(x)));
+
+    const hash_info_fields = {
+        width: "width of the type used for hashing, in bits",
+        modulus: "prime number giving the modulus on which the hash function is based",
+        inf: "value to be used for hash of a positive infinity",
+        nan: "value to be used for hash of a nan",
+        imag: "multiplier used for the imaginary part of a complex number",
+        algorithm: "name of the algorithm for hashing of str, bytes and memoryviews",
+        hash_bits: "internal output size of hash algorithm",
+        seed_bits: "seed size of hash algorithm",
+        cutoff: "small string optimization cutoff",
+    };
+
+    const HashInfoType = Sk.builtin.make_structseq("sys", "hash_info", hash_info_fields);
+
+    sys.hash_info = new HashInfoType(
+        [64, JSBI.BigInt("2305843009213693951"), 314159, 0, 1000003, "siphash24", 64, 128, 0].map((x) =>
+            Sk.ffi.remapToPy(x)
+        )
+    );
+
 
     sys.__stdout__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdout"), new Sk.builtin.str("w"));
     sys.__stdin__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdin"), new Sk.builtin.str("r"));
