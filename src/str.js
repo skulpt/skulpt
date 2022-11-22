@@ -1,13 +1,4 @@
 var keyhash_regex = /^[0-9!#_]/;
-var interned = Object.create(null); // avoid name conflicts with Object.prototype
-
-function getInterned(x) {
-    return interned[x];
-}
-
-function setInterned(x, pyStr) {
-    interned[x] = pyStr;
-}
 
 /**
  * @constructor
@@ -35,18 +26,11 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
         }
 
-        const interned = getInterned(ret);
-        // interning required for strings in py
-        if (interned !== undefined) {
-            return interned;
-        } else {
-            setInterned(ret, this);
-        }
-
         this.$mangled = fixReserved(ret);
         // used by dict key hash function $savedKeyHash
         this.$savedKeyHash = ret.replace(keyhash_regex, "!$&");
         this.v = ret;
+        this.$hash = -1;
     },
     slots: /**@lends {Sk.builtin.str.prototype} */ {
         tp$getattr: Sk.generic.getAttr,
@@ -74,6 +58,28 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
                 }
                 return Sk.builtin.bytes.$decode.call(x, encoding, errors);
             }
+        },
+        tp$hash() {
+            if (this.$hash !== -1) {
+                return this.$hash;
+            }
+            const v = this.v;
+            if (v.length === 0) {
+                return (this.$hash = 0);
+            }
+            let len = v.length;
+            let i = 0;
+            let x = 4111458305663910;
+            x ^= v.charCodeAt(i) << 7;
+            while (--len >= 0) {
+                x = (1000003 * x) ^ v.charCodeAt(++i);
+            }
+            x ^= v.length;
+            x ^= 1726017244426399;
+            if (x === -1) {
+                x = -2;
+            }
+            return (this.$hash = x);
         },
         $r() {
             // single is preferred

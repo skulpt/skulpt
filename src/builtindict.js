@@ -146,7 +146,7 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $meth(name, globals, _locals, formlist, level) {
             if (!Sk.builtin.checkString(name)) {
                 throw new Sk.builtin.TypeError("__import__() argument 1 must be str, not " + name.tp$name);
-            } else if (name === Sk.builtin.str.$empty && level.v === 0) {
+            } else if (name.v === "" && level.v === 0) {
                 throw new Sk.builtin.ValueError("Empty module name");
             }
             // check globals - locals is just ignored __import__

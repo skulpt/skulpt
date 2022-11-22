@@ -15,7 +15,7 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
         },
         tp$getattr(pyName, canSuspend) {
             if (Sk.builtin.checkString(pyName)) {
-                if (!this.attr$exc.includes(pyName)) {
+                if (!this.attr$exc.includes(pyName.v)) {
                     return this.$origin.tp$getattr(pyName, canSuspend);
                 }
             }
@@ -202,6 +202,6 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
             "__mro_entries__",
             "__reduce_ex__", // needed so we don't look up object.__reduce_ex__
             "__reduce__",
-        ].map((x) => new Sk.builtin.str(x)),
+        ],
     },
 });
