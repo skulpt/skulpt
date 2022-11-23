@@ -49,7 +49,7 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
                 m = -m;
             }
 
-            let x = 0;
+            let x = 0, y;
             while (m) {
                 x = ((x << 28) & _HASH_MOD) | x >> (_HASH_BITS - 28);
                 m *= 268435456; // 2 ** 28
