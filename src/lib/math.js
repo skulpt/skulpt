@@ -1,7 +1,7 @@
 const $builtinmodule = function (name) {
 
     const {
-        builtin: { str: pyStr, float_: pyFloat, TypeError: pyTypeError, pyCheckType, checkNumber },
+        builtin: { str: pyStr, int_: pyInt, float_: pyFloat, TypeError: pyTypeError, pyCheckType, checkNumber },
         abstr: { lookupSpecial },
         misceval: { callsimOrSuspendArray: pyCallOrSuspend },
     } = Sk;
@@ -30,7 +30,7 @@ const $builtinmodule = function (name) {
         } else {
             _x = x.v;
         }
-        return new pyFloat(Math.ceil(_x));
+        return new pyInt(Math.ceil(_x));
     };
 
     function comb(n, k) {
@@ -149,7 +149,7 @@ const $builtinmodule = function (name) {
             pyCheckType("x", "number", checkNumber(x));
             _x = Sk.builtin.asnum$(x);
         }
-        return new pyFloat(Math.floor(_x));
+        return new pyInt(Math.floor(_x));
     };
 
     function fmod(x, y) {
