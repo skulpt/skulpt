@@ -1,10 +1,10 @@
 /** @typedef {Sk.builtin.object} */ var pyObject;
 
-const hashMap = Object.create(null, {
-    Infinity: { value: 314159 },
-    "-Infinity": { value: -314159 },
-    NaN: { value: 0 },
-});
+// should match sys.hash_info
+const _HASH_INF = 314159;
+const _HASH_NAN = 0;
+const _HASH_BITS = 29;
+const _HASH_MOD = (1 << 29) - 1;
 
 /**
  * @constructor
@@ -36,16 +36,38 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         tp$doc: "Convert a string or number to a floating point number, if possible.",
         tp$hash() {
             const v = this.v;
-            let hash = hashMap[v];
-            if (hash !== undefined) {
-                return hash;
-            } else if (Number.isInteger(v)) {
-                hash = this.nb$int().tp$hash();
-            } else {
-                hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
+            if (!Number.isFinite(v)) {
+                if (Number.isNaN(v)) {
+                    return _HASH_NAN;
+                }
+                return v > 0 ? _HASH_INF : -_HASH_INF;
             }
-            hashMap[this.v] = hash;
-            return hash;
+            let [m, e] = frexp(v);
+            let sign = 1;
+            if (m < 0) {
+                sign = -1;
+                m = -m;
+            }
+
+            let x = 0;
+            while (m) {
+                x = ((x << 28) & _HASH_MOD) | x >> (_HASH_BITS - 28);
+                m *= 268435456; // 2 ** 28
+                e -= 28;
+                y = Math.trunc(m); // pull out integer part
+                m -= y;
+                x += y;
+                if (x >= _HASH_MOD) {
+                    x -= _HASH_MOD;
+                }
+            }
+            e = e >= 0 ? e % _HASH_BITS : _HASH_BITS-1-((-1-e) % _HASH_BITS);
+            x = ((x << e) & _HASH_MOD) | (x >> (_HASH_BITS - e));
+            x *= sign;
+            if (x === -1) {
+                return -2;
+            }
+            return x;
         },
         $r() {
             return new Sk.builtin.str(this.str$(10, true));

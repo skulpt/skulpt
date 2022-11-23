@@ -124,10 +124,9 @@ var $builtinmodule = function (name) {
 
     const HashInfoType = Sk.builtin.make_structseq("sys", "hash_info", hash_info_fields);
 
+    // not the same as CPYTHON - we want modulo to be a prime < Number.MAX_SAFE_INTEGER
     sys.hash_info = new HashInfoType(
-        [64, JSBI.BigInt("2305843009213693951"), 314159, 0, 1000003, "siphash24", 64, 128, 0].map((x) =>
-            Sk.ffi.remapToPy(x)
-        )
+        [32, 536870911, 314159, 0, 1000003, "siphash24", 32, 128, 0].map((x) => Sk.ffi.remapToPy(x))
     );
 
 

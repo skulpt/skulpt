@@ -15,11 +15,11 @@ function $builtinmodule(name) {
     );
 }
 
-function fractionsMod({math, sys}) {
+function fractionsMod({ math, sys }) {
     const {
         builtin: {
             int_: pyInt,
-            bool: { true$: pyTrue },
+            bool: { true$: pyTrue, false$: pyFalse },
             none: { none$: pyNone },
             NotImplemented: { NotImplemented$: pyNotImplemented },
             tuple: pyTuple,
@@ -33,7 +33,7 @@ function fractionsMod({math, sys}) {
             NotImplementedError: pyNotImplementedError,
             abs: pyAbs,
             round: pyRound,
-            power: pyPower,
+            pow: pyPower,
         },
         ffi: { remapToPy: toPy },
         abstr: { buildNativeClass, copyKeywordsToNamedArgs, numberBinOp, typeName, lookupSpecial, checkArgsLen },
@@ -48,8 +48,6 @@ function fractionsMod({math, sys}) {
     const _1 = new pyInt(1);
     const _2 = new pyInt(2);
     const _10 = new pyInt(10);
-    const _neg_1 = new pyInt(-1);
-    const _neg_2 = new pyInt(-2);
     const s_numerator = new pyStr("numerator");
     const s_denominator = new pyStr("denominator");
     const s_int_ratio = new pyStr("as_integer_ratio");
@@ -81,7 +79,7 @@ function fractionsMod({math, sys}) {
 
     function _operator_fallbacks(monomorphic, fallback) {
         const forward = function (other) {
-            if (isTrue(pyIsInstance(other, _NUMBERS_RATIONAL))) {
+            if (isRational(other)) {
                 return monomorphic(this, other);
             } else if (other instanceof pyFloat) {
                 return fallback(this.nb$float(), other);
@@ -92,7 +90,7 @@ function fractionsMod({math, sys}) {
             }
         };
         const reverse = function (other) {
-            if (isTrue(pyIsInstance(other, _NUMBERS_RATIONAL))) {
+            if (isRational(other)) {
                 return monomorphic(other, this);
             } else if (other instanceof pyFloat) {
                 return fallback(other, this.nb$float());
@@ -170,7 +168,7 @@ function fractionsMod({math, sys}) {
                         self.$num = numerator;
                         self.$den = _1;
                         return self;
-                    } else if (isTrue(pyIsInstance(numerator, _NUMBERS_RATIONAL))) {
+                    } else if (isRational(numerator)) {
                         self.$num = getNumer(numerator);
                         self.$den = getDenom(numerator);
                         return self;
@@ -214,10 +212,7 @@ function fractionsMod({math, sys}) {
                     }
                 } else if (numerator.ob$type === pyInt && denominator.ob$type === pyInt) {
                     // normal case pass
-                } else if (
-                    isTrue(pyIsInstance(numerator, _NUMBERS_RATIONAL)) &&
-                    isTrue(pyIsInstance(denominator, _NUMBERS_RATIONAL))
-                ) {
+                } else if (isRational(numerator) && isRational(denominator)) {
                     [numerator, denominator] = [
                         mul(getNumer(numerator), getDenom(denominator)),
                         mul(getNumer(denominator), getDenom(numerator)),
@@ -253,15 +248,16 @@ function fractionsMod({math, sys}) {
                 return new pyStr(`${this.$num}/${this.$den}`);
             },
             tp$hash() {
-                const dinv = pyPower(this.$den, sub(_PyHASH_MODULUS, 2), _PyHASH_MODULUS);
+                const dinv = pyPower(this.$den, sub(_PyHASH_MODULUS, _2), _PyHASH_MODULUS);
                 let hash_;
                 if (!isTrue(dinv)) {
                     hash_ = _PyHASH_INF;
                 } else {
                     hash_ = mod(mul(pyAbs(this.$num), dinv), _PyHASH_MODULUS);
                 }
-                const rv = ge(this, _0) ? hash_ : hash_.nb$negative();
-                return eq(rv, _neg_1) ? _neg_2 : rv;
+                let rv = ge(this, _0) ? hash_ : hash_.nb$negative();
+                rv = rv.tp$hash();
+                return rv === -1 ? -2 : rv;
             },
             tp$richcompare(other, OP) {
                 const op = (a, b) => richCompareBool(a, b, OP);
@@ -282,7 +278,7 @@ function fractionsMod({math, sys}) {
                     }
                 }
 
-                if (isTrue(pyIsInstance(other, _NUMBERS_RATIONAL))) {
+                if (isRational(other)) {
                     return op(mul(getNumer(this), getDenom(other)), mul(getDenom(this), getNumer(other)));
                 }
                 if (other instanceof pyFloat) {
@@ -311,20 +307,29 @@ function fractionsMod({math, sys}) {
             nb$remainder,
             nb$reflected_remainder,
             nb$power(other) {
-                if (isTrue(pyIsInstance(other, _NUMBERS_RATIONAL))) {
+                if (isRational(other)) {
                     if (eq(getDenom(other), _1)) {
                         let power = getNumer(other);
                         if (ge(power, _0)) {
-                            return pyCall(Fraction, [pow(this.$num, power), pow(this.$den, power)]);
+                            return pyCall(
+                                Fraction,
+                                [pow(this.$num, power), pow(this.$den, power)],
+                                ["_normalize", pyFalse]
+                            );
                         } else if (ge(this.$num, _0)) {
                             power = power.nb$negative();
-                            return pyCall(Fraction, [pow(this.$den, power), pow(this.$num, power)]);
+                            return pyCall(
+                                Fraction,
+                                [pow(this.$den, power), pow(this.$num, power)],
+                                ["_normalize", pyFalse]
+                            );
                         } else {
                             power = power.nb$negative();
-                            return pyCall(Fraction, [
-                                pow(this.$den.nb$negative(), power),
-                                pow(this.$num.nb$negative(), power),
-                            ]);
+                            return pyCall(
+                                Fraction,
+                                [pow(this.$den.nb$negative(), power), pow(this.$num.nb$negative(), power)],
+                                ["_normalize", pyFalse]
+                            );
                         }
                     } else {
                         return pow(this.nb$float(), pyCall(pyFloat, [other]));
@@ -338,7 +343,7 @@ function fractionsMod({math, sys}) {
                     return pow(other, this.$num);
                 }
 
-                if (isTrue(pyIsInstance(other, _NUMBERS_RATIONAL))) {
+                if (isRational(other)) {
                     return pow(new Fraction(getNumer(other), getDenom(other)), this);
                 }
 
@@ -371,7 +376,37 @@ function fractionsMod({math, sys}) {
                 },
                 $flags: METH_NO_ARGS,
             },
-            limit_denominator: {},
+            limit_denominator: {
+                $meth(max_denominator) {
+                    if (lt(max_denominator, _1)) {
+                        throw new pyValueError("max_denominator should be at least 1");
+                    }
+                    if (ge(max_denominator, this.$den)) {
+                        return pyCall(Fraction, [this]);
+                    }
+                    let [p0, q0, p1, q1] = [_0, _1, _1, _0];
+                    let n = this.$num;
+                    let d = this.$den;
+                    while (true) {
+                        const a = floorDiv(n, d);
+                        const q2 = add(q0, mul(a, q1));
+                        if (lt(max_denominator, q2)) {
+                            break;
+                        }
+                        [p0, q0, p1, q1] = [p1, q1, add(p0, mul(a, p1)), q2];
+                        [n, d] = [d, sub(n, mul(a, d))];
+                    }
+                    const k = floorDiv(sub(max_denominator, q0), q1);
+                    const b1 = pyCall(Fraction, [add(p0, mul(k, p1)), add(q0, mul(k, q1))]);
+                    const b2 = pyCall(Fraction, [p1, q1]);
+                    if (ge(pyAbs(sub(b1, this)), pyAbs(sub(b2, this)))) {
+                        return b2;
+                    } else {
+                        return b1;
+                    }
+                },
+                $flags: { NamedArgs: ["max_denominator"], Defaults: [new pyInt(1000000)] },
+            },
             __trunc__: {
                 $meth() {
                     if (lt(this.$num, _0)) {
@@ -499,6 +534,7 @@ function fractionsMod({math, sys}) {
     }));
 
     const _NUMBERS_RATIONAL = new pyTuple([pyInt, Fraction]);
+    const isRational = (obj) => isTrue(pyIsInstance(obj, _NUMBERS_RATIONAL));
 
     return fractionsMod;
 }
