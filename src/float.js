@@ -474,7 +474,7 @@ function remainder(v, w) {
         return new Sk.builtin.float_(0);
     }
     if (w === Infinity) {
-        if (v === Infinity || this.v === -Infinity) {
+        if (v === Infinity || v === -Infinity) {
             return new Sk.builtin.float_(NaN);
         } else if (v > 0) {
             return new Sk.builtin.float_(v);
