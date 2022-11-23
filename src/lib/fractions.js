@@ -1,4 +1,3 @@
-// @ts-check
 function $builtinmodule(name) {
     const mods = {};
 
@@ -514,6 +513,7 @@ function fractionsMod({ math, sys }) {
                     return this.$den;
                 },
             },
+            // seems silly really but it gets tested
             _numerator: {
                 $get() {
                     return this.$num;
