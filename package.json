@@ -54,7 +54,7 @@
     "ejs": "^3.1.7",
     "eslint": "^5.16.0",
     "eslint-loader": "^2.1.2",
-    "express": "^4.17.0",
+    "express": "^4.18.2",
     "fastestsmallesttextencoderdecoder": "^1.0.22",
     "git-revision-webpack-plugin": "^3.0.3",
     "google-closure-compiler": "^20210202.0.0",
