@@ -64,7 +64,7 @@ There is plenty of work still to do in making improvements to Skulpt.  If you wo
 
 1. Create a Github account if you don't already have one
 2. Create a Fork of the Skulpt repository -- This will make a clone of the repository in your account.  **DO NOT** clone this one.  Once you've made the fork you will clone the forked version in your account to your local machine for development.
-3. Read the HACKING.md file to get the "lay of the land".  If you plan to work on creating  a module then you may also find this [blog post](http://reputablejournal.com/adding-a-module-to-skulpt.html) helpful.
+3. Read the HACKING.md file to get the "lay of the land".
 3. Check the issues list for something to do.
 4. Follow the instructions above to get skulpt building
 5. Fix or add your own features.  Commit and push to your forked version of the repository.  When everything is tested and ready to be incorporated into the master version...
