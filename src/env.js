@@ -17,6 +17,7 @@
  * nonreadopen: Boolean - set to true to allow non-read file operations
  * fileopen: Optional function to call any time a file is opened
  * filewrite: Optional function to call when writing to a file
+ * suspensionHandlers: Optional object map of suspension types to their handlers
  *
  * Any variables that aren't set will be left alone.
  */
@@ -205,6 +206,8 @@ Sk.configure = function (options) {
     }
 
     Sk.misceval.softspace_ = false;
+
+    Sk.misceval.defaultHandlers = options.suspensionHandlers || {};
 
     Sk.switch_version(Sk.__future__.python3);
 
