@@ -1,6 +1,6 @@
 {
-  "name": "skulpt",
-  "version": "1.2.0",
+  "name": "@rpf/skulpt",
+  "version": "1.3.0-rpf+0",
   "description": "Skulpt is a Javascript implementation of Python 2.x. Python that runs in your browser!",
   "keywords": [
     "skulpt"
@@ -32,10 +32,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/skulpt/skulpt.git"
+    "url": "https://github.com/RaspberryPiFoundation/skulpt.git"
   },
   "bugs": {
-    "url": "https://github.com/skulpt/skulpt/issues"
+    "url": "https://github.com/RaspberryPiFoundation/skulpt/issues"
   },
   "homepage": "http://www.skulpt.org/",
   "author": {
