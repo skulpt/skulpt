@@ -227,6 +227,8 @@ function $builtinmodule(name) {
         "cannot use LOCALE flag with a str pattern": re.L,
         "ASCII and UNICODE flags are incompatible": new re.RegexFlag(re.A.valueOf() | re.U.valueOf()),
     });
+
+    // These flags can be anywhere in the pattern, (changed in 3.11 so that it has to be at the start)
     const inline_regex = /\(\?([isamux]+)\)/g;
 
     function adjustFlags(pyPattern, pyFlag) {
@@ -301,7 +303,7 @@ function $builtinmodule(name) {
         }
 
         const named_groups = {};
-        jsPattern = "_" + jsPattern; // prepend so that we can safely not use negative lookbehinds
+        jsPattern = "_" + jsPattern; // prepend so that we can safely not use negative lookbehinds in py_to_js_regex
         jsPattern = jsPattern.replace(py_to_js_regex, (m, p0, p1, p2, p3, offset) => {
             switch (p1) {
                 case "\\A":
@@ -713,7 +715,7 @@ function $builtinmodule(name) {
                 return new re.Match(match, this, string, pos, endpos);
             },
             $search(string, pos, endpos) {
-                var regex = new RegExp(this.v.source, this.v.flags.replace("g", "")); // replace all flags except 'g';
+                var regex = new RegExp(this.v.source, this.v.flags.replace("g", "")); // keep all flags except 'g';
                 return this.do$match(regex, string, pos, endpos);
             },
             $match(string, pos, endpos) {
