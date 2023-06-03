@@ -577,7 +577,7 @@ function $builtinmodule(name) {
                         const matches = this.str.v.matchAll(this.group$regex);
                         const arr = [];
                         let i = 1;
-                        for (match of matches) {
+                        for (const match of matches) {
                             if (match[1]) {
                                 arr.push(new pyStr(match[1]));
                                 arr.push(new pyInt(i));
