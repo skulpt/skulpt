@@ -685,7 +685,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
                         // neither do native js functions like requestAnimationFrame, JSON.parse
                         // Proxy doesn't get a prototype but must be called with new - it's the only one I know
                         // How you'd use Proxy in python I have no idea
-                        return (this.is$type = jsFunc === window.Proxy);
+                        return (this.is$type = jsFunc === Sk.global.Proxy);
                     }
                     const maybeConstructor = checkBodyIsMaybeConstructor(jsFunc);
                     if (maybeConstructor === true) {
