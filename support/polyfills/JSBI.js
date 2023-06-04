@@ -90,3 +90,4 @@ JSBI.__ZERO = JSBI.BigInt(0);
 JSBI.__MAX_SAFE = JSBI.BigInt(Number.MAX_SAFE_INTEGER);
 JSBI.__MIN_SAFE = JSBI.BigInt(-Number.MAX_SAFE_INTEGER);
 JSBI.numberIfSafe = (val) => (JSBI.lessThan(val, JSBI.__MAX_SAFE) && JSBI.greaterThan(val, JSBI.__MIN_SAFE) ? JSBI.toNumber(val) : val);
+JSBI.BigUp = (val) => JSBI.__isBigInt(val) ? val : JSBI.BigInt(val);
