@@ -31,12 +31,20 @@
 Sk.builtin.mappingproxy = Sk.abstr.buildNativeClass("mappingproxy", {
     constructor: function mappingproxy(d) {
         Sk.asserts.assert(this instanceof Sk.builtin.mappingproxy, "bad call to mapping proxy, use 'new'");
-        this.mapping = new Sk.builtin.dict([]);
         if (d !== undefined) {
-            // internal call so d is an object literal
-            // adust this.mapping.entries to be a custom getter
-            // allowing support for dynamic object literals
-            customEntriesGetter(this.mapping, d);
+            const constructor = d.constructor;
+            if (constructor === Object || constructor === null || d.hasOwnProperty("sk$object")) {
+                // then we are not a mapping but js object to be proxied
+                this.mapping = new Sk.builtin.dict([]);
+                // internal call so d is an object literal
+                // adust this.mapping.entries to be a custom getter
+                // allowing support for dynamic object literals
+                customEntriesGetter(this.mapping, d);
+            } else if (Sk.builtin.checkMapping(d)) {
+                this.mapping = d;
+            } else {
+                Sk.asserts.fail("unhandled case for mappingproxy");
+            }
         }
     },
     slots: {
