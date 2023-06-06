@@ -106,7 +106,12 @@ Sk.builtin.complex = Sk.abstr.buildNativeClass("complex", {
             }
             return power.call(this, other);
         },
-
+        nb$reflected_power(other, z) {
+            if (z != null && !Sk.builtin.checkNone(z)) {
+                throw new Sk.builtin.ValueError("complex modulo");
+            }
+            return reflected_power.call(this, other);
+        },
         nb$abs() {
             const _real = this.real;
             const _imag = this.imag;
@@ -645,14 +650,16 @@ function divide(a_real, a_imag, b_real, b_imag) {
     return new Sk.builtin.complex(real, imag);
 }
 
-const power = complexNumberSlot((a_real, a_imag, b_real, b_imag) => {
+const _pow = (a_real, a_imag, b_real, b_imag) => {
     const int_exponent = b_real | 0; // js convert to int
     if (b_imag === 0.0 && b_real === int_exponent) {
         return c_powi(a_real, a_imag, int_exponent);
     } else {
         return c_pow(a_real, a_imag, b_real, b_imag);
     }
-});
+};
+const power = complexNumberSlot(_pow);
+const reflected_power = complexNumberSlot((a_real, a_imag, b_real, b_imag) => _pow(b_real, b_imag, a_real, a_imag));
 
 // power of complex a and complex exponent b
 function c_pow(a_real, a_imag, b_real, b_imag) {
