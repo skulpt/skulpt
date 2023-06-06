@@ -41,8 +41,18 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             return new Sk.builtin.str(this.v.toString());
         },
         tp$hash() {
-            const v = this.v;
-            return typeof v === "number" ? v : JSBI.toNumber(JSBI.remainder(v, JSBI.__MAX_SAFE));
+            let v = this.v;
+            if (typeof v === "number") {
+                if (v === -1) {
+                    return -2;
+                }
+                if (v < NUM_HASH_MOD && v > NEG_NUM_HASH_MOD) {
+                    return v;
+                }
+                v = bigUp(v);
+            }
+            const rv = JSBI.toNumber(JSBI.remainder(v, BIG_HASH_MODULUS));
+            return rv === -1 ? -2 : rv;
         },
         tp$new(args, kwargs) {
             let x, base;
@@ -198,7 +208,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
                 if (ret !== undefined) {
                     return ret.nb$remainder(mod);
                 }
-                return new Sk.builtin.int_(JSBI.powermod(bigUp(v), bigUp(w), bigUp(mod.v)));
+                return new Sk.builtin.int_(JSBI.numberIfSafe(JSBI.powermod(bigUp(v), bigUp(w), bigUp(mod.v))));
             }
             // if we're here then we've fallen through so do bigint exponentiate
             return new Sk.builtin.int_(JSBI.exponentiate(bigUp(v), bigUp(w)));
@@ -218,6 +228,14 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
             },
             $doc: "the imaginary part of a complex number",
         },
+        numerator: {
+            $get: cloneSelf,
+        },
+        denominator: {
+            $get() {
+                return INT_ONE;
+            }
+        }
     },
     classmethods: {
         from_bytes: {
@@ -514,6 +532,9 @@ function cloneSelf() {
     return new Sk.builtin.int_(this.v);
 }
 
+const NUM_HASH_MOD = 536870911;
+const NEG_NUM_HASH_MOD = -536870911;
+const BIG_HASH_MODULUS = JSBI.BigInt("536870911");
 const DBL_MANT_DIG = Math.log2(Number.MAX_SAFE_INTEGER);
 const DBL_MAX_EXP = JSBI.BigInt(Math.floor(Math.log2(Number.MAX_VALUE)));
 const DBL_MIN_EXP = Math.ceil(Math.log2(Number.MIN_VALUE));
@@ -986,6 +1007,7 @@ for (let i = -5; i < 257; i++) {
     INTERNED_INT[i] = Object.create(Sk.builtin.int_.prototype, {v: {value: i}});
 }
 const INT_ZERO = INTERNED_INT[0];
+const INT_ONE = INTERNED_INT[1];
 
 // from_bytes and to_bytes
 function isLittleEndian(byteorder) {

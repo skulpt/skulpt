@@ -1,4 +1,11 @@
 const $builtinmodule = function (name) {
+
+    const {
+        builtin: { str: pyStr, int_: pyInt, float_: pyFloat, TypeError: pyTypeError, pyCheckType, checkNumber },
+        abstr: { lookupSpecial },
+        misceval: { callsimOrSuspendArray: pyCallOrSuspend },
+    } = Sk;
+
     const math = {
         // Mathematical Constants
         pi: new Sk.builtin.float_(Math.PI),
@@ -9,13 +16,21 @@ const $builtinmodule = function (name) {
     };
 
     // Number-theoretic and representation functions
+    const s_ceil = new pyStr("__ceil__");
+
     function ceil(x) {
-        Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
-        const _x = Sk.builtin.asnum$(x);
-        if (Sk.__future__.ceil_floor_int) {
-            return new Sk.builtin.int_(Math.ceil(_x));
+        let _x;
+        if (x.ob$type !== pyFloat) {
+            const method = lookupSpecial(x, s_ceil);
+            if (method !== undefined) {
+                return pyCallOrSuspend(method);
+            }
+            pyCheckType("", "real number", checkNumber(x));
+            _x = Sk.builtin.asnum$(x);
+        } else {
+            _x = x.v;
         }
-        return new Sk.builtin.float_(Math.ceil(_x));
+        return new pyInt(Math.ceil(_x));
     };
 
     function comb(n, k) {
@@ -120,14 +135,21 @@ const $builtinmodule = function (name) {
         }
     };
 
+    const s_floor = new pyStr("__floor__");
+
     function floor(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-
-        if (Sk.__future__.ceil_floor_int) {
-            return new Sk.builtin.int_(Math.floor(Sk.builtin.asnum$(x)));
+        let _x;
+        if (x.ob$type === pyFloat) {
+            _x = x.v;
+        } else {
+            const method = lookupSpecial(x, s_floor);
+            if (method !== undefined) {
+                return pyCallOrSuspend(method);
+            } 
+            pyCheckType("x", "number", checkNumber(x));
+            _x = Sk.builtin.asnum$(x);
         }
-
-        return new Sk.builtin.float_(Math.floor(Sk.builtin.asnum$(x)));
+        return new pyInt(Math.floor(_x));
     };
 
     function fmod(x, y) {
@@ -652,11 +674,14 @@ const $builtinmodule = function (name) {
     };
 
     function trunc(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        if (Sk.builtin.checkInt(x)) {
-            return x; //deals with large ints being passed
+        if (x.ob$type === pyFloat) {
+            return x.nb$int();
         }
-        return new Sk.builtin.int_(Sk.builtin.asnum$(x) | 0);
+        const truncFn = lookupSpecial(x, pyStr.$trunc);
+        if (truncFn === undefined) {
+            throw new pyTypeError(`type ${x.tp$name} doesn't define __trunc__ method`);
+        }
+        return pyCallOrSuspend(truncFn);
     };
 
     // Power and logarithmic functions

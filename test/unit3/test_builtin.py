@@ -722,6 +722,27 @@ class BuiltinTest(unittest.TestCase):
         self.assertTrue(flag2)
         self.assertFalse(hasattr(F,'a'))
 
+    def test_hash(self):
+        hash(None)
+        self.assertEqual(hash(1), hash(1))
+        self.assertEqual(hash(1), hash(1.0))
+        hash('spam')
+        self.assertEqual(hash('spam'), hash(b'spam'))
+        hash((0,1,2,3))
+        def f(): pass
+        hash(f)
+        self.assertRaises(TypeError, hash, [])
+        self.assertRaises(TypeError, hash, {})
+        # Bug 1536021: Allow hash to return long objects
+        class X:
+            def __hash__(self):
+                return 2**100
+        self.assertEqual(type(hash(X())), int)
+        class Z(int):
+            def __hash__(self):
+                return self
+        self.assertEqual(hash(Z(42)), hash(42))
+
     def test_hex(self):
         self.assertEqual(hex(16), '0x10')
         self.assertEqual(hex(-16), '-0x10')
