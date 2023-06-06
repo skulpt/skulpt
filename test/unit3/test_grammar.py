@@ -628,10 +628,9 @@ class GrammarTests(unittest.TestCase):
         class Ham(Spam): pass
         self.assertEqual(Spam.f.__annotations__, {'_Spam__kw': 1})
         self.assertEqual(Ham.f.__annotations__, {'_Spam__kw': 1})
-        # @TODO skulpt doesn't allow null
         # Check for SF Bug #1697248 - mixing decorators and a return annotation
-        def _null(x): return x
-        @_null
+        def null(x): return x
+        @null
         def f(x) -> list: pass
         self.assertEqual(f.__annotations__, {'return': list})
 

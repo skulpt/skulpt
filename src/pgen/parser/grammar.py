@@ -142,7 +142,7 @@ class Grammar(object):
                 str(self.start) +
                 "\n};\n"
             # ick, tuple -> list and None -> null
-            ).replace("(", "[").replace(")", "]").replace("None", "null")
+            ).replace("(", "[").replace(")", "]").replace("None]", "null]")
 
 
 # Map from operator to number (since tokenize doesn't do this)

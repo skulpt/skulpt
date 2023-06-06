@@ -1546,7 +1546,7 @@ labels:
  [1, 'True'],
  [3, null],
  [1, 'not'],
- [1, 'null'],
+ [1, 'None'],
  [55, null],
  [2, null],
  [25, null],
@@ -1714,7 +1714,7 @@ labels:
  [341, null]],
 keywords:
 {'False': 33,
- 'null': 9,
+ 'None': 9,
  'True': 6,
  'and': 47,
  'as': 108,
