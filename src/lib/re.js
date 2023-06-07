@@ -279,7 +279,7 @@ function $builtinmodule(name) {
     let neg_lookbehind_A = "(?<!\\\\n)";
     (function checkLookBehindSupport() {
         try {
-            new RegExp("(?<!foo)");
+            eval("/(?<!foo)/");
         } catch {
             neg_lookbehind_A = "";
         }
