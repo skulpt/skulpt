@@ -1068,24 +1068,7 @@ function generateTurtleModule(_target) {
         };
         proto.$shape.minArgs     = 0;
         proto.$shape.co_varnames = ["name"];
-        //colormode supported
-        proto.$colormode = function(cmode){
-            if(cmode !== undefined){
-                if(cmode === 255) {
-                    this._colorMode = 255;
-                } else {
-                    this._colorMode = 1.0;
-                }
-                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
-            }
-
-            return this._colorMode;
-        }
-        proto.$colormode.minArgs     = 0;
-        proto.$colormode.co_varnames = ["cmode"];
-        proto.$colormode.returnType = function(value) {
-            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
-        };
+        
 
         proto.$window_width = function() {
             return this._screen.$window_width();
@@ -1310,18 +1293,19 @@ function generateTurtleModule(_target) {
         proto.$setup.minArgs     = 0;
         proto.$setup.co_varnames = ["width", "height", "startx", "starty"];
 
-        proto.$register_shape = proto.$addshape = function(name, points) {
-            if (!points) {
+        proto.$register_shape = proto.$addshape = function(name, shape) {
+            if (!shape) {
                 return getAsset(name).then(function(asset) {
                     SHAPES[name] = asset;
                 });
             }
             else {
-                SHAPES[name] = points;
+                SHAPES[name] = shape;
             }
         };
         proto.$register_shape.minArgs = 1;
-
+        proto.$register_shape.co_varnames = ["name", "shape"];
+        
         proto.$getshapes = function() {
             return Object.keys(SHAPES);
         };
@@ -1442,6 +1426,25 @@ function generateTurtleModule(_target) {
         proto.$bgcolor.co_varnames = ["color", "g", "b", "a"];
         proto.$bgcolor.returnType = Types.COLOR;
 
+        //colormode supported, only in screen Class
+        proto.$colormode = function(cmode){
+            if(cmode !== undefined){
+                if(cmode === 255) {
+                    this._colorMode = 255;
+                } else {
+                    this._colorMode = 1.0;
+                }
+                return this.addUpdate(undefined, this._shown, {colorMode : this._colorMode});
+            }
+
+            return this._colorMode;
+        }
+        proto.$colormode.minArgs     = 0;
+        proto.$colormode.co_varnames = ["cmode"];
+        proto.$colormode.returnType = function(value) {
+            return value === 255 ? new Sk.builtin.int_(255) : new Sk.builtin.float_(1.0);
+        };
+        
         // no-op - just defined for consistency with python version
         proto.$mainloop = proto.$done = function() {
             return undefined;
@@ -2336,6 +2339,21 @@ function generateTurtleModule(_target) {
     addModuleMethod(Screen, _module, "$window_width", getScreen);
     addModuleMethod(Screen, _module, "$window_height", getScreen);    
     addModuleMethod(Screen, _module, "$title", getScreen);
+    
+    addModuleMethod(Screen, _module, "$onkey", getScreen);
+    addModuleMethod(Screen, _module, "$listen", getScreen);
+    addModuleMethod(Screen, _module, "$register_shape", getScreen);
+    addModuleMethod(Screen, _module, "$clearscreen", getScreen);
+    addModuleMethod(Screen, _module, "$bgcolor", getScreen);
+    addModuleMethod(Screen, _module, "$bgpic", getScreen);
+    addModuleMethod(Screen, _module, "$setworldcoordinates", getScreen);
+    addModuleMethod(Screen, _module, "$ontimer", getScreen);
+    addModuleMethod(Screen, _module, "$onscreenclick", getScreen);
+    addModuleMethod(Screen, _module, "$exitonclick", getScreen);
+    
+    addModuleMethod(Screen, _module, "$resetscreen", getScreen);
+    addModuleMethod(Screen, _module, "$setup", getScreen);
+    addModuleMethod(Screen, _module, "$turtles", getScreen);
 
     _module.Turtle = Sk.misceval.buildClass(_module, TurtleWrapper, "Turtle", []);
     _module.Screen = Sk.misceval.buildClass(_module, ScreenWrapper, "Screen", []);

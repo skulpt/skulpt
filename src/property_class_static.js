@@ -39,16 +39,17 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
         },
         tp$doc:
             "Property attribute.\n\n  fget\n    function to be used for getting an attribute value\n  fset\n    function to be used for setting an attribute value\n  fdel\n    function to be used for del'ing an attribute\n  doc\n    docstring\n\nTypical use is to define a managed attribute x:\n\nclass C(object):\n    def getx(self): return self._x\n    def setx(self, value): self._x = value\n    def delx(self): del self._x\n    x = property(getx, setx, delx, 'I'm the 'x' property.')\n\nDecorators make defining new properties or modifying existing ones easy:\n\nclass C(object):\n    @property\n    def x(self):\n        'I am the 'x' property.'\n        return self._x\n    @x.setter\n    def x(self, value):\n        self._x = value\n    @x.deleter\n    def x(self):\n        del self._x",
-        tp$descr_get(obj, type) {
+        tp$descr_get(obj, type, canSuspend) {
             if (obj === null) {
                 return this;
             }
             if (this.prop$get === undefined) {
                 throw new Sk.builtin.AttributeError("unreadable attribute");
             }
-            return Sk.misceval.callsimOrSuspendArray(this.prop$get, [obj]);
+            const rv = Sk.misceval.callsimOrSuspendArray(this.prop$get, [obj]);
+            return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
         },
-        tp$descr_set(obj, value) {
+        tp$descr_set(obj, value, canSuspend) {
             let func;
             if (value == null) {
                 func = this.prop$del;
@@ -63,11 +64,13 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
                 throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(func) + "' is not callable");
             }
 
+            let rv;
             if (value == null) {
-                return func.tp$call([obj]);
+                rv = func.tp$call([obj]);
             } else {
-                return func.tp$call([obj, value]);
+                rv = func.tp$call([obj, value]);
             }
+            return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
         },
     },
     methods: {
@@ -140,7 +143,7 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
         },
         tp$doc:
             "classmethod(function) -> method\n\nConvert a function to be a class method.\n\nA class method receives the class as implicit first argument,\njust like an instance method receives the instance.\nTo declare a class method, use this idiom:\n\n  class C:\n      @classmethod\n      def f(cls, arg1, arg2, ...):\n          ...\n\nIt can be called either on the class (e.g. C.f()) or on an instance\n(e.g. C().f()).  The instance is ignored except for its class.\nIf a class method is called for a derived class, the derived class\nobject is passed as the implied first argument.\n\nClass methods are different than C++ or Java static methods.\nIf you want those, see the staticmethod builtin.",
-        tp$descr_get(obj, type) {
+        tp$descr_get(obj, type, canSuspend) {
             const callable = this.cm$callable;
             if (callable === undefined) {
                 throw new Sk.builtin.RuntimeError("uninitialized classmethod object");
@@ -150,7 +153,7 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
             }
             const f = callable.tp$descr_get;
             if (f) {
-                return f.call(callable, type);
+                return f.call(callable, type, canSuspend);
             }
             return new Sk.builtin.method(callable, type);
         },

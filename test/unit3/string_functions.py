@@ -706,9 +706,12 @@ class string_functions(unittest.TestCase):
         # the following should parse
         µ = 1
         µ1 = 1
+        রংর = 2 # Skulpt bug #637
+
         self.assertEqual(µ, 1)
         self.assertEqual(µ1, 1)
+        self.assertEqual(রংর, 2)
 
-        
+
 if __name__ == "__main__":
     unittest.main()

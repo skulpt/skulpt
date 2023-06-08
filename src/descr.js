@@ -19,7 +19,7 @@ function buildDescriptor(type_name, repr_name, descr_options) {
             d$check: descriptorCheck,
             d$set_check: descriptorSetCheck,
         }),
-        flags: { sk$acceptable_as_base_class: false },
+        flags: { sk$unacceptableBase: true },
     });
     return descr;
 }
@@ -100,24 +100,26 @@ Sk.builtin.getset_descriptor = buildDescriptor("getset_descriptor", undefined, {
         this.d$name = getset_def.$name;
     },
     slots: {
-        tp$descr_get(obj, type) {
+        tp$descr_get(obj, type, canSuspend) {
             let ret;
             if ((ret = this.d$check(obj))) {
                 return ret;
             }
             if (this.$get !== undefined) {
-                return this.$get.call(obj);
+                const rv = this.$get.call(obj);
+                return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
             }
 
             throw new Sk.builtin.AttributeError(
                 "getset_descriptor '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is not readable"
             );
         },
-        tp$descr_set(obj, value) {
+        tp$descr_set(obj, value, canSuspend) {
             this.d$set_check(obj);
 
             if (this.$set !== undefined) {
-                return this.$set.call(obj, value);
+                const rv = this.$set.call(obj, value);
+                return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
             }
             throw new Sk.builtin.AttributeError("attribute '" + this.d$name + "' of '" + this.d$type.prototype.tp$name + "' objects is readonly");
         },
@@ -354,7 +356,7 @@ Sk.builtin.classmethod_descriptor = buildDescriptor("classmethod_descriptor", "m
                     );
                 }
             }
-            if (type.ob$type !== Sk.builtin.type) {
+            if (!type.ob$type.$isSubType(Sk.builtin.type)) {
                 throw new Sk.builtin.TypeError(
                     "descriptor '" +
                         this.d$name +

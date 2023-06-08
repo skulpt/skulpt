@@ -381,6 +381,9 @@ Sk.builtin.list = Sk.abstr.buildNativeClass("list", {
                 dec += offdir;
             });
         },
+        valueOf() {
+            return this.v;
+        },
     },
 });
 
@@ -497,7 +500,7 @@ var list_iter_ = Sk.abstr.buildIteratorClass("list_iterator", {
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 /**
@@ -522,5 +525,5 @@ var reverselist_iter_ = Sk.abstr.buildIteratorClass("list_reverseiterator", {
     methods: {
         __length_hint__: Sk.generic.iterReverseLengthHintMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });

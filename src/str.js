@@ -287,6 +287,9 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             }
             throw new Sk.builtin.TypeError("a str instance is required not '" + Sk.abstr.typeName(tgt) + "'");
         },
+        valueOf() {
+            return this.v;
+        },
         $isIdentifier() {
             return Sk.token.isIdentifier(this.v);
         },
@@ -940,13 +943,9 @@ function mkJust(isRight, isCenter) {
         if (mylen >= len) {
             return new Sk.builtin.str(this.v);
         } else if (isCenter) {
-            newstr = fillchar.repeat(Math.floor((len - mylen) / 2));
-            newstr = newstr + this.v + newstr;
-
-            if ((len - mylen) % 2) {
-                newstr += fillchar;
-            }
-
+            const marg = len - mylen;
+            const left = Math.floor(marg / 2) + (marg & len & 1);
+            newstr = fillchar.repeat(left) + this.v + fillchar.repeat(marg - left);
             return new Sk.builtin.str(newstr);
         } else {
             newstr = fillchar.repeat(len - mylen);
@@ -1352,6 +1351,9 @@ function strBytesRemainder(rhs) {
         }
     };
     ret = this.$jsstr().replace(regex, replFunc);
+    if (rhs instanceof Sk.builtin.tuple && index < rhs.sq$length()) {
+        throw new Sk.builtin.TypeError("not all arguments converted during string formatting");
+    }
     return new strBytesConstructor(ret);
 };
 
@@ -1388,7 +1390,7 @@ var str_iter_ = Sk.abstr.buildIteratorClass("str_iterator", {
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 var reservedWords_ = {
@@ -1489,3 +1491,4 @@ function fixReserved(name) {
 }
 
 Sk.builtin.str.reservedWords_ = reservedWords_;
+Sk.builtin.str.$fixReserved = fixReserved;

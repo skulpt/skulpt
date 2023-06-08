@@ -532,10 +532,7 @@ Sk.builtin.frozenset = Sk.abstr.buildNativeClass("frozenset", {
     ),
 });
 
-Sk.builtin.frozenset.$emptyset = Object.create(Sk.builtin.frozenset.prototype, {
-    v: { value: new Sk.builtin.dict([]), enumerable: true },
-    in$repr: { value: false, enumerable: true },
-});
+Sk.builtin.frozenset.$emptyset = new Sk.builtin.frozenset([]);
 
 Sk.exportSymbol("Sk.builtin.frozenset", Sk.builtin.frozenset);
 
@@ -572,5 +569,5 @@ var set_iter_ = Sk.abstr.buildIteratorClass("set_iterator", {
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });

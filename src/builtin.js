@@ -447,7 +447,7 @@ Sk.builtin.abs = function abs(x) {
     if (x.nb$abs) {
         return x.nb$abs();
     }
-    throw new TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
+    throw new Sk.builtin.TypeError("bad operand type for abs(): '" + Sk.abstr.typeName(x) + "'");
 };
 
 // fabs belongs in the math module but has been a Skulpt builtin since 41665a97d (2012).
@@ -511,15 +511,9 @@ Sk.builtin.unichr = function unichr(x) {
  * This is a helper function and we already know that x is an int or has an nb$index slot
  */
 Sk.builtin.int2str_ = function helper_(x, radix, prefix) {
-    let v;
-    if (x.constructor === Sk.builtin.int_ || x instanceof Sk.builtin.int_) {
-        v = x.v; // we don't use asnum$ because it returns a str rather than a bigint.
-    } else {
-        x = x.nb$index();
-        v = x.v;
-    }
+    let v = Sk.misceval.asIndexOrThrow(x);
     let str = v.toString(radix);
-    if (x.nb$isnegative()) {
+    if (v < 0) {
         str = "-" + prefix + str.slice(1);
     } else {
         str = prefix + str;
@@ -1092,7 +1086,7 @@ Sk.builtin.format = function format(value, format_spec) {
     return Sk.abstr.objectFormat(value, format_spec);
 };
 
-const idMap = new Map();
+const idMap = new WeakMap();
 let _id = 0;
 Sk.builtin.id = function (obj) {
     const id = idMap.get(obj);

@@ -113,10 +113,9 @@ class TimeTestCase(unittest.TestCase):
         timestamp_to_test = (
             days_to_20020203 * 24 * 60 * 60  # Unix timestamps ignore leap seconds
             + seconds_within_day
-            + time.timezone
         )
         self.assertEqual(
-            time.strftime("%b %d %Y %H:%M:%S", time.localtime(timestamp_to_test)),
+            time.strftime("%b %d %Y %H:%M:%S", time.gmtime(timestamp_to_test)),
             "Feb 03 2002 01:01:01"
         );
 

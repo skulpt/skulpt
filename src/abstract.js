@@ -355,11 +355,34 @@ Sk.abstr.sequenceContains = function (seq, ob, canSuspend) {
     return canSuspend ? r : Sk.misceval.retryOptionalSuspensionOrThrow(r);
 };
 
-Sk.abstr.sequenceConcat = function (seq1, seq2) {
-    if (seq1.sq$concat) {
-        return seq1.sq$concat(seq2);
+Sk.abstr.sequenceConcat = function (s, o) {
+    if (s.sq$concat) {
+        return s.sq$concat(o);
     }
-    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(seq1) + "' object can't be concatenated");
+    // user defined classes don't have a sq$concat only nb$add
+    if (Sk.builtin.checkSequence(s) && Sk.builtin.checkSequence(o)) {
+        const res = binary_op_(s, o, "Add");
+        if (res !== undefined) {
+            return res;
+        }
+    }
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(s) + "' object can't be concatenated");
+};
+
+Sk.abstr.sequenceInPlaceConcat = function (s, o) {
+    if (s.sq$inplace_concat) {
+        return s.sq$inplace_concat(o);
+    } else if (s.sq$concat) {
+        return s.sq$concat(o);
+    }
+    // user defined classes don't have a sq$concat only nb$add
+    if (Sk.builtin.checkSequence(s) && Sk.builtin.checkSequence(o)) {
+        const res = binary_iop_(s, o, "Add");
+        if (res !== undefined) {
+            return res;
+        }
+    }
+    throw new Sk.builtin.TypeError("'" + Sk.abstr.typeName(s) + "' object can't be concatenated");
 };
 
 /**
@@ -596,7 +619,7 @@ Sk.abstr.copyKeywordsToNamedArgs = function (func_name, varnames, args, kwargs, 
     args = args.slice(0); // make a copy of args
 
     for (let i = 0; i < kwargs.length; i += 2) {
-        const name = kwargs[i]; // JS string
+        const name = kwargs[i].toString(); // JS string but account for python string
         const value = kwargs[i + 1]; // Python value
         const idx = varnames.indexOf(name);
 
@@ -898,6 +921,16 @@ Sk.abstr.lookupSpecial = function (obj, pyName) {
 };
 Sk.exportSymbol("Sk.abstr.lookupSpecial", Sk.abstr.lookupSpecial);
 
+Sk.abstr.lookupAttr = function (obj, pyName) {
+    try {
+        return obj.tp$getattr(pyName);
+    } catch (e) {
+        if (!(e instanceof Sk.builtin.AttributeError)) {
+            throw e;
+        }
+    }
+};
+
 
 Sk.abstr.typeLookup = function (type_obj, pyName) {
     const res = type_obj.$typeLookup(pyName);
@@ -975,6 +1008,8 @@ Sk.abstr.setUpBuiltinMro = function (child) {
         Object.defineProperty(child, "sk$baseClass", { value: true, writable: true });
         Object.defineProperty(child.prototype, "sk$builtinBase", { value: child, writable: true });
     }
+    // assume solid base - this can be overridden later in flags
+    Object.defineProperty(child, "sk$solidBase", { value: true, writable: true });
     const mro = [child];
     while (base !== null) {
         mro.push(base);
@@ -997,6 +1032,14 @@ Sk.abstr.setUpBuiltinMro = function (child) {
     });
 };
 
+let fixReserved = (x) => {
+    if (Sk.builtin.str && Sk.builtin.str.$fixReserved) {
+        fixReserved = Sk.builtin.str.$fixReserved;
+        return Sk.builtin.str.$fixReserved(x);
+    }
+    return x;
+};
+
 /**
  * @param {FunctionConstructor} klass 
  * @param {Object=} getsets 
@@ -1009,7 +1052,7 @@ Sk.abstr.setUpGetSets = function (klass, getsets) {
     getsets = getsets || klass_proto.tp$getsets || {};
     Object.entries(getsets).forEach(([getset_name, getset_def]) => {
         getset_def.$name = getset_name;
-        klass_proto[getset_name] = new Sk.builtin.getset_descriptor(klass, getset_def);
+        klass_proto[fixReserved(getset_name)] = new Sk.builtin.getset_descriptor(klass, getset_def);
     });
     Object.defineProperty(klass_proto, "tp$getsets", { value: null, writable: true });
 };
@@ -1027,7 +1070,7 @@ Sk.abstr.setUpMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$methods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.method_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.method_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$methods", { value: null, writable: true });
 };
@@ -1045,22 +1088,24 @@ Sk.abstr.setUpClassMethods = function (klass, methods) {
     methods = methods || klass_proto.tp$classmethods || {};
     Object.entries(methods).forEach(([method_name, method_def]) => {
         method_def.$name = method_name;
-        klass_proto[method_name] = new Sk.builtin.classmethod_descriptor(klass, method_def);
+        klass_proto[fixReserved(method_name)] = new Sk.builtin.classmethod_descriptor(klass, method_def);
     });
     Object.defineProperty(klass_proto, "tp$classmethods", { value: null, writable: true });
 };
 
-const op2shortcut = Object.entries({
+const op2shortcut = {
     Eq: "ob$eq",
     NotEq: "ob$ne",
     Gt: "ob$gt",
     GtE: "ob$ge",
     Lt: "ob$lt",
     LtE: "ob$le",
-});
+};
+
+const op2shortcutEntries = Object.entries(op2shortcut);
 
 function _set_up_richcompare_wrappers(slots) {
-    op2shortcut.forEach(([op, shortcut]) => {
+    op2shortcutEntries.forEach(([op, shortcut]) => {
         slots[shortcut] = function (other) {
             return this.tp$richcompare(other, op);
         };
@@ -1125,6 +1170,11 @@ Sk.abstr.setUpSlots = function (klass, slots) {
         // Either a klass defines a tp$richcompare slot or ob$eq slots
         // if tp$richcompare is defined then create all the ob$eq slots
         _set_up_richcompare_wrappers(slots);
+    } else if (slots.ob$eq) {
+        // assume if they set one of the slots they set them all!
+        slots.tp$richcompare = function(other, op) {
+            return this[op2shortcut[op]].call(this, other);
+        };
     }
 
     // setup some reflected slots
@@ -1230,7 +1280,7 @@ Sk.abstr.setUpSlots = function (klass, slots) {
  * - getsets: getset objects `{$get: Function, $set: Function, $doc: string}`,
  * - classmethods: classmethod objects `{$meth: Function, $flags: callmethod, $doc: string, $textsic: string|null}`,
  *
- * - flags: Object allocated directly onto class like `klass.sk$acceptable_as_base_class`
+ * - flags: Object allocated directly onto class like `klass.sk$unacceptableBase`
  * - proto: Object allocated onto the prototype useful for private methods
  * ```
  * See most builtin type objects for examples
@@ -1283,6 +1333,12 @@ Sk.abstr.buildNativeClass = function (typename, options) {
         }); 
     });
 
+
+    if (type_proto.hasOwnProperty("tp$iter")) {
+        type_proto[Symbol.iterator] = function () {
+            return this.tp$iter()[Symbol.iterator]();
+        };
+    }
     // str might not have been created yet
     if (Sk.builtin.str !== undefined && type_proto.hasOwnProperty("tp$doc") && !type_proto.hasOwnProperty("__doc__")) {
         const docstr = type_proto.tp$doc || null;
@@ -1341,16 +1397,27 @@ Sk.abstr.buildIteratorClass = function (typename, iterator) {
     iterator.slots.tp$getattr = iterator.slots.tp$getattr || Sk.generic.getAttr;
     let ret = Sk.abstr.buildNativeClass(typename, iterator);
     Sk.abstr.built$iterators.push(ret);
+
+    ret.prototype[Symbol.iterator] = function () {
+        return  {
+            next: () => {
+                const value = this.tp$iternext();
+                const done = value === undefined;
+                return {value, done};
+            }
+        };
+    };
     return ret;
 };
 
 Sk.abstr.built$iterators = [];
 
-Sk.abstr.setUpModuleMethods = function (module_name, module, method_defs) {
+Sk.abstr.setUpModuleMethods = function (module_name, mod, method_defs) {
     Object.entries(method_defs).forEach(([method_name, method_def]) => {
         method_def.$name = method_def.$name || method_name; // operator e.g. some methods share method_defs
-        module[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
+        mod[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
     });
+    return mod;
 };
 
 /**

@@ -57,7 +57,7 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
         },
     },
     flags: {
-        sk$acceptable_as_base_class: false,
+        sk$unacceptableBase: true,
     },
     methods: {
         __format__: {
@@ -70,7 +70,10 @@ Sk.builtin.bool = Sk.abstr.buildNativeClass("bool", {
     proto: {
         str$False: new Sk.builtin.str("False"),
         str$True: new Sk.builtin.str("True"),
-    }
+        valueOf() {
+            return !!this.v;
+        },
+    },
 });
 Sk.exportSymbol("Sk.builtin.bool", Sk.builtin.bool);
 

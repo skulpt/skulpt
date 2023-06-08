@@ -89,5 +89,5 @@ Sk.builtin.method = Sk.abstr.buildNativeClass("method", {
             },
         },
     },
-    flags: { sk$suitable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });

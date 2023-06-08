@@ -327,7 +327,10 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             const ret = [];
             this.v.forEach((x) => {ret.push(new Sk.builtin.int_(x));});
             return ret;
-        }
+        },
+        valueOf() {
+            return this.v;
+        },
     },
     flags: {
         str$encode: strEncode,
@@ -1281,7 +1284,7 @@ var bytes_iter_ = Sk.abstr.buildIteratorClass("bytes_iterator", {
     methods: {
         __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 Sk.exportSymbol("Sk.builtin.bytes", Sk.builtin.bytes);

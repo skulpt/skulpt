@@ -1,1 +1,1 @@
-raise NotImplementedError("__phello__.foo is not yet implemented in Skulpt")
+import _sk_fail; _sk_fail._("__phello__.foo")

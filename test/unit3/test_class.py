@@ -374,46 +374,39 @@ class ClassTests(unittest.TestCase):
         def index(x):
             return [][x]
 
-        # self.assertRaises(TypeError, float, BadTypeClass())
-        self.assertRaises(TypeError, complex, BadTypeClass())
-        # self.assertRaises(TypeError, str, BadTypeClass())
-        # self.assertRaises(TypeError, repr, BadTypeClass())
-        self.assertRaises(TypeError, bin, BadTypeClass())
-        self.assertRaises(TypeError, oct, BadTypeClass())
-        self.assertRaises(TypeError, hex, BadTypeClass())
-        # self.assertRaises(TypeError, bool, BadTypeClass())
-        self.assertRaises(TypeError, index, BadTypeClass())
+        for f in [float, complex, str, repr, bytes, bin, oct, hex, bool, index]:
+            self.assertRaises(TypeError, f, BadTypeClass())
 
 
-    # def testHashStuff(self):
-    #     # Test correct errors from hash() on objects with comparisons but
-    #     #  no __hash__
-    #
-    #     class C0:
-    #         pass
-    #
-    #     hash(C0()) # This should work; the next two should raise TypeError
-    #
-    #     class C2:
-    #         def __eq__(self, other): return 1
-    #
-    #     self.assertRaises(TypeError, hash, C2())
+    def testHashStuff(self):
+        # Test correct errors from hash() on objects with comparisons but
+        #  no __hash__
+    
+        class C0:
+            pass
+    
+        hash(C0()) # This should work; the next two should raise TypeError
+    
+        class C2:
+            def __eq__(self, other): return 1
+    
+        self.assertRaises(TypeError, hash, C2())
 
 
-    # def testSFBug532646(self):
-    #     # Test for SF bug 532646
-    #
-    #     class A:
-    #         pass
-    #     A.__call__ = A()
-    #     a = A()
-    #
-    #     try:
-    #         a() # This should not segfault
-    #     except RecursionError:
-    #         pass
-    #     else:
-    #         self.fail("Failed to raise RecursionError")
+    def testSFBug532646(self):
+        # Test for SF bug 532646
+    
+        class A:
+            pass
+        A.__call__ = A()
+        a = A()
+    
+        try:
+            a() # This should not segfault
+        except RecursionError:
+            pass
+        else:
+            self.fail("Failed to raise RecursionError")
 
     # def testForExceptionsRaisedInInstanceGetattr2(self):
     #     # Tests for exceptions raised in instance_getattr2().

@@ -2,7 +2,7 @@
 // for numbers and strings
 // https://docs.python.org/3.7/library/string.html#formatspec
 
-const FORMAT_SPEC_REGEX = /^(?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?$/;
+const FORMAT_SPEC_REGEX = /^(?:(.)?([<\>\=\^]))?([\+\-\s])?(#)?(0)?(\d+)?(,|_)?(?:\.(\d+))?([bcdeEfFgGnosxX%])?$/;
 const FMT = {
     FILL_CHAR: 1,
     FILL_ALIGN: 2,
@@ -28,7 +28,7 @@ let handleWidth = function (m, r, prefix, isNumber) {
         let nFill = fieldWidth - (r.length + (prefix ? prefix.length : 0));
 
         if (nFill <= 0) {
-            return r;
+            return prefix + r;
         }
 
         let fill = fillChar.repeat(nFill);
@@ -57,6 +57,9 @@ let signForNeg = function(m, neg) {
         (m[FMT.SIGN] === " ") ? " " : "";
 };
 
+const thousandSep = /\B(?=(\d{3})+(?!\d))/g;
+const otherBaseSep = /\B(?=([A-Za-z0-9]{4})+(?![A-Za-z0-9]))/g;
+
 let handleInteger = function(m, n, base){
     // TODO: Do we need to tolerate float inputs for integer conversions?
     // Python doesn't, but I'm guessing this is something to do with JS's
@@ -82,15 +85,20 @@ let handleInteger = function(m, n, base){
         }
     }
 
-    if (m[FMT.CONVERSION_TYPE] === "X") {
-        r = r.toUpperCase();
+    const conversionType = m[FMT.CONVERSION_TYPE];
+    if (conversionType === "X") {
+        r = r.toUpperCase(); // floats convert nan to NAN
     }
 
     if (m[FMT.CONVERSION_TYPE] === "n"){
         r = (+r).toLocaleString();
     } else if (m[FMT.COMMA]){
-        var parts = r.toString().split(".");
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        const parts = r.split(".");
+        const sep = m[FMT.COMMA];
+        if (sep === "," && base !== 10) {
+            throw new Sk.builtin.ValueError(`Cannot specify ',' with '${conversionType}'`);
+        }
+        parts[0] = parts[0].replace(base === 10 ? thousandSep : otherBaseSep , sep);
         r = parts.join(".");
     }
 

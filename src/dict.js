@@ -846,14 +846,14 @@ function buildDictIterClass(typename, iternext, reversed) {
         methods: {
             __length_hint__: Sk.generic.iterLengthHintWithArrayMethodDef,
         },
-        flags: { sk$acceptable_as_base_class: false },
+        flags: { sk$unacceptableBase: true },
         proto: { next$item: itemIterNextCheckSize },
     });
 }
 
 function itemIterNextCheckSize() {
     if (this.$version !== this.$orig.$version) {
-        if (this.$len !== this.$orig.get$size()) {
+        if (this.$seq.length !== this.$orig.get$size()) {
             throw new Sk.builtin.RuntimeError("dict changed size during iteration");
         }
         throw new Sk.builtin.RuntimeError("dictionary keys changed during iteration");
