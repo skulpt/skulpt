@@ -178,7 +178,7 @@ The current group of committers is as follows:
 -   [Albert-Jan](https://github.com/albertjan)
 -   [Meredydd Luff](https://github.com/meredydd)
 -   [Leszek Swirski](https://github.com/LeszekSwirski)
--   [Stu](https://github.com/s-cork)
+-   [Stu Cork](https://github.com/s-cork)
 
 # Documentation
 
