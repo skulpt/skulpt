@@ -156,7 +156,7 @@ Committers can self approve a PR under the following conditions:
 -   The PR is fixing a minor or cosmetic issue
 -   the PR is creating a relative improvement, for example adding a new module and removing a NotImplemented exception.
 
-If any of the above conditions are true, the committer should write up a quick justification as part of approving the PR and give it 48 hours in case anyone wants to object. After the 48 hour period then any committer, including the committer that created the PR can go ahead and merge.
+If any of the above conditions are true, the committer should write up a quick justification as part of approving the PR and give it 48 hours in case anyone wants to add a review or make comments. After the 48 hour period then any committer, including the committer that created the PR can go ahead and merge.  Since github does not actually allow anyone to self approve, I have removed the requirement for approval.  We can track this easily enough amongst ourselves.
 
 ### process for reviewing PRs from non-committers
 
