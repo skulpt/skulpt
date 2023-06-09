@@ -301,7 +301,7 @@ function $builtinmodule(name) {
     // unicode mode in js regex treats \\\t incorrectly and should be converted to \\t
     // similarly \" and \' \! \& throw errors
     const py_to_js_unicode_escape = /\\[\t\r\n \v\f#&~"'!:,]|\\-(?!(?:\]|[^\[]*[^\\]\]))/g;
-    const strictErrors = /Incomplete quantifier|Lone quantifier|Invalid escape/g;
+    const quantifierErrors = /Incomplete quantifier|Lone quantifier/g;
 
     const _compiled_patterns = Object.create(null);
 
@@ -366,7 +366,7 @@ function $builtinmodule(name) {
         try {
             regex = new RegExp(unicodeEscapedPattern, jsFlags);
         } catch (e) {
-            if (strictErrors.test(e.message)) {
+            if (quantifierErrors.test(e.message)) {
                 try {
                     // try without the unicode flag since unicode mode is stricter
                     regex = new RegExp(jsPattern, jsFlags.replace("u", ""));
