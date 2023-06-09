@@ -124,3 +124,24 @@ class TestRegexFromArrow(unittest.TestCase):
             ),
             "It happened on the 11 on the day 25 a long time ago",
         )
+
+        tz_zz_re = re.compile(r"([\+\-])(\d{2})(?:(\d{2}))?|Z")
+        self.assertEqual(tz_zz_re.findall("-07:00"), [("-", "07", "00")])
+        self.assertEqual(tz_zz_re.findall("+07"), [("+", "07", "")])
+        self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120Z"))
+        self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120"))
+
+
+        time_re = re.compile(r"^(\d{2})(?:\:?(\d{2}))?(?:\:?(\d{2}))?(?:([\.\,])(\d+))?$")
+        time_seperators = [":", ""]
+
+        for sep in time_seperators:
+            self.assertEqual(time_re.findall("12"), [("12", "", "", "", "")])
+            self.assertEqual(time_re.findall(f"12{sep}35"), [("12", "35", "", "", "")])
+            self.assertEqual(time_re.findall("12{sep}35{sep}46".format(sep=sep)), [("12", "35", "46", "", "")])
+            self.assertEqual(time_re.findall("12{sep}35{sep}46.952313".format(sep=sep)), [("12", "35", "46", ".", "952313")])
+            self.assertEqual(time_re.findall("12{sep}35{sep}46,952313".format(sep=sep)), [("12", "35", "46", ",", "952313")])
+
+        self.assertEqual(time_re.findall("12:"), [])
+        self.assertEqual(time_re.findall("12:35:46."), [])
+        self.assertEqual(time_re.findall("12:35:46,"), [])
