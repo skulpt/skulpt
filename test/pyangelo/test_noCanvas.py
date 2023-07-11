@@ -8,7 +8,7 @@ class NoCanvasTestCase(unittest.TestCase):
         self.assertEqual(width, 0)
         self.assertEqual(height, 0)
         canvas = document.getElementById('canvas')
-        display = canvas.getCSS('display')
+        display = canvas.style.display
         self.assertEqual(display, "none")
         canvas_width = canvas.getAttribute("width")
         self.assertEqual(int(canvas_width), 0)

@@ -10,7 +10,7 @@ class SetCanvasSizeTestCase(unittest.TestCase):
         self.assertEqual(width, test_width)
         self.assertEqual(height, test_height)
         canvas = document.getElementById('canvas')
-        display = canvas.getCSS('display')
+        display = canvas.style.display
         self.assertEqual(display, "block")
         canvas_width = canvas.getAttribute("width")
         self.assertEqual(int(canvas_width), test_width)

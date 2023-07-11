@@ -7,14 +7,14 @@ class ClearTestCase(unittest.TestCase):
         expectedBackgroundColour = "rgb(181, 137, 0)"
         clear(YELLOW)
         console = document.getElementById('console')
-        colour = console.getCSS('backgroundColor')
+        colour = console.style.backgroundColor
         self.assertEqual(colour, expectedBackgroundColour)
 
     def test_clear_no_params(self):
         expectedBackgroundColour = "rgb(40, 42, 54)"
         clear()
         console = document.getElementById('console')
-        colour = console.getCSS('backgroundColor')
+        colour = console.style.backgroundColor
         self.assertEqual(colour, expectedBackgroundColour)
 
     def test_clearParameters(self):

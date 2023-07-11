@@ -16,13 +16,13 @@ class SetConsoleSizeTestCase(unittest.TestCase):
     def test_setConsoleSize200(self):
         setConsoleSize(200)
         console = document.getElementById('console')
-        console_height = console.getCSS("height")
+        console_height = console.style.height
         self.assertEqual(console_height, "200px")
 
     def test_setConsoleSize600(self):
         setConsoleSize(600)
         console = document.getElementById('console')
-        console_height = console.getCSS("height")
+        console_height = console.style.height
         self.assertEqual(console_height, "600px")
 
 if __name__ == "__main__":

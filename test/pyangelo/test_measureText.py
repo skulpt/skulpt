@@ -13,8 +13,13 @@ class MeasureTextTestCase(unittest.TestCase):
             'actualBoundingBoxDescent': 15.515625
         }
         actualResult = measureText("Hello", 20, "Arial")
-        self.assertEqual(actualResult, expectedResult)
-
+        self.assertEqual(actualResult["width"], expectedResult["width"])
+        self.assertEqual(actualResult["actualBoundingBoxLeft"], expectedResult["actualBoundingBoxLeft"])
+        self.assertEqual(actualResult["actualBoundingBoxRight"], expectedResult["actualBoundingBoxRight"])
+        self.assertEqual(actualResult["fontBoundingBoxAscent"], expectedResult["fontBoundingBoxAscent"])
+        self.assertEqual(actualResult["fontBoundingBoxDescent"], expectedResult["fontBoundingBoxDescent"])
+        self.assertEqual(actualResult["actualBoundingBoxAscent"], expectedResult["actualBoundingBoxAscent"])
+        self.assertEqual(actualResult["actualBoundingBoxDescent"], expectedResult["actualBoundingBoxDescent"])
 
     def test_measureText40(self):
         expectedResult = {
@@ -27,7 +32,13 @@ class MeasureTextTestCase(unittest.TestCase):
             'actualBoundingBoxDescent': 31.03125
         }
         actualResult = measureText("Hello", 40, "Arial")
-        self.assertEqual(actualResult, expectedResult)
+        self.assertEqual(actualResult["width"], expectedResult["width"])
+        self.assertEqual(actualResult["actualBoundingBoxLeft"], expectedResult["actualBoundingBoxLeft"])
+        self.assertEqual(actualResult["actualBoundingBoxRight"], expectedResult["actualBoundingBoxRight"])
+        self.assertEqual(actualResult["fontBoundingBoxAscent"], expectedResult["fontBoundingBoxAscent"])
+        self.assertEqual(actualResult["fontBoundingBoxDescent"], expectedResult["fontBoundingBoxDescent"])
+        self.assertEqual(actualResult["actualBoundingBoxAscent"], expectedResult["actualBoundingBoxAscent"])
+        self.assertEqual(actualResult["actualBoundingBoxDescent"], expectedResult["actualBoundingBoxDescent"])
 
     def test_measureTextParameterTypes(self):
         with self.assertRaises(TypeError):
