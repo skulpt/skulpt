@@ -150,7 +150,7 @@ var $builtinmodule = function (name) {
         if (utc) {
             tm_info = [new Sk.builtin.str("UTC"),new Sk.builtin.int_(0) ]
         } else {
-            var offset = -(stdTimezoneOffset())/60;
+            var offset = -date.getTimezoneOffset() / 60;
             var pad = offset < 0 ? "-" : "+";
             var tm_zone = pad + ("" + Math.abs(offset)).padStart(2, "0");
             tm_info = [new Sk.builtin.str(tm_zone), new Sk.builtin.int_(offset * 3600)];

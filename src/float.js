@@ -1,10 +1,10 @@
 /** @typedef {Sk.builtin.object} */ var pyObject;
 
-const hashMap = Object.create(null, {
-    Infinity: { value: 314159 },
-    "-Infinity": { value: -314159 },
-    NaN: { value: 0 },
-});
+// should match sys.hash_info
+const _HASH_INF = 314159;
+const _HASH_NAN = 0;
+const _HASH_BITS = 29;
+const _HASH_MOD = (1 << 29) - 1;
 
 /**
  * @constructor
@@ -31,21 +31,43 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         }
     },
     slots: /**@lends {Sk.builtin.float_.prototype} */ {
-        tp$gettattr: Sk.generic.getAttr,
+        tp$getattr: Sk.generic.getAttr,
         tp$as_number: true,
         tp$doc: "Convert a string or number to a floating point number, if possible.",
         tp$hash() {
             const v = this.v;
-            let hash = hashMap[v];
-            if (hash !== undefined) {
-                return hash;
-            } else if (Number.isInteger(v)) {
-                hash = this.nb$int().tp$hash();
-            } else {
-                hash = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER - Number.MAX_SAFE_INTEGER / 2);
+            if (!Number.isFinite(v)) {
+                if (Number.isNaN(v)) {
+                    return _HASH_NAN;
+                }
+                return v > 0 ? _HASH_INF : -_HASH_INF;
             }
-            hashMap[this.v] = hash;
-            return hash;
+            let [m, e] = frexp(v);
+            let sign = 1;
+            if (m < 0) {
+                sign = -1;
+                m = -m;
+            }
+
+            let x = 0, y;
+            while (m) {
+                x = ((x << 28) & _HASH_MOD) | x >> (_HASH_BITS - 28);
+                m *= 268435456; // 2 ** 28
+                e -= 28;
+                y = Math.trunc(m); // pull out integer part
+                m -= y;
+                x += y;
+                if (x >= _HASH_MOD) {
+                    x -= _HASH_MOD;
+                }
+            }
+            e = e >= 0 ? e % _HASH_BITS : _HASH_BITS-1-((-1-e) % _HASH_BITS);
+            x = ((x << e) & _HASH_MOD) | (x >> (_HASH_BITS - e));
+            x *= sign;
+            if (x === -1) {
+                return -2;
+            }
+            return x;
         },
         $r() {
             return new Sk.builtin.str(this.str$(10, true));
@@ -61,8 +83,10 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             // is args always an empty list?
             if (arg === undefined) {
                 x = new Sk.builtin.float_(0.0);
-            } else if (arg.nb$float) {
+            } else if (arg.nb$float !== undefined) {
                 x = arg.nb$float();
+            } else if (arg.nb$index !== undefined) {
+                x = new Sk.builtin.int_(arg.nb$index()).nb$float();
             } else if (Sk.builtin.checkString(arg)) {
                 x = _str_to_float(arg.v);
             }
@@ -81,13 +105,16 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         // number slots
         nb$int() {
             let v = this.v;
+            if (!Number.isFinite(v)) {
+                if (v === Infinity || v === -Infinity) {
+                    throw new Sk.builtin.OverflowError("cannot convert float infinity to integer");
+                }
+                throw new Sk.builtin.ValueError("cannot convert float NaN to integer");
+            }
             if (v < 0) {
                 v = Math.ceil(v);
             } else {
                 v = Math.floor(v);
-            }
-            if (!Number.isInteger(v)) {
-                throw new Sk.builtin.ValueError("cannot convert float " + Sk.misceval.objectRepr(this) + " to integer");
             }
             if (Sk.builtin.int_.withinThreshold(v)) {
                 return new Sk.builtin.int_(v);
@@ -139,12 +166,12 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
         nb$ispositive() {
             return this.v >= 0;
         },
-        ob$eq: numberSlot((v, w) => v == w),
-        ob$ne: numberSlot((v, w) => v != w),
-        ob$gt: numberSlot((v, w) => v > w),
-        ob$ge: numberSlot((v, w) => v >= w),
-        ob$lt: numberSlot((v, w) => v < w),
-        ob$le: numberSlot((v, w) => v <= w),
+        ob$eq: compareSlot((v, w) => v == w, JSBI.EQ),
+        ob$ne: compareSlot((v, w) => v != w, JSBI.NE),
+        ob$gt: compareSlot((v, w) => v > w, JSBI.GT),
+        ob$ge: compareSlot((v, w) => v >= w, JSBI.GE),
+        ob$lt: compareSlot((v, w) => v < w, JSBI.LT),
+        ob$le: compareSlot((v, w) => v <= w, JSBI.LE),
     },
     getsets: /**@lends {Sk.builtin.float_.prototype} */ {
         real: {
@@ -239,6 +266,11 @@ Sk.builtin.float_ = Sk.abstr.buildNativeClass("float", {
             $doc: Sk.builtin.none.none$,
         },
     },
+    proto: {
+        valueOf() {
+            return this.v;
+        }
+    }
 });
 
 function frexp(arg) {
@@ -354,6 +386,26 @@ function numberSlot(f) {
     };
 }
 
+function compareSlot(doCompare, JSBI_ALT) {
+    return function (other) {
+        const v = this.v;
+        const w = other.v;
+        if (typeof w === "number") {
+            // pass
+        } else if (!JSBI.__isBigInt(w)) {
+            // not a number or a bigint
+            return Sk.builtin.NotImplemented.NotImplemented$;
+        } else if (JSBI_ALT !== undefined) {
+            // if we're here we have JSBI.BigInt rather than a window.BigInt
+            // use the JSBI.EQ, JSBI.NE functions which are faster for comparisons
+            // use ==, >= etc will compare the strings which is not what we want
+            // if we have a window.BigInt just use ==, >= etc i.e. fall through to doCompare
+            return JSBI_ALT(v, w);
+        }
+        return doCompare(v, w);
+    };
+}
+
 function ternarySlot(f) {
     const binSlot = numberSlot(f);
     return function (other, z) {
@@ -422,7 +474,7 @@ function remainder(v, w) {
         return new Sk.builtin.float_(0);
     }
     if (w === Infinity) {
-        if (v === Infinity || this.v === -Infinity) {
+        if (v === Infinity || v === -Infinity) {
             return new Sk.builtin.float_(NaN);
         } else if (v > 0) {
             return new Sk.builtin.float_(v);
@@ -455,7 +507,8 @@ function remainder(v, w) {
 
 function power(v, w) {
     if (v < 0 && w % 1 !== 0) {
-        throw new Sk.builtin.ValueError("negative number cannot be raised to a fractional power");
+        // let complex deal with it - like CPython does
+        return new Sk.builtin.complex(v, 0).nb$power(new Sk.builtin.complex(w, 0));
     }
     if (v === 0 && w < 0) {
         throw new Sk.builtin.ZeroDivisionError("0.0 cannot be raised to a negative power");

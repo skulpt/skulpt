@@ -1,3 +1,4 @@
+import math
 import unittest
 
 class PowTest(unittest.TestCase):
@@ -56,11 +57,11 @@ class PowTest(unittest.TestCase):
                             pow(type(i),j)% type(k)
                         )
 
-    # def test_powint(self):
-    #     self.powtest(int)
+    def test_powint(self):
+        self.powtest(int)
 
-    # def test_powfloat(self):
-    #     self.powtest(float)
+    def test_powfloat(self):
+        self.powtest(float)
 
     def test_other(self):
         # Other tests-- not very systematic
@@ -106,18 +107,44 @@ class PowTest(unittest.TestCase):
         # The next two tests can still fail if the platform floor()
         # function doesn't treat all large inputs as integers
         # test_math should also fail if that is happening
-        # eq(pow(a, 1.23e167), 1.0)
-        # eq(pow(a, -1.23e167), 1.0)
-        # for b in range(-10, 11):
-        #     eq(pow(a, float(b)), b & 1 and -1.0 or 1.0)
+        eq(pow(a, 1.23e167), 1.0)
+        eq(pow(a, -1.23e167), 1.0)
+        for b in range(-10, 11):
+            eq(pow(a, float(b)), b & 1 and -1.0 or 1.0)
         for n in range(0, 100):
             fiveto = float(5 ** n)
             # For small n, fiveto will be odd.  Eventually we run out of
             # mantissa bits, though, and thereafer fiveto will be even.
             expected = fiveto % 2.0 and -1.0 or 1.0
-            # eq(pow(a, fiveto), expected)
-            # eq(pow(a, -fiveto), expected)
+            eq(pow(a, fiveto), expected)
+            eq(pow(a, -fiveto), expected)
         eq(expected, 1.0)   # else we didn't push fiveto to evenness
+
+    # @TODO added in python 3.8 - https://github.com/python/cpython/pull/13266
+    # def test_negative_exponent(self):
+    #     for a in range(-50, 50):
+    #         for m in range(-50, 50):
+    #             with self.subTest(a=a, m=m):
+    #                 if m != 0 and math.gcd(a, m) == 1:
+    #                     # Exponent -1 should give an inverse, with the
+    #                     # same sign as m.
+    #                     inv = pow(a, -1, m)
+    #                     self.assertEqual(inv, inv % m)
+    #                     self.assertEqual((inv * a - 1) % m, 0)
+
+    #                     # Larger exponents
+    #                     self.assertEqual(pow(a, -2, m), pow(inv, 2, m))
+    #                     self.assertEqual(pow(a, -3, m), pow(inv, 3, m))
+    #                     self.assertEqual(pow(a, -1001, m), pow(inv, 1001, m))
+
+    #                 else:
+    #                     with self.assertRaises(ValueError):
+    #                         pow(a, -1, m)
+    #                     with self.assertRaises(ValueError):
+    #                         pow(a, -2, m)
+    #                     with self.assertRaises(ValueError):
+    #                         pow(a, -1001, m)
+
 
 if __name__ == "__main__":
     unittest.main()

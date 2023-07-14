@@ -161,6 +161,9 @@ def result_check(expected, got, ulp_tol=5, abs_tol=0.0):
     else:
         return None
 
+class IntSubclass(int):
+    pass
+
 # Class providing an __index__ method.
 class MyIndexable(object):
     def __init__(self, value):
@@ -731,6 +734,60 @@ class MathTests(unittest.TestCase):
         # self.assertEqual(math.hypot(NINF, NAN), INF)
         self.assertTrue(math.isnan(math.hypot(1.0, NAN)))
         self.assertTrue(math.isnan(math.hypot(NAN, -2.0)))
+
+    def testIsqrt(self):
+        # Test a variety of inputs, large and small.
+        test_values = (
+            list(range(1000))
+            + list(range(10**6 - 1000, 10**6 + 1000))
+            + [2**e + i for e in range(60, 200) for i in range(-40, 40)]
+            + [3**9999, 10**5001]
+        )
+
+        for value in test_values:
+            #with self.subTest(value=value):
+            s = math.isqrt(value)
+            self.assertIs(type(s), int)
+            self.assertLessEqual(s*s, value)
+            self.assertLess(value, (s+1)*(s+1))
+
+        # Negative values
+        with self.assertRaises(ValueError):
+            math.isqrt(-1)
+
+        # Integer-like things
+        s = math.isqrt(True)
+        self.assertIs(type(s), int)
+        self.assertEqual(s, 1)
+
+        s = math.isqrt(False)
+        self.assertIs(type(s), int)
+        self.assertEqual(s, 0)
+
+        class IntegerLike(object):
+            def __init__(self, value):
+                self.value = value
+
+            def __index__(self):
+                return self.value
+
+        s = math.isqrt(IntegerLike(1729))
+        self.assertIs(type(s), int)
+        self.assertEqual(s, 41)
+
+        with self.assertRaises(ValueError):
+            math.isqrt(IntegerLike(-3))
+
+        # Non-integer-like things
+        bad_values = [
+            # 3.5, "a string", decimal.Decimal("3.5"), 3.5j,
+            3.5, "a string", 3.5j,
+            100.0, -4.0,
+        ]
+        for value in bad_values:
+            #with self.subTest(value=value):
+            with self.assertRaises(TypeError):
+                math.isqrt(value)
 
     def testLdexp(self):
         self.assertRaises(TypeError, math.ldexp)
@@ -1481,6 +1538,50 @@ class MathTests(unittest.TestCase):
         self.assertFalse(math.isinf(2**1024))
         self.assertFalse(math.isinf(2**2048))
 
+    def testLcm(self):
+        lcm = math.lcm
+        self.assertEqual(lcm(0, 0), 0)
+        self.assertEqual(lcm(1, 0), 0)
+        self.assertEqual(lcm(-1, 0), 0)
+        self.assertEqual(lcm(0, 1), 0)
+        self.assertEqual(lcm(0, -1), 0)
+        self.assertEqual(lcm(7, 1), 7)
+        self.assertEqual(lcm(7, -1), 7)
+        self.assertEqual(lcm(-23, 15), 345)
+        self.assertEqual(lcm(120, 84), 840)
+        self.assertEqual(lcm(84, -120), 840)
+        self.assertEqual(lcm(1216342683557601535506311712,
+                             436522681849110124616458784),
+                             16592536571065866494401400422922201534178938447014944)
+
+        x = 43461045657039990237
+        y = 10645022458251153277
+        for c in (652560,
+                  57655923087165495981):
+            a = x * c
+            b = y * c
+            d = x * y * c
+            self.assertEqual(lcm(a, b), d)
+            self.assertEqual(lcm(b, a), d)
+            self.assertEqual(lcm(-a, b), d)
+            self.assertEqual(lcm(b, -a), d)
+            self.assertEqual(lcm(a, -b), d)
+            self.assertEqual(lcm(-b, a), d)
+            self.assertEqual(lcm(-a, -b), d)
+            self.assertEqual(lcm(-b, -a), d)
+
+        self.assertEqual(lcm(), 1)
+        self.assertEqual(lcm(120), 120)
+        self.assertEqual(lcm(-120), 120)
+        self.assertEqual(lcm(120, 84, 102), 14280)
+        self.assertEqual(lcm(120, 0, 84), 0)
+
+        self.assertRaises(TypeError, lcm, 120.0)
+        self.assertRaises(TypeError, lcm, 120.0, 84)
+        self.assertRaises(TypeError, lcm, 120, 84.0)
+        self.assertRaises(TypeError, lcm, 120, 0, 84.0)
+        self.assertEqual(lcm(MyIndexable(120), MyIndexable(84)), 840)
+
     def test_nan_constant(self):
         self.assertTrue(math.isnan(math.nan))
 
@@ -1526,6 +1627,245 @@ class MathTests(unittest.TestCase):
         #     pass
         # else:
         #     self.fail("sqrt(-1) didn't raise ValueError")
+
+    def test_prod(self):
+        prod = math.prod
+        self.assertEqual(prod([]), 1)
+        self.assertEqual(prod([], start=5), 5)
+        self.assertEqual(prod(list(range(2,8))), 5040)
+        self.assertEqual(prod(iter(list(range(2,8)))), 5040)
+        self.assertEqual(prod(range(1, 10), start=10), 3628800)
+
+        self.assertEqual(prod([1, 2, 3, 4, 5]), 120)
+        self.assertEqual(prod([1.0, 2.0, 3.0, 4.0, 5.0]), 120.0)
+        self.assertEqual(prod([1, 2, 3, 4.0, 5.0]), 120.0)
+        self.assertEqual(prod([1.0, 2.0, 3.0, 4, 5]), 120.0)
+
+        # Test overflow in fast-path for integers
+        self.assertEqual(prod([1, 1, 2**32, 1, 1]), 2**32)
+        # Test overflow in fast-path for floats
+        self.assertEqual(prod([1.0, 1.0, 2**32, 1, 1]), float(2**32))
+
+        self.assertRaises(TypeError, prod)
+        self.assertRaises(TypeError, prod, 42)
+        self.assertRaises(TypeError, prod, ['a', 'b', 'c'])
+        self.assertRaises(TypeError, prod, ['a', 'b', 'c'], start='')
+        self.assertRaises(TypeError, prod, [b'a', b'c'], start=b'')
+        # bytearray not implemented in Skulpt yet
+        # values = [bytearray(b'a'), bytearray(b'b')]
+        # self.assertRaises(TypeError, prod, values, start=bytearray(b''))
+        self.assertRaises(TypeError, prod, [[1], [2], [3]])
+        self.assertRaises(TypeError, prod, [{2:3}])
+        self.assertRaises(TypeError, prod, [{2:3}]*2, start={2:3})
+        self.assertRaises(TypeError, prod, [[1], [2], [3]], start=[])
+
+        # Some odd cases
+        self.assertEqual(prod([2, 3], start='ab'), 'abababababab')
+        self.assertEqual(prod([2, 3], start=[1, 2]), [1, 2, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
+        self.assertEqual(prod([], start={2: 3}), {2:3})
+
+        with self.assertRaises(TypeError):
+            prod([10, 20], 1)     # start is a keyword-only argument
+
+        self.assertEqual(prod([0, 1, 2, 3]), 0)
+        self.assertEqual(prod([1, 0, 2, 3]), 0)
+        self.assertEqual(prod([1, 2, 3, 0]), 0)
+
+        def _naive_prod(iterable, start=1):
+            for elem in iterable:
+                start *= elem
+            return start
+
+        # Big integers
+
+        iterable = range(1, 10000)
+        self.assertEqual(prod(iterable), _naive_prod(iterable))
+        iterable = range(-10000, -1)
+        self.assertEqual(prod(iterable), _naive_prod(iterable))
+        iterable = range(-1000, 1000)
+        self.assertEqual(prod(iterable), 0)
+
+        # Big floats
+
+        iterable = [float(x) for x in range(1, 1000)]
+        self.assertEqual(prod(iterable), _naive_prod(iterable))
+        iterable = [float(x) for x in range(-1000, -1)]
+        self.assertEqual(prod(iterable), _naive_prod(iterable))
+        iterable = [float(x) for x in range(-1000, 1000)]
+        self.assertIsNaN(prod(iterable))
+
+        # Float tests
+
+        self.assertIsNaN(prod([1, 2, 3, float("nan"), 2, 3]))
+        self.assertIsNaN(prod([1, 0, float("nan"), 2, 3]))
+        self.assertIsNaN(prod([1, float("nan"), 0, 3]))
+        self.assertIsNaN(prod([1, float("inf"), float("nan"),3]))
+        self.assertIsNaN(prod([1, float("-inf"), float("nan"),3]))
+        self.assertIsNaN(prod([1, float("nan"), float("inf"),3]))
+        self.assertIsNaN(prod([1, float("nan"), float("-inf"),3]))
+
+        self.assertEqual(prod([1, 2, 3, float('inf'),-3,4]), float('-inf'))
+        self.assertEqual(prod([1, 2, 3, float('-inf'),-3,4]), float('inf'))
+
+        self.assertIsNaN(prod([1,2,0,float('inf'), -3, 4]))
+        self.assertIsNaN(prod([1,2,0,float('-inf'), -3, 4]))
+        self.assertIsNaN(prod([1, 2, 3, float('inf'), -3, 0, 3]))
+        self.assertIsNaN(prod([1, 2, 3, float('-inf'), -3, 0, 2]))
+
+        # Type preservation
+
+        self.assertEqual(type(prod([1, 2, 3, 4, 5, 6])), int)
+        self.assertEqual(type(prod([1, 2.0, 3, 4, 5, 6])), float)
+        self.assertEqual(type(prod(range(1, 10000))), int)
+        self.assertEqual(type(prod(range(1, 10000), start=1.0)), float)
+        # Decimal not implemented in Skulpt yet
+        # self.assertEqual(type(prod([1, decimal.Decimal(2.0), 3, 4, 5, 6])),
+                        #  decimal.Decimal)
+
+    def testPerm(self):
+        perm = math.perm
+
+        factorial = math.factorial
+        # Test if factorial definition is satisfied
+        for n in range(100):
+            for k in range(n + 1):
+                self.assertEqual(perm(n, k),
+                                 factorial(n) // factorial(n - k))
+
+        # Test for Pascal's identity
+        for n in range(1, 100):
+            for k in range(1, n):
+                self.assertEqual(perm(n, k), perm(n - 1, k - 1) * k + perm(n - 1, k))
+
+        # Test corner cases
+        for n in range(1, 100):
+            self.assertEqual(perm(n, 0), 1)
+            self.assertEqual(perm(n, 1), n)
+            self.assertEqual(perm(n, n), factorial(n))
+
+        # Test one argument form
+        for n in range(20):
+            self.assertEqual(perm(n), factorial(n))
+            self.assertEqual(perm(n, None), factorial(n))
+
+        # Raises TypeError if any argument is non-integer or argument count is
+        # not 1 or 2
+        self.assertRaises(TypeError, perm, 10, 1.0)
+        # Commented out as Skulpt has not implemented Decimal yet
+        # self.assertRaises(TypeError, perm, 10, decimal.Decimal(1.0))
+        self.assertRaises(TypeError, perm, 10, "1")
+        self.assertRaises(TypeError, perm, 10.0, 1)
+        # Commented out as Skulpt has not implemented Decimal yet
+        # self.assertRaises(TypeError, perm, decimal.Decimal(10.0), 1)
+        self.assertRaises(TypeError, perm, "10", 1)
+
+        self.assertRaises(TypeError, perm)
+        self.assertRaises(TypeError, perm, 10, 1, 3)
+        self.assertRaises(TypeError, perm)
+
+        # Raises Value error if not k or n are negative numbers
+        self.assertRaises(ValueError, perm, -1, 1)
+        self.assertRaises(ValueError, perm, -2**1000, 1)
+        self.assertRaises(ValueError, perm, 1, -1)
+        self.assertRaises(ValueError, perm, 1, -2**1000)
+
+        # Returns zero if k is greater than n
+        self.assertEqual(perm(1, 2), 0)
+        self.assertEqual(perm(1, 2**1000), 0)
+
+        n = 2**1000
+        self.assertEqual(perm(n, 0), 1)
+        self.assertEqual(perm(n, 1), n)
+        self.assertEqual(perm(n, 2), n * (n-1))
+        # if support.check_impl_detail(cpython=True):
+        self.assertRaises(OverflowError, perm, n, n)
+
+        for n, k in (True, True), (True, False), (False, False):
+            self.assertEqual(perm(n, k), 1)
+            self.assertIs(type(perm(n, k)), int)
+        self.assertEqual(perm(IntSubclass(5), IntSubclass(2)), 20)
+        self.assertEqual(perm(MyIndexable(5), MyIndexable(2)), 20)
+        for k in range(3):
+            self.assertIs(type(perm(IntSubclass(5), IntSubclass(k))), int)
+            self.assertIs(type(perm(MyIndexable(5), MyIndexable(k))), int)
+
+
+    def testComb(self):
+        comb = math.comb
+
+        factorial = math.factorial
+        # Test if factorial definition is satisfied
+        for n in range(100):
+            for k in range(n + 1):
+                self.assertEqual(comb(n, k), factorial(n)
+                    // (factorial(k) * factorial(n - k)))
+
+        # Test for Pascal's identity
+        for n in range(1, 100):
+            for k in range(1, n):
+                self.assertEqual(comb(n, k), comb(n - 1, k - 1) + comb(n - 1, k))
+
+        # Test corner cases
+        for n in range(100):
+            self.assertEqual(comb(n, 0), 1)
+            self.assertEqual(comb(n, n), 1)
+
+        for n in range(1, 100):
+            self.assertEqual(comb(n, 1), n)
+            self.assertEqual(comb(n, n - 1), n)
+
+        # Test Symmetry
+        for n in range(100):
+            for k in range(n // 2):
+                self.assertEqual(comb(n, k), comb(n, n - k))
+
+        # Raises TypeError if any argument is non-integer or argument count is
+        # not 2
+        self.assertRaises(TypeError, comb, 10, 1.0)
+        # Commented out as Skulpt has not implemented decimal yet
+        # self.assertRaises(TypeError, comb, 10, decimal.Decimal(1.0))
+        self.assertRaises(TypeError, comb, 10, "1")
+        self.assertRaises(TypeError, comb, 10.0, 1)
+        # Commented out as Skulpt has not implemented decimal yet
+        # self.assertRaises(TypeError, comb, decimal.Decimal(10.0), 1)
+        self.assertRaises(TypeError, comb, "10", 1)
+
+        self.assertRaises(TypeError, comb, 10)
+        self.assertRaises(TypeError, comb, 10, 1, 3)
+        self.assertRaises(TypeError, comb)
+
+        # Raises Value error if not k or n are negative numbers
+        self.assertRaises(ValueError, comb, -1, 1)
+        self.assertRaises(ValueError, comb, -2**1000, 1)
+        self.assertRaises(ValueError, comb, 1, -1)
+        self.assertRaises(ValueError, comb, 1, -2**1000)
+
+        # Returns zero if k is greater than n
+        self.assertEqual(comb(1, 2), 0)
+        self.assertEqual(comb(1, 2**1000), 0)
+
+        n = 2**1000
+        self.assertEqual(comb(n, 0), 1)
+        self.assertEqual(comb(n, 1), n)
+        self.assertEqual(comb(n, 2), n * (n-1) // 2)
+        self.assertEqual(comb(n, n), 1)
+        self.assertEqual(comb(n, n-1), n)
+        self.assertEqual(comb(n, n-2), n * (n-1) // 2)
+        # if support.check_impl_detail(cpython=True):
+        self.assertRaises(OverflowError, comb, n, n//2)
+
+        for n, k in (True, True), (True, False), (False, False):
+            self.assertEqual(comb(n, k), 1)
+            self.assertIs(type(comb(n, k)), int)
+        self.assertEqual(comb(IntSubclass(5), IntSubclass(2)), 10)
+        self.assertEqual(comb(MyIndexable(5), MyIndexable(2)), 10)
+        for k in range(3):
+            self.assertIs(type(comb(IntSubclass(5), IntSubclass(k))), int)
+            self.assertIs(type(comb(MyIndexable(5), MyIndexable(k))), int)
+
+    def assertIsNaN(self, value):
+        if not math.isnan(value):
+            self.fail("Expected a NaN, got {!r}.".format(value))
 
 class IsCloseTests(unittest.TestCase):
     isclose = math.isclose  # subclasses should override this

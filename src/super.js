@@ -92,14 +92,15 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
                 i++;
             }
         },
-        tp$descr_get(obj, obtype) {
+        tp$descr_get(obj, obtype, canSuspend) {
             if (obj === null || this.obj != null) {
                 return this;
             }
             if (this.ob$type !== Sk.builtin.super_) {
                 /* If su is an instance of a (strict) subclass of super,
                 call its type */
-                return Sk.misceval.callsimOrSuspendArray(this.ob$type, [this.type, obj]);
+                const rv = Sk.misceval.callsimOrSuspendArray(this.ob$type, [this.type, obj]);
+                return canSuspend ? rv : Sk.misceval.retryOptionalSuspensionOrThrow(rv);
             } else {
                 /* Inline the common case */
                 const obj_type = this.$supercheck(this.type, obj);

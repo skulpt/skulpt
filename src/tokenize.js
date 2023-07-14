@@ -90,7 +90,8 @@ const Other_ID_Continue = "\\u00B7\\u0387\\u1369-\\u1371\\u19DA";
 const id_start = Lu + Ll + Lt + Lm + Lo + Nl + the_underscore + Other_ID_Start;
 const id_continue = id_start + Mn + Mc + Nd + Pc + Other_ID_Continue;
 
-const IS_IDENTIFIER_REGEX = new RegExp("^([" + id_start + "])+([" + id_continue + "])*$");
+const IDENTIFIER = "[" + id_start + "]+[" + id_continue + "]*"
+const IS_IDENTIFIER_REGEX = new RegExp("^" + IDENTIFIER + "$");
 
 
 /**
@@ -115,7 +116,7 @@ Sk.token.isIdentifier = isidentifier;
 var Whitespace = "[ \\f\\t]*";
 var Comment_ = "#[^\\r\\n]*";
 var Ignore = Whitespace + any("\\\\\\r?\\n" + Whitespace) + maybe(Comment_);
-var Name = "[" + Unicode.w + "]+";
+var Name = IDENTIFIER; // this differs form tokenize.py (\w+) which isn't valid for python identifiers
 
 
 var Exponent = "[eE][-+]?[0-9](?:_?[0-9])*";

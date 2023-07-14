@@ -23,6 +23,32 @@ class TestSuper(unittest.TestCase):
         except Exception:
             self.fail("this shouldn't fail")
 
+class TestRegressions(unittest.TestCase):
+    def test_bug_1470(self):
+        global i
+        i = 0
+
+        def g():
+            global i
+            i += 1
+        
+        def f(x):
+            pass
+
+        f(x=g())
+
+        self.assertEqual(i, 1)
+
+
+
+class An:
+    name: str
+    __foo: int
+
+class TestAnnotations(unittest.TestCase):
+    def test_bug_1428(self):
+        annotations = An.__annotations__
+        self.assertEqual(annotations, {"name": str, "_An__foo": int})
 
 if __name__ == "__main__":
     unittest.main()

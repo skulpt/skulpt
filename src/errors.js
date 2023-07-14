@@ -49,6 +49,17 @@ const BaseException = Sk.abstr.buildNativeClass("BaseException", {
                 this.args = new Sk.builtin.tuple(v);
             },
         },
+        __cause__ : {
+            $get() {
+                return this.$cause || Sk.builtin.none.none$;
+            },
+            $set(v) {
+                if (!Sk.builtin.checkNone(v) && !(v instanceof Sk.builtin.BaseException)) {
+                    throw new TypeError("exception cause must be None or derive from BaseException");
+                }
+                this.$cause = v;
+            }
+        },
         __dict__: Sk.generic.getSetDict,
         /**@todo */
         // __traceback__: {},
@@ -372,6 +383,9 @@ const pyExc = {
 };
 
 Object.assign(Sk.builtin, pyExc);
+
+
+Sk.builtin.SuspensionError = simpleExtends(Exception, "SuspensionError", "Unsupported Suspension in code.");
 
 Sk.builtin.ExternalError = Sk.abstr.buildNativeClass("ExternalError", {
     constructor: function ExternalError(...args) {

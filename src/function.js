@@ -142,8 +142,17 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         },
         __defaults__: {
             $get() {
-                return new Sk.builtin.tuple(this.$defaults);
-            }, // technically this is a writable property but we'll leave it as read-only for now
+                return this.$defaults == null ? Sk.builtin.none.none$ : new Sk.builtin.tuple(this.$defaults);
+            },
+            $set(v) {
+                if (v === undefined || Sk.builtin.checkNone(v)) {
+                    this.$defaults = null;
+                } else if (!(v instanceof Sk.builtin.tuple)) {
+                    throw new Sk.builtin.TypeError("__defaults__ must be set to a tuple object");
+                } else {
+                    this.$defaults = v.valueOf();
+                }
+            }
         },
         __doc__: {
             $get() {
@@ -175,7 +184,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
             this.co_kwonlyargcount = this.func_code.co_kwonlyargcount || 0;
             this.co_varargs = this.func_code.co_varargs;
             this.co_kwargs = this.func_code.co_kwargs;
-            this.$defaults = this.func_code.$defaults || [];
+            this.$defaults = this.func_code.$defaults;
             this.$kwdefs = this.func_code.$kwdefs || [];
         },
         $resolveArgs,
@@ -202,9 +211,8 @@ function $resolveArgs(posargs, kw) {
     if (co_kwonlyargcount === 0 && !this.co_kwargs && (!kw || kw.length === 0) && !this.co_varargs) {
         if (posargs.length == co_argcount) {
             return posargs;
-        } else if(posargs.length === 0 && this.$defaults &&
-                    this.$defaults.length === co_argcount) {
-            for (let i=0; i!=this.$defaults.length; i++) {
+        } else if (posargs.length === 0 && this.$defaults && this.$defaults.length === co_argcount) {
+            for (let i = 0; i != this.$defaults.length; i++) {
                 posargs[i] = this.$defaults[i];
             }
             return posargs;
@@ -231,7 +239,9 @@ function $resolveArgs(posargs, kw) {
         let vararg = (posargs.length > args.length) ? posargs.slice(args.length) : [];
         args[totalArgs] = new Sk.builtin.tuple(vararg);
     } else if (nposargs > co_argcount) {
-        throw new Sk.builtin.TypeError(this.$name + "() takes " + co_argcount + " positional argument" + (co_argcount == 1 ? "" : "s") + " but " + nposargs + (nposargs == 1 ? " was " : " were ") + " given");
+        const plural_expected = co_argcount == 1 ? "argument" : "arguments";
+        const plural_given = nposargs == 1 ? "was" : "were";
+        throw new Sk.builtin.TypeError(`${this.$name}"() takes ${co_argcount} positional ${plural_expected} but ${nposargs} ${plural_given} given`);
     }
 
     /* Handle keyword arguments */

@@ -1265,6 +1265,9 @@ function collections_mod(collections) {
                     return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + bits.join(", ") + ")");
                 },
             },
+            flags: {
+                sk$klass: true, // tell skulpt we can be treated like a regular klass for tp$setatttr
+            },
             proto: Object.assign(
                 {
                     __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,

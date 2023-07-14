@@ -25,6 +25,22 @@ class SleepingClass:
         sleep(.01)
         return bool(key)
 
+class SleepingDunderFail:
+    # __iter__ can't suspend (__next__ can)
+    def __iter__(self):
+        sleep(0.01)
+        return iter([0, 1, 2])
+
+class SleepingObjectGetatttr:
+    @property
+    def _foo(self):
+        sleep(.01)
+        return "foo"
+
+    @property
+    def foo(self):
+        return object.__getattribute__(self, "_foo")
+
 class Test_Suspensions(unittest.TestCase):
     def test_min_max(self):
         x = [4, 1, 5]
@@ -46,7 +62,7 @@ class Test_Suspensions(unittest.TestCase):
         self.assertEqual(all(sleeping_gen([4, 0, 5])), False)
     def test_sum(self):
         self.assertEqual(sum(sleeping_gen([1, 2, 3])), 6)
-        self.assertIs(sum(sleeping_gen([1, 2.0, 3])), 6.0)
+        self.assertEqual(sum(sleeping_gen([1, 2.0, 3])), 6.0)
         self.assertEqual(sum(sleeping_gen([[1], [2]]), []), [1, 2])
 
     def test_builtin_types(self):
@@ -71,6 +87,21 @@ class Test_Suspensions(unittest.TestCase):
         # __contains__
         self.assertFalse(0 in x)
         self.assertTrue(1 in x)
+    
+    def test_suspension_error(self):
+        x = SleepingDunderFail()
+        with self.assertRaises(Exception) as e:
+            for i in x:
+                pass
+        self.assertIn("Cannot call a function that blocks or suspends", str(e.exception))
+        self.assertTrue(repr(e.exception).startswith("SuspensionError"))
+    
+    def test_suspension_bug_getattribute(self):
+        obj = SleepingObjectGetatttr()
+        self.assertEqual(obj.foo, "foo")
+        self.assertEqual(SleepingObjectGetatttr._foo.__get__(obj, None), "foo")
+
+
 
 if __name__ == '__main__':
     unittest.main()
