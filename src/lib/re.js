@@ -300,7 +300,7 @@ function $builtinmodule(name) {
     const py_to_js_regex = /([^\\])({,|\\A|\\Z|\$|\(\?P=([^\d\W]\w*)\)|\(\?P<([^\d\W]\w*)>)(?!(?:\]|[^\[]*[^\\]\]))/g;
     // unicode mode in js regex treats \\\t incorrectly and should be converted to \\t
     // similarly \" and \' \! \& throw errors
-    const py_to_js_unicode_escape = /\\[\t\r\n \v\f#&~"'!:,]|\\-(?!(?:\]|[^\[]*[^\\]\]))/g;
+    const py_to_js_unicode_escape = /\\[\t\r\n \v\f#&~"'!:,;`<>]|\\-(?!(?:\]|[^\[]*[^\\]\]))/g;
     const quantifierErrors = /Incomplete quantifier|Lone quantifier/g;
 
     const _compiled_patterns = Object.create(null);
@@ -375,7 +375,7 @@ function $builtinmodule(name) {
                     throw new re.error(msg, pyPattern);
                 }
                 //// uncomment when debugging
-                // Sk.asserts.fail(e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString());
+                // Sk.asserts.fail(e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + jsPattern.toString());
             } else {
                 msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
                 throw new re.error(msg, pyPattern);
