@@ -145,3 +145,6 @@ class TestRegexFromArrow(unittest.TestCase):
         self.assertEqual(time_re.findall("12:"), [])
         self.assertEqual(time_re.findall("12:35:46."), [])
         self.assertEqual(time_re.findall("12:35:46,"), [])
+
+        # shouldn't fail
+        re.compile("(?=[\,\.\;\:\?\!\"\'\`\[\]\{\}\(\)\<\>]?(?!\S))")
