@@ -12,6 +12,7 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
         this.prop$get = fget || Sk.builtin.none.none$;
         this.prop$set = fset || Sk.builtin.none.none$;
         this.prop$del = fdel || Sk.builtin.none.none$;
+        this.getter$doc = fget && !doc;
         this.prop$doc = doc || (fget && fget.$doc) || Sk.builtin.none.none$;
     },
     slots: {
@@ -30,11 +31,15 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             this.prop$set = args[1];
             this.prop$del = args[2];
             if (Sk.builtin.checkNone(args[3])) {
+                this.getter$doc = true;
                 if (!Sk.builtin.checkNone(args[0])) {
                     this.prop$doc = args[0].$doc || args[3];
                 }
             } else {
                 this.prop$doc = args[3];
+            }
+            if (this.ob$type !== Sk.builtin.property) {
+                this.tp$setattr(Sk.builtin.str.$doc, this.prop$doc);
             }
         },
         tp$doc:
@@ -76,19 +81,19 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
     methods: {
         getter: {
             $meth(fget) {
-                return new Sk.builtin.property(fget, this.prop$set, this.prop$del, this.prop$doc);
+                return this.$copy([fget, this.prop$set, this.prop$del]);
             },
             $flags: { OneArg: true },
         },
         setter: {
             $meth(fset) {
-                return new Sk.builtin.property(this.prop$get, fset, this.prop$del, this.prop$doc);
+                return this.$copy([this.prop$get, fset, this.prop$del]);
             },
             $flags: { OneArg: true },
         },
         deleter: {
             $meth(fdel) {
-                return new Sk.builtin.property(this.prop$get, this.prop$set, fdel, this.prop$doc);
+                return this.$copy([this.prop$get, this.prop$set, fdel]);
             },
             $flags: { OneArg: true },
         },
@@ -119,6 +124,19 @@ Sk.builtin.property = Sk.abstr.buildNativeClass("property", {
             }
         },
     },
+    proto: {
+        $copy(args) {
+            const type = this.ob$type;
+            if (!this.getter$doc) {
+                args.push(this.prop$doc);
+            }
+            if (type === Sk.builtin.property) {
+                return new type(...args);
+            } else {
+                return type.tp$call(args);
+            }
+        }
+    }
 });
 
 /**
