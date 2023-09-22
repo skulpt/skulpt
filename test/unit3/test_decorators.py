@@ -100,27 +100,27 @@ class PropertyTests(unittest.TestCase):
         self.assertRaises(PropertySet, setattr, sub, "spam", None)
         # self.assertRaises(PropertyDel, delattr, sub, "spam")
 
-    # def test_property_decorator_subclass_doc(self):
-    #     sub = SubClass()
-    #     self.assertEqual(sub.__class__.spam.__doc__, "SubClass.getter")
-    #
-    # def test_property_decorator_baseclass_doc(self):
-    #     base = BaseClass()
-    #     self.assertEqual(base.__class__.spam.__doc__, "BaseClass.getter")
+    def test_property_decorator_subclass_doc(self):
+        sub = SubClass()
+        self.assertEqual(sub.__class__.spam.__doc__, "SubClass.getter")
+    
+    def test_property_decorator_baseclass_doc(self):
+        base = BaseClass()
+        self.assertEqual(base.__class__.spam.__doc__, "BaseClass.getter")
 
-    # def test_property_decorator_doc(self):
-    #     base = PropertyDocBase()
-    #     sub = PropertyDocSub()
-    #     self.assertEqual(base.__class__.spam.__doc__, "spam spam spam")
-    #     self.assertEqual(sub.__class__.spam.__doc__, "spam spam spam")
+    def test_property_decorator_doc(self):
+        base = PropertyDocBase()
+        sub = PropertyDocSub()
+        self.assertEqual(base.__class__.spam.__doc__, "spam spam spam")
+        self.assertEqual(sub.__class__.spam.__doc__, "spam spam spam")
 
-    # def test_property_getter_doc_override(self):
-    #     newgettersub = PropertySubNewGetter()
-    #     self.assertEqual(newgettersub.spam, 5)
-    #     self.assertEqual(newgettersub.__class__.spam.__doc__, "new docstring")
-    #     newgetter = PropertyNewGetter()
-    #     self.assertEqual(newgetter.spam, 8)
-    #     self.assertEqual(newgetter.__class__.spam.__doc__, "new docstring")
+    def test_property_getter_doc_override(self):
+        newgettersub = PropertySubNewGetter()
+        self.assertEqual(newgettersub.spam, 5)
+        self.assertEqual(newgettersub.__class__.spam.__doc__, "new docstring")
+        newgetter = PropertyNewGetter()
+        self.assertEqual(newgetter.spam, 8)
+        self.assertEqual(newgetter.__class__.spam.__doc__, "new docstring")
 
     # def test_property___isabstractmethod__descriptor(self):
     #     for val in (True, False, [], [1], '', '1'):
@@ -145,24 +145,24 @@ class PropertyTests(unittest.TestCase):
     #             foo = property(foo)
     #         C.foo.__isabstractmethod__
 
-    # def test_property_builtin_doc_writable(self):
-    #     p = property(doc='basic')
-    #     self.assertEqual(p.__doc__, 'basic')
-    #     p.__doc__= 'extended'
-    #     self.assertEqual(p.__doc__, 'extended')
+    def test_property_builtin_doc_writable(self):
+        p = property(doc='basic')
+        self.assertEqual(p.__doc__, 'basic')
+        p.__doc__= 'extended'
+        self.assertEqual(p.__doc__, 'extended')
 
-    # def test_property_decorator_doc_writable(self):
-    #     class PropertyWritableDoc(object):
-    #
-    #         @property
-    #         def spam(self):
-    #             """Eggs"""
-    #             return "eggs"
-    #
-    #     sub = PropertyWritableDoc()
-    #     self.assertEqual(sub.__class__.spam.__doc__, 'Eggs')
-    #     sub.__class__.spam.__doc__ = 'Spam'
-    #     self.assertEqual(sub.__class__.spam.__doc__, 'Spam')
+    def test_property_decorator_doc_writable(self):
+        class PropertyWritableDoc(object):
+    
+            @property
+            def spam(self):
+                """Eggs"""
+                return "eggs"
+    
+        sub = PropertyWritableDoc()
+        self.assertEqual(sub.__class__.spam.__doc__, 'Eggs')
+        sub.__class__.spam.__doc__ = 'Spam'
+        self.assertEqual(sub.__class__.spam.__doc__, 'Spam')
 
 # Issue 5890: subclasses of property do not preserve method __doc__ strings
 class PropertySub(property):
@@ -191,68 +191,68 @@ class FooSub(Foo):
 
 class PropertySubclassTests(unittest.TestCase):
 
-    # def test_slots_docstring_copy_exception(self):
-    #     try:
-    #         class Foo(object):
-    #             @PropertySubSlots
-    #             def spam(self):
-    #                 """Trying to copy this docstring will raise an exception"""
-    #                 return 1
-    #     except AttributeError:
-    #         pass
-    #     else:
-    #         raise Exception("AttributeError not raised")
-    #
-    # def test_docstring_copy(self):
-    #     class Foo(object):
-    #         @PropertySub
-    #         def spam(self):
-    #             """spam wrapped in property subclass"""
-    #             return 1
-    #     self.assertEqual(
-    #         Foo.spam.__doc__,
-    #         "spam wrapped in property subclass")
+    def test_slots_docstring_copy_exception(self):
+        try:
+            class Foo(object):
+                @PropertySubSlots
+                def spam(self):
+                    """Trying to copy this docstring will raise an exception"""
+                    return 1
+        except AttributeError:
+            pass
+        else:
+            raise Exception("AttributeError not raised")
+    
+    def test_docstring_copy(self):
+        class Foo(object):
+            @PropertySub
+            def spam(self):
+                """spam wrapped in property subclass"""
+                return 1
+        self.assertEqual(
+            Foo.spam.__doc__,
+            "spam wrapped in property subclass")
 
     def test_property_setter_copies_getter_docstring(self):
         foo = Foo()
         self.assertEqual(foo.spam, 1)
         foo.spam = 2
         self.assertEqual(foo.spam, 2)
-        # self.assertEqual(
-        #     Foo.spam.__doc__,
-        #     "spam wrapped in property subclass")
+        self.assertEqual(
+            Foo.spam.__doc__,
+            "spam wrapped in property subclass")
 
         foosub = FooSub()
         self.assertEqual(foosub.spam, 1)
         foosub.spam = 7
         self.assertEqual(foosub.spam, 'eggs')
-        # self.assertEqual(
-        #     FooSub.spam.__doc__,
-        #     "spam wrapped in property subclass")
+        self.assertEqual(
+            FooSub.spam.__doc__,
+            "spam wrapped in property subclass")
 
-    # def test_property_new_getter_new_docstring(self):
-    #
-    #     class Foo(object):
-    #         @PropertySub
-    #         def spam(self):
-    #             """a docstring"""
-    #             return 1
-    #         @spam.getter
-    #         def spam(self):
-    #             """a new docstring"""
-    #             return 2
-    #     self.assertEqual(Foo.spam.__doc__, "a new docstring")
-    #     class FooBase(object):
-    #         @PropertySub
-    #         def spam(self):
-    #             """a docstring"""
-    #             return 1
-    #     class Foo2(FooBase):
-    #         @FooBase.spam.getter
-    #         def spam(self):
-    #             """a new docstring"""
-    #             return 2
-    #     self.assertEqual(Foo.spam.__doc__, "a new docstring")
+    def test_property_new_getter_new_docstring(self):
+    
+        class Foo(object):
+            @PropertySub
+            def spam(self):
+                """a docstring"""
+                return 1
+            @spam.getter
+            def spam(self):
+                """a new docstring"""
+                return 2
+        self.assertEqual(Foo.spam.__doc__, "a new docstring")
+        # class FooBase(object):
+        #     @PropertySub
+        #     def spam(self):
+        #         """a docstring"""
+        #         return 1
+        # class Foo2(FooBase):
+        #     @FooBase.spam.getter
+        #     def spam(self):
+        #         """a new docstring"""
+        #         return 2
+        # self.assertEqual(Foo.spam.__doc__, "a new docstring")
 
 class TestDecorators(unittest.TestCase):
 
