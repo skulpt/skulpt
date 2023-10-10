@@ -50,5 +50,30 @@ class TestAnnotations(unittest.TestCase):
         annotations = An.__annotations__
         self.assertEqual(annotations, {"name": str, "_An__foo": int})
 
+
+class TestDict(unittest.TestCase):
+    def test_override_dunder_dict(self):
+        class D(dict):
+            called = False
+            def __getitem__(self, key):
+                self.called = True
+                return dict.__getitem__(self, key)
+
+            def __setitem__(self, key, value):
+                self.called = True
+                return dict.__setitem__(self, key, value)
+
+        class A:
+            def __init__(self):
+                self.__dict__ = D()
+        
+        a = A()
+
+        self.assertFalse(a.__dict__.called)
+        a.foo = "bar"
+        self.assertFalse(a.__dict__.called)
+        self.assertEqual(a.foo, "bar")
+        self.assertFalse(a.__dict__.called)
+
 if __name__ == "__main__":
     unittest.main()
