@@ -25,7 +25,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         this.entries = Object.create(null);
         this.buckets = {};
         for (let i = 0; i < L.length; i += 2) {
-            this.set$item(L[i], L[i + 1]);
+            this.dict$setItem(L[i], L[i + 1]);
         }
         this.in$repr = false;
         this.$version = 0; // change version number anytime the keys change
@@ -116,12 +116,12 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         mp$ass_subscript(key, value) {
             if (value === undefined) {
-                const item = this.pop$item(key);
-                if (item === undefined) {
-                    throw new Sk.builtin.KeyError(key);
+                const err = this.dict$delItem(key);
+                if (err) {
+                    throw err;
                 }
             } else {
-                this.set$item(key, value);
+                this.dict$setItem(key, value);
             }
         },
     },
@@ -312,7 +312,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         $items() {
             return Object.values(this.entries);
         },
-        set$item,
+        dict$setItem,
+        dict$delItem,
         get$bucket_item,
         pop$bucket_item,
         set$bucket_item,
@@ -487,18 +488,18 @@ function mp$lookup(key) {
  * almost similar code, this may be changed in future
  *
  * Note we don't use mp$ass_subscript since that slot might be overridden by a subclass
- * Instead we use this.set$item which is the dict implementation of mp$ass_subscript
+ * Instead we use this.dict$setItem which is the dict implementation of mp$ass_subscript
  * @private
  */
 function dict$merge(b) {
     // we don't use mp$ass_subscript incase a subclass overrides __setitem__ we just ignore that like Cpython does
-    // so use this.set$item instead which can't be overridden by a subclass
+    // so use this.dict$setItem instead which can't be overridden by a subclass
     if (b.tp$iter === Sk.builtin.dict.prototype.tp$iter) {
         // fast way used
         const keys = b.tp$iter();
         for (let key = keys.tp$iternext(); key !== undefined; key = keys.tp$iternext()) {
             const v = b.mp$subscript(key);
-            this.set$item(key, v);
+            this.dict$setItem(key, v);
         }
     } else {
         // generic slower way for a subclass that has overriden the tp$iter method
@@ -511,7 +512,7 @@ function dict$merge(b) {
         return Sk.misceval.chain(Sk.misceval.callsimOrSuspendArray(keyfunc), (keys) =>
             Sk.misceval.iterFor(Sk.abstr.iter(keys), (key) =>
                 Sk.misceval.chain(Sk.abstr.objectGetItem(b, key, true), (v) => {
-                    this.set$item(key, v);
+                    this.dict$setItem(key, v);
                 })
             )
         );
@@ -551,7 +552,7 @@ function update$common(args, kwargs, func_name) {
     return Sk.misceval.chain(ret, () => {
         if (kwargs) {
             for (let i = 0; i < kwargs.length; i += 2) {
-                this.set$item(new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
+                this.dict$setItem(new Sk.builtin.str(kwargs[i]), kwargs[i + 1]);
             }
         }
         return;
@@ -580,7 +581,7 @@ function dict$merge_seq(arg) {
         if (seq.length !== 2) {
             throw new Sk.builtin.ValueError("dictionary update sequence element #" + idx + " has length " + seq.length + "; 2 is required");
         }
-        this.set$item(seq[0], seq[1]);
+        this.dict$setItem(seq[0], seq[1]);
         idx++;
     });
 };
@@ -596,7 +597,7 @@ function dict$merge_seq(arg) {
  * @private
  *
  */
-function set$item(key, value) {
+function dict$setItem(key, value) {
     const hash = getHash(key);
     let item;
     if (typeof hash === "string") {
@@ -620,6 +621,14 @@ function set$item(key, value) {
         }
     }
 };
+
+/** means we don't need to wrap in a try/except for genericSetAttr */
+function dict$delItem(key) {
+    const item = this.pop$item(key);
+    if (item === undefined) {
+        return new Sk.builtin.KeyError(key);
+    }
+}
 
 /**
  * @function

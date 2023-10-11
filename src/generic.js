@@ -83,21 +83,18 @@ Sk.generic.setAttr = function __setattr__(pyName, value, canSuspend) {
     }
 
     const dict = this.$d;
-    if (dict !== undefined) {
-        if (dict.mp$ass_subscript) {
+    if (dict !== undefined && dict !== null) {
+        if (dict.dict$setItem) {
             if (value !== undefined) {
-                return dict.mp$ass_subscript(pyName, value);
+                return dict.dict$setItem(pyName, value);
             } else {
-                try {
-                    return dict.mp$ass_subscript(pyName);
-                } catch (e) {
-                    if (e instanceof Sk.builtin.KeyError) {
-                        throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + pyName.$jsstr() + "'");
-                    }
-                    throw e;
+                const err = dict.dict$delItem(pyName);
+                if (err) {
+                    throw new Sk.builtin.AttributeError("'" + Sk.abstr.typeName(this) + "' object has no attribute '" + pyName.$jsstr() + "'");
                 }
+                return;
             }
-        } else if (typeof dict === "object") {
+        } else if (typeof dict === "object" && !dict.sk$object) {
             const jsMangled = pyName.$mangled;
             if (value !== undefined) {
                 dict[jsMangled] = value;
