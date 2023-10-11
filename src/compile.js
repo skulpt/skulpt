@@ -136,8 +136,9 @@ function fixReserved(name) {
     return name + "_$rw$";
 }
 
+const reservedSuffix = /_\$rw\$$/;
 function unfixReserved(name) {
-    return name.replace(/_\$rw\$$/, "");
+    return name.replace(reservedSuffix, "");
 }
 
 function mangleName (priv, ident) {
