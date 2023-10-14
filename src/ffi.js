@@ -57,6 +57,8 @@ function toPy(obj, hooks) {
 
     if (type === "string") {
         return new Sk.builtin.str(obj);
+    } else if (type === "symbol") {
+        return new WrappedSymbol(obj);
     } else if (type === "number") {
         return numberToPy(obj);
     } else if (type === "boolean") {
@@ -156,6 +158,8 @@ function toJs(obj, hooks) {
 
     if (type === "string") {
         return hooks.stringHook ? hooks.stringHook(val) : val;
+    } else if (type === "symbol") {
+        return val;
     } else if (type === "boolean") {
         return val;
     } else if (type === "number") {
@@ -739,3 +743,23 @@ function checkBodyIsMaybeConstructor(obj) {
         return !noNewNeeded.has(obj);
     }
 }
+
+
+const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
+    constructor: function WrappedSymbol(symbol) {
+        this.v = symbol;
+    },
+    slots: {
+        $r() {
+            return new Sk.builtin.str(this.toString());
+        }
+    },
+    proto: {
+        toString() {
+            return this.v.toString();
+        },
+        valueOf() {
+            return this.v;
+        }
+    }
+});
