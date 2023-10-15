@@ -3,7 +3,7 @@
 import unittest
 
 
-window = jseval("self")
+window = jseval("Sk.global")
 
 class TestProxyArray(unittest.TestCase):
     def test_basic(self):
