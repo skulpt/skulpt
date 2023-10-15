@@ -71,7 +71,7 @@ function toPy(obj, hooks) {
         // might be type === "bigint" if bigint native or an array like object for older browsers
         return new Sk.builtin.int_(JSBI.numberIfSafe(obj));
     } else if (Array.isArray(obj)) {
-        return new Sk.builtin.list(obj.map((x) => toPy(x, hooks)));
+        return hooks.arrayHook ? hooks.arrayHook(obj) : new Sk.builtin.list(obj.map((x) => toPy(x, hooks)));
     } else if (type === "object") {
         const constructor = obj.constructor; // it's possible that a library deleted the constructor
         if (constructor === Object && Object.getPrototypeOf(obj) === OBJECT_PROTO || constructor === undefined /* Object.create(null) */) {
@@ -323,17 +323,29 @@ function proxy(obj, flags) {
             flags.name = cached.$name;
         }
     }
-    const ret = new JsProxy(obj, flags);
-    _proxied.set(obj, ret);
-    return ret;
+    let rv;
+    if (Array.isArray(obj)) {
+        rv = new JsProxyList(obj);
+    } else {
+        rv = new JsProxy(obj, flags);
+    }
+    _proxied.set(obj, rv);
+    return rv;
 }
 
-const pyHooks = { dictHook: (obj) => proxy(obj), unhandledHook: (obj) => String(obj) };
+const dictHook = (obj) => proxy(obj);
+const unhandledHook = (obj) => String(obj);
+const arrayHook = (obj) => proxy(obj);
+
+const pyHooks = { arrayHook, dictHook, unhandledHook };
+
+
 // unhandled is likely only Symbols and get a string rather than undefined
 const boundHook = (bound, name) => ({
-    dictHook: (obj) => proxy(obj),
+    dictHook,
     funcHook: (obj) => proxy(obj, { bound, name }),
-    unhandledHook: (obj) => String(obj),
+    unhandledHook,
+    arrayHook,
 });
 const jsHooks = {
     unhandledHook: (obj) => {
@@ -374,6 +386,15 @@ const jsHooks = {
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
 // and we want funcs to be proxied
 
+function setJsProxyAttr(pyName, pyValue) {
+    const jsName = pyName.toString();
+    if (pyValue === undefined) {
+        delete this.js$wrapped[jsName];
+    } else {
+        this.js$wrapped[jsName] = toJs(pyValue, jsHooks);
+    }
+}
+
 const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
     constructor: function JsProxy(obj, flags) {
         if (obj === undefined) {
@@ -412,13 +433,8 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         tp$getattr(pyName) {
             return this.$lookup(pyName) || Sk.generic.getAttr.call(this, pyName);
         },
-        tp$setattr(pyName, value) {
-            const jsName = pyName.toString();
-            if (value === undefined) {
-                delete this.js$wrapped[jsName];
-            } else {
-                this.js$wrapped[jsName] = toJs(value, jsHooks);
-            }
+        tp$setattr(pyName, pyValue) {
+            return setJsProxyAttr.call(this, pyName, pyValue);
         },
         $r() {
             if (this.is$callable) {
@@ -720,6 +736,67 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         sk$acceptable_as_base_class: false,
     },
 });
+
+const ArrayFunction = {
+    apply(target, thisArg, argumentsList) {
+        const jsArgs = toJsArray(argumentsList, jsHooks);
+        return target.apply(thisArg, jsArgs);
+    }
+};
+
+const arrayMethods = {};
+const ArrayProto = Array.prototype;
+
+const arrayHandler = {
+    get(target, attr) {
+        const rv = target[attr];
+        if (attr in ArrayProto) {
+            // internal calls like this.v.pop(); this.v.push(x);
+            if (typeof rv === "function") {
+                return (arrayMethods[attr] || (arrayMethods[attr] = new Proxy(rv, ArrayFunction)));   
+            }
+            // this.v.length;
+            return rv;
+        }
+        if (rv === undefined && !(attr in target)) {
+            return rv;
+        }
+        console.log(attr, target);
+        debugger;
+        // attributes on the list instance;
+        return toPy(rv, pyHooks);
+    },
+    set(target, attr, value) {
+        // for direct access of the array via this.v[x] = y;
+        target[attr] = toJs(value, jsHooks);
+        return true;
+    }
+};
+
+const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
+    base: Sk.builtin.list,
+    constructor: function (L) {
+        Sk.builtin.list.call(this, L);
+        this.js$wrapped = this.v;
+        this.v = new Proxy(this.v, arrayHandler);
+    },
+    slots: {
+        tp$getattr(pyName) {
+            // python methods win
+            return Sk.generic.getAttr.call(this, pyName) || this.$lookup(pyName);
+        },
+        tp$setattr(pyName, pyValue) {
+            return setJsProxyAttr.call(this, pyName, pyValue);
+        },
+        $r() {
+            return new Sk.builtin.str("proxylist(" + Sk.builtin.list.prototype.$r.call(this) + ")");
+        }
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+    }
+});
+
 
 const is_constructor = /^class|^function[a-zA-Z\d\(\)\{\s]+\[native code\]\s+\}$/;
 
