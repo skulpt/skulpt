@@ -761,8 +761,6 @@ const arrayHandler = {
         if (rv === undefined && !(attr in target)) {
             return rv;
         }
-        console.log(attr, target);
-        debugger;
         // attributes on the list instance;
         return toPy(rv, pyHooks);
     },
