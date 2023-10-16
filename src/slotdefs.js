@@ -376,8 +376,7 @@ slots.__call__ = {
     $slot_func: slotFuncFastCall,
     $wrapper: function __call__(self, args, kwargs) {
         // function fast call objects override the prototype.tp$call
-        // so use self.tp$call instead of this.call(self)
-        const res = self.tp$call(args, kwargs);
+        const res = this.call(self, args, kwargs);
         if (res === undefined) {
             return Sk.builtin.none.none$;
         }
