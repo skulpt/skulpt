@@ -303,7 +303,7 @@ function toPyDict(obj, hooks) {
 // cache the proxied objects in a weakmap
 const _proxied = new WeakMap();
 
-// use proxy if you want to proxy an arbirtrary js object
+// use proxy if you want to proxy an arbitrary js object
 // the only flags currently used is {bound: some_js_object}
 function proxy(obj, flags) {
     if (obj === null || obj === undefined) {
@@ -324,7 +324,7 @@ function proxy(obj, flags) {
         }
     }
     let rv;
-    if (Array.isArray(obj)) {
+    if (type !== "function" && Array.isArray(obj)) {
         rv = new JsProxyList(obj);
     } else {
         rv = new JsProxy(obj, flags);
