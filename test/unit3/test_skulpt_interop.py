@@ -51,6 +51,11 @@ class TestProxyArray(unittest.TestCase):
         self.assertTrue(s.has("a"))
         self.assertEqual(list(s), x)
 
+        # Don't convert a python set to a javascript set
+        s = {'a', 'b', 'c'}
+        window.s = s
+        self.assertIs(s, window.s)
+
 
 if __name__ == "__main__":
     unittest.main()

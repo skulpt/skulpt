@@ -363,42 +363,46 @@ const constructorHook = (name) => ({
     mapHook,
 });
 
-const jsHooks = {
-    unhandledHook: (obj) => {
-        const _cached = _proxied.get(obj);
-        if (_cached) {
-            return _cached;
-        }
-        const pyWrapped = { v: obj, $isPyWrapped: true, unwrap: () => obj };
-        if (obj.tp$call === undefined) {
-            _proxied.set(obj, pyWrapped);
-            return pyWrapped;
-        }
-        const pyWrappedCallable = (...args) => {
-            args = args.map((x) => toPy(x, pyHooks));
-            let ret = Sk.misceval.tryCatch(
-                () => Sk.misceval.chain(obj.tp$call(args), (res) => toJs(res, jsHooks)),
-                (e) => {
-                    if (Sk.uncaughtException) {
-                        Sk.uncaughtException(e);
-                    } else {
-                        throw e;
-                    }
+const unhandledPythonObject = (obj) => {
+    const _cached = _proxied.get(obj);
+    if (_cached) {
+        return _cached;
+    }
+    const pyWrapped = { v: obj, $isPyWrapped: true, unwrap: () => obj };
+    if (obj.tp$call === undefined) {
+        _proxied.set(obj, pyWrapped);
+        return pyWrapped;
+    }
+    const pyWrappedCallable = (...args) => {
+        args = args.map((x) => toPy(x, pyHooks));
+        let ret = Sk.misceval.tryCatch(
+            () => Sk.misceval.chain(obj.tp$call(args), (res) => toJs(res, jsHooks)),
+            (e) => {
+                if (Sk.uncaughtException) {
+                    Sk.uncaughtException(e);
+                } else {
+                    throw e;
                 }
-            );
-            while (ret instanceof Sk.misceval.Suspension) {
-                // better to return a promise here then hope the javascript library will handle a suspension
-                if (!ret.optional) {
-                    return Sk.misceval.asyncToPromise(() => ret);
-                }
-                ret = ret.resume();
             }
-            return ret;
-        };
-        _proxied.set(obj, Object.assign(pyWrappedCallable, pyWrapped));
-        return pyWrappedCallable;
-    },
+        );
+        while (ret instanceof Sk.misceval.Suspension) {
+            // better to return a promise here then hope the javascript library will handle a suspension
+            if (!ret.optional) {
+                return Sk.misceval.asyncToPromise(() => ret);
+            }
+            ret = ret.resume();
+        }
+        return ret;
+    };
+    _proxied.set(obj, Object.assign(pyWrappedCallable, pyWrapped));
+    return pyWrappedCallable;
 };
+
+const jsHooks = {
+    unhandledHook: unhandledPythonObject,
+    setHook: unhandledPythonObject,
+};
+
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
 // and we want funcs to be proxied
 
