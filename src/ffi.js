@@ -79,8 +79,11 @@ function toPy(obj, hooks) {
         } else if (constructor === Uint8Array) {
             return new Sk.builtin.bytes(obj);
         } else if (constructor === Set) {
-            return toPySet(obj, hooks);
+            return hooks.setHook ? hooks.setHook(obj) : toPySet(obj, hooks);
         } else if (constructor === Map) {
+            if (hooks.mapHook) {
+                return hooks.mapHook(obj);
+            }
             const ret = new Sk.builtin.dict();
             obj.forEach((val, key) => {
                 ret.mp$ass_subscript(toPy(key, hooks), toPy(val, hooks));
@@ -95,7 +98,6 @@ function toPy(obj, hooks) {
         }
     } else if (hooks.unhandledHook) {
         // there aren't very many types left
-        // could be a symbol (unlikely)
         return hooks.unhandledHook(obj);
     }
     Sk.asserts.fail("unhandled remap case of type " + type);
@@ -333,12 +335,15 @@ function proxy(obj, flags) {
     return rv;
 }
 
-const dictHook = (obj) => proxy(obj);
+const proxyHook = (obj) => proxy(obj);
+const dictHook = proxyHook,
+    arrayHook = proxyHook,
+    mapHook = proxyHook,
+    setHook = proxyHook;
+
 const unhandledHook = (obj) => String(obj);
-const arrayHook = (obj) => proxy(obj);
 
-const pyHooks = { arrayHook, dictHook, unhandledHook };
-
+const pyHooks = { arrayHook, dictHook, unhandledHook, setHook, mapHook };
 
 // unhandled is likely only Symbols and get a string rather than undefined
 const boundHook = (bound, name) => ({
@@ -346,7 +351,18 @@ const boundHook = (bound, name) => ({
     funcHook: (obj) => proxy(obj, { bound, name }),
     unhandledHook,
     arrayHook,
+    setHook,
+    mapHook,
 });
+
+const constructorHook = (name) => ({
+    dictHook,
+    proxyHook: (obj) => proxy(obj, { name }),
+    arrayHook,
+    setHook,
+    mapHook,
+});
+
 const jsHooks = {
     unhandledHook: (obj) => {
         const _cached = _proxied.get(obj);
@@ -571,10 +587,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         },
         $new(args, kwargs) {
             Sk.abstr.checkNoKwargs("__new__", kwargs);
-            return toPy(new this.js$wrapped(...args.map((x) => toJs(x, jsHooks))), {
-                dictHook: (obj) => proxy(obj),
-                proxyHook: (obj) => proxy(obj, { name: this.$name }),
-            });
+            return toPy(new this.js$wrapped(...args.map((x) => toJs(x, jsHooks))), constructorHook(this.$name));
         },
         $call(args, kwargs) {
             Sk.abstr.checkNoKwargs("__call__", kwargs);
@@ -741,7 +754,7 @@ const ArrayFunction = {
     apply(target, thisArg, argumentsList) {
         const jsArgs = toJsArray(argumentsList, jsHooks);
         return target.apply(thisArg, jsArgs);
-    }
+    },
 };
 
 const arrayMethods = {};
@@ -753,7 +766,7 @@ const arrayHandler = {
         if (attr in ArrayProto) {
             // internal calls like this.v.pop(); this.v.push(x);
             if (typeof rv === "function") {
-                return (arrayMethods[attr] || (arrayMethods[attr] = new Proxy(rv, ArrayFunction)));   
+                return arrayMethods[attr] || (arrayMethods[attr] = new Proxy(rv, ArrayFunction));
             }
             // this.v.length;
             return rv;
@@ -768,7 +781,7 @@ const arrayHandler = {
         // for direct access of the array via this.v[x] = y;
         target[attr] = toJs(value, jsHooks);
         return true;
-    }
+    },
 };
 
 const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
@@ -788,13 +801,12 @@ const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
         },
         $r() {
             return new Sk.builtin.str("proxylist(" + Sk.builtin.list.prototype.$r.call(this) + ")");
-        }
+        },
     },
     proto: {
         $lookup: JsProxy.prototype.$lookup,
-    }
+    },
 });
-
 
 const is_constructor = /^class|^function[a-zA-Z\d\(\)\{\s]+\[native code\]\s+\}$/;
 
@@ -819,7 +831,6 @@ function checkBodyIsMaybeConstructor(obj) {
     }
 }
 
-
 const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
     constructor: function WrappedSymbol(symbol) {
         this.v = symbol;
@@ -827,7 +838,7 @@ const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
     slots: {
         $r() {
             return new Sk.builtin.str(this.toString());
-        }
+        },
     },
     proto: {
         toString() {
@@ -835,6 +846,6 @@ const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
         },
         valueOf() {
             return this.v;
-        }
-    }
+        },
+    },
 });

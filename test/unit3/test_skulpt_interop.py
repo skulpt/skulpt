@@ -39,6 +39,18 @@ class TestProxyArray(unittest.TestCase):
         i = x.pop(0) # use python method over js method here
         self.assertEqual(i, 1)
 
+    def test_set_map(self):
+        # these should remain as js Sets/Maps when coming from javascript
+        x = [["a", 1], ["b", 2]]
+        m = window.Map(x)
+        self.assertTrue(m.has, "a")
+        self.assertEqual(list(m), x)
+
+        x = ["a", "b", "c"]
+        s = window.Set(x)
+        self.assertTrue(s.has("a"))
+        self.assertEqual(list(s), x)
+
 
 if __name__ == "__main__":
     unittest.main()
