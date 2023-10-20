@@ -45,7 +45,7 @@ class TestProxyArray(unittest.TestCase):
         x = [["a", 1], ["b", 2]]
         m = window.Map(x)
         self.assertTrue(m.has, "a")
-        self.assertEqual(list(m), x)
+        self.assertEqual(list(m), list(m.keys()))
         self.assertEqual(x, [[k, v] for k, v in dict(x).items()])
         m["b"] = 3
         self.assertEqual(m.get("b"), 3)
@@ -56,6 +56,8 @@ class TestProxyArray(unittest.TestCase):
         self.assertTrue(s.has("a"))
         self.assertEqual(list(s), x)
         self.assertIn("b", s)
+        s.add("d")
+        self.assertIn("d", s)
 
         # Don't convert a python set to a javascript set
         s = {"a", "b", "c"}

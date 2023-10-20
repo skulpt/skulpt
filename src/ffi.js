@@ -767,38 +767,118 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
     },
 });
 
+const JsProxyObjectAsDict = Sk.abstr.buildNativeClass("ProxyObject", {
+    constructor: function (obj) {
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
+    },
+});
+
+function proxyGetAttr(pyName) {
+    return Sk.generic.getAttr.call(this, pyName) || this.$lookup(pyName);
+}
+
+function dict$clear() {
+    this.js$wrapped.clear();
+}
+function dict$copy() {
+    return Sk.misceval.callsimOrSuspendArray(Sk.builtin.dict, [this]);
+}
+function get$size() {
+    return this.js$wrapped.size;
+}
+function mp$lookup(k) {
+    const jsKey = toJs(k, jsHooks);
+    if (this.js$wrapped.has(jsKey)) {
+        return this.proxy$getItem(jsKey);
+    }
+}
+function pop$item(k) {
+    const jsKey = toJs(k, jsHooks);
+    if (this.js$wrapped.has(jsKey)) {
+        const rv = this.proxy$getItem(jsKey);
+        this.js$wrapped.delete(jsKey);
+        return rv;
+    }
+};
 
 const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
-    base: JsProxy,
+    base: Sk.builtin.dict,
     constructor: function (obj) {
-        JsProxy.call(this, obj, { name: "Map" });
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
     },
     slots: {
-        mp$subscript(key) {
-            const jsKey = toJs(key, jsHooks);
-            if (this.js$wrapped.has(jsKey)) {
-                return toPy(this.js$wrapped.get(jsKey), pyHooks);
-            }
-            throw new Sk.builtin.KeyError(key);
+        tp$getattr: proxyGetAttr,
+        $r() {
+            return new Sk.builtin.str(`ProxyMap(${Sk.builtin.dict.prototype.$r.call(this)})`);
+        }
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+        proxy$getItem(jsKey) {
+            const rv = toPy(this.js$wrapped.get(jsKey));
+            return rv;
         },
-        mp$ass_subscript(key, val) {
-            this.js$wrapped.set(toJs(key, jsHooks), toJs(val, jsHooks));
+        mp$lookup,
+        dict$setItem(k, v) {
+            this.js$wrapped.set(toJs(k, jsHooks), toJs(v, jsHooks));
         },
-        sq$contains(key) {
-            return isTrue(this.js$wrapped.has(toJs(key, jsHooks)));
+        dict$clear,
+        pop$item,
+        dict$copy,
+        get$size,
+        $items() {
+            return [...this.js$wrapped].map(([k, v]) => [toPy(k, pyHooks), toPy(v, pyHooks)]);
+        },
+    },
+    $flags: {
+        sk$acceptable_as_base_class: false,
+    }
+});
+
+
+const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
+    base: Sk.builtin.dict,
+    constructor: function (obj) {
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+        proxy$getItem(k) {
+            return true;
+        },
+        mp$lookup,
+        dict$setItem(k, v) {
+            this.js$wrapped.add(toJs(k, jsHooks));
+        },
+        dict$clear,
+        pop$item,
+        dict$copy,
+        get$size,
+        $items() {
+            return [...this.js$wrapped].map((k) => [toPy(k, pyHooks), true]);
         },
     },
 });
 
+
 const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
-    base: JsProxy,
+    base: Sk.builtin.set,
     constructor: function (obj) {
-        JsProxy.call(this, obj, {name: "Set"});
+        Sk.builtin.set.call(this);
+        this.v = new InternalProxySet(obj);
+        this.js$wrapped = obj;
     },
     slots: {
-        sq$contains(key) {
-            return isTrue(this.js$wrapped.has(toJs(key, jsHooks)));
-        }
+        tp$getattr: proxyGetAttr,
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+    },
+    $flags: {
+        sk$acceptable_as_base_class: false,
     }
 });
 
@@ -846,13 +926,8 @@ const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
         this.v = new Proxy(this.v, arrayHandler);
     },
     slots: {
-        tp$getattr(pyName) {
-            // python methods win
-            return Sk.generic.getAttr.call(this, pyName) || this.$lookup(pyName);
-        },
-        tp$setattr(pyName, pyValue) {
-            return setJsProxyAttr.call(this, pyName, pyValue);
-        },
+        tp$getattr: proxyGetAttr,
+        tp$setattr: setJsProxyAttr,
         $r() {
             return new Sk.builtin.str("proxylist(" + Sk.builtin.list.prototype.$r.call(this) + ")");
         },
