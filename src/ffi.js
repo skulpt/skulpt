@@ -330,7 +330,7 @@ function proxy(obj, flags) {
         rv = new JsProxy(obj, flags);
     } else if (Array.isArray(obj)) {
         rv = new JsProxyList(obj);
-    } else  {
+    } else {
         const constructor = obj.constructor;
         if (constructor === Map) {
             rv = new JsProxyMap(obj);
@@ -339,7 +339,7 @@ function proxy(obj, flags) {
         } else {
             rv = new JsProxy(obj, flags);
         }
-    } 
+    }
     _proxied.set(obj, rv);
     return rv;
 }
@@ -462,9 +462,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         tp$getattr(pyName) {
             return this.$lookup(pyName) || Sk.generic.getAttr.call(this, pyName);
         },
-        tp$setattr(pyName, pyValue) {
-            return setJsProxyAttr.call(this, pyName, pyValue);
-        },
+        tp$setattr: setJsProxyAttr,
         $r() {
             if (this.is$callable) {
                 if (this.is$type || !this.$bound) {
@@ -560,10 +558,6 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         },
         keys: {
             $meth() {
-                // dict calls this method rather than self.keys()
-                if ("keys" in this.js$wrapped) {
-                    return toPy(this.js$wrapped.keys(), pyHooks);
-                }
                 return new Sk.builtin.list(Object.keys(this.js$wrapped).map((x) => new Sk.builtin.str(x)));
             },
             $flags: { NoArgs: true },
@@ -800,7 +794,7 @@ function pop$item(k) {
         this.js$wrapped.delete(jsKey);
         return rv;
     }
-};
+}
 
 const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
     base: Sk.builtin.dict,
@@ -812,7 +806,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
         tp$getattr: proxyGetAttr,
         $r() {
             return new Sk.builtin.str(`ProxyMap(${Sk.builtin.dict.prototype.$r.call(this)})`);
-        }
+        },
     },
     proto: {
         $lookup: JsProxy.prototype.$lookup,
@@ -834,9 +828,8 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
     },
     $flags: {
         sk$acceptable_as_base_class: false,
-    }
+    },
 });
-
 
 const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
     base: Sk.builtin.dict,
@@ -845,7 +838,6 @@ const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
         this.js$wrapped = obj;
     },
     proto: {
-        $lookup: JsProxy.prototype.$lookup,
         proxy$getItem(k) {
             return true;
         },
@@ -863,7 +855,6 @@ const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
     },
 });
 
-
 const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
     base: Sk.builtin.set,
     constructor: function (obj) {
@@ -879,10 +870,8 @@ const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
     },
     $flags: {
         sk$acceptable_as_base_class: false,
-    }
+    },
 });
-
-
 
 const ArrayFunction = {
     apply(target, thisArg, argumentsList) {
