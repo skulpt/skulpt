@@ -326,11 +326,20 @@ function proxy(obj, flags) {
         }
     }
     let rv;
-    if (type !== "function" && Array.isArray(obj)) {
-        rv = new JsProxyList(obj);
-    } else {
+    if (type === "function") {
         rv = new JsProxy(obj, flags);
-    }
+    } else if (Array.isArray(obj)) {
+        rv = new JsProxyList(obj);
+    } else  {
+        const constructor = obj.constructor;
+        if (constructor === Map) {
+            rv = new JsProxyMap(obj);
+        } else if (constructor === Set) {
+            rv = new JsProxySet(obj);
+        } else {
+            rv = new JsProxy(obj, flags);
+        }
+    } 
     _proxied.set(obj, rv);
     return rv;
 }
@@ -551,6 +560,10 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         },
         keys: {
             $meth() {
+                // dict calls this method rather than self.keys()
+                if ("keys" in this.js$wrapped) {
+                    return toPy(this.js$wrapped.keys(), pyHooks);
+                }
                 return new Sk.builtin.list(Object.keys(this.js$wrapped).map((x) => new Sk.builtin.str(x)));
             },
             $flags: { NoArgs: true },
@@ -753,6 +766,43 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         sk$acceptable_as_base_class: false,
     },
 });
+
+
+const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
+    base: JsProxy,
+    constructor: function (obj) {
+        JsProxy.call(this, obj, { name: "Map" });
+    },
+    slots: {
+        mp$subscript(key) {
+            const jsKey = toJs(key, jsHooks);
+            if (this.js$wrapped.has(jsKey)) {
+                return toPy(this.js$wrapped.get(jsKey), pyHooks);
+            }
+            throw new Sk.builtin.KeyError(key);
+        },
+        mp$ass_subscript(key, val) {
+            this.js$wrapped.set(toJs(key, jsHooks), toJs(val, jsHooks));
+        },
+        sq$contains(key) {
+            return isTrue(this.js$wrapped.has(toJs(key, jsHooks)));
+        },
+    },
+});
+
+const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
+    base: JsProxy,
+    constructor: function (obj) {
+        JsProxy.call(this, obj, {name: "Set"});
+    },
+    slots: {
+        sq$contains(key) {
+            return isTrue(this.js$wrapped.has(toJs(key, jsHooks)));
+        }
+    }
+});
+
+
 
 const ArrayFunction = {
     apply(target, thisArg, argumentsList) {

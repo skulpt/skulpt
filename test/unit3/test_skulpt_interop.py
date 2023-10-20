@@ -5,6 +5,7 @@ import unittest
 
 window = jseval("Sk.global")
 
+
 class TestProxyArray(unittest.TestCase):
     def test_basic(self):
         x = [1, 2, 3]
@@ -32,11 +33,11 @@ class TestProxyArray(unittest.TestCase):
         self.assertEqual(r, [4, 5])
 
         r = x.map(lambda v, *args: v + 1)
-        self.assertEqual(r, [v + 1 for v in x]) 
+        self.assertEqual(r, [v + 1 for v in x])
 
         i = x.pop()
         self.assertEqual(i, 3)
-        i = x.pop(0) # use python method over js method here
+        i = x.pop(0)  # use python method over js method here
         self.assertEqual(i, 1)
 
     def test_set_map(self):
@@ -45,14 +46,19 @@ class TestProxyArray(unittest.TestCase):
         m = window.Map(x)
         self.assertTrue(m.has, "a")
         self.assertEqual(list(m), x)
+        self.assertEqual(x, [[k, v] for k, v in dict(x).items()])
+        m["b"] = 3
+        self.assertEqual(m.get("b"), 3)
+        self.assertIn("b", m)
 
         x = ["a", "b", "c"]
         s = window.Set(x)
         self.assertTrue(s.has("a"))
         self.assertEqual(list(s), x)
+        self.assertIn("b", s)
 
         # Don't convert a python set to a javascript set
-        s = {'a', 'b', 'c'}
+        s = {"a", "b", "c"}
         window.s = s
         self.assertIs(s, window.s)
 
