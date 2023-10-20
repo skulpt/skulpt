@@ -40,6 +40,8 @@ class TestProxyArray(unittest.TestCase):
         i = x.pop(0)  # use python method over js method here
         self.assertEqual(i, 1)
 
+        self.assertIn("push", dir(x))
+
     def test_set_map(self):
         # these should remain as js Sets/Maps when coming from javascript
         x = [["a", 1], ["b", 2]]
@@ -50,6 +52,8 @@ class TestProxyArray(unittest.TestCase):
         m["b"] = 3
         self.assertEqual(m.get("b"), 3)
         self.assertIn("b", m)
+        self.assertIn("has", dir(m))
+
 
         x = ["a", "b", "c"]
         s = window.Set(x)
@@ -58,6 +62,7 @@ class TestProxyArray(unittest.TestCase):
         self.assertIn("b", s)
         s.add("d")
         self.assertIn("d", s)
+        self.assertIn("has", dir(s))
 
         # Don't convert a python set to a javascript set
         s = {"a", "b", "c"}
