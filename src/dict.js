@@ -11,7 +11,14 @@
  * Do not use this function to convert a JS object to a dict
  * Instead use {@link Sk.ffi.remapToPy}
  *
- *
+ * To subclass from a dict in javascript you need to implement
+ * mp$lookup
+ * dict$setItem
+ * dict$clear
+ * pop$item
+ * dict$copy
+ * get$size
+ * $items
  */
 Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     constructor: function dict(L) {
@@ -144,22 +151,32 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         setdefault: {
             $meth(key, default_) {
-                // logic could be simpler here but some tests dictate we can't do too many lookups
-                let item;
-                const hash = getHash(key);
-                item = typeof hash === "string" ? this.entries[hash] : this.get$bucket_item(key, hash);
-                if (item !== undefined) {
-                    return item[1];
-                }
-                default_ = default_ || Sk.builtin.none.none$;
-                if (typeof hash === "string") {
-                    this.entries[hash] = [key, default_];
+                if (this.ob$type !== Sk.builtin.dict) {
+                    let rv = this.mp$lookup(key);
+                    if (rv !== undefined) {
+                        return rv;
+                    }
+                    default_ || (default_ = Sk.builtin.none.none$);
+                    this.dict$setItem(key, default_);
+                    return default_;
                 } else {
-                    this.set$bucket_item(key, default_, hash);
+                    // logic could be simpler here but some tests dictate we can't do too many lookups
+                    let item;
+                    const hash = getHash(key);
+                    item = typeof hash === "string" ? this.entries[hash] : this.get$bucket_item(key, hash);
+                    if (item !== undefined) {
+                        return item[1];
+                    }
+                    default_ || (default_ = Sk.builtin.none.none$);
+                    if (typeof hash === "string") {
+                        this.entries[hash] = [key, default_];
+                    } else {
+                        this.set$bucket_item(key, default_, hash);
+                    }
+                    this.size++;
+                    this.$version++;
+                    return default_;
                 }
-                this.size++;
-                this.$version++;
-                return default_;
             },
             $flags: { MinArgs: 1, MaxArgs: 2 },
             $textsig: "($self, key, default=None, /)",
@@ -233,10 +250,8 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         clear: {
             $meth() {
-                this.size = 0;
-                this.$version++;
-                this.entries = Object.create(null);
-                this.buckets = {};
+                this.dict$clear();
+                return Sk.builtin.none.none$;
             },
             $flags: { NoArgs: true },
             $textsig: null,
@@ -280,7 +295,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             return this.size;
         },
         sk$asarray() {
-            return Object.values(this.entries).map((item) => item[0]);
+            return this.$items().map((item) => item[0]);
         },
         update$common,
         update$onearg(arg) {
@@ -311,6 +326,12 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         $items() {
             return Object.values(this.entries);
+        },
+        dict$clear() {
+            this.size = 0;
+            this.$version++;
+            this.entries = Object.create(null);
+            this.buckets = {};
         },
         dict$setItem,
         dict$delItem,

@@ -79,8 +79,11 @@ function toPy(obj, hooks) {
         } else if (constructor === Uint8Array) {
             return new Sk.builtin.bytes(obj);
         } else if (constructor === Set) {
-            return toPySet(obj, hooks);
+            return hooks.setHook ? hooks.setHook(obj) : toPySet(obj, hooks);
         } else if (constructor === Map) {
+            if (hooks.mapHook) {
+                return hooks.mapHook(obj);
+            }
             const ret = new Sk.builtin.dict();
             obj.forEach((val, key) => {
                 ret.mp$ass_subscript(toPy(key, hooks), toPy(val, hooks));
@@ -95,7 +98,6 @@ function toPy(obj, hooks) {
         }
     } else if (hooks.unhandledHook) {
         // there aren't very many types left
-        // could be a symbol (unlikely)
         return hooks.unhandledHook(obj);
     }
     Sk.asserts.fail("unhandled remap case of type " + type);
@@ -324,21 +326,33 @@ function proxy(obj, flags) {
         }
     }
     let rv;
-    if (type !== "function" && Array.isArray(obj)) {
+    if (type === "function") {
+        rv = new JsProxy(obj, flags);
+    } else if (Array.isArray(obj)) {
         rv = new JsProxyList(obj);
     } else {
-        rv = new JsProxy(obj, flags);
+        const constructor = obj.constructor;
+        if (constructor === Map) {
+            rv = new JsProxyMap(obj);
+        } else if (constructor === Set) {
+            rv = new JsProxySet(obj);
+        } else {
+            rv = new JsProxy(obj, flags);
+        }
     }
     _proxied.set(obj, rv);
     return rv;
 }
 
-const dictHook = (obj) => proxy(obj);
+const proxyHook = (obj) => proxy(obj);
+const dictHook = proxyHook,
+    arrayHook = proxyHook,
+    mapHook = proxyHook,
+    setHook = proxyHook;
+
 const unhandledHook = (obj) => String(obj);
-const arrayHook = (obj) => proxy(obj);
 
-const pyHooks = { arrayHook, dictHook, unhandledHook };
-
+const pyHooks = { arrayHook, dictHook, unhandledHook, setHook, mapHook };
 
 // unhandled is likely only Symbols and get a string rather than undefined
 const boundHook = (bound, name) => ({
@@ -346,43 +360,58 @@ const boundHook = (bound, name) => ({
     funcHook: (obj) => proxy(obj, { bound, name }),
     unhandledHook,
     arrayHook,
+    setHook,
+    mapHook,
 });
-const jsHooks = {
-    unhandledHook: (obj) => {
-        const _cached = _proxied.get(obj);
-        if (_cached) {
-            return _cached;
-        }
-        const pyWrapped = { v: obj, $isPyWrapped: true, unwrap: () => obj };
-        if (obj.tp$call === undefined) {
-            _proxied.set(obj, pyWrapped);
-            return pyWrapped;
-        }
-        const pyWrappedCallable = (...args) => {
-            args = args.map((x) => toPy(x, pyHooks));
-            let ret = Sk.misceval.tryCatch(
-                () => Sk.misceval.chain(obj.tp$call(args), (res) => toJs(res, jsHooks)),
-                (e) => {
-                    if (Sk.uncaughtException) {
-                        Sk.uncaughtException(e);
-                    } else {
-                        throw e;
-                    }
+
+const constructorHook = (name) => ({
+    dictHook,
+    proxyHook: (obj) => proxy(obj, { name }),
+    arrayHook,
+    setHook,
+    mapHook,
+});
+
+const unhandledPythonObject = (obj) => {
+    const _cached = _proxied.get(obj);
+    if (_cached) {
+        return _cached;
+    }
+    const pyWrapped = { v: obj, $isPyWrapped: true, unwrap: () => obj };
+    if (obj.tp$call === undefined) {
+        _proxied.set(obj, pyWrapped);
+        return pyWrapped;
+    }
+    const pyWrappedCallable = (...args) => {
+        args = args.map((x) => toPy(x, pyHooks));
+        let ret = Sk.misceval.tryCatch(
+            () => Sk.misceval.chain(obj.tp$call(args), (res) => toJs(res, jsHooks)),
+            (e) => {
+                if (Sk.uncaughtException) {
+                    Sk.uncaughtException(e);
+                } else {
+                    throw e;
                 }
-            );
-            while (ret instanceof Sk.misceval.Suspension) {
-                // better to return a promise here then hope the javascript library will handle a suspension
-                if (!ret.optional) {
-                    return Sk.misceval.asyncToPromise(() => ret);
-                }
-                ret = ret.resume();
             }
-            return ret;
-        };
-        _proxied.set(obj, Object.assign(pyWrappedCallable, pyWrapped));
-        return pyWrappedCallable;
-    },
+        );
+        while (ret instanceof Sk.misceval.Suspension) {
+            // better to return a promise here then hope the javascript library will handle a suspension
+            if (!ret.optional) {
+                return Sk.misceval.asyncToPromise(() => ret);
+            }
+            ret = ret.resume();
+        }
+        return ret;
+    };
+    _proxied.set(obj, Object.assign(pyWrappedCallable, pyWrapped));
+    return pyWrappedCallable;
 };
+
+const jsHooks = {
+    unhandledHook: unhandledPythonObject,
+    setHook: unhandledPythonObject,
+};
+
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
 // and we want funcs to be proxied
 
@@ -433,9 +462,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         tp$getattr(pyName) {
             return this.$lookup(pyName) || Sk.generic.getAttr.call(this, pyName);
         },
-        tp$setattr(pyName, pyValue) {
-            return setJsProxyAttr.call(this, pyName, pyValue);
-        },
+        tp$setattr: setJsProxyAttr,
         $r() {
             if (this.is$callable) {
                 if (this.is$type || !this.$bound) {
@@ -571,10 +598,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         },
         $new(args, kwargs) {
             Sk.abstr.checkNoKwargs("__new__", kwargs);
-            return toPy(new this.js$wrapped(...args.map((x) => toJs(x, jsHooks))), {
-                dictHook: (obj) => proxy(obj),
-                proxyHook: (obj) => proxy(obj, { name: this.$name }),
-            });
+            return toPy(new this.js$wrapped(...args.map((x) => toJs(x, jsHooks))), constructorHook(this.$name));
         },
         $call(args, kwargs) {
             Sk.abstr.checkNoKwargs("__call__", kwargs);
@@ -737,11 +761,123 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
     },
 });
 
+const JsProxyObjectAsDict = Sk.abstr.buildNativeClass("ProxyObject", {
+    constructor: function (obj) {
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
+    },
+});
+
+function proxyGetAttr(pyName) {
+    return Sk.generic.getAttr.call(this, pyName) || this.$lookup(pyName);
+}
+
+function dict$clear() {
+    this.js$wrapped.clear();
+}
+function dict$copy() {
+    return Sk.misceval.callsimOrSuspendArray(Sk.builtin.dict, [this]);
+}
+function get$size() {
+    return this.js$wrapped.size;
+}
+function mp$lookup(k) {
+    const jsKey = toJs(k, jsHooks);
+    if (this.js$wrapped.has(jsKey)) {
+        return this.proxy$getItem(jsKey);
+    }
+}
+function pop$item(k) {
+    const jsKey = toJs(k, jsHooks);
+    if (this.js$wrapped.has(jsKey)) {
+        const rv = this.proxy$getItem(jsKey);
+        this.js$wrapped.delete(jsKey);
+        return rv;
+    }
+}
+
+const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
+    base: Sk.builtin.dict,
+    constructor: function (obj) {
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
+    },
+    slots: {
+        tp$getattr: proxyGetAttr,
+        $r() {
+            return new Sk.builtin.str(`ProxyMap(${Sk.builtin.dict.prototype.$r.call(this)})`);
+        },
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+        proxy$getItem(jsKey) {
+            const rv = toPy(this.js$wrapped.get(jsKey));
+            return rv;
+        },
+        mp$lookup,
+        dict$setItem(k, v) {
+            this.js$wrapped.set(toJs(k, jsHooks), toJs(v, jsHooks));
+        },
+        dict$clear,
+        pop$item,
+        dict$copy,
+        get$size,
+        $items() {
+            return [...this.js$wrapped].map(([k, v]) => [toPy(k, pyHooks), toPy(v, pyHooks)]);
+        },
+    },
+    $flags: {
+        sk$acceptable_as_base_class: false,
+    },
+});
+
+const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
+    base: Sk.builtin.dict,
+    constructor: function (obj) {
+        Sk.builtin.dict.call(this);
+        this.js$wrapped = obj;
+    },
+    proto: {
+        proxy$getItem(k) {
+            return true;
+        },
+        mp$lookup,
+        dict$setItem(k, v) {
+            this.js$wrapped.add(toJs(k, jsHooks));
+        },
+        dict$clear,
+        pop$item,
+        dict$copy,
+        get$size,
+        $items() {
+            return [...this.js$wrapped].map((k) => [toPy(k, pyHooks), true]);
+        },
+    },
+});
+
+const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
+    base: Sk.builtin.set,
+    constructor: function (obj) {
+        Sk.builtin.set.call(this);
+        this.v = new InternalProxySet(obj);
+        this.js$wrapped = obj;
+    },
+    slots: {
+        tp$getattr: proxyGetAttr,
+    },
+    proto: {
+        $lookup: JsProxy.prototype.$lookup,
+    },
+    $flags: {
+        sk$acceptable_as_base_class: false,
+    },
+});
+
 const ArrayFunction = {
     apply(target, thisArg, argumentsList) {
         const jsArgs = toJsArray(argumentsList, jsHooks);
         return target.apply(thisArg, jsArgs);
-    }
+    },
 };
 
 const arrayMethods = {};
@@ -753,7 +889,7 @@ const arrayHandler = {
         if (attr in ArrayProto) {
             // internal calls like this.v.pop(); this.v.push(x);
             if (typeof rv === "function") {
-                return (arrayMethods[attr] || (arrayMethods[attr] = new Proxy(rv, ArrayFunction)));   
+                return arrayMethods[attr] || (arrayMethods[attr] = new Proxy(rv, ArrayFunction));
             }
             // this.v.length;
             return rv;
@@ -768,7 +904,7 @@ const arrayHandler = {
         // for direct access of the array via this.v[x] = y;
         target[attr] = toJs(value, jsHooks);
         return true;
-    }
+    },
 };
 
 const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
@@ -779,22 +915,16 @@ const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
         this.v = new Proxy(this.v, arrayHandler);
     },
     slots: {
-        tp$getattr(pyName) {
-            // python methods win
-            return Sk.generic.getAttr.call(this, pyName) || this.$lookup(pyName);
-        },
-        tp$setattr(pyName, pyValue) {
-            return setJsProxyAttr.call(this, pyName, pyValue);
-        },
+        tp$getattr: proxyGetAttr,
+        tp$setattr: setJsProxyAttr,
         $r() {
             return new Sk.builtin.str("proxylist(" + Sk.builtin.list.prototype.$r.call(this) + ")");
-        }
+        },
     },
     proto: {
         $lookup: JsProxy.prototype.$lookup,
-    }
+    },
 });
-
 
 const is_constructor = /^class|^function[a-zA-Z\d\(\)\{\s]+\[native code\]\s+\}$/;
 
@@ -819,7 +949,6 @@ function checkBodyIsMaybeConstructor(obj) {
     }
 }
 
-
 const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
     constructor: function WrappedSymbol(symbol) {
         this.v = symbol;
@@ -827,7 +956,7 @@ const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
     slots: {
         $r() {
             return new Sk.builtin.str(this.toString());
-        }
+        },
     },
     proto: {
         toString() {
@@ -835,6 +964,6 @@ const WrappedSymbol = Sk.abstr.buildNativeClass("ProxySymbol", {
         },
         valueOf() {
             return this.v;
-        }
-    }
+        },
+    },
 });

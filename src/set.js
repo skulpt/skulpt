@@ -353,7 +353,7 @@ Sk.builtin.set = Sk.abstr.buildNativeClass("set", {
             return this.v.pop$item(entry);
         },
         set$clear() {
-            this.v = new Sk.builtin.dict([]);
+            this.v.dict$clear();
         },
         set$copy() {
             const setCopy = new this.sk$builtinBase();
