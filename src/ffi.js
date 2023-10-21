@@ -811,8 +811,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
     proto: {
         $lookup: JsProxy.prototype.$lookup,
         proxy$getItem(jsKey) {
-            const rv = toPy(this.js$wrapped.get(jsKey));
-            return rv;
+            return toPy(this.js$wrapped.get(jsKey), pyHooks);
         },
         mp$lookup,
         dict$setItem(k, v) {
