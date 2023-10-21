@@ -424,6 +424,27 @@ function setJsProxyAttr(pyName, pyValue) {
     }
 }
 
+function proxyDir() {
+    const dir = [];
+    // just looping over enumerable properties can hide a lot of properties
+    // especially in es6 classes
+    let obj = this.js$wrapped;
+
+    while (obj != null && obj !== OBJECT_PROTO && obj !== FUNC_PROTO) {
+        dir.push(...Object.getOwnPropertyNames(obj));
+        obj = Object.getPrototypeOf(obj);
+    }
+    const pyDir = toJsArray(Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [this.ob$type]));
+    return new toPyList(new Set([...pyDir, ...dir]));
+}
+
+const proxyDirMethodDef = {
+    __dir__: {
+        $meth: proxyDir,
+        $flags: { NoArgs: true },
+    },
+};
+
 const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
     constructor: function JsProxy(obj, flags) {
         if (obj === undefined) {
@@ -520,13 +541,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         },
     },
     methods: {
-        __dir__: {
-            $meth() {
-                const proxy_dir = Sk.misceval.callsimArray(Sk.builtin.type.prototype.__dir__, [JsProxy]).valueOf();
-                return new Sk.builtin.list(proxy_dir.concat(Array.from(this.$dir, (x) => new Sk.builtin.str(x))));
-            },
-            $flags: { NoArgs: true },
-        },
+        ...proxyDirMethodDef,
         __new__: {
             // this is effectively a static method
             $meth(js_proxy, ...args) {
@@ -629,21 +644,6 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
                 get() {
                     delete this.js$proto;
                     return (this.js$proto = Object.getPrototypeOf(this.js$wrapped));
-                },
-            },
-            $dir: {
-                configurable: true,
-                get() {
-                    const dir = [];
-                    // just looping over enumerable properties can hide a lot of properties
-                    // especially in es6 classes
-                    let obj = this.js$wrapped;
-
-                    while (obj != null && obj !== OBJECT_PROTO && obj !== FUNC_PROTO) {
-                        dir.push(...Object.getOwnPropertyNames(obj));
-                        obj = Object.getPrototypeOf(obj);
-                    }
-                    return new Set(dir);
                 },
             },
             tp$iter: {
@@ -808,6 +808,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
             return new Sk.builtin.str(`ProxyMap(${Sk.builtin.dict.prototype.$r.call(this)})`);
         },
     },
+    methods: proxyDirMethodDef,
     proto: {
         $lookup: JsProxy.prototype.$lookup,
         proxy$getItem(jsKey) {
@@ -864,6 +865,7 @@ const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
     slots: {
         tp$getattr: proxyGetAttr,
     },
+    methods: proxyDirMethodDef,
     proto: {
         $lookup: JsProxy.prototype.$lookup,
     },
@@ -920,6 +922,7 @@ const JsProxyList = Sk.abstr.buildNativeClass("ProxyList", {
             return new Sk.builtin.str("proxylist(" + Sk.builtin.list.prototype.$r.call(this) + ")");
         },
     },
+    methods: proxyDirMethodDef,
     proto: {
         $lookup: JsProxy.prototype.$lookup,
     },
