@@ -15,6 +15,8 @@ class TestProxyArray(unittest.TestCase):
 
         x = window.x
         self.assertIs(x, window.x)
+        window.x = x
+        self.assertIs(x, window.x)
 
         self.assertIsInstance(x, list)
         x.append(4)
@@ -47,6 +49,9 @@ class TestProxyArray(unittest.TestCase):
         x = [["a", 1], ["b", 2]]
         m = window.m = window.Map(x)
         self.assertIs(window.m, m)
+        window.m = m
+        self.assertIs(window.m, m)
+
         self.assertTrue(m.has, "a")
         self.assertEqual(list(m), list(m.keys()))
         self.assertEqual(x, [[k, v] for k, v in dict(x).items()])
@@ -59,6 +64,9 @@ class TestProxyArray(unittest.TestCase):
         x = ["a", "b", "c"]
         s = window.s = window.Set(x)
         self.assertIs(window.s, s)
+        window.s = s
+        self.assertIs(window.s, s)
+
         self.assertTrue(s.has("a"))
         self.assertEqual(list(s), x)
         self.assertIn("b", s)

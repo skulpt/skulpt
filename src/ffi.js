@@ -409,6 +409,9 @@ const unhandledPythonObject = (obj) => {
 
 const jsHooks = {
     unhandledHook: unhandledPythonObject,
+    arrayHook: (obj) => {
+        return obj[PROXY_SYMBOL] || obj.map((x) => toJs(x, jsHooks));
+    },
 };
 
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
@@ -884,9 +887,13 @@ const ArrayFunction = {
 
 const arrayMethods = {};
 const ArrayProto = Array.prototype;
+const PROXY_SYMBOL = Symbol("$proxy");
 
 const arrayHandler = {
     get(target, attr) {
+        if (attr === PROXY_SYMBOL) {
+            return target;
+        }
         const rv = target[attr];
         if (attr in ArrayProto) {
             // internal calls like this.v.pop(); this.v.push(x);
