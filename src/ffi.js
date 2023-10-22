@@ -409,7 +409,6 @@ const unhandledPythonObject = (obj) => {
 
 const jsHooks = {
     unhandledHook: unhandledPythonObject,
-    setHook: unhandledPythonObject,
 };
 
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py

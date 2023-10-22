@@ -66,10 +66,6 @@ class TestProxyArray(unittest.TestCase):
         self.assertIn("d", s)
         self.assertIn("has", dir(s))
 
-        # Don't convert a python set to a javascript set
-        s = {"a", "b", "c"}
-        window.s = s
-        self.assertIs(s, window.s)
 
 
 if __name__ == "__main__":
