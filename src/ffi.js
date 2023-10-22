@@ -825,6 +825,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
         $items() {
             return [...this.js$wrapped].map(([k, v]) => [toPy(k, pyHooks), toPy(v, pyHooks)]);
         },
+        valueOf: JsProxy.prototype.valueOf,
     },
     $flags: {
         sk$acceptable_as_base_class: false,
@@ -868,6 +869,7 @@ const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
     methods: proxyDirMethodDef,
     proto: {
         $lookup: JsProxy.prototype.$lookup,
+        valueOf: JsProxy.prototype.valueOf,
     },
     $flags: {
         sk$acceptable_as_base_class: false,

@@ -45,7 +45,8 @@ class TestProxyArray(unittest.TestCase):
     def test_set_map(self):
         # these should remain as js Sets/Maps when coming from javascript
         x = [["a", 1], ["b", 2]]
-        m = window.Map(x)
+        m = window.m = window.Map(x)
+        self.assertIs(window.m, m)
         self.assertTrue(m.has, "a")
         self.assertEqual(list(m), list(m.keys()))
         self.assertEqual(x, [[k, v] for k, v in dict(x).items()])
@@ -56,7 +57,8 @@ class TestProxyArray(unittest.TestCase):
 
 
         x = ["a", "b", "c"]
-        s = window.Set(x)
+        s = window.s = window.Set(x)
+        self.assertIs(window.s, s)
         self.assertTrue(s.has("a"))
         self.assertEqual(list(s), x)
         self.assertIn("b", s)
