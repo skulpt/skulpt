@@ -409,7 +409,6 @@ const unhandledPythonObject = (obj) => {
 
 const jsHooks = {
     unhandledHook: unhandledPythonObject,
-    setHook: unhandledPythonObject,
 };
 
 // we customize the dictHook and the funcHook here - we want to keep object literals as proxied objects when remapping to Py
@@ -825,6 +824,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
         $items() {
             return [...this.js$wrapped].map(([k, v]) => [toPy(k, pyHooks), toPy(v, pyHooks)]);
         },
+        valueOf: JsProxy.prototype.valueOf,
     },
     $flags: {
         sk$acceptable_as_base_class: false,
@@ -868,6 +868,7 @@ const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
     methods: proxyDirMethodDef,
     proto: {
         $lookup: JsProxy.prototype.$lookup,
+        valueOf: JsProxy.prototype.valueOf,
     },
     $flags: {
         sk$acceptable_as_base_class: false,
