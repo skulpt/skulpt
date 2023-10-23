@@ -68,7 +68,7 @@
     "webpack-cli": "^5.1.4"
   },
   "engines": {
-    "node": ">=10.4"
+    "node": ">=16"
   },
   "dependencies": {
     "jsbi": "^3.2.3"
