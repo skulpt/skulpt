@@ -53,7 +53,7 @@ Building Skulpt is straightforward:
 
 1. Clone the repository from GitHub, ideally using your own fork if you're planning on making any contributions
 2. Install node.js
-3. Install the required dependencies using `npm install`
+3. Install the required dependencies using `npm install --legacy-peer-deps`
 4. Navigate to the repository and run `npm run dist`
 5. The tests should run and you will find `skulpt.min.js` and `skulpt-stdlib.js` in the `dist` folder
 
