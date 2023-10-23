@@ -13,7 +13,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: "12.x"
-      - run: npm ci
+      - run: npm ci --legacy-peer-deps
       - run: npm run build
       - run: npm test
-      

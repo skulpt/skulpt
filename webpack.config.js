@@ -4,9 +4,8 @@ const shell = require("shelljs");
 const chalk = require("chalk");
 
 const ClosureWebpackPlugin = require("closure-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-const GitRevisionPlugin = require("git-revision-webpack-plugin");
+const { GitRevisionPlugin } = require("git-revision-webpack-plugin");
 const CompressionWebpackPlugin = require("compression-webpack-plugin");
 const ESLintPlugin = require("eslint-webpack-plugin");
 
@@ -55,8 +54,8 @@ module.exports = (env, argv) => {
                             "visibility",
                         ],
                         jscomp_off: ["deprecated", "uselessCode", "suspiciousCode", "checkTypes"],
-                        languageOut: languageOut || "ECMASCRIPT_2022",
-                        externs: "support/externs/sk.js",
+                        languageOut: languageOut || "ECMASCRIPT5",
+                        externs: ["support/externs/sk.js", "support/externs/node-process.js"],
                         rewritePolyfills: true,
                         // compiler flags here
                         //
@@ -80,10 +79,10 @@ module.exports = (env, argv) => {
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: outfile,
+            clean: true,
         },
         devtool: "source-map",
         plugins: [
-            new CleanWebpackPlugin(),
             new CopyWebpackPlugin({ patterns: [{ from: "debugger/debugger.js", to: "debugger.js" }] }),
             new webpack.DefinePlugin({
                 GITVERSION: JSON.stringify(git.version()),
