@@ -346,9 +346,15 @@ function proxy(obj, flags) {
 
 const proxyHook = (obj) => proxy(obj);
 const dictHook = proxyHook,
-    arrayHook = proxyHook,
     mapHook = proxyHook,
     setHook = proxyHook;
+
+const arrayHook = (obj) => {
+    if (Object.isFrozen(obj)) {
+        return toPyList(obj, pyHooks);
+    }
+    return proxy(obj);
+};
 
 const unhandledHook = (obj) => String(obj);
 
