@@ -5,6 +5,7 @@
 Sk.ffi = {
     remapToPy: toPy,
     remapToJs: toJs,
+    remapToJsOrWrap,
     toPy,
     toJs,
 
@@ -201,6 +202,11 @@ function toJs(obj, hooks) {
 
     // we really shouldn't get here - what's left - type symbol?
     Sk.asserts.fail("unhandled type " + type);
+}
+
+/** sends complex python objects as opaque wrapped objects */
+function remapToJsOrWrap(obj) {
+    return toJs(obj, jsHooks);
 }
 
 /** @returns a bool based on whether it is python truthy or not. Can also hand js values */
