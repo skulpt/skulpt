@@ -74,6 +74,9 @@ class TestProxyArray(unittest.TestCase):
         self.assertIn("d", s)
         self.assertIn("has", dir(s))
 
+    def test_frozen_array(self):
+        jseval("Sk.global.foo = Object.freeze([1, 2, 3])")
+        self.assertEqual(window.foo[0], 1)
 
 
 if __name__ == "__main__":
