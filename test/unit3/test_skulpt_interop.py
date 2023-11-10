@@ -60,7 +60,6 @@ class TestProxyArray(unittest.TestCase):
         self.assertIn("b", m)
         self.assertIn("has", dir(m))
 
-
         x = ["a", "b", "c"]
         s = window.s = window.Set(x)
         self.assertIs(window.s, s)
@@ -77,6 +76,19 @@ class TestProxyArray(unittest.TestCase):
     def test_frozen_array(self):
         jseval("Sk.global.foo = Object.freeze([1, 2, 3])")
         self.assertEqual(window.foo[0], 1)
+
+    def test_preserve_method_identity(self):
+        class Foo:
+            def bar(self):
+                pass
+
+        foo = Foo()
+        method_1 = foo.bar
+        method_2 = foo.bar
+        window.method_1 = method_1
+        window.method_2 = method_2
+        self.assertIsNot(method_1, method_2)
+        self.assertIs(window.method_1, window.method_2)
 
 
 if __name__ == "__main__":

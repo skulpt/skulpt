@@ -310,6 +310,7 @@ function toPyDict(obj, hooks) {
 
 // cache the proxied objects in a weakmap
 const _proxied = new WeakMap();
+const methodSelfCache = new WeakMap();
 
 // use proxy if you want to proxy an arbitrary js object
 // the only flags currently used is {bound: some_js_object}
@@ -393,6 +394,28 @@ const unhandledPythonObject = (obj) => {
     if (obj.tp$call === undefined) {
         _proxied.set(obj, pyWrapped);
         return pyWrapped;
+    }
+    if (obj.ob$type === Sk.builtin.method) {
+        // Preserve methods from python to javascript
+        // this is more inline with javascript semantics where a function is identical to a bound function
+        const self = obj.im_self;
+        const func = obj.im_func;
+        let cachedFuncs = methodSelfCache.get(self);
+        if (cachedFuncs === undefined) {
+            cachedFuncs = new Map();
+            methodSelfCache.set(self, cachedFuncs);
+        }
+        let cachedMethod = cachedFuncs.get(func);
+        if (cachedMethod === undefined) {
+            cachedMethod = obj;
+            cachedFuncs.set(func, obj);
+        } else {
+            obj = cachedMethod;
+            const cached = _proxied.get(obj);
+            if (cached) {
+                return cached;
+            }
+        }
     }
     const pyWrappedCallable = (...args) => {
         args = args.map((x) => toPy(x, pyHooks));
