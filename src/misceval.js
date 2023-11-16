@@ -7,7 +7,7 @@
  *
  */
 Sk.misceval = {};
-
+var nextAsyncContext = 1;
 /** @typedef {Sk.builtin.object}*/ var pyObject;
 
 /*
@@ -43,6 +43,23 @@ Sk.misceval.Suspension = function Suspension(resume, child, data) {
     } else {
         this.data = data;
     }
+    this.asyncContext = null;
+    this.asyncContext2 = null;
+    this.clone = function() {
+        for (var a = window.structuredClone(this), b = a, c = this; "undefined" !== typeof b;) {
+            b.$loc = c.$loc;
+            b.$gbl = c.$gbl;
+            for (var g in c.$locValues) {
+                b.$locValues[g] = window.structuredClone(c.$locValues[g]);
+            }
+            for (var h in c.$gblValues) {
+                b.$gblValues[h] = window.structuredClone(c.$gblValues[h]);
+            }
+            b = b.child;
+            c = c.child;
+        }
+        return a;
+    };
 };
 Sk.exportSymbol("Sk.misceval.Suspension", Sk.misceval.Suspension);
 
@@ -957,6 +974,42 @@ Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
                                 handlerPromise.then(handleResponse, reject);
                                 return;
                             }
+                        }
+
+                        if (r.data["type"] == "Sk.debug") {
+                            if (typeof Sk.Debugger !== "undefined") {
+                                (function () {
+                                    var b = r.resume, d, d1;
+                                    if (r.asyncContext === null) {
+                                        d = nextAsyncContext++;
+                                        r.asyncContext = d;
+                                    } else {
+                                        d = r.asyncContext;
+                                    }
+                                    if (r.asyncContext2 === null) {
+                                        Sk.global["nextAsyncContext"] = Sk.global["nextAsyncContext"] + 1;
+                                        d1 = Sk.global["nextAsyncContext"];
+                                        r.asyncContext2 = d1;
+                                    } else {
+                                        d1 = r.asyncContext2;
+                                    }
+    
+                                    r.resume = function() {
+                                        var a = b();
+                                        if (a instanceof Sk.misceval.Suspension) {
+                                            a.resolve = resolve;
+                                        } else {
+                                            resolve(a);
+                                        }
+                                        a.asyncContext = d;
+                                        a.asyncContext2 = d1;
+                                        return a;
+                                    };
+                                }());
+                                Sk.Debugger.addAsyncSuspension(r);                                
+                            } else {
+                                Sk.global["setImmediate"](resume);
+                            }          
                         }
 
                         if (r.data["type"] == "Sk.promise") {

@@ -13,7 +13,9 @@ Sk.global =
     typeof global !== "undefined" ? global : // jshint ignore:line
     typeof self !== "undefined" ? self : // jshint ignore:line
     typeof window !== "undefined" ? window : // jshint ignore:line
-    {};
+    {
+        nextAsyncContext: 0,
+    };
 
 /**
  * Export "object" to global namespace as "name".
