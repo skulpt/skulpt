@@ -25,7 +25,7 @@ function functools_mod(functools) {
         RuntimeError,
         ValueError,
         NotImplementedError,
-        AttributeErrror,
+        AttributeError,
         OverflowError,
         checkNone,
         checkBool,
@@ -43,11 +43,15 @@ function functools_mod(functools) {
         isTrue,
         richCompareBool,
         objectRepr,
+        retryOptionalSuspeionOrThrow,
+        chain: chainOrSuspend,
     } = Sk.misceval;
 
     const { remapToPy: toPy } = Sk.ffi;
     
     const {
+        checkOneArg,
+        checkNoKwargs,
         buildNativeClass,
         setUpModuleMethods,
         keywordArrayFromPyDict,
@@ -56,6 +60,7 @@ function functools_mod(functools) {
         lookupSpecial,
         copyKeywordsToNamedArgs,
         typeName,
+        objectSetItem,
         iter: objectGetIter,
         gattr: objectGetAttr,
     } = Sk.abstr;
@@ -82,7 +87,7 @@ function functools_mod(functools) {
                 "partialmethod",
                 "singledispatch" /**@todo singledispatch */,
                 "singledispatchmethod" /**@todo singledispatchmethod */,
-                "cached_property" /**@todo cached_property */,
+                "cached_property",
             ].map((x) => new pyStr(x))
         ),
         WRAPPER_ASSIGNMENTS: new pyTuple(
@@ -95,7 +100,6 @@ function functools_mod(functools) {
         /**@todo */
         singledispatch: proxyFail("singledispatch"),
         singledispatchmethod: proxyFail("singledispatchmethod"),
-        cached_property: proxyFail("cached_property"),
     });
 
     function proxyFail(name) {
@@ -676,6 +680,89 @@ cache_info_type:    namedtuple class with the fields:\n\
         return cls;
     }
 
+    /************* cached property *************/
+
+    const s_get = new pyStr("get");
+    const NOT_FOUND = new pyObject();
+
+    functools.cached_property = buildNativeClass("functools.cached_property", {
+        constructor: function () {},
+        slots: {
+            tp$init(args, kws) {
+                // const [func] = copyKeywordsToNamedArgs("cached_property", ["func"], args, kws);
+                checkOneArg("cached_property", args, kws);
+                checkNoKwargs("cached_property", kws);
+                this._func = args[0];
+                this._attr = pyNone;
+            },
+            tp$descr_get(instance, owner, canSuspend) {
+                if (instance == null) {
+                    return this;
+                }
+                if (this._attr === pyNone) {
+                    throw new pyTypeError("Cannot use cached_property instance without calling __set_name__ on it.");
+                }
+                let cache;
+                try {
+                    cache = objectGetAttr(instance, pyStr.$dict);
+                } catch (e) {
+                    if (e instanceof AttributeError) {
+                        const msg =
+                            `No '__dict__' attribute on '${typeName(instance)}' ` +
+                            `instance to cache ${objectRepr(this._attr)} property.`;
+                        throw new pyTypeError(msg);
+                    }
+                    throw e;
+                }
+                const get = objectGetAttr(cache, s_get);
+                let rv = pyCall(get, [this._attr, NOT_FOUND]);
+                if (rv === NOT_FOUND) {
+                    const val = pyCallOrSuspend(this._func, [instance]);
+                    rv = chainOrSuspend(val, (v) => {
+                        try {
+                            objectSetItem(cache, this._attr, val);
+                            return v;
+                        } catch (e) {
+                            if (e instanceof pyTypeError) {
+                                const msg =
+                                    `The '__dict__' attribute on '${typeName(instance)}' instance ` +
+                                    `does not support item assignment for caching ${objectRepr(this._attr)} property.`;
+                                throw new pyTypeError(msg);
+                            }
+                            throw e;
+                        }
+                    });
+                }
+                return canSuspend ? rv : retryOptionalSuspeionOrThrow(rv);
+            },
+        },
+        getsets: {
+            __doc__: {
+                $get() {
+                    return this._func.tp$getattr(pyStr.$doc) || pyNone;
+                },
+            },
+        },
+        methods: {
+            __set_name__: {
+                $meth(owner, name) {
+                    if (this._attr === pyNone) {
+                        this._attr = name;
+                    } else if (name.toString() !== this._attr.toString()) {
+                        throw new pyTypeError(
+                            `Cannot assign the same cached_property to two different names (${objectRepr(
+                                this._attr
+                            )} and ${objectRepr(name)})`
+                        );
+                    }
+                },
+                $flags: { MinArgs: 2, MaxArgs: 2 },
+            },
+        },
+        classmethods: Sk.generic.classGetItem,
+    });
+
+
     /************* KeyWrapper for cmp_to_key *************/
     const zero = new pyInt(0);
 
@@ -696,7 +783,7 @@ cache_info_type:    namedtuple class with the fields:\n\
                 const x = this.obj;
                 const y = other.obj;
                 if (!x || !y) {
-                    throw new AttributeErrror("object");
+                    throw new AttributeError("object");
                 }
                 const comparison = pyCallOrSuspend(this.cmp, [x, y]);
                 return chain(comparison, (res) => richCompareBool(res, zero, op));
