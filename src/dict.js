@@ -790,7 +790,7 @@ function buildDictView(typename, slots, reverse_method) {
         },
     };
     options.flags = {
-        sk$acceptable_as_base: false,
+        sk$unacceptableBase: true,
     };
     if (typename === "dict_values") {
         // dict_values doesn't have number or richcompare slots
