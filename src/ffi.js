@@ -864,7 +864,7 @@ const JsProxyMap = Sk.abstr.buildNativeClass("ProxyMap", {
         },
         valueOf: JsProxy.prototype.valueOf,
     },
-    $flags: {
+    flags: {
         sk$acceptable_as_base_class: false,
     },
 });
@@ -891,6 +891,9 @@ const InternalProxySet = Sk.abstr.buildNativeClass("InternalProxySet", {
             return [...this.js$wrapped].map((k) => [toPy(k, pyHooks), true]);
         },
     },
+    flags: {
+        sk$acceptable_as_base_class: false,
+    },
 });
 
 const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
@@ -908,7 +911,7 @@ const JsProxySet = Sk.abstr.buildNativeClass("ProxySet", {
         $lookup: JsProxy.prototype.$lookup,
         valueOf: JsProxy.prototype.valueOf,
     },
-    $flags: {
+    flags: {
         sk$acceptable_as_base_class: false,
     },
 });
