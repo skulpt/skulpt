@@ -154,7 +154,7 @@ function $builtinmodule(name) {
             },
         },
         flags: {
-            sk$acceptable_as_base_class: false,
+            sk$unacceptableBase: true,
         },
     });
 
@@ -761,7 +761,7 @@ function $builtinmodule(name) {
             },
         },
         flags: {
-            sk$acceptable_as_base_class: false,
+            sk$unacceptableBase: true,
         },
     });
 
@@ -1044,7 +1044,7 @@ function $builtinmodule(name) {
             },
         },
         flags: {
-            sk$acceptable_as_base_class: false,
+            sk$unacceptableBase: true,
         },
     });
 
