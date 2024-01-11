@@ -8,17 +8,20 @@ import re
 
 class _AssertRaisesContext(object):
     """A context manager used to implement TestCase.assertRaises* methods."""
-    def __init__(self, expected, test_case):
+    def __init__(self, expected, test_case, expected_regex=None):
         self.test_case = test_case
         self.expected = expected
         self.exception = None
+        if expected_regex is not None:
+            expected_regex = re.compile(expected_regex)
+        self.expected_regex = expected_regex
 
     def _is_subtype(self, expected, basetype):
         if isinstance(expected, tuple):
             return all(self._is_subtype(e, basetype) for e in expected)
         return isinstance(expected, type) and issubclass(expected, basetype)
 
-    def handle(self, args, kwargs):
+    def handle(self, name, args, kwargs):
         """
         If args is empty, assertRaises is being used as a
         context manager, so return self.
@@ -27,7 +30,7 @@ class _AssertRaisesContext(object):
         """
         try:
             if not self._is_subtype(self.expected, BaseException):
-                raise TypeError('assertRaises() arg 1 must be an exception type or tuple of exception types')
+                raise TypeError('%s() arg 1 must be an exception type or tuple of exception types'.format(name))
             if not args:
                 return self
 
@@ -63,7 +66,14 @@ class _AssertRaisesContext(object):
             res = False
             feedback = "Expected {} but got {}".format(exp_exc, act_exc)
 
+        elif self.expected_regex is not None:
+            expected_regex = self.expected_regex
+            if not expected_regex.search(str(exc_value)):
+                res = False
+                feedback = '"{}" does not match "{}"'.format(expected_regex.pattern, str(exc_value))
+
         self.test_case.appendResult(res, act_exc, exp_exc, feedback)
+
         return True
 
 
@@ -274,10 +284,15 @@ class TestCase(object):
     def assertRaises(self, expected_exception, *args, **kwargs):
         context = _AssertRaisesContext(expected_exception, self)
         try:
-            return context.handle(args, kwargs)
+            return context.handle('assertRaises', args, kwargs)
         finally:
             # bpo-23890: manually break a reference cycle
             context = None
+
+    def assertRaisesRegex(self, expected_exception, expected_regex,
+                          *args, **kwargs):
+        context = _AssertRaisesContext(expected_exception, self, expected_regex)
+        return context.handle('assertRaisesRegex', args, kwargs)
 
     def fail(self, msg=None):
         if msg is None:

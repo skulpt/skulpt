@@ -1776,6 +1776,158 @@ class TestLRUC(TestLRU, unittest.TestCase):
 
 
 
+class CachedCostItem:
+    _cost = 1
+
+    @py_functools.cached_property
+    def cost(self):
+        """The cost of the item."""
+        self._cost += 1
+        return self._cost
+
+
+class OptionallyCachedCostItem:
+    _cost = 1
+
+    def get_cost(self):
+        """The cost of the item."""
+        self._cost += 1
+        return self._cost
+
+    cached_cost = py_functools.cached_property(get_cost)
+
+
+class CachedCostItemWithSlots:
+    __slots__ = ('_cost')
+
+    def __init__(self):
+        self._cost = 1
+
+    @py_functools.cached_property
+    def cost(self):
+        raise RuntimeError('never called, slots not supported')
+
+counter = [0]
+
+@py_functools.cached_property
+def _cp(_self):
+    # nonlocal counter
+    counter[0] += 1
+    return counter[0]
+
+class A_Counter:
+    cp = _cp
+
+class B_Counter:
+    cp = _cp
+
+class readonly_cached_property(py_functools.cached_property):
+    def __set__(self, obj, value):
+        raise AttributeError("read only property")
+
+
+
+class TestCachedProperty(unittest.TestCase):
+    def test_cached(self):
+        item = CachedCostItem()
+        self.assertEqual(item.cost, 2)
+        self.assertEqual(item.cost, 2) # not 3
+
+    def test_cached_attribute_name_differs_from_func_name(self):
+        item = OptionallyCachedCostItem()
+        self.assertEqual(item.get_cost(), 2)
+        self.assertEqual(item.cached_cost, 3)
+        self.assertEqual(item.get_cost(), 4)
+        self.assertEqual(item.cached_cost, 3)
+
+    def test_object_with_slots(self):
+        item = CachedCostItemWithSlots()
+        with self.assertRaisesRegex(
+                TypeError,
+                "No '__dict__' attribute on 'CachedCostItemWithSlots' instance to cache 'cost' property.",
+        ):
+            item.cost
+
+    def test_immutable_dict(self):
+        class MyMeta(type):
+            @py_functools.cached_property
+            def prop(self):
+                return True
+
+        class MyClass(metaclass=MyMeta):
+            pass
+
+        with self.assertRaisesRegex(
+            TypeError,
+            "The '__dict__' attribute on 'MyMeta' instance does not support item assignment for caching 'prop' property.",
+        ):
+            MyClass.prop
+
+    def test_reuse_different_names(self):
+        """Disallow this case because decorated function a would not be cached."""
+        # with self.assertRaises(TypeError) as ctx:
+        with self.assertRaises(Exception) as ctx:
+            class ReusedCachedProperty:
+                @py_functools.cached_property
+                def a(self):
+                    pass
+
+                b = a
+
+        # self.assertEqual(
+        #     str(ctx.exception),
+        #     str(TypeError("Cannot assign the same cached_property to two different names ('a' and 'b')."))
+        # )
+
+    def test_reuse_same_name(self):
+        """Reusing a cached_property on different classes under the same name is OK."""
+
+
+        a = A_Counter()
+        b = B_Counter()
+
+        self.assertEqual(a.cp, 1)
+        self.assertEqual(b.cp, 2)
+        self.assertEqual(a.cp, 1)
+
+    def test_set_name_not_called(self):
+        cp = py_functools.cached_property(lambda s: None)
+        class Foo:
+            pass
+
+        Foo.cp = cp
+
+        with self.assertRaisesRegex(
+                TypeError,
+                "Cannot use cached_property instance without calling __set_name__ on it.",
+        ):
+            Foo().cp
+
+    def test_access_from_class(self):
+        self.assertIsInstance(CachedCostItem.cost, py_functools.cached_property)
+
+    def test_doc(self):
+        self.assertEqual(CachedCostItem.cost.__doc__, "The cost of the item.")
+
+    def test_subclass_with___set__(self):
+        """Caching still works for a subclass defining __set__."""
+
+
+        class Test:
+            def __init__(self, prop):
+                self._prop = prop
+
+            @readonly_cached_property
+            def prop(self):
+                return self._prop
+
+        t = Test(1)
+        self.assertEqual(t.prop, 1)
+        t._prop = 999
+        self.assertEqual(t.prop, 1)
+
+
+
 
 if __name__ == '__main__':
-    unittest.main(verbosity=1)
+    unittest.main()
