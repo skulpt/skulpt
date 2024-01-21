@@ -89,6 +89,29 @@ class TestProxyArray(unittest.TestCase):
         window.method_2 = method_2
         self.assertIsNot(method_1, method_2)
         self.assertIs(window.method_1, window.method_2)
+    
+    def test_cross_origin_window(self):
+        if "window" not in window:
+            # can't test this in a node environment
+            return
+        
+        iframe = window.document.createElement("iframe")
+        iframe.src = "http://skulpt.org"
+
+        window.document.body.prepend(iframe)
+        
+        contentWindow = iframe.contentWindow
+        def wait_for_load(resolve, reject):
+            iframe.onload = resolve
+            iframe.onerror = reject
+
+        p = window.Promise(wait_for_load).then(lambda *args: print("iframe loaded"))
+
+        with self.assertRaisesRegex(Exception, "SecurityError"):
+            # should be a cross origin error
+            hasattr(contentWindow, "foo")
+        
+        contentWindow.postMessage({"data": "*"})
 
 
 if __name__ == "__main__":

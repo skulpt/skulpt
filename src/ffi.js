@@ -32,6 +32,8 @@ Sk.ffi = {
 
 const OBJECT_PROTO = Object.prototype;
 const FUNC_PROTO = Function.prototype;
+const MAP_PROTO = Map.prototype;
+const SET_PROTO = Set.prototype;
 
 /**
  * maps from Javascript Object/Array/string to Python dict/list/str.
@@ -308,6 +310,11 @@ function toPyDict(obj, hooks) {
     return ret;
 }
 
+function isCrossOriginWindow(obj) {
+    // based on https://github.com/weizman/is-cross-origin
+    return typeof obj === "object" && obj.window === obj && Object.getPrototypeOf(obj) === null;
+}
+
 // cache the proxied objects in a weakmap
 const _proxied = new WeakMap();
 const methodSelfCache = new WeakMap();
@@ -338,10 +345,10 @@ function proxy(obj, flags) {
     } else if (Array.isArray(obj)) {
         rv = new JsProxyList(obj);
     } else {
-        const constructor = obj.constructor;
-        if (constructor === Map) {
+        const proto = Object.getPrototypeOf(obj);
+        if (proto === MAP_PROTO) {
             rv = new JsProxyMap(obj);
-        } else if (constructor === Set) {
+        } else if (proto === SET_PROTO) {
             rv = new JsProxySet(obj);
         } else {
             rv = new JsProxy(obj, flags);
@@ -667,6 +674,10 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
             const jsName = pyName.toString();
             const attr = this.js$wrapped[jsName];
             if (attr !== undefined) {
+                if (isCrossOriginWindow(attr)) {
+                    // we can't do the usual toPy dance, since accessing attributes breaks the same-origin policy
+                    return proxy(attr, { name: "CrossOriginWindow" });
+                }
                 // here we override the funcHook to pass the bound object
                 return toPy(attr, boundHook(this.js$wrapped, jsName));
             } else if (jsName in this.js$wrapped) {
