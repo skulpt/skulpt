@@ -312,7 +312,7 @@ function toPyDict(obj, hooks) {
 
 function isCrossOriginWindow(obj) {
     // based on https://github.com/weizman/is-cross-origin
-    return typeof obj === "object" && obj.window === obj && Object.getPrototypeOf(obj) === null;
+    return obj !== null && typeof obj === "object" && obj.window === obj && Object.getPrototypeOf(obj) === null;
 }
 
 // cache the proxied objects in a weakmap

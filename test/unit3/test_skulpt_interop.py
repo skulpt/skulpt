@@ -91,6 +91,9 @@ class TestProxyArray(unittest.TestCase):
         self.assertIs(window.method_1, window.method_2)
     
     def test_cross_origin_window(self):
+        window.x = {"foo": None}
+        self.assertIsNone(window.x.foo)
+
         if "window" not in window:
             # can't test this in a node environment
             return
