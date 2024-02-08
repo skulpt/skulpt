@@ -1,6 +1,7 @@
 __author__ = "gerbal"
 
 import unittest
+import string
 
 class string_format(unittest.TestCase):
     def test_simple_position(self):
@@ -113,6 +114,72 @@ class string_format(unittest.TestCase):
         self.assertEqual('1.234568E+08', "{:E}".format(123456789))
         self.assertEqual('1.234568e+16', "{:e}".format(12345678987654321))
         self.assertEqual('1e+08', "{:.0e}".format(123456789))
+
+    def test_basic_formatter(self):
+        fmt = str
+        self.assertEqual(fmt.format("foo"), "foo")
+        self.assertEqual(fmt.format("foo{0}", "bar"), "foobar")
+        self.assertEqual(fmt.format("foo{1}{0}-{1}", "bar", 6), "foo6bar-6")
+
+    def test_format_keyword_arguments(self):
+        fmt = str
+        self.assertEqual(fmt.format("-{arg}-", arg='test'), '-test-')
+        self.assertRaises(KeyError, fmt.format, "-{arg}-")
+        self.assertEqual(fmt.format("-{self}-", self='test'), '-test-')
+        self.assertRaises(KeyError, fmt.format, "-{self}-")
+        self.assertEqual(fmt.format("-{format_string}-", format_string='test'),
+                         '-test-')
+        self.assertRaises(KeyError, fmt.format, "-{format_string}-")
+
+    def test_auto_numbering(self):
+        fmt = str
+        self.assertEqual(fmt.format('foo{}{}', 'bar', 6),
+                         'foo{}{}'.format('bar', 6))
+        self.assertEqual(fmt.format('foo{1}{num}{1}', None, 'bar', num=6),
+                         'foo{1}{num}{1}'.format(None, 'bar', num=6))
+        # self.assertEqual(fmt.format('{:^{}}', 'bar', 6),
+        #                  '{:^{}}'.format('bar', 6))
+        # self.assertEqual(fmt.format('{:^{}} {}', 'bar', 6, 'X'),
+        #                  '{:^{}} {}'.format('bar', 6, 'X'))
+        # self.assertEqual(fmt.format('{:^{pad}}{}', 'foo', 'bar', pad=6),
+        #                  '{:^{pad}}{}'.format('foo', 'bar', pad=6))
+
+        with self.assertRaises(ValueError):
+            fmt.format('foo{1}{}', 'bar', 6)
+
+        with self.assertRaises(ValueError):
+            fmt.format('foo{}{1}', 'bar', 6)
+
+    def test_conversion_specifiers(self):
+        fmt = str
+        self.assertEqual(fmt.format("-{arg!r}-", arg='test'), "-'test'-")
+        self.assertEqual(fmt.format("{0!s}", 'test'), 'test')
+        self.assertRaises(ValueError, fmt.format, "{0!h}", 'test')
+        # issue13579
+        self.assertEqual(fmt.format("{0!a}", 42), '42')
+        self.assertEqual(fmt.format("{0!a}",  string.ascii_letters),
+            "'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'")
+        self.assertEqual(fmt.format("{0!a}",  chr(255)), "'\\xff'")
+        self.assertEqual(fmt.format("{0!a}",  chr(256)), "'\\u0100'")
+
+    def test_name_lookup(self):
+        fmt = str
+        class AnyAttr:
+            def __getattr__(self, attr):
+                return attr
+        x = AnyAttr()
+        self.assertEqual(fmt.format("{0.lumber}{0.jack}", x), 'lumberjack')
+        with self.assertRaises(AttributeError):
+            fmt.format("{0.lumber}{0.jack}", '')
+
+    def test_index_lookup(self):
+        fmt = str
+        lookup = ["eggs", "and", "spam"]
+        self.assertEqual(fmt.format("{0[2]}{0[0]}", lookup), 'spameggs')
+        with self.assertRaises(IndexError):
+            fmt.format("{0[2]}{0[0]}", [])
+        with self.assertRaises(KeyError):
+            fmt.format("{0[2]}{0[0]}", {})
 
 if __name__ == '__main__':
     unittest.main()
