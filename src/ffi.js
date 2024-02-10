@@ -499,7 +499,7 @@ const JsProxy = Sk.abstr.buildNativeClass("Proxy", {
         this.$methods = Object.create(null);
         this.in$repr = false;
 
-        flags || (flags = {});
+        flags ??= {};
 
         // make slot functions lazy
         Object.defineProperties(this, this.memoized$slots);

@@ -459,19 +459,11 @@ Sk.exportSymbol("Sk.builtin.int_", Sk.builtin.int_);
  * @param {Function} bigint_func
  */
 function numberSlot(number_func, bigint_func) {
-    /**
-     * @this {Sk.builtin.int_}
-     *
-     * @param {Sk.builtin.int_|Sk.builtin.object} other
-     * @return {Sk.builtin.int_|Sk.builtin.NotImplemented}
-     */
     return function (other) {
         if (!(other instanceof Sk.builtin.int_)) {
             return Sk.builtin.NotImplemented.NotImplemented$;
         }
-        /**@type {number|JSBI} */
         let v = this.v;
-        /**@type {number|JSBI} */
         let w = other.v;
         if (typeof v === "number" && typeof w === "number") {
             const res = number_func(v, w);
