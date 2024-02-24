@@ -206,7 +206,7 @@ class BytesTests(unittest.TestCase):
         self.assertEqual(bytes(b"abc") < b"ab", False)
         self.assertEqual(bytes(b"abc") <= b"ab", False)
 
-    def test_decode(self):
+    def test_decode_basic(self):
         a = bytes("abc", "ascii")
         b0 = [67,127,102]
         b = bytes(b0)
@@ -216,6 +216,65 @@ class BytesTests(unittest.TestCase):
 
         self.assertRaises(TypeError, a.decode, [], "strict")
         self.assertRaises(TypeError, a.decode, "ascii", [])
+
+    def test_decode(self):
+        sample = "Hello world\n\u1234\u5678\u9abc"
+        encodings = {
+            "utf-8": b'Hello world\n\xe1\x88\xb4\xe5\x99\xb8\xe9\xaa\xbc',
+            "utf-16": b'\xff\xfeH\x00e\x00l\x00l\x00o\x00 \x00w\x00o\x00r\x00l\x00d\x00\n\x004\x12xV\xbc\x9a',
+        }
+        for enc in ("utf-8", "utf-16"):
+            # b = self.type2test(sample, enc)
+            b = encodings[enc]
+            self.assertEqual(b.decode(enc), sample)
+        # sample = "Hello world\n\x80\x81\xfe\xff"
+        # b = self.type2test(sample, "latin-1")
+        sample = "Hello world\nÆ"
+        b = b'Hello world\n\xc6'
+        self.assertRaises(UnicodeDecodeError, b.decode, "utf-8")
+        self.assertEqual(b.decode("utf-8", "ignore"), "Hello world\n")
+        self.assertEqual(b.decode(errors="ignore", encoding="utf-8"),
+                         "Hello world\n")
+        # Default encoding is utf-8
+        self.assertEqual(self.type2test(b'\xe2\x98\x83').decode(), '\u2603')
+        self.assertEqual(b.decode("latin-1"), sample)
+
+    def test_check_encoding_errors(self):
+        # bpo-37388: bytes(str) and bytes.encode() must check encoding
+        # and errors arguments in dev mode
+        invalid = 'Boom, Shaka Laka, Boom!'
+        encodings = ('ascii', 'utf8', 'latin1')
+        type2test = self.type2test
+        for data in ('', 'short string'):
+            with self.assertRaises(LookupError):
+                type2test(data, encoding=invalid)
+
+            for encoding in encodings:
+                try:
+                    type2test(data, encoding=encoding, errors=invalid)
+                except LookupError:
+                    pass
+                else:
+                    self.fail()
+
+        for data in (b'', b'short string'):
+            data = type2test(data)
+            with self.assertRaises(LookupError):
+                data.decode(encoding=invalid)
+            try:
+                data.decode(errors=invalid)
+            except LookupError:
+                pass
+            else:
+                self.fail()
+
+            for encoding in encodings:
+                try:
+                    data.decode(encoding=encoding, errors=invalid)
+                except LookupError:
+                    pass
+                else:
+                    self.fail()
 
     def test_encode(self):
         a = "abc".encode("ascii")
