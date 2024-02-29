@@ -5,7 +5,10 @@ const supportedEncodings = {
     utf: "utf-8",
     utf8: "utf-8",
     utf_8: "utf-8",
+    latin_1: "latin1", // browser spec
     ascii: "ascii",
+    utf16: "utf-16",
+    utf_16: "utf-16",
 };
 
 var space_reg = /\s+/g;
@@ -19,8 +22,8 @@ function normalizeEncoding(encoding) {
         return supported;
     }
 }
-const Encoder = new TextEncoder();
-const Decoder = new TextDecoder();
+const UtfEncoder = new TextEncoder();
+const UtfDecoder = new TextDecoder();
 
 /**
  * @constructor
@@ -77,7 +80,12 @@ Sk.builtin.bytes = Sk.abstr.buildNativeClass("bytes", {
             if (args.length <= 1 && +kwargs.length === 0) {
                 pySource = args[0];
             } else {
-                [pySource, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs("bytes", [null, "pySource", "errors"], args, kwargs);
+                [pySource, encoding, errors] = Sk.abstr.copyKeywordsToNamedArgs(
+                    "bytes",
+                    [null, "encoding", "errors"],
+                    args,
+                    kwargs
+                );
                 ({ encoding, errors } = checkGetEncodingErrors("bytes", encoding, errors));
                 if (!Sk.builtin.checkString(pySource)) {
                     throw new Sk.builtin.TypeError("encoding or errors without a string argument");
@@ -965,19 +973,25 @@ function checkGetEncodingErrors(funcname, encoding, errors) {
     return { encoding: encoding, errors: errors };
 }
 
+function checkErrorsIsValid(errors) {
+    if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
+        throw new Sk.builtin.LookupError(
+            "Unsupported or invalid error type '" + errors + "'"
+        );
+    }
+}
+
 function strEncode(pyStr, encoding, errors) {
     const source = pyStr.$jsstr();
     encoding = normalizeEncoding(encoding);
-    if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
-        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
-    }
+    checkErrorsIsValid(errors);
     let uint8;
     if (encoding === "ascii") {
         uint8 = encodeAscii(source, errors);
     } else if (encoding === "utf-8") {
-        uint8 = Encoder.encode(source);
+        uint8 = UtfEncoder.encode(source);
     } else {
-        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+        throw new Sk.builtin.LookupError("Unsupported or unknown encoding: '" + encoding + "'");
     }
     return new Sk.builtin.bytes(uint8);
 }
@@ -1040,8 +1054,8 @@ function decodeAscii(source, errors) {
     return final;
 }
 
-function decodeUtf(source, errors) {
-    const string = Decoder.decode(source);
+function decode(decoder, source, errors, encoding) {
+    const string = decoder.decode(source);
     if (errors === "replace") {
         return string;
     } else if (errors === "strict") {
@@ -1050,7 +1064,7 @@ function decodeUtf(source, errors) {
             return string;
         }
         throw new Sk.builtin.UnicodeDecodeError(
-            "'utf-8' codec can't decode byte 0x" + source[i].toString(16) + " in position " + i + ": invalid start byte"
+            `'${encoding}' codec can't decode byte 0x ${source[i].toString(16)} in position ${i}: invalid start byte`
         );
     }
     return string.replace(/�/g, "");
@@ -1060,17 +1074,21 @@ function bytesDecode(encoding, errors) {
     ({ encoding, errors } = checkGetEncodingErrors("decode", encoding, errors));
     encoding = normalizeEncoding(encoding);
 
-    if (!(errors === "strict" || errors === "ignore" || errors === "replace")) {
-        throw new Sk.builtin.NotImplementedError("'" + errors + "' error handling not implemented in Skulpt");
-    }
+    checkErrorsIsValid(errors);
 
     let jsstr;
     if (encoding === "ascii") {
         jsstr = decodeAscii(this.v, errors);
     } else if (encoding === "utf-8") {
-        jsstr = decodeUtf(this.v, errors);
+        jsstr = decode(UtfDecoder, this.v, errors, encoding);
     } else {
-        throw new Sk.builtin.LookupError("unknown encoding: " + encoding);
+        let decoder;
+        try {
+            decoder = new TextDecoder(encoding);
+        } catch (e) {
+            throw new Sk.builtin.LookupError(`Unsupported or unknown encoding: ${encoding}. ${e.message}`);
+        }
+        jsstr = decode(decoder, this.v, errors, encoding);
     }
     return new Sk.builtin.str(jsstr);
 }
