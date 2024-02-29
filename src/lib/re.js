@@ -23,6 +23,7 @@ function $builtinmodule(name) {
         },
         abstr: { buildNativeClass, typeName, checkOneArg, numberBinOp, copyKeywordToNamedArgs, setUpModuleMethods },
         misceval: { iterator: pyIterator, objectRepr, asIndexSized, isIndex, callsimArray: pyCall },
+        _tokenize: { Unicode },
     } = Sk;
 
     const re = {
@@ -228,6 +229,8 @@ function $builtinmodule(name) {
     // These flags can be anywhere in the pattern, (changed in 3.11 so that it has to be at the start)
     const inline_regex = /\(\?([isamux]+)\)/g;
 
+    const isAscii = (pyFlag) => numberBinOp(re.A, pyFlag, "BitAnd") === re.A;
+
     function adjustFlags(pyPattern, pyFlag) {
         let jsPattern = pyPattern.toString();
         let jsFlag = "g";
@@ -259,7 +262,7 @@ function $builtinmodule(name) {
         });
 
         // use unicode?
-        if (numberBinOp(re.A, pyFlag, "BitAnd") !== re.A) {
+        if (!isAscii(pyFlag)) {
             pyFlag = numberBinOp(re.U, pyFlag, "BitOr");
         }
 
@@ -294,7 +297,8 @@ function $builtinmodule(name) {
     // We also don't want these characters to be inside square brackets
     // (?!(?:\]|[^\[]*[^\\]\])) Negative lookahead checking the next character is not ] (e.g. special case \\Z])
     // And that we don't have an unescaped "]" so long as it's not preceded by a "[".
-    const py_to_js_regex = /([^\\])({,|\\A|\\Z|\$|\(\?P=([^\d\W]\w*)\)|\(\?P<([^\d\W]\w*)>)(?!(?:\]|[^\[]*[^\\]\]))/g;
+    const py_to_js_regex =
+        /([^\\])({,|\\w|\\W|\\A|\\Z|\$|\(\?P=([^\d\W]\w*)\)|\(\?P<([^\d\W]\w*)>)(?!(?:\]|[^\[]*[^\\]\]))/g;
     // unicode mode in js regex treats \\\t incorrectly and should be converted to \\t
     // similarly \" and \' \! \& throw errors
     const py_to_js_unicode_escape = /\\[\t\r\n \v\f#&~"'!:,;`<>]|\\-(?!(?:\]|[^\[]*[^\\]\]))/g;
@@ -309,6 +313,7 @@ function $builtinmodule(name) {
         if (_cached && _cached.$flags === pyFlag) {
             return _cached;
         }
+        const ascii = isAscii(pyFlag);
 
         const named_groups = {};
         jsPattern = "_" + jsPattern; // prepend so that we can safely not use negative lookbehinds in py_to_js_regex
@@ -319,6 +324,18 @@ function $builtinmodule(name) {
                     return p0 + neg_lookbehind_A + "^";
                 case "\\Z":
                     return p0 + "$(?!\\n)";
+                case "\\w": {
+                    if (ascii) {
+                        return p0 + p1;
+                    }
+                    return p0 + "[" + Unicode.w + "]";
+                }
+                case "\\W": {
+                    if (ascii) {
+                        return p0 + p1;
+                    }
+                    return p0 + "[^" + Unicode.w + "]";
+                }
                 case "{,":
                     return p0 + "{0,";
                 case "$":
@@ -734,7 +751,7 @@ function $builtinmodule(name) {
             $match(string, pos, endpos) {
                 let source = this.v.source;
                 let flags = this.v.flags.replace("g", "").replace("m", "");
-                source = "^" + source;
+                source = "^(?:" + source + ")";
                 var regex = new RegExp(source, flags);
                 return this.do$match(regex, string, pos, endpos);
             },
