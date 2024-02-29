@@ -1,5 +1,4 @@
 function $builtinmodule(name) {
-
     const {
         builtin: {
             dict: pyDict,
@@ -10,7 +9,7 @@ function $builtinmodule(name) {
             tuple: pyTuple,
             mappingproxy: pyMappingProxy,
             slice: pySlice,
-            none: {none$: pyNone},
+            none: { none$: pyNone },
             NotImplemented: { NotImplemented$: pyNotImplemented },
             Exception,
             OverflowError,
@@ -25,8 +24,6 @@ function $builtinmodule(name) {
         abstr: { buildNativeClass, typeName, checkOneArg, numberBinOp, copyKeywordToNamedArgs, setUpModuleMethods },
         misceval: { iterator: pyIterator, objectRepr, asIndexSized, isIndex, callsimArray: pyCall },
     } = Sk;
-
-
 
     const re = {
         __name__: new pyStr("re"),
@@ -289,7 +286,7 @@ function $builtinmodule(name) {
      * Python docs:
      * To match a literal ']' inside a set, precede it with a backslash, or place it at the beginning of the set.
      * For example, both [()[\]{}] and []()[{}] will match a right bracket, as well as left bracket, braces, and parentheses.
-     * 
+     *
      * This is not valid in JS so escape this occurrence
      */
     const initialUnescapedBracket = /([^\\])(\[\^?)\](\]|.*[^\\]\])/g;
@@ -332,7 +329,11 @@ function $builtinmodule(name) {
                         return p0 + "(?<" + p3 + ">";
                     }
                     if (!named_groups[p2]) {
-                        throw new re.error("unknown group name " + p2 + " at position " + offset + 1, pyPattern, new pyInt(offset + 1));
+                        throw new re.error(
+                            "unknown group name " + p2 + " at position " + offset + 1,
+                            pyPattern,
+                            new pyInt(offset + 1)
+                        );
                     }
                     return p0 + "\\k<" + p2 + ">";
             }
@@ -371,7 +372,7 @@ function $builtinmodule(name) {
                     // try without the unicode flag since unicode mode is stricter
                     regex = new RegExp(jsPattern, jsFlags.replace("u", ""));
                 } catch (e) {
-                    msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString(); 
+                    msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
                     throw new re.error(msg, pyPattern);
                 }
                 //// uncomment when debugging
@@ -408,13 +409,15 @@ function $builtinmodule(name) {
             Exception.call(this, msg);
         },
         slots: {
-            tp$doc:
-                "Exception raised for invalid regular expressions.\n\n    Attributes:\n\n        msg: The unformatted error message\n        pattern: The regular expression pattern\n",
+            tp$doc: "Exception raised for invalid regular expressions.\n\n    Attributes:\n\n        msg: The unformatted error message\n        pattern: The regular expression pattern\n",
             tp$init(args, kwargs) {
-                const [msg, pattern, pos] = copyKeywordToNamedArgs("re.error", ["msg", "pattern", "pos"], args, kwargs, [
-                    pyNone,
-                    pyNone,
-                ]);
+                const [msg, pattern, pos] = copyKeywordToNamedArgs(
+                    "re.error",
+                    ["msg", "pattern", "pos"],
+                    args,
+                    kwargs,
+                    [pyNone, pyNone]
+                );
                 this.$pattern = pattern;
                 this.$pos = pos;
                 this.$msg = msg;
@@ -489,8 +492,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["string", "pos", "endpos"], Defaults: [zero, maxsize] },
                 $textsig: "($self, /, string, pos=0, endpos=sys.maxsize)",
-                $doc:
-                    "Scan through string looking for a match, and return a corresponding match object instance.\n\nReturn None if no position in the string matches.",
+                $doc: "Scan through string looking for a match, and return a corresponding match object instance.\n\nReturn None if no position in the string matches.",
             },
             sub: {
                 $meth: function sub(repl, string, count) {
@@ -498,8 +500,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["repl", "string", "count"], Defaults: [zero] },
                 $textsig: "($self, /, repl, string, count=0)",
-                $doc:
-                    "Return the string obtained by replacing the leftmost non-overlapping occurrences of pattern in string by the replacement repl.",
+                $doc: "Return the string obtained by replacing the leftmost non-overlapping occurrences of pattern in string by the replacement repl.",
             },
             subn: {
                 $meth: function (repl, string, count) {
@@ -507,8 +508,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["repl", "string", "count"], Defaults: [zero] },
                 $textsig: "($self, /, repl, string, count=0)",
-                $doc:
-                    "Return the tuple (new_string, number_of_subs_made) found by replacing the leftmost non-overlapping occurrences of pattern with the replacement repl.",
+                $doc: "Return the tuple (new_string, number_of_subs_made) found by replacing the leftmost non-overlapping occurrences of pattern with the replacement repl.",
             },
             findall: {
                 $meth: function findall(string, pos, endpos) {
@@ -532,8 +532,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["string", "pos", "endpos"], Defaults: [zero, maxsize] },
                 $textsig: "($self, /, string, pos=0, endpos=sys.maxsize)",
-                $doc:
-                    "Return an iterator over all non-overlapping matches for the RE pattern in string.\n\nFor each match, the iterator returns a match object.",
+                $doc: "Return an iterator over all non-overlapping matches for the RE pattern in string.\n\nFor each match, the iterator returns a match object.",
             },
             scanner: {
                 $meth: function scanner(string, pos, endpos) {
@@ -634,8 +633,8 @@ function $builtinmodule(name) {
                         match.length === 1
                             ? new pyStr(match[0])
                             : match.length === 2
-                                ? new pyStr(match[1])
-                                : new pyTuple(match.slice(1).map((x) => new pyStr(x)))
+                            ? new pyStr(match[1])
+                            : new pyTuple(match.slice(1).map((x) => new pyStr(x)))
                     );
                 }
                 return new pyList(ret);
@@ -812,8 +811,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { MinArgs: 0 },
                 $textsig: null,
-                $doc:
-                    "group([group1, ...]) -> str or tuple.\n    Return subgroup(s) of the match by indices or names.\n    For 0 returns the entire match.",
+                $doc: "group([group1, ...]) -> str or tuple.\n    Return subgroup(s) of the match by indices or names.\n    For 0 returns the entire match.",
             },
             start: {
                 $meth: function start(g) {
@@ -858,8 +856,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["default"], Defaults: [pyNone] },
                 $textsig: "($self, /, default=None)",
-                $doc:
-                    "Return a tuple containing all the subgroups of the match, from 1.\n\n  default\n    Is used for groups that did not participate in the match.",
+                $doc: "Return a tuple containing all the subgroups of the match, from 1.\n\n  default\n    Is used for groups that did not participate in the match.",
             },
             groupdict: {
                 $meth: function groupdict(d) {
@@ -880,8 +877,7 @@ function $builtinmodule(name) {
                 },
                 $flags: { NamedArgs: ["default"], Defaults: [pyNone] },
                 $textsig: "($self, /, default=None)",
-                $doc:
-                    "Return a dictionary containing all the named subgroups of the match, keyed by the subgroup name.\n\n  default\n    Is used for groups that did not participate in the match.",
+                $doc: "Return a dictionary containing all the named subgroups of the match, keyed by the subgroup name.\n\n  default\n    Is used for groups that did not participate in the match.",
             },
             expand: {
                 $meth: function expand(template) {
@@ -1037,7 +1033,9 @@ function $builtinmodule(name) {
                         if (name) {
                             throw new IndexError("unknown group name '" + name + "'");
                         }
-                        throw new re.error("invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1));
+                        throw new re.error(
+                            "invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1)
+                        );
                     }
                     return ret;
                 });
@@ -1079,8 +1077,7 @@ function $builtinmodule(name) {
             },
             $flags: { NamedArgs: ["pattern", "repl", "string", "count", "flags"], Defaults: [zero, zero] },
             $textsig: "($module, / , pattern, string, count=0, flags=0)",
-            $doc:
-                "Return the string obtained by replacing the leftmost\n    non-overlapping occurrences of the pattern in string by the\n    replacement repl.  repl can be either a string or a callable;\n    if a string, backslash escapes in it are processed.  If it is\n    a callable, it's passed the Match object and must return\n    a replacement string to be used.",
+            $doc: "Return the string obtained by replacing the leftmost\n    non-overlapping occurrences of the pattern in string by the\n    replacement repl.  repl can be either a string or a callable;\n    if a string, backslash escapes in it are processed.  If it is\n    a callable, it's passed the Match object and must return\n    a replacement string to be used.",
         },
         subn: {
             $meth: function subn(pattern, repl, string, count, flags) {
@@ -1088,8 +1085,7 @@ function $builtinmodule(name) {
             },
             $flags: { NamedArgs: ["pattern", "repl", "string", "count", "flags"], Defaults: [zero, zero] },
             $textsig: "($module, / , pattern, string, count=0, flags=0)",
-            $doc:
-                "Return a 2-tuple containing (new_string, number).\n    new_string is the string obtained by replacing the leftmost\n    non-overlapping occurrences of the pattern in the source\n    string by the replacement repl.  number is the number of\n    substitutions that were made. repl can be either a string or a\n    callable; if a string, backslash escapes in it are processed.\n    If it is a callable, it's passed the Match object and must\n    return a replacement string to be used.",
+            $doc: "Return a 2-tuple containing (new_string, number).\n    new_string is the string obtained by replacing the leftmost\n    non-overlapping occurrences of the pattern in the source\n    string by the replacement repl.  number is the number of\n    substitutions that were made. repl can be either a string or a\n    callable; if a string, backslash escapes in it are processed.\n    If it is a callable, it's passed the Match object and must\n    return a replacement string to be used.",
         },
         split: {
             $meth: function split(pattern, string, maxsplit, flags) {
@@ -1097,8 +1093,7 @@ function $builtinmodule(name) {
             },
             $flags: { NamedArgs: ["pattern", "string", "maxsplit", "flags"], Defaults: [zero, zero] },
             $textsig: "($module, / , pattern, string, maxsplit=0, flags=0)",
-            $doc:
-                "Split the source string by the occurrences of the pattern,\n    returning a list containing the resulting substrings.  If\n    capturing parentheses are used in pattern, then the text of all\n    groups in the pattern are also returned as part of the resulting\n    list.  If maxsplit is nonzero, at most maxsplit splits occur,\n    and the remainder of the string is returned as the final element\n    of the list.",
+            $doc: "Split the source string by the occurrences of the pattern,\n    returning a list containing the resulting substrings.  If\n    capturing parentheses are used in pattern, then the text of all\n    groups in the pattern are also returned as part of the resulting\n    list.  If maxsplit is nonzero, at most maxsplit splits occur,\n    and the remainder of the string is returned as the final element\n    of the list.",
         },
         findall: {
             $meth: function findall(pattern, string, flags) {
@@ -1106,8 +1101,7 @@ function $builtinmodule(name) {
             },
             $flags: { NamedArgs: ["pattern", "string", "flags"], Defaults: [zero] },
             $textsig: "($module, / , pattern, string, flags=0)",
-            $doc:
-                "Return a list of all non-overlapping matches in the string.\n\n    If one or more capturing groups are present in the pattern, return\n    a list of groups; this will be a list of tuples if the pattern\n    has more than one group.\n\n    Empty matches are included in the result.",
+            $doc: "Return a list of all non-overlapping matches in the string.\n\n    If one or more capturing groups are present in the pattern, return\n    a list of groups; this will be a list of tuples if the pattern\n    has more than one group.\n\n    Empty matches are included in the result.",
         },
         finditer: {
             $meth: function finditer(pattern, string, flags) {
@@ -1115,8 +1109,7 @@ function $builtinmodule(name) {
             },
             $flags: { NamedArgs: ["pattern", "string", "flags"], Defaults: [zero] },
             $textsig: "($module, / , pattern, string, flags=0)",
-            $doc:
-                "Return an iterator over all non-overlapping matches in the\n    string.  For each match, the iterator returns a Match object.\n\n    Empty matches are included in the result.",
+            $doc: "Return an iterator over all non-overlapping matches in the\n    string.  For each match, the iterator returns a Match object.\n\n    Empty matches are included in the result.",
         },
         compile: {
             $meth: function compile(pattern, flags) {
