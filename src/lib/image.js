@@ -194,7 +194,8 @@ $builtinmodule = function (name) {
                 type: "Sk.promise",
                 promise: new Promise(function (resolve, reject) {
                     self.updateCount++;
-                    if ((self.updateCount % self.updateInterval) === 0) {
+                    if ((self.updateCount % self.updateInterval) === 0 ||
+                        (self.updateCount === self.width * self.height)) {
                         if (self.lastx + self.updateInterval >= self.width) {
                             self.lastCtx.putImageData(self.imagedata, self.lastUlx, self.lastUly,
                                 0, self.lasty, self.width, Math.ceil((self.lastx + self.updateInterval) / self.width));
