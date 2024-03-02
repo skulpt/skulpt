@@ -582,43 +582,39 @@ Compiler.prototype.cyield = function(e) {
         val = this.vexpr(e.value);
     }
     nextBlock = this.newBlock("after yield");
-    // return a pair: resume target block and yielded value
-    out("return [/*resume*/", nextBlock, ",/*ret*/", val, "];");
+    out(`$blk=${nextBlock};`);
+    out(`var $susp = $saveSuspension($gen.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
+    out(`return [$susp, ${val}];`);
+
     this.setBlock(nextBlock);
-    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value from gen.send(value)
+    return "$ret"; // $ret will be set in the resume call to $gen.gi$data.send;
 };
 
 Compiler.prototype.cyieldfrom = function (e) {
     if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         throw new Sk.builtin.SyntaxError("'yield' outside function", this.filename, e.lineno);
     }
-    var iterable = this.vexpr(e.value);
-    // get the iterator we are yielding from and store it
-    iterable = this._gr("iter", "Sk.abstr.iter(", iterable, ")");
-    out("$gen." + iterable + "=", iterable, ";");
     var afterIter = this.newBlock("after iter");
     var afterBlock = this.newBlock("after yield from");
+    // get the iterator we are yielding from and store it
+    var iterable = this.vexpr(e.value);
+    out("$gen.gi$yieldfrom = Sk.abstr.iter(", iterable, ");");
     this._jump(afterIter);
     this.setBlock(afterIter);
-    var retval = this.gensym("retval");
-    // We may have entered this block resuming from a yield
-    // So get the iterable stored on $gen.
-    out(iterable, "=$gen.", iterable, ";");
-    out("var ", retval, ";");
     // fast path -> we're sending None (not sending a value) 
     // or we use gen.tp$iternext(true, val) (see generator.js) which is the equivalent of gen.send(val)
-    out("if ($gen.gi$sentvalue === Sk.builtin.none.none$ || " + iterable + ".constructor === Sk.builtin.generator) {");
-    out(    "$ret=", iterable, ".tp$iternext(true, $gen.gi$sentvalue);");
+    out("if ($gen.gi$data.send === Sk.builtin.none.none$ || $gen.gi$yieldfrom.constructor === Sk.builtin.generator) {");
+    out(    "$ret=$gen.gi$yieldfrom.tp$iternext(true, $gen.gi$data.send);");
     out("} else {");
     var send = this.makeConstant("new Sk.builtin.str('send');");
     // slow path -> get the send method of the non-generator iterator and call it
     // throw anything other than a StopIteration
     out(    "$ret=Sk.misceval.tryCatch(");
     out(        "function(){");
-    out(            "return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr(", iterable, ",", send, "), [$gen.gi$sentvalue]);},");
+    out(            "return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr($gen.gi$yieldfrom,", send, "), [$gen.gi$data.send]);},");
     out(        "function (e) { ");
     out(            "if (e instanceof Sk.builtin.StopIteration) { ");
-    out(                    iterable ,".gi$ret = e.$value;");
+    out(                    "$gen.gi$yieldfrom.gi$ret = e.$value;");
                             // store the return value on the iterator
                             // otherwise we lose it beause iterator code in skulpt relies on returning undefined;
                             // one day maybe we can use the js .next protocol {value: ret, done: true} ;-)
@@ -628,15 +624,16 @@ Compiler.prototype.cyieldfrom = function (e) {
     out(    ");");
     out("}");
     this._checkSuspension(e);
-    out(retval, "=$ret;");
-    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on from the `yield from` ("afterBlock")
-    out("if(", retval, "===undefined) {");
-    out(    "$gen.gi$sentvalue=$gen." + iterable + ".gi$ret;");
-    out(    "$blk=", afterBlock, ";continue;");
+    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on to the `yield from` ("afterBlock")
+    out("if($ret===undefined) {");
+    out(    "$ret = $gen.gi$data.send=$gen.gi$yieldfrom.gi$ret || Sk.builtin.none.none$;");
+    out(    "$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;");
     out("}");
-    out("return [/*resume*/", afterIter, ",/*ret*/", retval, "];");
+    out(`$blk = ${afterIter};`);
+    out(`var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);`);
+    out("return [/*resume*/ $susp,/*ret*/ $ret];");
     this.setBlock(afterBlock);
-    return "$gen.gi$sentvalue"; // will either be none if none sent, or the value retuned from gen.send(value)
+    return "$ret"; // will either be none if none sent, or the value from gen.send(value)
 };
 
 
@@ -1255,6 +1252,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
+                    // "if (susp.data.type === 'Sk.gen'){debugger;}" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
                     "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
                     (hasCell?"$cell=susp.$cell;":"");
@@ -1269,10 +1267,12 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
 
     output +=  "try { $ret=susp.child.resume(); } catch(err) { if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
                 "};";
+    output += "var $self = this;";
+    output += unit.ste.generator?"var $gen = $self;":"";
 
     output += "var $saveSuspension = function($child, $filename, $lineno, $colno) {" +
                 "var susp = new Sk.misceval.Suspension(); susp.child=$child;" +
-                "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+"("+(unit.ste.generator?"$gen":"")+"); };" +
+                "susp.resume=function(){"+unit.scopename+".$wakingSuspension=susp; return "+unit.scopename+".call("+(unit.ste.generator?"$gen":"$self")+"); };" +
                 "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;susp.$postfinally=$postfinally;" +
                 "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;" +
                 "susp.optional=susp.child.optional;" +
@@ -1289,6 +1289,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     output +=   "susp.$tmps={" + localSaveCode.join(",") + "};" +
                 "return susp;" +
               "};";
+    // output += "$saveSuspension = $saveSuspension.bind(this);"
 
     return output;
 };
@@ -1451,15 +1452,8 @@ Compiler.prototype.cfor = function (s) {
 
     // get the iterator
     toiter = this.vexpr(s.iter);
-    if (this.u.ste.generator) {
-        // if we're in a generator, we have to store the iterator to a local
-        // so it's preserved (as we cross blocks here and assume it survives)
-        iter = "$loc." + this.gensym("iter");
-        out(iter, "=Sk.abstr.iter(", toiter, ");");
-    } else {
-        iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
-        this.u.tempsToSave.push(iter); // Save it across suspensions
-    }
+    iter = this._gr("iter", "Sk.abstr.iter(", toiter, ")");
+    this.u.tempsToSave.push(iter); // Save it across suspensions
 
     this._jump(start);
 
@@ -1709,14 +1703,17 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
-    this._checkSuspension(s);
-    exit = this._gr("exit", "$ret");
+    exit = this._gr("exit", "Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
-    this._checkSuspension(s);
+    
+    // check we actually have a context manager and throw nicely
+    out("if ($ret === undefined) {throw new Sk.builtin.AttributeError('__enter__');} ")
+    out(`else if (${exit} === undefined) {throw new Sk.builtin.AttributeError('__exit__');}`)
+    
+    // lookupspecial can't suspend
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
     value = this._gr("value", "$ret");
@@ -1907,15 +1904,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     var containingHasFree;
     var frees;
     var argnamesarr = [];
-    var start;
-    var kw;
-    var maxargs;
-    var minargs;
     var id;
-    var argname;
-    var offset;
-    var cells;
-    var locals;
     var i;
     var funcArgs;
     var entryBlock;
@@ -1972,50 +1961,30 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.prefixCode = "var " + scopename + "=(function " + this.niceName(coname.v) + "$(";
 
     funcArgs = [];
-    if (isGenerator) {
-        // TODO make generators deal with arguments properly
-        if (kwarg) {
-            throw new Sk.builtin.SyntaxError(coname.v + "(): keyword arguments in generators not supported",
-                                             this.filename, n.lineno);
-        }
-        if (vararg) {
-            throw new Sk.builtin.SyntaxError(coname.v + "(): variable number of arguments in generators not supported",
-                                             this.filename, n.lineno);
-        }
-        funcArgs.push("$gen");
-    } else {
-        if (kwarg) {
-            funcArgs.push("$kwa");
-            this.u.tempsToSave.push("$kwa");
-        }
-        for (i = 0; args && i < args.args.length; ++i) {
-            funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
-        }
-        for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
-            funcArgs.push(this.nameop(args.kwonlyargs[i].arg, Sk.astnodes.Param));
-        }
-        if (vararg) {
-            funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
-        }
+    if (kwarg) {
+        funcArgs.push("$kwa");
+        this.u.tempsToSave.push("$kwa");
+    }
+    for (i = 0; args && i < args.args.length; ++i) {
+        funcArgs.push(this.nameop(args.args[i].arg, Sk.astnodes.Param));
+    }
+    for (i = 0; args && args.kwonlyargs && i < args.kwonlyargs.length; ++i) {
+        funcArgs.push(this.nameop(args.kwonlyargs[i].arg, Sk.astnodes.Param));
+    }
+    if (vararg) {
+        funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
     }
     // Are we using the new fast-call mechanism, where the
     // function we define implements the tp$call interface?
     // (Right now we haven't migrated generators because they're
     // a mess, but if this works we can move everything over)
-    let fastCall = !isGenerator;
+    let fastCall = true;
 
     if (hasFree) {
-        if (!fastCall) {
-            funcArgs.push("$free");
-        }
         this.u.tempsToSave.push("$free");
     }
 
-    if (fastCall) {
-        this.u.prefixCode += "$posargs,$kwargs";
-    } else {
-        this.u.prefixCode += funcArgs.join(",");
-    }
+    this.u.prefixCode += "$posargs,$kwargs";
 
     this.u.prefixCode += "){";
 
@@ -2036,22 +2005,11 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     // set up standard dicts/variables
     //
-    locals = "{}";
-    if (isGenerator) {
-        entryBlock = "$gen.gi$resumeat";
-        locals = "$gen.gi$locals";
-    }
-    cells = ",$cell={}";
-    if (hasCell) {
-        if (isGenerator) {
-            cells = ",$cell=$gen.gi$cells";
-        }
-    }
 
     // note special usage of 'this' to avoid having to slice globals into
     // all function invocations in call
     // (fastcall doesn't need to do this, as 'this' is the func object)
-    this.u.varDeclsCode += "var $blk=" + entryBlock + ",$exc=[],$loc=" + locals + cells + ",$gbl=" +(fastCall?"this && this.func_globals":"this") + ((fastCall&&hasFree)?",$free=this && this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.varDeclsCode += "var $blk="+entryBlock+",$exc=[],$loc={},$cell={},$gbl=this && this.func_globals" + (hasFree?",$free=this && this.func_closure":"") + ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2065,43 +2023,24 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "var $waking=false; if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); $waking=true; } else {";
 
-    if (fastCall) {
-        // Resolve our arguments from $posargs+$kwargs.
-        // If we're posargs-only, we can handle the fast path
-        // without even calling out
-        if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
-            this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
-        } else {
-            this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
-        }
-        for (let i = 0; i < funcArgs.length; i++) {
-            this.u.varDeclsCode += "," + funcArgs[i] + "=$args[" + i + "]";
-        }
-        const instanceForSuper = funcArgs[kwarg ? 1 : 0];
-        if (instanceForSuper) {
-            this.u.varDeclsCode += `,$sup=${instanceForSuper}`;
-        }
-        this.u.varDeclsCode += ";\n";
+    // Resolve our arguments from $posargs+$kwargs.
+    // If we're posargs-only, we can handle the fast path
+    // without even calling out
+    if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
+        this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
+    } else {
+        this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
     }
-
-
-    // TODO update generators to do their arg checks in outside generated code,
-    // like functions do
-    //
-    // this could potentially get removed if generators would learn to deal with args, kw, kwargs, varargs
-    // initialize default arguments. we store the values of the defaults to
-    // this code object as .$defaults just below after we exit this scope.
-    //
-    if (isGenerator && defaults.length > 0) {
-        // defaults have to be "right justified" so if there's less defaults
-        // than args we offset to make them match up (we don't need another
-        // correlation in the ast)
-        offset = args.args.length - defaults.length;
-        for (i = 0; i < defaults.length; ++i) {
-            argname = this.nameop(args.args[i + offset].arg, Sk.astnodes.Param);
-            this.u.varDeclsCode += "if(" + argname + "===undefined)" + argname + "=" + scopename + ".$defaults[" + i + "];";
-        }
+    for (let i = 0; i < funcArgs.length; i++) {
+        this.u.varDeclsCode += "," + funcArgs[i] + "=$args[" + i + "]";
     }
+    const instanceForSuper = funcArgs[kwarg ? 1 : 0];
+    if (instanceForSuper) {
+        this.u.varDeclsCode += `,$sup=${instanceForSuper}`;
+    }
+    this.u.varDeclsCode += ";\n";
+
+    this.u.varDeclsCode += ";\n";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
@@ -2136,6 +2075,15 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             let mangled = fixReserved(mangleName(this.u.private_, kwarg.arg).v);
             this.u.varDeclsCode += "$cell." + mangled + "=" + mangled + ";";
         }
+    }
+
+    // we've resolved the arguments now so we return a generator
+    // call new generator and then save the suspension
+    if (isGenerator) {
+        this.u.varDeclsCode += `$gen = new Sk.builtin.generator(${scopename}, this.$name, this.$qualname);
+        var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);
+        $gen.curr$susp = $susp;
+        return $gen;`
     }
 
     //
@@ -2227,9 +2175,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (vararg) {
         out(scopename, ".co_varargs=1;");
     }
-    if (!isGenerator) {
-        out(scopename, ".co_fastcall=1;");
-    }
+    out(scopename, ".co_fastcall=1;");
 
     //
     // build either a 'function' or 'generator'. the function is just a simple
@@ -2255,35 +2201,23 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
             frees += ",$free";
         }
     }
-    if (isGenerator) {
-    // Keyword and variable arguments are not currently supported in generators.
-    // The call to pyCheckArgs assumes they can't be true.
-        if (args && args.args.length > 0) {
-            return this._gr("gener", "new Sk.builtins['function']((function(){var $origargs=Array.prototype.slice.call(arguments);Sk.builtin.pyCheckArgsLen(\"",
-                            coname.v, "\",arguments.length,", args.args.length - defaults.length, ",", args.args.length,
-                            ");return new Sk.builtins['generator'](", scopename, ",$gbl,$origargs", frees, ");}))");
-        } else {
-            return this._gr("gener", "new Sk.builtins['function']((function(){Sk.builtin.pyCheckArgsLen(\"", coname.v,
-                            "\",arguments.length,0,0);return new Sk.builtins['generator'](", scopename, ",$gbl,[]", frees, ");}))");
-        }
-    } else {
-        let funcobj;
-        if (decos.length > 0) {
-            out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
-            for (let decorator of decos.reverse()) {
-                out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
-                this._checkSuspension();
-            }
-            funcobj = this._gr("funcobj", "$ret");
-        } else {
-            funcobj = this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
-        }
-        if (func_annotations) {
-            out(funcobj, ".func_annotations=", func_annotations, ";");
-        }
 
-        return funcobj;
+    let funcobj;
+    if (decos.length > 0) {
+        out("$ret = new Sk.builtins['function'](", scopename, ",$gbl", frees, ");");
+        for (let decorator of decos.reverse()) {
+            out("$ret = Sk.misceval.callsimOrSuspendArray(", decorator, ",[$ret]);");
+            this._checkSuspension();
+        }
+        funcobj = this._gr("funcobj", "$ret");
+    } else {
+        funcobj = this._gr("funcobj", "new Sk.builtins['function'](", scopename, ",$gbl", frees, ")");
     }
+    if (func_annotations) {
+        out(funcobj, ".func_annotations=", func_annotations, ";");
+    }
+
+    return funcobj;
 };
 
 
@@ -2433,12 +2367,13 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
         // the outer most iterator is evaluated in the scope outside so we
         // have to evaluate it outside and store it into the generator as a
         // local, which we retrieve here.
-        iter = "$loc.$iter0";
+        iter = "$iter0";
     } else {
         toiter = this.vexpr(ge.iter);
-        iter = "$loc." + this.gensym("iter");
+        iter = this.gensym("iter");
         out(iter, "=", "Sk.abstr.iter(", toiter, ");");
     }
+    this.u.tempsToSave.push(iter);
     this._jump(start);
     this.setBlock(start);
 
@@ -2469,7 +2404,11 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
         this.annotateSource(elt);
 
         velt = this.vexpr(elt);
-        out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
+        out(`$blk=${skip};`)
+        out(`var $susp = $saveSuspension($gen.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
+        // out(`debugger;`);
+        out(`return [$susp, ${velt}];`);
+        // out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
         this.setBlock(skip);
     }
 
@@ -2494,7 +2433,7 @@ Compiler.prototype.cgenexp = function (e) {
     var gener = this._gr("gener", "Sk.misceval.callsimArray(", gen, ");");
     // stuff the outermost iterator into the generator after evaluating it
     // outside of the function. it's retrieved by the fixed name above.
-    out(gener, ".gi$locals.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");
+    out(gener, ".curr$susp.$tmps.$iter0=Sk.abstr.iter(", this.vexpr(e.generators[0].iter), ");");
     return gener;
 };
 
@@ -2751,7 +2690,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
             break;
         case Sk.SYMTAB_CONSTS.LOCAL:
             // can't do FAST in generators or at module/class scope
-            if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && !this.u.ste.generator) {
+            if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock) {
                 optype = OP_FAST;
             }
             break;
@@ -2774,7 +2713,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     // in generator or at module scope, we need to store to $loc, rather that
     // to actual JS stack variables.
     mangledNoPre = mangled;
-    if (this.u.ste.generator || this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
+    if (this.u.ste.blockType !== Sk.SYMTAB_CONSTS.FunctionBlock) {
         mangled = "$loc." + mangled;
     } else if (optype === OP_FAST || optype === OP_NAME) {
         this.u.localnames.push(mangled);

@@ -173,7 +173,7 @@ const StopIteration = complexExtends(
     "Signal the end from iterator.__next__().",
     function init(args, kws) {
         BaseExc_init.call(this, args, kws);
-        this.$value = args[0] || Sk.builtin.none.none$;
+        this.$value = args[0];
     },
     ["value"]
 );
