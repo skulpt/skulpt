@@ -933,7 +933,7 @@ Sk.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
  * @param{function()} suspendablefn returns either a result or a Suspension
  * @param{Object=} suspHandlers an object map of suspension handlers
  */
-Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
+Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers, currentProgram) {
     return new Promise(function (resolve, reject) {
         try {
             var r = suspendablefn();
@@ -974,6 +974,10 @@ Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
                                 handlerPromise.then(handleResponse, reject);
                                 return;
                             }
+                        }
+
+                        if (window.sessionStorage.getItem("currentProgram") !== currentProgram.toString()) {
+                            break;
                         }
 
                         if (r.data["type"] == "Sk.debug") {
