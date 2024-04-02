@@ -38,6 +38,7 @@ Sk.builtins = {
 
     "BaseException"      : Sk.builtin.BaseException, 
     "AttributeError"     : Sk.builtin.AttributeError,
+    "ArithmeticError"    : Sk.builtin.ArithmeticError,
     "ValueError"         : Sk.builtin.ValueError,
     "Exception"          : Sk.builtin.Exception,
     "ZeroDivisionError"  : Sk.builtin.ZeroDivisionError,
