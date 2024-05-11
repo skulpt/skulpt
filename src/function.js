@@ -248,7 +248,7 @@ function $resolveArgs(posargs, kw) {
     } else if (nposargs > co_argcount) {
         const plural_expected = co_argcount == 1 ? "argument" : "arguments";
         const plural_given = nposargs == 1 ? "was" : "were";
-        throw new Sk.builtin.TypeError(`${this.$name}"() takes ${co_argcount} positional ${plural_expected} but ${nposargs} ${plural_given} given`);
+        throw new Sk.builtin.TypeError(`${this.$name}() takes ${co_argcount} positional ${plural_expected} but ${nposargs} ${plural_given} given`);
     }
 
     /* Handle keyword arguments */
