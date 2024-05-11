@@ -49,72 +49,90 @@ function brun(test, fname) {
     let skulpt = skulptName();
 
     // use res.render to load up an ejs view file
+    app.get('/', function (req, res) {
+        res.render(path.resolve('support', 'run', 'home_page'), {
+        });
 
-    if (test) {
+    })
+    app.get('/run', function (req, res) {
+        let prog;
+        try {
+            // This is for the development server only.
+            // We allow reading of any file here
+            let fname = req.query['file']
+            prog = fs.readFileSync(fname, 'utf8');
+        } catch (error) {
+            prog = error.toString();
+        }
+        res.render(path.resolve('support', 'run', 'run_template'), {
+            skulpt: skulpt,
+            code: prog
+        });
+    })
+    app.get('/tests', function (req, res) {
         // Test file names
-        var unit2 = getFileNames('test/unit');
-        var unit3 = getFileNames('test/unit3');
+        let unit2 = getFileNames('test/unit');
+        let unit3 = getFileNames('test/unit3');
 
         // Data files
-        var filecontents = "";
+        let filecontents = "";
         datafilelist.forEach(function (file) {
             filecontents += '<textarea id="' + file + '" style="display:none;">\n';
             filecontents += fs.readFileSync(file, 'utf8');
             filecontents += '</textarea>\n';
         });
 
-        // index page
-        app.get('/', function (req, res) {
-            res.render(path.resolve('support', 'run', 'test_template'), {
-                skulpt: skulpt,
-                test2: JSON.stringify(unit2),
-                test3: JSON.stringify(unit3),
-                files: filecontents
-            });
+        res.render(path.resolve('support', 'run', 'test_template'), {
+            skulpt: skulpt,
+            test2: JSON.stringify(unit2),
+            test3: JSON.stringify(unit3),
+            files: filecontents
         });
 
-        // support files
-        app.get('/test/unit2.js', function (req, res) {
-            res.sendFile(path.resolve('support', 'tmp', 'unit2.js'), {}, function (err) {
-                if (err) {
-                    res.sendStatus(404);
-                }
-            });
-        });
+    });
 
-        app.get('/test/unit3.js', function (req, res) {
-            res.sendFile(path.resolve('support', 'tmp', 'unit3.js'), {}, function (err) {
-                if (err) {
-                    res.sendStatus(404);
-                }
-            });
+    // support files
+    app.get('/test/unit2.js', function (req, res) {
+        res.sendFile(path.resolve('support', 'tmp', 'unit2.js'), {}, function (err) {
+            if (err) {
+                res.sendStatus(404);
+            }
         });
+    });
 
-        app.get('/test/runner.js', function (req, res) {
-            res.sendFile(path.resolve('support', 'run', 'btestrunner.js'), {}, function (err) {
-                if (err) {
-                    res.sendStatus(404);
-                }
-            });
+    app.get('/test/unit3.js', function (req, res) {
+        res.sendFile(path.resolve('support', 'tmp', 'unit3.js'), {}, function (err) {
+            if (err) {
+                res.sendStatus(404);
+            }
         });
-    } else {
-        // Test file
-        var prog = fs.readFileSync(fname, 'utf8');
+    });
 
-        // index page
-        app.get('/', function (req, res) {
-            res.render(path.resolve('support', 'run', 'run_template'), {
-                skulpt: skulpt,
-                code: prog
-            });
+    app.get('/test/runner.js', function (req, res) {
+        res.sendFile(path.resolve('support', 'run', 'btestrunner.js'), {}, function (err) {
+            if (err) {
+                res.sendStatus(404);
+            }
         });
+    });
+
+    app.use(function (req, res) {
+        res.status(404).send('Page not found');
+    });
+
+
+    let port = 8080;
+
+    let url = test ? `http://localhost:${port}/tests`
+        : `http://localhost:${port}/run?file=${encodeURIComponent(fname)}`;
+
+    console.log(`Navigate to ${url} if it doesn't open automatically.`);
+    try {
+        app.listen(port);
+    } finally {
+        open(url);
     }
-    
-    let port = test ? 8081 : 8080;
-    app.listen(port);
-    console.log(`Navigate to localhost:${port} if it doesn't open automatically.`);
-    open(`http://localhost:${port}`);
-};
+}
 
 program
     .option('-t, --test', 'Run test suites')

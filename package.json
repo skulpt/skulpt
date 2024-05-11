@@ -28,7 +28,7 @@
     "doc": "echo 'Building Documentation in docs/ProgMan' && jsdoc -c jsdoc.json HACKING.md",
     "dist": "npm run build && npm run test && npm run doc && node support/build/copy2docs.js",
     "~~~~utils~~~~": "# internal scripts that requires arguments or tooling",
-    "browser-run": "node support/run/brun.js -p ./example/example.py",
+    "browser-run": "node support/run/brun.js -p example/example.py",
     "prebtest": "node support/build/wrapmodules.js unit2 && node support/build/wrapmodules.js unit3",
     "brun": "node support/run/brun.js -p",
     "regenparser": "node support/build/regenparser.js",
