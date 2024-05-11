@@ -1053,7 +1053,7 @@ Debugging
 How do I use the debugger in the browser to help me debug my code?
 
 Easy, just add the statement: `debugger;` to your code. Now if you have
-the javscript deveoper tools open in the browser you will have it.
+the javscript developer tools open in the browser you will have it.
 
 If you want to start the debugger from a python function that you have
 written you can also add a debugger statement
