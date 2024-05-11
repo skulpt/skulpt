@@ -10,7 +10,7 @@ const datafilelist = [
     "skulpt.py"
 ];
 
-function skulptName () {
+function skulptName() {
     let files = fs.readdirSync("dist");
     for (let idx = 0; idx < files.length; idx++) {
         console.log(files[idx]);
@@ -21,7 +21,7 @@ function skulptName () {
     throw new Error("No skulpt distribution file, build skulpt first");
 }
 
-function getFileNames (dir) {
+function getFileNames(dir) {
     let filelist = [];
     let files = fs.readdirSync(dir);
 
@@ -38,7 +38,7 @@ function getFileNames (dir) {
     return filelist;
 }
 
-function brun (test, fname) {
+function brun(test, fname) {
     let app = express();
 
     // set the view engine to ejs
@@ -109,10 +109,11 @@ function brun (test, fname) {
             });
         });
     }
-
-    app.listen(8080);
-    console.log("Navigate to localhost:8080 if it doesn't open automatically.");
-    open('http://localhost:8080');
+    
+    let port = test ? 8081 : 8080;
+    app.listen(port);
+    console.log(`Navigate to localhost:${port} if it doesn't open automatically.`);
+    open(`http://localhost:${port}`);
 };
 
 program
