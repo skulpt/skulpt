@@ -1230,6 +1230,11 @@ function generateTurtleModule(_target) {
                 this._keyUpListener = undefined;
             }
 
+            if(!this._keyDownListener && !this._keyUpListener){
+                // Set a notification flag directly to the Sk.TurtleGraphics object
+                Sk.TurtleGraphics.isListeningKeyEvents = false;
+            }
+
             if (this._timer) {
                 window.clearTimeout(this._timer);
                 this._timer = undefined;
@@ -1563,6 +1568,8 @@ function generateTurtleModule(_target) {
         proto.$listen = function() {
             this._createKeyUpListener();
             this._createKeyDownListener();
+            // Set a notification flag directly to the Sk.TurtleGraphics object
+            Sk.TurtleGraphics.isListeningKeyEvents = true;
         };
 
         proto.$onkey = function(method, keyValue) {
