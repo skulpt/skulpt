@@ -129,7 +129,7 @@ Sk.builtin.object = Sk.abstr.buildNativeClass("object", {
             $meth(format_spec) {
                 if (!Sk.builtin.checkString(format_spec)) {
                     throw new Sk.builtin.TypeError("__format__() argument must be str, not " + Sk.abstr.typeName(format_spec));
-                } else if (format_spec !== Sk.builtin.str.$empty) {
+                } else if (format_spec.v !== "") {
                     throw new Sk.builtin.TypeError(`unsupported format string passed to ${Sk.abstr.typeName(this)}.__format__`);
                 }
                 return this.tp$str();
