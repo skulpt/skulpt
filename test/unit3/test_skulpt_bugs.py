@@ -92,5 +92,24 @@ class TestDict(unittest.TestCase):
         self.assertFalse(a.__dict__.called)
 
 
+
+class TestLineNoErrorBug(unittest.TestCase):
+    def test_error_after_func_call(self):
+        global err
+
+        import time
+        class Foo:
+            def __init__(self):
+                f"{time.time()} {self.bar}"
+        
+        with self.assertRaises(AttributeError) as e:
+            Foo()
+        
+        err = e.exception
+        # hack because traceback is not exposed in python yet
+        lineno = jseval("Sk.globals['err'].traceback[0].lineno")
+        self.assertNotEqual(lineno, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
