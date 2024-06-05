@@ -915,10 +915,7 @@ Compiler.prototype.vexpr = function (e, data, augvar, augsubs) {
         case Sk.astnodes.Compare:
             return this.ccompare(e);
         case Sk.astnodes.Call:
-            result = this.ccall(e);
-            // After the function call, we've returned to this line
-            this.annotateSource(e);
-            return result;
+            return this.ccall(e);
         case Sk.astnodes.Num:
             if (typeof e.n === "number") {
                 return e.n;
