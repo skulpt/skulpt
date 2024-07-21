@@ -1034,7 +1034,7 @@ function $builtinmodule() {
                         if (!checkString(fmt)) {
                             throw new TypeError("must be str, not " + typeName(fmt));
                         }
-                        if (fmt !== pyStr.$empty) {
+                        if (fmt.v !== "") {
                             return this.tp$getattr(str_strftime).tp$call([fmt]);
                         }
                         return this.tp$str();
@@ -1433,7 +1433,7 @@ function $builtinmodule() {
                         if (!checkString(fmt)) {
                             throw new TypeError("must be str, not " + typeName(fmt));
                         }
-                        if (fmt !== pyStr.$empty) {
+                        if (fmt.v !== "") {
                             return this.tp$getattr(str_strftime).tp$call([fmt]);
                         }
                         return this.tp$str();
