@@ -44,7 +44,7 @@ function test (python3, opt, module = undefined) {
         let stat = fs.statSync(file);
         let basename = path.basename(file, ".py");
 
-        if (stat.isFile() && basename.startsWith("test_mock") && path.extname(file) == ".py") {
+        if (stat.isFile() && basename.startsWith("test_") && path.extname(file) == ".py") {
             if (module && !basename.endsWith(module)) {
                 continue;
             }
