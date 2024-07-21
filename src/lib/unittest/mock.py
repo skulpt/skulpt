@@ -1,3 +1,10 @@
+__author__ = 'Duncan Richards'
+
+'''
+Creates a MagicMock class to make better mocked up unitests possible.
+
+'''
+
 class call:
     def __init__(self, *args, _name="", _include_name=False, **kwargs):
         self._name = _name
@@ -12,12 +19,15 @@ class call:
     def __call__(self, *args, **kwargs):
         return call(*args, **kwargs)
 
+    def _stringify_kwargs(self, kwargs_dict):
+        return ", ".join(
+                [f"{key}={repr(value)}" for key, value in kwargs_dict.items()]
+            )
+
     def __repr__(self):
         string_args = str(self.args).replace("(", "").replace(")", "")
         if self.kwargs:
-            string_kwargs = ", ".join(
-                [f"{key}={value}" for key, value in self.kwargs.items()]
-            )
+            string_kwargs = self._stringify_kwargs(self.kwargs)
         else:
             string_kwargs = ""
 
@@ -56,11 +66,12 @@ class MagicMock:
         return new_val
 
     def __getattr__(self, key):
-        if key in self.__dict__ and key != "name":
+        if key in self.__dict__:
             return self.__dict__[key]
-
         if key == "return_value":
             new_val = self._magic_method_mocker("()")
+        elif key in {"__str__", "__len__"}:
+            new_val = self._magic_method_mocker(key, _parent=None)
         else:
             new_val = self._magic_method_mocker(key)
 
@@ -288,7 +299,7 @@ class MagicMock:
         self.__dict__.update({"__rand__": value})
 
     @property
-    def __rdivmod__(self):
+    def __rdivmod__(self, *args, **kwargs):
         return self.__getattr__("__rdivmod__")
 
     @__rdivmod__.setter
@@ -296,11 +307,452 @@ class MagicMock:
         self.__dict__.update({"__rdivmod__": value})
 
     @property
+    def __rfloordiv__(self, *args, **kwargs):
+        return self.__getattr__("__rfloordiv__")
+
+    @__rfloordiv__.setter
+    def __rfloordiv__(self, value):
+        self.__dict__.update({"__rfloordiv__": value})
+
+    @property
+    def __rlshift__(self, *args, **kwargs):
+        return self.__getattr__("__rlshift__")
+
+    @__rlshift__.setter
+    def __rlshift__(self, value):
+        self.__dict__.update({"__rlshift__": value})
+
+    @property
+    def __rmatmul__(self, *args, **kwargs):
+        return self.__getattr__("__rmatmul__")
+
+    @__rmatmul__.setter
+    def __rmatmul__(self, value):
+        self.__dict__.update({"__rmatmul__": value})
+
+    @property
+    def __rmod__(self, *args, **kwargs):
+        return self.__getattr__("__rmod__")
+
+    @__rmod__.setter
+    def __rmod__(self, value):
+        self.__dict__.update({"__rmod__": value})
+
+    @property
+    def __rmul__(self, *args, **kwargs):
+        return self.__getattr__("__rmul__")
+
+    @__rmul__.setter
+    def __rmul__(self, value):
+        self.__dict__.update({"__rmul__": value})
+
+    @property
+    def __ror__(self, *args, **kwargs):
+        return self.__getattr__("__ror__")
+
+    @__ror__.setter
+    def __ror__(self, value):
+        self.__dict__.update({"__ror__": value})
+
+    @property
+    def __round__(self, *args, **kwargs):
+        return self.__getattr__("__round__")
+
+    @__round__.setter
+    def __round__(self, value):
+        self.__dict__.update({"__round__": value})
+
+    @property
+    def __rpow__(self, *args, **kwargs):
+        return self.__getattr__("__rpow__")
+
+    @__rpow__.setter
+    def __rpow__(self, value):
+        self.__dict__.update({"__rpow__": value})
+
+    @property
+    def __rrshift__(self, *args, **kwargs):
+        return self.__getattr__("__rrshift__")
+
+    @__rrshift__.setter
+    def __rrshift__(self, value):
+        self.__dict__.update({"__rrshift__": value})
+
+    @property
+    def __rshift__(self, *args, **kwargs):
+        return self.__getattr__("__rshift__")
+
+    @__rshift__.setter
+    def __rshift__(self, value):
+        self.__dict__.update({"__rshift__": value})
+
+    @property
+    def __rsub__(self, *args, **kwargs):
+        return self.__getattr__("__rsub__")
+
+    @__rsub__.setter
+    def __rsub__(self, value):
+        self.__dict__.update({"__rsub__": value})
+
+    @property
+    def __rtruediv__(self, *args, **kwargs):
+        return self.__getattr__("__rtruediv__")
+
+    @__rtruediv__.setter
+    def __rtruediv__(self, value):
+        self.__dict__.update({"__rtruediv__": value})
+
+    @property
+    def __rxor__(self, *args, **kwargs):
+        return self.__getattr__("__rxor__")
+
+    @__rxor__.setter
+    def __rxor__(self, value):
+        self.__dict__.update({"__rxor__": value})
+
+    @property
+    def __sizeof__(self, *args, **kwargs):
+        return self.__getattr__("__sizeof__")
+
+    @__sizeof__.setter
+    def __sizeof__(self, value):
+        self.__dict__.update({"__sizeof__": value})
+
+    @property
+    def __sub__(self, *args, **kwargs):
+        return self.__getattr__("__sub__")
+
+    @__sub__.setter
+    def __sub__(self, value):
+        self.__dict__.update({"__sub__": value})
+
+    @property
+    def __truediv__(self, *args, **kwargs):
+        return self.__getattr__("__truediv__")
+
+    @__truediv__.setter
+    def __truediv__(self, value):
+        self.__dict__.update({"__truediv__": value})
+
+    @property
+    def __xor__(self, *args, **kwargs):
+        return self.__getattr__("__xor__")
+
+    @__xor__.setter
+    def __xor__(self, value):
+        self.__dict__.update({"__xor__": value})
+
+    @property
+    def __setitem__(self, *args, **kwargs):
+        return self.__getattr__("__setitem__")
+
+    @__setitem__.setter
+    def __setitem__(self, value):
+        self.__dict__.update({"__setitem__": value})
+
+    @property
+    def __iter__(self, *args, **kwargs):
+        return self.__getattr__("__iter__")
+
+    @__iter__.setter
+    def __iter__(self, value):
+        self.__dict__.update({"__iter__": value})
+
+    @property
+    def __getitem__(self, *args, **kwargs):
+        return self.__getattr__("__getitem__")
+
+    @__getitem__.setter
+    def __getitem__(self, value):
+        self.__dict__.update({"__getitem__": value})
+
+    @property
+    def __iadd__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__iadd__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__iadd__.setter
+    def __iadd__(self, value):
+        self.__dict__.update({"__iadd__": value})
+
+    @property
+    def __iand__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__iand__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__iand__.setter
+    def __iand__(self, value):
+        self.__dict__.update({"__iand__": value})
+
+    @property
+    def __ifloordiv__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__ifloordiv__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__ifloordiv__.setter
+    def __ifloordiv__(self, value):
+        self.__dict__.update({"__ifloordiv__": value})
+
+    @property
+    def __ilshift__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__ilshift__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__ilshift__.setter
+    def __ilshift__(self, value):
+        self.__dict__.update({"__ilshift__": value})
+
+    @property
+    def __imatmul__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__imatmul__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__imatmul__.setter
+    def __imatmul__(self, value):
+        self.__dict__.update({"__imatmul__": value})
+
+    @property
+    def __imod__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__imod__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__imod__.setter
+    def __imod__(self, value):
+        self.__dict__.update({"__imod__": value})
+
+    @property
+    def __imul__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__imul__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__imul__.setter
+    def __imul__(self, value):
+        self.__dict__.update({"__imul__": value})
+
+    @property
+    def __index__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__index__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__index__.setter
+    def __index__(self, value):
+        self.__dict__.update({"__index__": value})
+
+    @property
+    def __invert__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__invert__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__invert__.setter
+    def __invert__(self, value):
+        self.__dict__.update({"__invert__": value})
+
+    @property
+    def __ior__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__ior__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__ior__.setter
+    def __ior__(self, value):
+        self.__dict__.update({"__ior__": value})
+
+    @property
+    def __ipow__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__ipow__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__ipow__.setter
+    def __ipow__(self, value):
+        self.__dict__.update({"__ipow__": value})
+
+    @property
+    def __irshift__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__irshift__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__irshift__.setter
+    def __irshift__(self, value):
+        self.__dict__.update({"__irshift__": value})
+
+    @property
+    def __isub__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__isub__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__isub__.setter
+    def __isub__(self, value):
+        self.__dict__.update({"__isub__": value})
+
+    @property
+    def __itruediv__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__itruediv__")
+
+        self = magic_method_mock
+
+        return self
+
+    @__itruediv__.setter
+    def __itruediv__(self, value):
+        self.__dict__.update({"__itruediv__": value})
+
+    @property
+    def __ixor__(self, *args, **kwargs):
+        magic_method_mock = self.__getattr__("__ixor__")
+
+        self = magic_method_mock
+
+        return self
+
+    def _set_default_prop_return_value(self, mock, value):
+        if isinstance(mock.return_value, MagicMock) and mock.return_value._name == f"{mock._name}()":
+            mock.return_value = value
+
+    @property
     def __int__(self):
         magic_mock = self.__getattr__("__int__")
-        magic_mock.return_value = 1
+        self._set_default_prop_return_value(magic_mock, 1)
         return magic_mock
 
     @__int__.setter
     def __int__(self, value):
         self.__dict__.update({"__int__": value})
+
+    @property
+    def __complex__(self):
+        magic_mock = self.__getattr__("__complex__")
+        self._set_default_prop_return_value(magic_mock, 1j)
+        return magic_mock
+
+    @__complex__.setter
+    def __complex__(self, value):
+        self.__dict__.update({"__complex__": value})
+    
+    @property
+    def __len__(self):
+        magic_mock = self.__dict__.get("__len__", MagicMock("__len__", _parent=None))
+        self.__dict__.update({"__len__": magic_mock})
+        self._set_default_prop_return_value(magic_mock, 0)
+        return magic_mock
+
+    @__len__.setter
+    def __len__(self, value):
+        self.__dict__.update({"__len__": value})
+
+    @property
+    def __bool__(self):
+        magic_mock = self.__dict__.get("__bool__", MagicMock("__bool__", _parent=None))
+        self.__dict__.update({"__bool__": magic_mock})
+        self._set_default_prop_return_value(magic_mock, True)
+        return magic_mock
+
+    @__bool__.setter
+    def __bool__(self, value):
+        self.__dict__.update({"__bool__": value})
+
+    @property
+    def __str__(self):
+        magic_mock = self.__dict__.get("__str__", MagicMock("__str__", _parent=None))
+        self.__dict__.update({"__str__": magic_mock})
+        self._set_default_prop_return_value(magic_mock, repr(self))
+        return magic_mock
+
+    @__str__.setter
+    def __str__(self, value):
+        self.__dict__.update({"__str__": value})
+
+    @property
+    def call_count(self):
+        return len(self.call_args_list)
+    
+    @property
+    def call_args_list(self):
+        return [mock_call for mock_call in self.mock_calls if not mock_call._name]
+    
+    @property
+    def call_args(self):
+        if self.call_args_list:
+            return self.call_args_list[-1]
+        return None
+    
+    def assert_any_call(self, *args, **kwargs):
+        asserted_call = call(*args, **kwargs)
+        if asserted_call not in self.mock_calls:
+            mock_string = repr(asserted_call).replace("call", self._name, 1)
+            raise AssertionError(f"{mock_string} call not found")
+    
+    def assert_called(self):
+        if not self.called:
+            raise AssertionError(f"Expected '{self._name}' to have been called.")
+    
+    def assert_called_once(self):
+        direct_mock_len = self.call_count
+        if direct_mock_len != 1:
+            raise AssertionError(f"Expected '{self._name}' to have been called once. Called {direct_mock_len} times.\nCalls: {self.mock_calls}")
+    
+    def assert_called_with(self, *args, **kwargs):
+        direct_mock_calls = self.call_args_list
+        expected_call = call(*args, **kwargs)
+        if direct_mock_calls and expected_call != self.call_args:
+            raise AssertionError(f"expected call not found\nExpected: {repr(expected_call).replace('call', self._name, 1)}\nActual: {repr(self.call_args).replace('call', self._name, 1)}")
+        if not direct_mock_calls:
+            raise AssertionError(f"expected call not found\nExpected: {repr(expected_call).replace('call', self._name, 1)}\nActual: not called")
+
+    def assert_called_once_with(self, *args, **kwargs):
+        self.assert_called_once()
+        self.assert_called_with(*args, **kwargs)
+    
+    def assert_has_calls(self, call_list):
+        if not call_list:
+            return
+        if call_list[0] in self.mock_calls:
+            direct_mocks = self.call_args_list
+            first_call_index = direct_mocks.index(call_list[0])
+            all_calls = direct_mocks[first_call_index: first_call_index + len(call_list)]
+            if call_list != all_calls:
+                raise AssertionError(f"Calls not found.\nExpected: {call_list}\nActual: {self.mock_calls}")
+        else:
+            raise AssertionError(f"Calls not found.\nExpected: {call_list}\nActual: {self.mock_calls}")
+
+    def assert_not_called(self):
+        direct_mock_len = self.call_count
+        if direct_mock_len:
+            raise AssertionError(f"Expected '{self._name}' to have not been called. Called {direct_mock_len} times.\nCalls: {self.mock_calls}")
