@@ -883,6 +883,8 @@ Sk.misceval.apply = function (func, kwdict, varargseq, kws, args) {
 };
 Sk.exportSymbol("Sk.misceval.apply", Sk.misceval.apply);
 
+Sk.misceval.defaultHandlers = {};
+
 /**
  * Wraps anything that can return an Sk.misceval.Suspension, and returns a
  * JS Promise with the result. Also takes an object map of suspension handlers:
@@ -949,7 +951,11 @@ Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
                     };
 
                     while (r instanceof Sk.misceval.Suspension) {
-                        var handler = suspHandlers && (suspHandlers[r.data["type"]] || suspHandlers["*"]);
+                        const type = r.data["type"];
+                        let handler = suspHandlers && (suspHandlers[type] || suspHandlers["*"]);
+                        if (!handler) {
+                            handler = Sk.misceval.defaultHandlers[type] || Sk.misceval.defaultHandlers["*"];
+                        }
 
                         if (handler) {
                             var handlerPromise = handler(r);
@@ -959,16 +965,16 @@ Sk.misceval.asyncToPromise = function (suspendablefn, suspHandlers) {
                             }
                         }
 
-                        if (r.data["type"] == "Sk.promise") {
+                        if (type == "Sk.promise") {
                             r.data["promise"].then(resumeWithData, resumeWithError);
                             return;
-                        } else if (r.data["type"] == "Sk.yield") {
+                        } else if (type == "Sk.yield") {
                             // Assumes all yields are optional, as Sk.setTimeout might
                             // not be able to yield.
                             //Sk.setTimeout(resume, 0);
                             Sk.global["setImmediate"](resume);
                             return;
-                        } else if (r.data["type"] == "Sk.delay") {
+                        } else if (type == "Sk.delay") {
                             //Sk.setTimeout(resume, 1);
                             Sk.global["setImmediate"](resume);
                             return;

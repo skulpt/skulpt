@@ -206,6 +206,8 @@ Sk.configure = function (options) {
 
     Sk.misceval.softspace_ = false;
 
+    Sk.misceval.defaultHandlers = options.suspensionHandlers || {};
+
     Sk.switch_version(Sk.__future__.python3);
 
     Sk.builtin.str.$next = Sk.__future__.python3 ? new Sk.builtin.str("__next__") : new Sk.builtin.str("next");
