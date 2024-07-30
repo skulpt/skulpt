@@ -1951,9 +1951,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (args && args.kwarg) {
         kwarg = args.kwarg;
     }
-    if (!Sk.__future__.python3 && args && args.kwonlyargs && args.kwonlyargs.length != 0) {
-        throw new Sk.builtin.SyntaxError("Keyword-only arguments are not supported in Python 2");
-    }
+    // if (!Sk.__future__.python3 && args && args.kwonlyargs && args.kwonlyargs.length != 0) {
+    //     throw new Sk.builtin.SyntaxError("Keyword-only arguments are not supported in Python 2");
+    // }
 
     //
     // enter the new scope, and create the first block
