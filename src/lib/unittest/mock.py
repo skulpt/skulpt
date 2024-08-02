@@ -86,6 +86,7 @@ class MagicMock:
         self.method_calls = []
         self.called = False
         self._del_attrs = []
+        self._user_assigned = None
 
         self.side_effect = side_effect
         self.configure_mock(**kwargs)
@@ -119,27 +120,34 @@ class MagicMock:
         return new_val
 
     def __call__(self, *args, **kwargs):
-        self.__dict__["called"] = True
-        self._create_mock_calls(*args, **kwargs)
+        if self._user_assigned is not None:
+            return self._user_assigned(self, *args, **kwargs)
+        else:
+            self.__dict__["called"] = True
+            if "__dir__" not in self._mock_name:
+                self._create_mock_calls(*args, **kwargs)
+            
+            if self.side_effect is None and self._internal_side_effect is None:
+                return self.return_value
 
-        if self.side_effect is None and self._internal_side_effect is None:
-            return self.return_value
+            if self.side_effect is None:
+                return self._internal_side_effect(*args, **kwargs)
 
-        if self.side_effect is None:
-            return self._internal_side_effect(*args, **kwargs)
+            if callable(self.side_effect):
+                return self.side_effect(*args, **kwargs)
 
-        if callable(self.side_effect):
-            return self.side_effect(*args, **kwargs)
-
-        return self.side_effect
+            return self.side_effect
     
 
     def _create_mock_calls(self, *args, _call_name=None, **kwargs):
         _call_signature = _call_name or ""
         current_call = call(*args, _mock_name=_call_signature, **kwargs)
         self.mock_calls.append(current_call)
+        if _call_name == "().__eq__" and args ==(None,):
+            self.mock_calls = self.mock_calls[:-1]
 
-        if current_call._mock_name:
+
+        if current_call._mock_name and current_call._mock_name[:2] != "__" and current_call._mock_name[-2:] != "__":
             self.method_calls.append(current_call)
 
         if self._parent:
@@ -155,21 +163,39 @@ class MagicMock:
                 **kwargs,
             )
 
+    def _set_user_assigned_magic(self, magic_method, value):
+        if value is None:
+            self.__dict__.update({magic_method: value})
+        else:
+            getattr(self, magic_method)._user_assigned = value
+
+    def _internal_effect_wrapper(self, magic_method, internal_func):
+        def _internal_magic_method(*args, **kwargs):
+            if isinstance(magic_method.return_value, MagicMock):
+                return internal_func(*args, **kwargs)
+            return magic_method.return_value
+
+        magic_method._internal_side_effect = _internal_magic_method
 
     @property
     def __eq__(self):
         magic_mock = self.__getattr__("__eq__")
-        magic_mock._internal_side_effect = lambda other: other is self
+        def equal_test(other):
+            return any([type(other) == object(), id(self) == id(other)])
+        self._internal_effect_wrapper(magic_mock, equal_test)
         return magic_mock
 
     @__eq__.setter
     def __eq__(self, value):
-        self.__dict__.update({"__eq__": value})
-
+        self._set_user_assigned_magic("__eq__", value)
 
     def __repr__(self):
-        current_name = f"'{self._mock_name}'"
-        return f"<MagicMock{f' name={current_name}' if self._mock_name != 'mock' else ''} id='{id(self)}'>"
+        self.mock_calls = self.mock_calls[:-1]
+        self.__eq__.mock_calls = self.__eq__.mock_calls[:-1]
+        if self._user_assigned is None:
+            current_name = f"'{self._mock_name}'"
+            return f"<MagicMock{f' name={current_name}' if self._mock_name != 'mock' else ''} id='{id(self)}'>"
+        return str(self._user_assigned)
 
     @property
     def __abs__(self):
@@ -177,7 +203,7 @@ class MagicMock:
 
     @__abs__.setter
     def __abs__(self, value):
-        self.__dict__.update({"__abs__": value})
+        self._set_user_assigned_magic("__abs__", value)
 
     @property
     def __add__(self):
@@ -185,7 +211,7 @@ class MagicMock:
 
     @__add__.setter
     def __add__(self, value):
-        self.__dict__.update({"__add__": value})
+        self._set_user_assigned_magic("__add__", value)
 
     @property
     def __next__(self):
@@ -193,7 +219,7 @@ class MagicMock:
 
     @__next__.setter
     def __next__(self, value):
-        self.__dict__.update({"__next__": value})
+        self._set_user_assigned_magic("__next__", value)
 
     @property
     def __and__(self):
@@ -201,7 +227,7 @@ class MagicMock:
 
     @__and__.setter
     def __and__(self, value):
-        self.__dict__.update({"__and__": value})
+        self._set_user_assigned_magic("__and__", value)
 
     @property
     def __deepcopy__(self):
@@ -209,7 +235,7 @@ class MagicMock:
 
     @__deepcopy__.setter
     def __deepcopy__(self, value):
-        self.__dict__.update({"__deepcopy__": value})
+        self._set_user_assigned_magic("__deepcopy__", value)
 
     def __delattr__(self, key):
         if key not in self._del_attrs:
@@ -224,7 +250,7 @@ class MagicMock:
 
     @__delitem__.setter
     def __delitem__(self, value):
-        self.__dict__.update({"__delitem__": value})
+        self._set_user_assigned_magic("__delitem__", value)
 
     @property
     def __divmod__(self):
@@ -232,7 +258,7 @@ class MagicMock:
 
     @__divmod__.setter
     def __divmod__(self, value):
-        self.__dict__.update({"__divmod__": value})
+        self._set_user_assigned_magic("__divmod__", value)
 
     @property
     def __floor__(self):
@@ -240,7 +266,7 @@ class MagicMock:
 
     @__floor__.setter
     def __floor__(self, value):
-        self.__dict__.update({"__floor__": value})
+        self._set_user_assigned_magic("__floor__", value)
 
     @property
     def __trunc__(self):
@@ -248,7 +274,7 @@ class MagicMock:
 
     @__trunc__.setter
     def __trunc__(self, value):
-        self.__dict__.update({"__trunc__": value})
+        self._set_user_assigned_magic("__trunc__", value)
 
     @property
     def __ceil__(self):
@@ -256,7 +282,7 @@ class MagicMock:
 
     @__ceil__.setter
     def __ceil__(self, value):
-        self.__dict__.update({"__ceil__": value})
+        self._set_user_assigned_magic("__ceil__", value)
 
     @property
     def __floordiv__(self):
@@ -264,7 +290,7 @@ class MagicMock:
 
     @__floordiv__.setter
     def __floordiv__(self, value):
-        self.__dict__.update({"__floordiv__": value})
+        self._set_user_assigned_magic("__floordiv__", value)
 
     @property
     def __lshift__(self):
@@ -272,7 +298,7 @@ class MagicMock:
 
     @__lshift__.setter
     def __lshift__(self, value):
-        self.__dict__.update({"__lshift__": value})
+        self._set_user_assigned_magic("__lshift__", value)
 
     @property
     def __matmul__(self):
@@ -280,7 +306,7 @@ class MagicMock:
 
     @__matmul__.setter
     def __matmul__(self, value):
-        self.__dict__.update({"__matmul__": value})
+        self._set_user_assigned_magic("__matmul__", value)
 
     @property
     def __mod__(self):
@@ -288,7 +314,7 @@ class MagicMock:
 
     @__mod__.setter
     def __mod__(self, value):
-        self.__dict__.update({"__mod__": value})
+        self._set_user_assigned_magic("__mod__", value)
 
     @property
     def __mul__(self):
@@ -296,17 +322,17 @@ class MagicMock:
 
     @__mul__.setter
     def __mul__(self, value):
-        self.__dict__.update({"__mul__": value})
+        self._set_user_assigned_magic("__mul__", value)
 
     @property
     def __ne__(self):
         magic_mock = self.__getattr__("__ne__")
-        magic_mock._internal_side_effect = lambda other: not self.__eq__(other)
+        self._internal_effect_wrapper(magic_mock, lambda other: not self.__eq__(other))
         return magic_mock
 
     @__ne__.setter
     def __ne__(self, value):
-        self.__dict__.update({"__ne__": value})
+        self._set_user_assigned_magic("__ne__", value)
 
     @property
     def __neg__(self):
@@ -314,7 +340,7 @@ class MagicMock:
 
     @__neg__.setter
     def __neg__(self, value):
-        self.__dict__.update({"__neg__": value})
+        self._set_user_assigned_magic("__neg__", value)
 
     @property
     def __or__(self):
@@ -322,7 +348,7 @@ class MagicMock:
 
     @__or__.setter
     def __or__(self, value):
-        self.__dict__.update({"__or__": value})
+        self._set_user_assigned_magic("__or__", value)
 
     @property
     def __pos__(self):
@@ -330,7 +356,7 @@ class MagicMock:
 
     @__pos__.setter
     def __pos__(self, value):
-        self.__dict__.update({"__pos__": value})
+        self._set_user_assigned_magic("__pos__", value)
 
     @property
     def __pow__(self):
@@ -338,7 +364,7 @@ class MagicMock:
 
     @__pow__.setter
     def __pow__(self, value):
-        self.__dict__.update({"__pow__": value})
+        self._set_user_assigned_magic("__pow__", value)
 
     @property
     def __radd__(self):
@@ -346,7 +372,7 @@ class MagicMock:
 
     @__radd__.setter
     def __radd__(self, value):
-        self.__dict__.update({"__radd__": value})
+        self._set_user_assigned_magic("__radd__", value)
 
     @property
     def __exit__(self):
@@ -354,7 +380,7 @@ class MagicMock:
 
     @__exit__.setter
     def __exit__(self, value):
-        self.__dict__.update({"__exit__": value})
+        self._set_user_assigned_magic("__exit__", value)
 
     @property
     def __enter__(self):
@@ -362,7 +388,7 @@ class MagicMock:
 
     @__enter__.setter
     def __enter__(self, value):
-        self.__dict__.update({"__enter__": value})
+        self._set_user_assigned_magic("__enter__", value)
 
     @property
     def __rand__(self):
@@ -370,7 +396,7 @@ class MagicMock:
 
     @__rand__.setter
     def __rand__(self, value):
-        self.__dict__.update({"__rand__": value})
+        self._set_user_assigned_magic("__rand__", value)
 
     @property
     def __rdivmod__(self, *args, **kwargs):
@@ -378,7 +404,7 @@ class MagicMock:
 
     @__rdivmod__.setter
     def __rdivmod__(self, value):
-        self.__dict__.update({"__rdivmod__": value})
+        self._set_user_assigned_magic("__rdivmod__", value)
 
     @property
     def __rfloordiv__(self, *args, **kwargs):
@@ -386,7 +412,7 @@ class MagicMock:
 
     @__rfloordiv__.setter
     def __rfloordiv__(self, value):
-        self.__dict__.update({"__rfloordiv__": value})
+        self._set_user_assigned_magic("__rfloordiv__", value)
 
     @property
     def __rlshift__(self, *args, **kwargs):
@@ -394,7 +420,7 @@ class MagicMock:
 
     @__rlshift__.setter
     def __rlshift__(self, value):
-        self.__dict__.update({"__rlshift__": value})
+        self._set_user_assigned_magic("__rlshift__", value)
 
     @property
     def __rmatmul__(self, *args, **kwargs):
@@ -402,7 +428,7 @@ class MagicMock:
 
     @__rmatmul__.setter
     def __rmatmul__(self, value):
-        self.__dict__.update({"__rmatmul__": value})
+        self._set_user_assigned_magic("__rmatmul__", value)
 
     @property
     def __rmod__(self, *args, **kwargs):
@@ -410,7 +436,7 @@ class MagicMock:
 
     @__rmod__.setter
     def __rmod__(self, value):
-        self.__dict__.update({"__rmod__": value})
+        self._set_user_assigned_magic("__rmod__", value)
 
     @property
     def __rmul__(self, *args, **kwargs):
@@ -418,7 +444,7 @@ class MagicMock:
 
     @__rmul__.setter
     def __rmul__(self, value):
-        self.__dict__.update({"__rmul__": value})
+        self._set_user_assigned_magic("__rmul__", value)
 
     @property
     def __ror__(self, *args, **kwargs):
@@ -426,7 +452,7 @@ class MagicMock:
 
     @__ror__.setter
     def __ror__(self, value):
-        self.__dict__.update({"__ror__": value})
+        self._set_user_assigned_magic("__ror__", value)
 
     @property
     def __round__(self, *args, **kwargs):
@@ -434,7 +460,7 @@ class MagicMock:
 
     @__round__.setter
     def __round__(self, value):
-        self.__dict__.update({"__round__": value})
+        self._set_user_assigned_magic("__round__", value)
 
     @property
     def __rpow__(self, *args, **kwargs):
@@ -442,7 +468,7 @@ class MagicMock:
 
     @__rpow__.setter
     def __rpow__(self, value):
-        self.__dict__.update({"__rpow__": value})
+        self._set_user_assigned_magic("__rpow__", value)
 
     @property
     def __rrshift__(self, *args, **kwargs):
@@ -450,7 +476,7 @@ class MagicMock:
 
     @__rrshift__.setter
     def __rrshift__(self, value):
-        self.__dict__.update({"__rrshift__": value})
+        self._set_user_assigned_magic("__rrshift__", value)
 
     @property
     def __rshift__(self, *args, **kwargs):
@@ -458,7 +484,7 @@ class MagicMock:
 
     @__rshift__.setter
     def __rshift__(self, value):
-        self.__dict__.update({"__rshift__": value})
+        self._set_user_assigned_magic("__rshift__", value)
 
     @property
     def __rsub__(self, *args, **kwargs):
@@ -466,7 +492,7 @@ class MagicMock:
 
     @__rsub__.setter
     def __rsub__(self, value):
-        self.__dict__.update({"__rsub__": value})
+        self._set_user_assigned_magic("__rsub__", value)
 
     @property
     def __rtruediv__(self, *args, **kwargs):
@@ -474,7 +500,7 @@ class MagicMock:
 
     @__rtruediv__.setter
     def __rtruediv__(self, value):
-        self.__dict__.update({"__rtruediv__": value})
+        self._set_user_assigned_magic("__rtruediv__", value)
 
     @property
     def __rxor__(self, *args, **kwargs):
@@ -482,7 +508,7 @@ class MagicMock:
 
     @__rxor__.setter
     def __rxor__(self, value):
-        self.__dict__.update({"__rxor__": value})
+        self._set_user_assigned_magic("__rxor__", value)
 
     @property
     def __sizeof__(self, *args, **kwargs):
@@ -490,7 +516,7 @@ class MagicMock:
 
     @__sizeof__.setter
     def __sizeof__(self, value):
-        self.__dict__.update({"__sizeof__": value})
+        self._set_user_assigned_magic("__sizeof__", value)
 
     @property
     def __sub__(self, *args, **kwargs):
@@ -498,7 +524,7 @@ class MagicMock:
 
     @__sub__.setter
     def __sub__(self, value):
-        self.__dict__.update({"__sub__": value})
+        self._set_user_assigned_magic("__sub__", value)
 
     @property
     def __truediv__(self, *args, **kwargs):
@@ -506,7 +532,7 @@ class MagicMock:
 
     @__truediv__.setter
     def __truediv__(self, value):
-        self.__dict__.update({"__truediv__": value})
+        self._set_user_assigned_magic("__truediv__", value)
 
     @property
     def __xor__(self, *args, **kwargs):
@@ -514,7 +540,7 @@ class MagicMock:
 
     @__xor__.setter
     def __xor__(self, value):
-        self.__dict__.update({"__xor__": value})
+        self._set_user_assigned_magic("__xor__", value)
 
     @property
     def __setitem__(self, *args, **kwargs):
@@ -522,7 +548,7 @@ class MagicMock:
 
     @__setitem__.setter
     def __setitem__(self, value):
-        self.__dict__.update({"__setitem__": value})
+        self._set_user_assigned_magic("__setitem__", value)
 
     @property
     def __getitem__(self, *args, **kwargs):
@@ -530,7 +556,7 @@ class MagicMock:
 
     @__getitem__.setter
     def __getitem__(self, value):
-        self.__dict__.update({"__getitem__": value})
+        self._set_user_assigned_magic("__getitem__", value)
 
     @property
     def __iadd__(self, *args, **kwargs):
@@ -542,7 +568,7 @@ class MagicMock:
 
     @__iadd__.setter
     def __iadd__(self, value):
-        self.__dict__.update({"__iadd__": value})
+        self._set_user_assigned_magic("__iadd__", value)
 
     @property
     def __iand__(self, *args, **kwargs):
@@ -554,7 +580,7 @@ class MagicMock:
 
     @__iand__.setter
     def __iand__(self, value):
-        self.__dict__.update({"__iand__": value})
+        self._set_user_assigned_magic("__iand__", value)
 
     @property
     def __ifloordiv__(self, *args, **kwargs):
@@ -566,7 +592,7 @@ class MagicMock:
 
     @__ifloordiv__.setter
     def __ifloordiv__(self, value):
-        self.__dict__.update({"__ifloordiv__": value})
+        self._set_user_assigned_magic("__ifloordiv__", value)
 
     @property
     def __ilshift__(self, *args, **kwargs):
@@ -578,7 +604,7 @@ class MagicMock:
 
     @__ilshift__.setter
     def __ilshift__(self, value):
-        self.__dict__.update({"__ilshift__": value})
+        self._set_user_assigned_magic("__ilshift__", value)
 
     @property
     def __imatmul__(self, *args, **kwargs):
@@ -590,7 +616,7 @@ class MagicMock:
 
     @__imatmul__.setter
     def __imatmul__(self, value):
-        self.__dict__.update({"__imatmul__": value})
+        self._set_user_assigned_magic("__imatmul__", value)
 
     @property
     def __imod__(self, *args, **kwargs):
@@ -602,7 +628,7 @@ class MagicMock:
 
     @__imod__.setter
     def __imod__(self, value):
-        self.__dict__.update({"__imod__": value})
+        self._set_user_assigned_magic("__imod__", value)
 
     @property
     def __imul__(self, *args, **kwargs):
@@ -614,7 +640,7 @@ class MagicMock:
 
     @__imul__.setter
     def __imul__(self, value):
-        self.__dict__.update({"__imul__": value})
+        self._set_user_assigned_magic("__imul__", value)
 
     @property
     def __index__(self, *args, **kwargs):
@@ -625,7 +651,7 @@ class MagicMock:
 
     @__index__.setter
     def __index__(self, value):
-        self.__dict__.update({"__index__": value})
+        self._set_user_assigned_magic("__index__", value)
 
     @property
     def __invert__(self, *args, **kwargs):
@@ -637,7 +663,7 @@ class MagicMock:
 
     @__invert__.setter
     def __invert__(self, value):
-        self.__dict__.update({"__invert__": value})
+        self._set_user_assigned_magic("__invert__", value)
 
     @property
     def __ior__(self, *args, **kwargs):
@@ -649,7 +675,7 @@ class MagicMock:
 
     @__ior__.setter
     def __ior__(self, value):
-        self.__dict__.update({"__ior__": value})
+        self._set_user_assigned_magic("__ior__", value)
 
     @property
     def __ipow__(self, *args, **kwargs):
@@ -661,7 +687,7 @@ class MagicMock:
 
     @__ipow__.setter
     def __ipow__(self, value):
-        self.__dict__.update({"__ipow__": value})
+        self._set_user_assigned_magic("__ipow__", value)
 
     @property
     def __irshift__(self, *args, **kwargs):
@@ -673,7 +699,7 @@ class MagicMock:
 
     @__irshift__.setter
     def __irshift__(self, value):
-        self.__dict__.update({"__irshift__": value})
+        self._set_user_assigned_magic("__irshift__", value)
 
     @property
     def __isub__(self, *args, **kwargs):
@@ -685,7 +711,7 @@ class MagicMock:
 
     @__isub__.setter
     def __isub__(self, value):
-        self.__dict__.update({"__isub__": value})
+        self._set_user_assigned_magic("__isub__", value)
 
     @property
     def __itruediv__(self, *args, **kwargs):
@@ -697,7 +723,7 @@ class MagicMock:
 
     @__itruediv__.setter
     def __itruediv__(self, value):
-        self.__dict__.update({"__itruediv__": value})
+        self._set_user_assigned_magic("__itruediv__", value)
 
     @property
     def __ixor__(self, *args, **kwargs):
@@ -719,7 +745,7 @@ class MagicMock:
 
     @__int__.setter
     def __int__(self, value):
-        self.__dict__.update({"__int__": value})
+        self._set_user_assigned_magic("__int__", value)
 
     @property
     def __hash__(self):
@@ -729,7 +755,7 @@ class MagicMock:
 
     @__hash__.setter
     def __hash__(self, value):
-        self.__dict__.update({"__hash__": value})
+        self._set_user_assigned_magic("__hash__", value)
 
     @property
     def __float__(self):
@@ -739,7 +765,7 @@ class MagicMock:
 
     @__float__.setter
     def __float__(self, value):
-        self.__dict__.update({"__int__": value})
+        self._set_user_assigned_magic("__int__", value)
 
     @property
     def __iter__(self):
@@ -757,20 +783,22 @@ class MagicMock:
 
     @__iter__.setter
     def __iter__(self, value):
-        self.__dict__.update({"__iter__": value})
+        self._set_user_assigned_magic("__iter__", value)
 
     @property
     def __dir__(self, *args, **kwargs):
         private_attrs = [
             "_parent", "_mock_name", "_internal_side_effect", "mock_calls",
-            "method_calls", "called", "_del_attrs", "side_effect", "_directory"
+            "method_calls", "called", "_del_attrs", "side_effect", "_directory", "__dir__"
         ]
 
-        return self.__dict__.get("__dir__", lambda: self._directory + [attr for attr in self.__dict__ if attr not in private_attrs])
+        magic_mock = self.__getattr__("__dir__")
+        magic_mock._internal_side_effect = lambda: self._directory + [attr for attr in self.__dict__ if attr not in private_attrs]
+        return magic_mock
 
     @__dir__.setter
     def __dir__(self, value):
-        self.__dict__.update({"__dir__": value})
+        self._set_user_assigned_magic("__dir__", value)
 
     @property
     def __complex__(self):
@@ -780,7 +808,7 @@ class MagicMock:
 
     @__complex__.setter
     def __complex__(self, value):
-        self.__dict__.update({"__complex__": value})
+        self._set_user_assigned_magic("__complex__", value)
     
     @property
     def __len__(self):
@@ -790,7 +818,7 @@ class MagicMock:
 
     @__len__.setter
     def __len__(self, value):
-        self.__dict__.update({"__len__": value})
+        self._set_user_assigned_magic("__len__", value)
 
     @property
     def __bool__(self):
@@ -801,7 +829,7 @@ class MagicMock:
 
     @__bool__.setter
     def __bool__(self, value):
-        self.__dict__.update({"__bool__": value})
+        self._set_user_assigned_magic("__bool__", value)
     
     @property
     def __str__(self):
@@ -811,47 +839,47 @@ class MagicMock:
 
     @__str__.setter
     def __str__(self, value):
-        self.__dict__.update({"__str__": value})
+        self._set_user_assigned_magic("__str__", value)
 
     @property
     def __le__(self):
         magic_mock = self.__getattr__("__le__")
-        magic_mock._internal_side_effect = lambda other: self._non_eq_comparison_side_effect(other, "<=")
+        self._internal_effect_wrapper(magic_mock, lambda other: self._non_eq_comparison_side_effect(other, "<="))
         return magic_mock
 
     @__le__.setter
     def __le__(self, value):
-        self.__dict__.update({"__le__": value})
+        self._set_user_assigned_magic("__le__", value)
 
     @property
     def __lt__(self):
         magic_mock = self.__getattr__("__lt__")
-        magic_mock._internal_side_effect = lambda other: self._non_eq_comparison_side_effect(other, "<")
+        self._internal_effect_wrapper(magic_mock, lambda other: self._non_eq_comparison_side_effect(other, "<"))
         return magic_mock
 
     @__lt__.setter
     def __lt__(self, value):
-        self.__dict__.update({"__lt__": value})
+        self._set_user_assigned_magic("__lt__", value)
 
     @property
     def __ge__(self):
         magic_mock = self.__getattr__("__ge__")
-        magic_mock._internal_side_effect = lambda other: self._non_eq_comparison_side_effect(other, ">=")
+        self._internal_effect_wrapper(magic_mock, lambda other: self._non_eq_comparison_side_effect(other, ">="))
         return magic_mock
 
     @__ge__.setter
     def __ge__(self, value):
-        self.__dict__.update({"__ge__": value})
+        self._set_user_assigned_magic("__ge__", value)
 
     @property
     def __gt__(self):
         magic_mock = self.__getattr__("__gt__")
-        magic_mock._internal_side_effect = lambda other: self._non_eq_comparison_side_effect(other, ">")
+        self._internal_effect_wrapper(magic_mock, lambda other: self._non_eq_comparison_side_effect(other, ">"))
         return magic_mock
 
     @__gt__.setter
     def __gt__(self, value):
-        self.__dict__.update({"__gt__": value})
+        self._set_user_assigned_magic("__gt__", value)
 
     def reset_mock(self):
         def _property_resetting(mock):
