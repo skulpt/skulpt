@@ -442,7 +442,7 @@ var $builtinmodule = function (name) {
         } else {
             throw new Sk.builtin.TypeError("object has no length");
         }
-    });
+    }); 
 
     mod.shuffle = new Sk.builtin.func(function (x) {
         Sk.builtin.pyCheckArgsLen("shuffle", arguments.length, 1, 1);
@@ -525,6 +525,6 @@ var $builtinmodule = function (name) {
 
         return new Sk.builtin.list(reservoir);
     });
-
+    
     return mod;
 };
