@@ -1049,10 +1049,12 @@ Sk.astnodes.keyword = function keyword(/* {identifier} */ arg, /* {expr_ty} */
 
 /** @constructor */
 Sk.astnodes.alias = function alias(/* {identifier} */ name, /* {identifier} */
-                                        asname)
+                                        asname, lineno, col_offset)
 {
     this.name = name;
     this.asname = asname;
+    this.lineno = lineno;
+    this.col_offset = col_offset;
     return this;
 }
 
