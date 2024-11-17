@@ -184,12 +184,12 @@ Sk.builtin.classmethod = Sk.abstr.buildNativeClass("classmethod", {
             if (callable === undefined) {
                 throw new Sk.builtin.RuntimeError("uninitialized classmethod object");
             }
-            if (type === undefined) {
+            if (type == null) {
                 type = obj.ob$type;
             }
             const f = callable.tp$descr_get;
             if (f) {
-                return f.call(callable, type, canSuspend);
+                return f.call(callable, type, null, canSuspend);
             }
             return new Sk.builtin.method(callable, type);
         },
