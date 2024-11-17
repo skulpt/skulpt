@@ -92,5 +92,26 @@ class TestDict(unittest.TestCase):
         self.assertFalse(a.__dict__.called)
 
 
+class Wrapper:
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __get__(self, obj, ob_type=None):
+        assert isinstance(ob_type, object)
+        return self.fn.__get__(obj, ob_type)
+
+
+class TestBugs(unittest.TestCase):
+    def test_class_method_bug(self):
+        class A:
+            @classmethod
+            @Wrapper
+            def foo(cls):
+                return 42
+
+        self.assertEqual(A.foo(), 42)
+        # shouldn't fail
+
+
 if __name__ == "__main__":
     unittest.main()
