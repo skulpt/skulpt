@@ -5,7 +5,16 @@
  */
 
 var $builtinmodule = function (name) {
-    var mod = {};
+    const {
+        abstr: { checkOneArg, copyKeywordsToNamedArgs, checkArgsLen },
+        builtin: {
+            tuple: pyTuple,
+            bool: { false$: pyFalse },
+        },
+        misceval: { chain: chainOrSuspend, retryOptionSuspensionOrThrow, isTrue, iterFor, Break },
+    } = Sk;
+
+    const mod = {};
 
     mod.accumulate = Sk.abstr.buildIteratorClass("itertools.accumulate", {
         constructor: function accumulate(iter, func, initial) {
@@ -46,6 +55,53 @@ var $builtinmodule = function (name) {
                     return instance;
                 }
             },
+        },
+    });
+
+    mod.batched = Sk.abstr.buildIteratorClass("itertools.batched", {
+        constructor: function batched(iterable, n, strict) {
+            this.it = iterable;
+            this.n = n;
+            this.strict = strict;
+        },
+        slots: {
+            tp$new(args, kws) {
+                checkArgsLen("batched", args, 2, 2);
+                let [iterable, n, strict] = copyKeywordsToNamedArgs("batched", [null, null, "strict"], args, kws, [
+                    pyFalse,
+                ]);
+                n = Sk.misceval.asIndexSized(n, Sk.builtin.OverFlowError);
+                if (n < 1) {
+                    throw new Sk.builtin.ValueError("n must be at least one");
+                }
+
+                const iter = Sk.abstr.iter(iterable);
+                return new mod.batched(iter, n, isTrue(strict));
+            },
+            tp$doc: "Batch data into tuples of length n. The last batch may be shorter than n.",
+        },
+        iternext(canSuspend) {
+            let i = 0;
+            const result = [];
+            const rv = chainOrSuspend(
+                iterFor(this.it, (item) => {
+                    i++;
+                    result.push(item);
+                    if (i === this.n) {
+                        return Break();
+                    }
+                }),
+                () => {
+                    if (i == 0) {
+                        return;
+                    }
+                    if (i < this.n && this.strict) {
+                        throw new Sk.builtin.ValueError("batched(): incomplete batch");
+                    }
+                    return new pyTuple(result);
+                }
+            );
+            return canSuspend ? rv : retryOptionSuspensionOrThrow(rv);
         },
     });
 
@@ -629,6 +685,53 @@ var $builtinmodule = function (name) {
                     return instance;
                 }
             },
+        },
+    });
+
+    mod.pairwise = Sk.abstr.buildIteratorClass("itertools.pairwise", {
+        constructor: function pairwise(iter) {
+            this.it = iter;
+            this.old = null;
+        },
+        slots: {
+            tp$new(args, kws) {
+                checkOneArg("pairwise", args, kws);
+                const iterable = args[0];
+                const iter = Sk.abstr.iter(iterable);
+                return new mod.pairwise(iter);
+            },
+            tp$doc: "Return an iterator of overlapping pairs taken from the input iterator.\n\n    s -> (s0,s1), (s1,s2), (s2, s3), ...",
+        },
+        iternext(canSuspend) {
+            let old = this.old;
+            const setupIter = [null];
+            if (old === null) {
+                setupIter.push(() => this.it.tp$iternext(canSuspend));
+                setupIter.push((res) => {
+                    if (res === undefined) {
+                        return;
+                    }
+                    old = res;
+                    this.old = res;
+                });
+            }
+            const rv = chainOrSuspend(
+                ...setupIter,
+                () => {
+                    if (old !== null) {
+                        return this.it.tp$iternext(canSuspend);
+                    }
+                },
+                (res) => {
+                    if (res === undefined) {
+                        this.old = null;
+                        return;
+                    }
+                    this.old = res;
+                    return new pyTuple([old, res]);
+                }
+            );
+            return canSuspend ? rv : retryOptionSuspensionOrThrow(rv);
         },
     });
 
