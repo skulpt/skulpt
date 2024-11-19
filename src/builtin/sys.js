@@ -132,9 +132,11 @@ var $builtinmodule = function (name) {
 
     sys.__stdout__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdout"), new Sk.builtin.str("w"));
     sys.__stdin__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stdin"), new Sk.builtin.str("r"));
+    sys.__stderr__ = new Sk.builtin.file(new Sk.builtin.str("/dev/stderr"), new Sk.builtin.str("w"));
 
     sys.stdout = sys.__stdout__;
     sys.stdin = sys.__stdin__;
+    sys.stderr = sys.__stderr__;
 
     return sys;
 };
