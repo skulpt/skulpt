@@ -154,6 +154,49 @@ class TestBasicOps(unittest.TestCase):
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
 #             self.pickletest(proto, accumulate(range(10)))           # test pickling
 
+    def test_batched(self):
+        self.assertEqual(list(batched('ABCDEFG', 3)),
+                             [('A', 'B', 'C'), ('D', 'E', 'F'), ('G',)])
+        self.assertEqual(list(batched('ABCDEFG', 2)),
+                             [('A', 'B'), ('C', 'D'), ('E', 'F'), ('G',)])
+        self.assertEqual(list(batched('ABCDEFG', 1)),
+                            [('A',), ('B',), ('C',), ('D',), ('E',), ('F',), ('G',)])
+        self.assertEqual(list(batched('ABCDEF', 2, strict=True)),
+                             [('A', 'B'), ('C', 'D'), ('E', 'F')])
+
+        with self.assertRaises(ValueError):         # Incomplete batch when strict
+            list(batched('ABCDEFG', 3, strict=True))
+        with self.assertRaises(TypeError):          # Too few arguments
+            list(batched('ABCDEFG'))
+        with self.assertRaises(TypeError):
+            list(batched('ABCDEFG', 3, None))       # Too many arguments
+        with self.assertRaises(TypeError):
+            list(batched(None, 3))                  # Non-iterable input
+        with self.assertRaises(TypeError):
+            list(batched('ABCDEFG', 'hello'))       # n is a string
+        with self.assertRaises(ValueError):
+            list(batched('ABCDEFG', 0))             # n is zero
+        with self.assertRaises(ValueError):
+            list(batched('ABCDEFG', -1))            # n is negative
+
+        data = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        for n in range(1, 6):
+            for i in range(len(data)):
+                s = data[:i]
+                batches = list(batched(s, n))
+                # with self.subTest(s=s, n=n, batches=batches):
+                # Order is preserved and no data is lost
+                self.assertEqual(''.join(chain(*batches)), s)
+                # Each batch is an exact tuple
+                self.assertTrue(all(type(batch) is tuple for batch in batches))
+                # All but the last batch is of size n
+                if batches:
+                    last_batch = batches.pop()
+                    self.assertTrue(all(len(batch) == n for batch in batches))
+                    self.assertTrue(len(last_batch) <= n)
+                    batches.append(last_batch)
+
+
     def test_chain(self):
 
         # def chain2(*iterables):
@@ -1011,6 +1054,97 @@ class TestBasicOps(unittest.TestCase):
         self.assertEqual(next(it), (1, 2))
         self.assertRaises(RuntimeError, next, it)
 
+    def test_pairwise(self):
+        self.assertEqual(list(pairwise('')), [])
+        self.assertEqual(list(pairwise('a')), [])
+        self.assertEqual(list(pairwise('ab')),
+                              [('a', 'b')]),
+        self.assertEqual(list(pairwise('abcde')),
+                              [('a', 'b'), ('b', 'c'), ('c', 'd'), ('d', 'e')])
+        self.assertEqual(list(pairwise(range(10_000))),
+                         list(zip(range(10_000), range(1, 10_000))))
+
+        with self.assertRaises(TypeError):
+            pairwise()                                      # too few arguments
+        with self.assertRaises(TypeError):
+            pairwise('abc', 10)                             # too many arguments
+        with self.assertRaises(TypeError):
+            pairwise(iterable='abc')                        # keyword arguments
+        with self.assertRaises(TypeError):
+            pairwise(None)                                  # non-iterable argument
+
+    def test_pairwise_reenter(self):
+        def check(reenter_at, expected):
+            class I:
+                count = 0
+                def __iter__(self):
+                    return self
+                def __next__(self):
+                    self.count +=1
+                    if self.count in reenter_at:
+                        return next(it)
+                    return [self.count]  # new object
+
+            it = pairwise(I())
+            for item in expected:
+                self.assertEqual(next(it), item)
+
+        check({1}, [
+            (([2], [3]), [4]),
+            ([4], [5]),
+        ])
+        check({2}, [
+            ([1], ([1], [3])),
+            (([1], [3]), [4]),
+            ([4], [5]),
+        ])
+        check({3}, [
+            ([1], [2]),
+            ([2], ([2], [4])),
+            (([2], [4]), [5]),
+            ([5], [6]),
+        ])
+        check({1, 2}, [
+            ((([3], [4]), [5]), [6]),
+            ([6], [7]),
+        ])
+        check({1, 3}, [
+            (([2], ([2], [4])), [5]),
+            ([5], [6]),
+        ])
+        check({1, 4}, [
+            (([2], [3]), (([2], [3]), [5])),
+            ((([2], [3]), [5]), [6]),
+            ([6], [7]),
+        ])
+        check({2, 3}, [
+            ([1], ([1], ([1], [4]))),
+            (([1], ([1], [4])), [5]),
+            ([5], [6]),
+        ])
+
+    def test_pairwise_reenter2(self):
+        def check(maxcount, expected):
+            class I:
+                count = 0
+                def __iter__(self):
+                    return self
+                def __next__(self):
+                    if self.count >= maxcount:
+                        raise StopIteration
+                    self.count +=1
+                    if self.count == 1:
+                        return next(it, None)
+                    return [self.count]  # new object
+
+            it = pairwise(I())
+            self.assertEqual(list(it), expected)
+
+        check(1, [])
+        check(2, [])
+        check(3, [])
+        check(4, [(([2], [3]), [4])])
+
     def test_product(self):
         for args, result in [
             ([], [()]),                     # zero iterables
@@ -1704,6 +1838,10 @@ class TestGC(unittest.TestCase):
         a = []
         self.makecycle(accumulate([1,2,a,3]), a)
 
+    def test_batched(self):
+        a = []
+        self.makecycle(batched([1,2,a,3], 2), a)
+
     def test_chain(self):
         a = []
         self.makecycle(chain(a), a)
@@ -1773,6 +1911,10 @@ class TestGC(unittest.TestCase):
     def test_islice(self):
         a = []
         self.makecycle(islice([a]*2, None), a)
+
+    def test_pairwise(self):
+        a = []
+        self.makecycle(pairwise([a]*5), a)
 
     def test_permutations(self):
         a = []
@@ -1857,6 +1999,20 @@ class E:
     def __next__(self):
         3 // 0
 
+class E2:
+    'Test propagation of exceptions after two iterations'
+    def __init__(self, seqn):
+        self.seqn = seqn
+        self.i = 0
+    def __iter__(self):
+        return self
+    def __next__(self):
+        if self.i == 2:
+            raise ZeroDivisionError
+        v = self.seqn[self.i]
+        self.i += 1
+        return v
+
 class S:
     'Test immediate stop'
     def __init__(self, seqn):
@@ -1885,6 +2041,19 @@ class TestVariousIteratorArgs(unittest.TestCase):
         self.assertRaises(TypeError, accumulate, N(s))
         self.assertRaises(ZeroDivisionError, list, accumulate(E(s)))
 
+    def test_batched(self):
+        s = 'abcde'
+        r = [('a', 'b'), ('c', 'd'), ('e',)]
+        n = 2
+        for g in (G, I, Ig, L, R):
+            # with self.subTest(g=g):
+                self.assertEqual(list(batched(g(s), n)), r)
+        self.assertEqual(list(batched(S(s), 2)), [])
+        self.assertRaises(TypeError, batched, X(s), 2)
+        self.assertRaises(TypeError, batched, N(s), 2)
+        self.assertRaises(ZeroDivisionError, list, batched(E(s), 2))
+        self.assertRaises(ZeroDivisionError, list, batched(E2(s), 4))
+
     def test_chain(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
             for g in (G, I, Ig, S, L, R):
@@ -1902,6 +2071,17 @@ class TestVariousIteratorArgs(unittest.TestCase):
             self.assertRaises(TypeError, compress, X(s), repeat(1))
             self.assertRaises(TypeError, compress, N(s), repeat(1))
             self.assertRaises(ZeroDivisionError, list, compress(E(s), repeat(1)))
+
+    def test_pairwise(self):
+        for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
+            for g in (G, I, Ig, S, L, R):
+                seq = list(g(s))
+                expected = list(zip(seq, seq[1:]))
+                actual = list(pairwise(g(s)))
+                self.assertEqual(actual, expected)
+            self.assertRaises(TypeError, pairwise, X(s))
+            self.assertRaises(TypeError, pairwise, N(s))
+            self.assertRaises(ZeroDivisionError, list, pairwise(E(s)))
 
     def test_product(self):
         for s in ("123", "", range(1000), ('do', 1.2), range(2000,2200,5)):
