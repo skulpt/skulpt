@@ -206,7 +206,6 @@ class PercentStyle(object):
     )
 
     def __init__(self, fmt):
-        print(repr(fmt))
         self._fmt = fmt or self.default_format
 
     def usesTime(self):
@@ -220,7 +219,6 @@ class PercentStyle(object):
             )
 
     def _format(self, record):
-        print(self._fmt, record.__dict__)
         return self._fmt % record.__dict__
 
     def format(self, record):
@@ -245,6 +243,7 @@ class StrFormatStyle(PercentStyle):
 
     def validate(self):
         """Validate the input format, ensure it is the correct string formatting style"""
+        return  # TODO - _str_formatter.parse is not a thing - just assume it's valid
         fields = set()
         try:
             for _, fieldname, spec, conversion in _str_formatter.parse(self._fmt):
@@ -270,29 +269,7 @@ class StringTemplateStyle(PercentStyle):
     asctime_search = "${asctime}"
 
     def __init__(self, fmt):
-        self._fmt = fmt or self.default_format
-        self._tpl = Template(self._fmt)
-
-    def usesTime(self):
-        fmt = self._fmt
-        return fmt.find("$asctime") >= 0 or fmt.find(self.asctime_format) >= 0
-
-    def validate(self):
-        pattern = Template.pattern
-        fields = set()
-        for m in pattern.finditer(self._fmt):
-            d = m.groupdict()
-            if d["named"]:
-                fields.add(d["named"])
-            elif d["braced"]:
-                fields.add(d["braced"])
-            elif m.group(0) == "$":
-                raise ValueError("invalid format: bare '$' not allowed")
-        if not fields:
-            raise ValueError("invalid format: no fields")
-
-    def _format(self, record):
-        return self._tpl.substitute(**record.__dict__)
+        raise NotImplementedError("StringTemplateStyle is not implemented")
 
 
 BASIC_FORMAT = "%(levelname)s:%(name)s:%(message)s"
@@ -305,7 +282,8 @@ _STYLES = {
 
 
 class Formatter(object):
-    converter = time.localtime
+    def converter(self, x):
+        return time.localtime(x)
 
     def __init__(self, fmt=None, datefmt=None, style="%", validate=True):
         if style not in _STYLES:
@@ -523,6 +501,7 @@ class StreamHandler(Handler):
         except RecursionError:  # See issue 36272
             raise
         except Exception:
+            raise # TODO - we can't really handle errors so just raise them
             self.handleError(record)
 
     def setStream(self, stream):
