@@ -114,6 +114,16 @@ def _checkLevel(level):
     return rv
 
 
+class _FakeRlock(object):
+    def __enter__(self):
+        pass
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        pass
+
+
+_lock = _FakeRlock()
+
 # ---------------------------------------------------------------------------
 #   The logging record
 # ---------------------------------------------------------------------------
@@ -150,7 +160,7 @@ class LogRecord(object):
         self.lineno = lineno
         self.funcName = func
         self.created = ct
-        self.msecs = (ct - int(ct)) * 1000
+        self.msecs = int((ct - int(ct)) * 1000) + 0.0  # see gh-89047
         self.relativeCreated = (self.created - _startTime) * 1000
         self.thread = None
         self.threadName = None
@@ -205,8 +215,9 @@ class PercentStyle(object):
         r"%\(\w+\)[#0+ -]*(\*|\d+)?(\.(\*|\d+))?[diouxefgcrsa%]", re.I
     )
 
-    def __init__(self, fmt):
+    def __init__(self, fmt, *, defaults=None):
         self._fmt = fmt or self.default_format
+        self._defaults = defaults
 
     def usesTime(self):
         return self._fmt.find(self.asctime_search) >= 0
@@ -219,7 +230,11 @@ class PercentStyle(object):
             )
 
     def _format(self, record):
-        return self._fmt % record.__dict__
+        if defaults := self._defaults:
+            values = defaults | record.__dict__
+        else:
+            values = record.__dict__
+        return self._fmt % values
 
     def format(self, record):
         try:
@@ -239,7 +254,12 @@ class StrFormatStyle(PercentStyle):
     field_spec = re.compile(r"^(\d+|\w+)(\.\w+|\[[^]]+\])*$")
 
     def _format(self, record):
-        return self._fmt.format(**record.__dict__)
+        defaults = self._defaults
+        if defaults:
+            values = defaults | record.__dict__
+        else:
+            values = record.__dict__
+        return self._fmt.format(**values)
 
     def validate(self):
         """Validate the input format, ensure it is the correct string formatting style"""
@@ -285,10 +305,11 @@ class Formatter(object):
     def converter(self, x):
         return time.localtime(x)
 
-    def __init__(self, fmt=None, datefmt=None, style="%", validate=True):
+    def __init__(self, fmt=None, datefmt=None, style='%', validate=True, *,
+                 defaults=None):
         if style not in _STYLES:
             raise ValueError("Style must be one of: %s" % ",".join(_STYLES.keys()))
-        self._style = _STYLES[style][0](fmt)
+        self._style = _STYLES[style][0](fmt, defaults=defaults)
         if validate:
             self._style.validate()
 
@@ -410,8 +431,9 @@ class Filterer(object):
             else:
                 result = f(record)  # assume callable - will raise if not
             if not result:
-                rv = False
-                break
+                return False
+            if isinstance(result, LogRecord):
+                record = result
         return rv
 
 
@@ -429,6 +451,7 @@ class Handler(Filterer):
         self._name = None
         self.level = _checkLevel(level)
         self.formatter = None
+        self._closed = False
 
     def get_name(self):
         return self._name
@@ -457,6 +480,8 @@ class Handler(Filterer):
 
     def handle(self, record):
         rv = self.filter(record)
+        if isinstance(rv, LogRecord):
+            record = rv
         if rv:
             self.emit(record)
         return rv
@@ -468,6 +493,7 @@ class Handler(Filterer):
         pass
 
     def close(self):
+        self._closed = True
         if self._name and self._name in _handlers:
             del _handlers[self._name]
 
@@ -752,8 +778,14 @@ class Logger(Filterer):
         self.handle(record)
 
     def handle(self, record):
-        if (not self.disabled) and self.filter(record):
-            self.callHandlers(record)
+        if self.disabled:
+            return
+        maybe_record = self.filter(record)
+        if not maybe_record:
+            return
+        if isinstance(maybe_record, LogRecord):
+            record = maybe_record
+        self.callHandlers(record)
 
     def addHandler(self, hdlr):
         if hdlr not in self.handlers:
@@ -824,6 +856,19 @@ class Logger(Filterer):
             suffix = ".".join((self.name, suffix))
         return self.manager.getLogger(suffix)
 
+
+    def getChildren(self):
+
+        def _hierlevel(logger):
+            if logger is logger.manager.root:
+                return 0
+            return 1 + logger.name.count('.')
+
+        d = self.manager.loggerDict
+        return set(item for item in d.values()
+                       if isinstance(item, Logger) and item.parent is self and
+                       _hierlevel(item) == 1 + _hierlevel(item.parent))
+
     def __repr__(self):
         level = getLevelName(self.getEffectiveLevel())
         return "<%s %s (%s)>" % (self.__class__.__name__, self.name, level)
@@ -838,7 +883,7 @@ _loggerClass = Logger
 
 
 class LoggerAdapter(object):
-    def __init__(self, logger, extra):
+    def __init__(self, logger, extra=None):
         self.logger = logger
         self.extra = extra
 
@@ -881,15 +926,8 @@ class LoggerAdapter(object):
     def hasHandlers(self):
         return self.logger.hasHandlers()
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False):
-        return self.logger._log(
-            level,
-            msg,
-            args,
-            exc_info=exc_info,
-            extra=extra,
-            stack_info=stack_info,
-        )
+    def _log(self, level, msg, args, **kwargs):
+        return self.logger._log(level, msg, args, **kwargs)
 
     @property
     def manager(self):
