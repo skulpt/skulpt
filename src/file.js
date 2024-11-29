@@ -245,13 +245,13 @@ Sk.builtin.file.prototype["write"] = new Sk.builtin.func(function write(self, st
                 throw new Sk.builtin.ValueError("I/O operation on closed file");
             }
 
-            if (self.fileno === 1) {
+            if (self.fileno === 1 || self.fileno === 2) {
                 Sk.output(Sk.ffi.remapToJs(str));
             } else {
                 Sk.filewrite(self, str);
             }
         } else {
-            if (self.fileno === 1) {
+            if (self.fileno === 1 || self.fileno === 2) {
                 Sk.output(Sk.ffi.remapToJs(str));
             } else {
                 Sk.asserts.fail();
