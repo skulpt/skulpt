@@ -53,6 +53,7 @@ raiseExceptions = False
 logThreads = False
 logMultiprocessing = False
 logProcesses = False
+logAsyncioTasks = False
 
 # ---------------------------------------------------------------------------
 #   Level related stuff
@@ -166,6 +167,7 @@ class LogRecord(object):
         self.threadName = None
         self.processName = None
         self.process = None
+        self.taskName = None
 
     def __repr__(self):
         return '<LogRecord: %s, %s, %s, %s, "%s">' % (
@@ -230,7 +232,8 @@ class PercentStyle(object):
             )
 
     def _format(self, record):
-        if defaults := self._defaults:
+        defaults = self._defaults
+        if defaults:
             values = defaults | record.__dict__
         else:
             values = record.__dict__
@@ -288,7 +291,7 @@ class StringTemplateStyle(PercentStyle):
     asctime_format = "${asctime}"
     asctime_search = "${asctime}"
 
-    def __init__(self, fmt):
+    def __init__(self, fmt, *, defaults=None):
         raise NotImplementedError("StringTemplateStyle is not implemented")
 
 
@@ -424,7 +427,6 @@ class Filterer(object):
             self.filters.remove(filter)
 
     def filter(self, record):
-        rv = True
         for f in self.filters:
             if hasattr(f, "filter"):
                 result = f.filter(record)
@@ -434,7 +436,7 @@ class Filterer(object):
                 return False
             if isinstance(result, LogRecord):
                 record = result
-        return rv
+        return record
 
 
 # ---------------------------------------------------------------------------
