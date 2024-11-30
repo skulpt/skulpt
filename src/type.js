@@ -123,7 +123,6 @@ function tp$new(args, kwargs) {
     if (!Sk.builtin.checkString(name)) {
         throw new Sk.builtin.TypeError("type() argument 1 must be str, not " + Sk.abstr.typeName(name));
     }
-    const $name = name.$jsstr();
     // argument bases must be of type tuple
     if (bases.tp$name !== "tuple") {
         throw new Sk.builtin.TypeError("type() argument 2 must be tuple, not " + Sk.abstr.typeName(bases));
@@ -141,7 +140,7 @@ function tp$new(args, kwargs) {
         // use an array for slots - slots may be added at any index;
         this.$s = [];
     };
-    setUpKlass($name, klass, bases, this.constructor);
+    setUpKlass(name, klass, bases, this.constructor);
     const klassProto = klass.prototype;
 
     // set some defaults which can be overridden by the dict object
@@ -172,16 +171,16 @@ function tp$new(args, kwargs) {
             } else if (!slotName.$isIdentifier()) {
                 throw new Sk.builtin.TypeError("__slots__ must be identifiers");
             }
-            if (slotName === Sk.builtin.str.$dict) {
+            if (slotName.v === "__dict__") {
                 if (protoHasDict) {
                     throw new Sk.builtin.TypeError("__dict__ slot disallowed: we already got one");
                 }
                 wantDict = true;
             } else {
-                slotSet.add(Sk.mangleName(name, slotName));
+                slotSet.add(Sk.mangleName(name, slotName).v);
             }
         });
-        slotNames = [...slotSet].sort((a, b) => a.toString().localeCompare(b.toString()));
+        slotNames = [...slotSet].sort((a, b) => a.localeCompare(b));
         createSlots(slotNames, klass);
     }
     
@@ -201,7 +200,10 @@ function tp$new(args, kwargs) {
 
 
     dict.$items().forEach(([key, val]) => {
-        if (slotSet && slotSet.has(key)) {
+        if (!Sk.builtin.checkString(key)) {
+            return;
+        }
+        if (slotSet && slotSet.has(key.v)) {
             throw new Sk.builtin.ValueError("'" + key.toString() + "' in __slots__ conflicts with class variable");
         }
         klassProto[key.$mangled] = val;
@@ -389,15 +391,14 @@ function $isSubType(other) {
     return this === other || this.prototype instanceof other || (!this.prototype.sk$prototypical && this.prototype.tp$mro.includes(other));
 }
 
-function setUpKlass($name, klass, bases, meta) {
+function setUpKlass(pyName, klass, bases, meta) {
     // this function tries to match Cpython - the best base is not always bases[0]
     // we require a best bases for checks in __new__ as well as future support for slots
     const best_base = best_base_(bases);
     const klass_proto = klass.prototype;
 
-    Sk.abstr.setUpInheritance($name, klass, best_base, meta);
+    Sk.abstr.setUpInheritance(pyName.v, klass, best_base, meta);
 
-    const pyName = new Sk.builtin.str($name);
     Object.defineProperties(klass_proto, {
         sk$prototypical: { value: true, writable: true },
         tp$bases: { value: bases, writable: true },
@@ -463,7 +464,7 @@ function createSlots(slotNames, klass) {
 
     slotNames.forEach((slotName, i) => {
         i += nextSlotIdx;
-        const mangled = slotName.$mangled;
+        const mangled = Sk.builtin.str.$fixReserved(slotName);
         klassProto[mangled] = new Sk.builtin.getset_descriptor(klass, {
             $get() {
                 const ret = this.$s[i];
@@ -691,7 +692,7 @@ Sk.builtin.type.prototype.tp$getsets = {
         $get() {
             let name = this.prototype.ht$name;
             if (name !== undefined) {
-                return new Sk.builtin.str(name);
+                return name;
             }
             name = this.prototype.tp$name;
             if (name.includes(".")) {
