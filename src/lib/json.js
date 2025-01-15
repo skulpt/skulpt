@@ -288,12 +288,14 @@ function $builtinmodule() {
             parse_constant,
             object_hook,
             object_pairs_hook,
+            memo,
         } = context;
         /**
          * @param {string} string
          * @param {number} idx
          */
-        const scan_once = (string, idx) => {
+
+        const _scan_once = (string, idx) => {
             const nextchar = string[idx];
             if (nextchar === undefined) {
                 return [nextchar, idx];
@@ -302,9 +304,9 @@ function $builtinmodule() {
             if (nextchar === '"') {
                 return parse_string(string, idx + 1);
             } else if (nextchar === "{") {
-                return parse_object(string, idx + 1, scan_once, object_hook, object_pairs_hook);
+                return parse_object(string, idx + 1, _scan_once, object_hook, object_pairs_hook, memo);
             } else if (nextchar === "[") {
-                return parse_array(string, idx + 1, scan_once);
+                return parse_array(string, idx + 1, _scan_once);
             } else if (nextchar === "n" && string.substring(idx, idx + 4) === "null") {
                 return [pyNone, idx + 4];
             } else if (nextchar === "t" && string.substring(idx, idx + 4) === "true") {
@@ -333,6 +335,17 @@ function $builtinmodule() {
                 return [undefined, idx];
             }
         };
+
+        function scan_once(string, idx) {
+            try {
+                return _scan_once(string, idx);
+            } finally {
+                for (const key in memo) {
+                    delete memo[key];
+                }
+            }
+        }
+
         return scan_once;
     }
 
@@ -401,9 +414,19 @@ function $builtinmodule() {
         return [new pyList(values), end];
     }
 
-    function JSONObject(s, end, scan_once, object_hook, object_pairs_hook) {
+    function JSONObject(s, end, scan_once, object_hook, object_pairs_hook, memo = {}) {
         let pairs = [];
         let nextchar = s[end];
+        const memo_get = function (key) {
+            const jsKey = key.toString();
+            if (jsKey in memo) {
+                return memo[jsKey];
+            } else {
+                memo[jsKey] = key;
+                return key;
+            }
+        };
+
         const adjust_white_space = () => {
             if (nextchar === " " || nextchar === "\t" || nextchar === "\n" || nextchar === "\r") {
                 const m = s.substring(end).match(WHITESPACE);
@@ -432,7 +455,7 @@ function $builtinmodule() {
         let key, value;
         while (true) {
             [key, end] = scanstring(s, end);
-            /** @todo memo */
+            key = memo_get(key);
             if ((nextchar = s[end]) !== ":") {
                 adjust_white_space();
                 if (s[end] !== ":") {
@@ -488,6 +511,7 @@ function $builtinmodule() {
             this.parse_object = JSONObject;
             this.parse_array = JSONArray;
             this.parse_string = scanstring;
+            this.memo = {};
             this.scan_once = make_scanner(this);
             // we don't use a memo and don't support strict=False
         }
