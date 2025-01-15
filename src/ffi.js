@@ -392,6 +392,8 @@ const constructorHook = (name) => ({
     mapHook,
 });
 
+const DEBUG_SUSP_HANDLER = "Sk.debug";
+
 const unhandledPythonObject = (obj) => {
     const _cached = _proxied.get(obj);
     if (_cached) {
@@ -439,6 +441,13 @@ const unhandledPythonObject = (obj) => {
         while (ret instanceof Sk.misceval.Suspension) {
             // better to return a promise here then hope the javascript library will handle a suspension
             if (!ret.optional) {
+                return Sk.misceval.asyncToPromise(() => ret);
+            }
+            // if we're debugging then we want the debug handler to be called
+            // it's a compromise between making a debugger pause inside a python function
+            // and giving the javascript caller a Promise as the return value
+            // We will only be here if a debugger returns true from its breakpoints function
+            if (ret.data && ret.data.type === DEBUG_SUSP_HANDLER && DEBUG_SUSP_HANDLER in Sk.misceval.defaultHandlers) {
                 return Sk.misceval.asyncToPromise(() => ret);
             }
             ret = ret.resume();
