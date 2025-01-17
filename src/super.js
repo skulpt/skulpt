@@ -57,7 +57,7 @@ Sk.builtin.super_ = Sk.abstr.buildNativeClass("super", {
             const n = mro.length;
             /* We want __class__ to return the class of the super object
             (i.e. super, or a subclass), not the class of su->obj. */
-            if (pyName === Sk.builtin.str.$class) {
+            if (pyName.v === "__class__") {
                 return Sk.generic.getAttr.call(this, pyName, canSuspend);
             }
             /* No need to check the last one: it's gonna be skipped anyway.  */

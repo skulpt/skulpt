@@ -1072,7 +1072,7 @@ function ast_for_call(c, n, func, allowgen)
                 key = e.id;
                 for (k = 0; k < nkeywords; k++) {
                     tmp = keywords[k].arg;
-                    if (tmp && tmp === key) {
+                    if (tmp && tmp.v === key.v) {
                         ast_error(c, chch,
                                 "keyword argument repeated");
                         return NULL;

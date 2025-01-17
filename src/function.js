@@ -32,11 +32,12 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         this.func_code = code;
         this.func_globals = globals || null;
 
-        this.$name = (code.co_name && code.co_name.v) || code.name || "<native JS>";
+        // use python str to preserve identity from compilation
+        this.$name = code.co_name || new Sk.builtin.str(code.name || "<native JS>");
         this.$d = Sk.builtin.dict ? new Sk.builtin.dict() : undefined;
         this.$doc = code.co_docstring || Sk.builtin.none.none$;
         this.$module = (Sk.globals && Sk.globals["__name__"]) || Sk.builtin.none.none$;
-        this.$qualname = (code.co_qualname && code.co_qualname.v) || this.$name;
+        this.$qualname = code.co_qualname || this.$name;
 
         if (closure2 !== undefined) {
             // todo; confirm that modification here can't cause problems
@@ -73,13 +74,13 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
     getsets: {
         __name__: {
             $get() {
-                return new Sk.builtin.str(this.$name);
+                return this.$name;
             },
             $set(value) {
                 if (!Sk.builtin.checkString(value)) {
                     throw new Sk.builtin.TypeError("__name__ must be set to a string object");
                 }
-                this.$name = value.$jsstr();
+                this.$name = value;
             },
         },
         __qualname__: {
@@ -90,7 +91,7 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
                 if (!Sk.builtin.checkString(value)) {
                     throw new Sk.builtin.TypeError("__qualname__ must be set to a string object");
                 }
-                this.$qualname = value.$jsstr();
+                this.$qualname = value;
             },
         },
         __dict__: Sk.generic.getSetDict,
