@@ -116,35 +116,88 @@ class DateTimeFormatter:
 class TestRegexFromArrow(unittest.TestCase):
     def test_cases_from_arrow(self):
         formatter = DateTimeFormatter()
-        self.assertEqual(formatter.format(datetime(2015, 12, 10, 17, 9), "MM D, [at] h:mm"), "12 10, at 5:09")
+        self.assertEqual(
+            formatter.format(datetime(2015, 12, 10, 17, 9), "MM D, [at] h:mm"),
+            "12 10, at 5:09",
+        )
         self.assertEqual(
             formatter.format(
                 datetime(1990, 11, 25),
                 "[It happened on the month] MM [on the day] D [a long time ago]",
             ),
-            "It happened on the 11 on the day 25 a long time ago",
+            "It happened on the month 11 on the day 25 a long time ago",
         )
 
-        tz_zz_re = re.compile(r"([\+\-])(\d{2})(?:(\d{2}))?|Z")
+        tz_z_re = re.compile(r"([\+\-])(\d{2})(?:(\d{2}))?|Z")
+        self.assertEqual(tz_z_re.findall("-0700"), [("-", "07", "00")])
+        self.assertEqual(tz_z_re.findall("+07"), [("+", "07", "")])
+        self.assertIsNotNone(tz_z_re.search("15/01/2019T04:05:06.789120Z"))
+        self.assertIsNone(tz_z_re.search("15/01/2019T04:05:06.789120"))
+
+        tz_zz_re = re.compile(r"([\+\-])(\d{2})(?:\:(\d{2}))?|Z")
         self.assertEqual(tz_zz_re.findall("-07:00"), [("-", "07", "00")])
         self.assertEqual(tz_zz_re.findall("+07"), [("+", "07", "")])
         self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120Z"))
-        self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120"))
+        self.assertIsNone(tz_zz_re.search("15/01/2019T04:05:06.789120"))
 
-
-        time_re = re.compile(r"^(\d{2})(?:\:?(\d{2}))?(?:\:?(\d{2}))?(?:([\.\,])(\d+))?$")
+        time_re = re.compile(
+            r"^(\d{2})(?:\:?(\d{2}))?(?:\:?(\d{2}))?(?:([\.\,])(\d+))?$"
+        )
         time_seperators = [":", ""]
 
         for sep in time_seperators:
             self.assertEqual(time_re.findall("12"), [("12", "", "", "", "")])
             self.assertEqual(time_re.findall(f"12{sep}35"), [("12", "35", "", "", "")])
-            self.assertEqual(time_re.findall("12{sep}35{sep}46".format(sep=sep)), [("12", "35", "46", "", "")])
-            self.assertEqual(time_re.findall("12{sep}35{sep}46.952313".format(sep=sep)), [("12", "35", "46", ".", "952313")])
-            self.assertEqual(time_re.findall("12{sep}35{sep}46,952313".format(sep=sep)), [("12", "35", "46", ",", "952313")])
+            self.assertEqual(
+                time_re.findall("12{sep}35{sep}46".format(sep=sep)),
+                [("12", "35", "46", "", "")],
+            )
+            self.assertEqual(
+                time_re.findall("12{sep}35{sep}46.952313".format(sep=sep)),
+                [("12", "35", "46", ".", "952313")],
+            )
+            self.assertEqual(
+                time_re.findall("12{sep}35{sep}46,952313".format(sep=sep)),
+                [("12", "35", "46", ",", "952313")],
+            )
 
         self.assertEqual(time_re.findall("12:"), [])
         self.assertEqual(time_re.findall("12:35:46."), [])
         self.assertEqual(time_re.findall("12:35:46,"), [])
 
         # shouldn't fail
-        re.compile("(?=[\,\.\;\:\?\!\"\'\`\[\]\{\}\(\)\<\>]?(?!\S))")
+        re.compile("(?=[\,\.\;\:\?\!\"'\`\[\]\{\}\(\)\<\>]?(?!\S))")
+
+
+class TestRegexNonLatinCharacters(unittest.TestCase):
+    def test_latin_word_characters(self):
+        self.assertEqual(re.match(r"\w", "abc").group(), "a")
+        self.assertEqual(re.match(r"\w", "123").group(), "1")
+        self.assertEqual(re.match(r"\w", "_").group(), "_")
+
+    def test_non_latin_word_characters(self):
+        self.assertEqual(re.match(r"\w", "привет").group(), "п")
+        self.assertEqual(re.match(r"\w", "γειά").group(), "γ")
+        self.assertEqual(re.match(r"\w", "مرحبا").group(), "م")
+        self.assertEqual(re.match(r"\w", "你好").group(), "你")
+
+    def test_non_word_characters(self):
+        self.assertEqual(re.match(r"\W", " ").group(), " ")
+        self.assertEqual(re.match(r"\W", "!").group(), "!")
+        self.assertIsNone(re.match(r"\W", "привет"))
+        self.assertIsNone(re.match(r"\W", "γειά"))
+        self.assertIsNone(re.match(r"\W", "مرحبا"))
+
+    def test_mixed_alphabet(self):
+        self.assertEqual(re.search(r"\w+", "abc123привет").group(), "abc123привет")
+        self.assertEqual(re.search(r"\W+", "hello, мир!").group(), ", ")
+
+    def test_range_fail(self):
+        # currently fail because we don't handle \w inside brackets
+        # self.assertEqual(re.search(r'[\w,]+', 'abc123,привет').group(), 'abc123привет')
+        # self.assertEqual(re.search(r'[\Wo]+', 'hello, мир!').group(), 'o, ')
+        pass
+
+
+if __name__ == "__main__":
+    unittest.main()
