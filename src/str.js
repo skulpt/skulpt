@@ -1,12 +1,32 @@
 var keyhash_regex = /^[0-9!#_]/;
 
+// These will be initialized after Sk.builtin.str is defined
+var EMPTY_STRING;
+var INTERNED_ASCII_CHARS = new Array(256);
+var STRING_LITERALS = new Map();
+
+function internString(str) {
+    const len = str.length;
+    if (len === 0) {
+        return EMPTY_STRING;
+    }
+    if (len !== 1) {
+        return;
+    }
+    const chrCode = str.charCodeAt(0);
+    if (chrCode < 256) {
+        return INTERNED_ASCII_CHARS[chrCode];
+    }
+}
+
 /**
  * @constructor
  * @param {*} x
+ * @param {boolean} forceIntern - used in constants.js
  * @extends Sk.builtin.object
  */
 Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
-    constructor: function str(x) {
+    constructor: function str(x, stringLiteral) {
         // new Sk.builtin.str is an internal function called with a JS value x
         // occasionally called with a python object and returns tp$str() or $r();
         Sk.asserts.assert(this instanceof Sk.builtin.str, "bad call to str - use 'new'");
@@ -15,7 +35,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             ret = x;
         } else if (x === undefined) {
             ret = "";
-        } else if (x === null) { 
+        } else if (x === null) {
             ret = "None";
         } else if (x.tp$str !== undefined) {
             // then we're a python object - all objects inherit from object which has tp$str
@@ -24,6 +44,18 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
             ret = Number.isFinite(x) ? String(x) : String(x).replace("Infinity", "inf").replace("NaN", "nan");
         } else {
             throw new Sk.builtin.TypeError("could not convert object of type '" + Sk.abstr.typeName(x) + "' to str");
+        }
+
+        let interned = internString(ret);
+        if (interned !== undefined) {
+            return interned;
+        }
+        if (stringLiteral) {
+            interned = STRING_LITERALS.get(ret);
+            if (interned !== undefined) {
+                return interned;
+            }
+            STRING_LITERALS.set(ret, this);
         }
 
         this.$mangled = fixReserved(ret);
@@ -1498,3 +1530,9 @@ function fixReserved(name) {
 
 Sk.builtin.str.reservedWords_ = reservedWords_;
 Sk.builtin.str.$fixReserved = fixReserved;
+
+// Initialize string interning after Sk.builtin.str is defined
+EMPTY_STRING = new Sk.builtin.str("");
+for (let i = 0; i < 256; i++) {
+    INTERNED_ASCII_CHARS[i] = new Sk.builtin.str(String.fromCharCode(i));
+}
