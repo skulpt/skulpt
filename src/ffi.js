@@ -48,14 +48,20 @@ function toPy(obj, hooks) {
         return Sk.builtin.none.none$;
     }
 
-    if (obj.sk$object) {
-        return obj;
-    } else if (obj.$isPyWrapped && obj.unwrap) {
-        // wrap protocol
-        return obj.unwrap();
+    const type = typeof obj;
+
+    if (type === "object" || type === "function") {
+        // test for python object or wrapped object
+        // we use the in operator because some proxy objects e.g. objects wrapped by comlink.js
+        // will always return proxy functions when asked e.g. obj.sk$object => ProxyFunction
+        if ("sk$object" in obj) {
+            return obj;
+        } else if ("$isPyWrapped" in obj && "unwrap" in obj) {
+            // wrap protocol
+            return obj.unwrap();
+        }
     }
 
-    const type = typeof obj;
     hooks = hooks || {};
 
     if (type === "string") {
