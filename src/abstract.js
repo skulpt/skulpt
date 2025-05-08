@@ -986,7 +986,7 @@ Sk.abstr.setUpInheritance = function (childName, child, parent, metaclass) {
     Object.setPrototypeOf(child, metaclass.prototype);
     Object.setPrototypeOf(child.prototype, parentproto);
     Object.defineProperties(child.prototype, {
-        sk$object: { value: child, writable: true },
+        sk$object: { value: true, writable: true },
         ob$type: { value: child, writable: true },
         tp$name: { value: childName, writable: true },
         tp$base: { value: parent, writable: true },
