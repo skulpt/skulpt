@@ -52,11 +52,12 @@ function toPy(obj, hooks) {
 
     if (type === "object" || type === "function") {
         // test for python object or wrapped object
-        // we use the in operator because some proxy objects e.g. objects wrapped by comlink.js
+        // we use in operator because some proxy objects e.g. objects wrapped by comlink.js
         // will always return proxy functions when asked e.g. obj.sk$object => ProxyFunction
-        if ("sk$object" in obj) {
+        // or may throw random errors when doing attribute access
+        if ("sk$object" in obj && obj.sk$object === true) {
             return obj;
-        } else if ("$isPyWrapped" in obj && "unwrap" in obj) {
+        } else if ("$isPyWrapped" in obj && obj.$isPyWrapped === true && obj.unwrap) {
             // wrap protocol
             return obj.unwrap();
         }
@@ -138,7 +139,7 @@ function toPy(obj, hooks) {
  * All js objects passed to this function will be returned
  *
  * All other python objects are wrapped
- * wrapped objects have a truthy $isPyWrapped property and an unwrap method
+ * wrapped objects have $isPyWrapped=true and an unwrap method
  * (used to convert back toPy)
  *
  * can override behaviours with hooks
