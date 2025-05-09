@@ -4,6 +4,7 @@ import unittest
 
 
 window = jseval("Sk.global")
+jsProxy = type(window)
 
 
 class TestProxyArray(unittest.TestCase):
@@ -43,6 +44,49 @@ class TestProxyArray(unittest.TestCase):
         self.assertEqual(i, 1)
 
         self.assertIn("push", dir(x))
+
+        x = object()
+        window.x = x
+        self.assertIs(window.x, x)
+
+    
+    def test_proxy_object(self):
+        def foo():
+            return 42
+        
+        x = {"foo": foo}
+        window.x = x
+        self.assertNotIsInstance(window.x, dict)
+        self.assertIsInstance(window.x, object)
+        self.assertIsInstance(window.x, jsProxy)
+        self.assertEqual(window.x.foo(), 42)
+
+        f = window.Function("""return Sk.global.x.foo()""")
+        self.assertEqual(f(), 42)
+        self.assertIsInstance(f, jsProxy)
+
+        x = {"sk$object": False}
+        window.x = x
+        self.assertNotIsInstance(window.x, dict)
+        self.assertIsInstance(window.x, object)
+        self.assertIsInstance(window.x, jsProxy)
+
+        
+        make_obscure_proxy = window.Function("""return new Proxy(() => 42, {
+            get: function(target, prop) {
+                return Sk.global.make_obscure_proxy()
+            }
+        })""")
+        window.make_obscure_proxy = make_obscure_proxy
+        x = make_obscure_proxy()
+        self.assertIsInstance(x, object)
+        self.assertIsInstance(x, jsProxy)
+        self.assertIsInstance(x.foo, jsProxy)
+        # it's not possible to call x() from python 
+        # as it passes the heuristic for `new`
+        # Proxy(() => 42, {}), and Proxy(class A {}, {}) are impossible to distinguish between
+        # And both conform to heuristics of browser native classes 
+        
 
     def test_set_map(self):
         # these should remain as js Sets/Maps when coming from javascript
