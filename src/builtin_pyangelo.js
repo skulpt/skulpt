@@ -1570,11 +1570,11 @@ const imageClass = function ($gbl, $loc) {
                 };
                 newImg.onload = function () {
                     self.image = this;
-                    self.width = self.image.naturalWidth;
-                    self.height = self.image.naturalHeight;
-                    self.file = newImg.file;
-                    Sk.PyAngelo.images[newImg.file] = this;
-                    resolve();
+                    self.width = this.naturalWidth;
+                    self.height = this.naturalHeight;
+                    self.file = this.file;
+                    Sk.PyAngelo.images[this.file] = this;
+                    resolve(Sk.builtin.none.none$);
                 };
                 file = Sk.ffi.remapToJs(file);
                 newImg.src = file;
@@ -1600,6 +1600,54 @@ const imageClass = function ($gbl, $loc) {
         } else if (key === "file") {
             return Sk.ffi.remapToPy(self.file);
         }
+    });
+
+    // Add a draw(x, y) method
+    $loc.draw = new Sk.builtin.func(function (self, x, y, width, height, opacity) {
+        Sk.builtin.pyCheckArgsLen("draw", arguments.length, 3, 6);
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        x = Sk.ffi.remapToJs(x);
+        y = Sk.ffi.remapToJs(y);
+        width = (width === undefined || width === Sk.builtin.none.none$) ? self.width : Sk.ffi.remapToJs(width);
+        height = (height === undefined || height === Sk.builtin.none.none$) ? self.height : Sk.ffi.remapToJs(height);
+        opacity = (opacity === undefined || opacity === Sk.builtin.none.none$) ? 1.0 : Sk.ffi.remapToJs(opacity);
+
+        const img = self.image;
+        if (!img) {
+            throw new Sk.builtin.RuntimeError("Image not loaded yet.");
+        }
+
+        if (width === null) {
+            width = self.width;
+        }
+        if (height === null) {
+            height = self.height;
+        }
+
+        let ga = Sk.PyAngelo.ctx.globalAlpha;
+        if (opacity !== null) {
+            if (opacity > 1.0) {
+                opacity = 1.0;
+            } else if (opacity < 0.0) {
+                opacity = 0.0;
+            }
+            Sk.PyAngelo.ctx.globalAlpha = opacity;
+        }
+
+        if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+            Sk.PyAngelo.ctx.save();
+            Sk.PyAngelo.ctx.translate(x, y);
+            Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
+            Sk.PyAngelo.ctx.drawImage(img, 0, 0, width, height);
+            Sk.PyAngelo.ctx.restore();
+        } else {
+            Sk.PyAngelo.ctx.drawImage(img, x, y, width, height);
+        }
+
+        Sk.PyAngelo.ctx.globalAlpha = ga;
+
+        return Sk.builtin.none.none$;
     });
 };
 
