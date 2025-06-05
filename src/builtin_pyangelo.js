@@ -1549,6 +1549,58 @@ const colourClass = function ($gbl, $loc) {
 Sk.builtin.Colour = colourClass;
 Sk.builtins["Colour"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Colour, "Colour", []);
 
+const drawMethodImage = function (self, x, y, width, height, opacity) {
+    Sk.builtin.pyCheckArgsLen("draw", arguments.length, 3, 6);
+    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+    Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+    x = Sk.ffi.remapToJs(x);
+    y = Sk.ffi.remapToJs(y);
+    width = (width === undefined || width === Sk.builtin.none.none$) ? self.width : Sk.ffi.remapToJs(width);
+    height = (height === undefined || height === Sk.builtin.none.none$) ? self.height : Sk.ffi.remapToJs(height);
+    opacity = (opacity === undefined || opacity === Sk.builtin.none.none$) ? 1.0 : Sk.ffi.remapToJs(opacity);
+
+    const img = self.image;
+    if (!img) {
+        throw new Sk.builtin.RuntimeError("Image not loaded yet.");
+    }
+
+    if (width === null) {
+        width = self.width;
+    }
+    if (height === null) {
+        height = self.height;
+    }
+
+    let ga = Sk.PyAngelo.ctx.globalAlpha;
+    if (opacity !== null) {
+        if (opacity > 1.0) {
+            opacity = 1.0;
+        } else if (opacity < 0.0) {
+            opacity = 0.0;
+        }
+        Sk.PyAngelo.ctx.globalAlpha = opacity;
+    }
+
+    if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+        Sk.PyAngelo.ctx.save();
+        Sk.PyAngelo.ctx.translate(x, y);
+        Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
+        Sk.PyAngelo.ctx.drawImage(img, 0, 0, width, height);
+        Sk.PyAngelo.ctx.restore();
+    } else {
+        Sk.PyAngelo.ctx.drawImage(img, x, y, width, height);
+    }
+
+    Sk.PyAngelo.ctx.globalAlpha = ga;
+
+    return Sk.builtin.none.none$;
+};
+
+drawMethodImage.co_name = "drawMethodImage";
+drawMethodImage.co_varnames = ["self", "x", "y", "width", "height", "opacity"];
+drawMethodImage.$defaults = [null, null, null, null, null, null];
+drawMethodImage.co_argcount = 6;
+
 const imageClass = function ($gbl, $loc) {
     $loc.__init__ = new Sk.builtin.func(function (self, file) {
         let susp;
@@ -1602,53 +1654,7 @@ const imageClass = function ($gbl, $loc) {
         }
     });
 
-    // Add a draw(x, y) method
-    $loc.draw = new Sk.builtin.func(function (self, x, y, width, height, opacity) {
-        Sk.builtin.pyCheckArgsLen("draw", arguments.length, 3, 6);
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-        x = Sk.ffi.remapToJs(x);
-        y = Sk.ffi.remapToJs(y);
-        width = (width === undefined || width === Sk.builtin.none.none$) ? self.width : Sk.ffi.remapToJs(width);
-        height = (height === undefined || height === Sk.builtin.none.none$) ? self.height : Sk.ffi.remapToJs(height);
-        opacity = (opacity === undefined || opacity === Sk.builtin.none.none$) ? 1.0 : Sk.ffi.remapToJs(opacity);
-
-        const img = self.image;
-        if (!img) {
-            throw new Sk.builtin.RuntimeError("Image not loaded yet.");
-        }
-
-        if (width === null) {
-            width = self.width;
-        }
-        if (height === null) {
-            height = self.height;
-        }
-
-        let ga = Sk.PyAngelo.ctx.globalAlpha;
-        if (opacity !== null) {
-            if (opacity > 1.0) {
-                opacity = 1.0;
-            } else if (opacity < 0.0) {
-                opacity = 0.0;
-            }
-            Sk.PyAngelo.ctx.globalAlpha = opacity;
-        }
-
-        if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
-            Sk.PyAngelo.ctx.save();
-            Sk.PyAngelo.ctx.translate(x, y);
-            Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
-            Sk.PyAngelo.ctx.drawImage(img, 0, 0, width, height);
-            Sk.PyAngelo.ctx.restore();
-        } else {
-            Sk.PyAngelo.ctx.drawImage(img, x, y, width, height);
-        }
-
-        Sk.PyAngelo.ctx.globalAlpha = ga;
-
-        return Sk.builtin.none.none$;
-    });
+    $loc.draw = new Sk.builtin.func(drawMethodImage);
 };
 
 Sk.builtin.Image = imageClass;
