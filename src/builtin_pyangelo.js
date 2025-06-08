@@ -29,12 +29,12 @@ Sk.builtin.setCanvasSize = function setCanvasSize(w, h, yAxisMode) {
 
     // Set up the y axis
     yAxisMode = Sk.ffi.remapToJs(yAxisMode);
-    if (yAxisMode === Sk.builtins.CARTESIAN) {
+    if (yAxisMode === Sk.PyAngelo.CARTESIAN) {
         Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, h);
         Sk.PyAngelo.yAxisMode = yAxisMode;
     } else {
         Sk.PyAngelo.ctx.transform(1, 0, 0, 1, 0, 0);
-        Sk.PyAngelo.yAxisMode = Sk.builtins.JAVASCRIPT;
+        Sk.PyAngelo.yAxisMode = Sk.PyAngelo.JAVASCRIPT;
     }
 };
 
@@ -94,7 +94,7 @@ Sk.builtins["noCanvas"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.noCanvas,
         $name: "noCanvas",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Hides the canvas.",
     },
@@ -111,7 +111,7 @@ Sk.builtins["focusCanvas"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.focusCanvas,
         $name: "focusCanvas",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Places focus back on the canvas so it can receive keyboar events.",
     },
@@ -164,7 +164,7 @@ Sk.builtin.text = function text(text, x, y, fontSize, fontName) {
     let fs = Sk.PyAngelo.ctx.font;
     Sk.PyAngelo.ctx.font = fontSize.toString() + "px " + fontName;
     Sk.PyAngelo.ctx.textBaseline = "top";
-    if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+    if (Sk.PyAngelo.yAxisMode === Sk.PyAngelo.CARTESIAN) {
         let textMetrics = Sk.PyAngelo.ctx.measureText(text, fontSize, fontName);
         const height = Math.abs(textMetrics.actualBoundingBoxAscent) + Math.abs(textMetrics.actualBoundingBoxDescent);
         Sk.PyAngelo.ctx.save();
@@ -205,7 +205,7 @@ Sk.builtins["saveState"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.saveState,
         $name: "saveState",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Saves the current drawing style settings and transformations.",
     },
@@ -224,7 +224,7 @@ Sk.builtins["restoreState"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.restoreState,
         $name: "restoreState",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Restores the latest version of the drawing style settings and transformations.",
     },
@@ -256,7 +256,7 @@ Sk.builtin.angleMode = function angleMode(mode) {
     Sk.builtin.pyCheckArgsLen("angleMode", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("mode", "integer", Sk.builtin.checkInt(mode));
     let m = Sk.ffi.remapToJs(mode);
-    if (m === Sk.builtins.RADIANS || m === Sk.builtins.DEGREES) {
+    if (m === Sk.PyAngelo.RADIANS || m === Sk.PyAngelo.DEGREES) {
         Sk.PyAngelo.angleModeValue = m;
     }
 };
@@ -278,7 +278,7 @@ Sk.builtin.rectMode = function rectMode(mode) {
     Sk.builtin.pyCheckArgsLen("rectMode", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("mode", "integer", Sk.builtin.checkInt(mode));
     let m = Sk.ffi.remapToJs(mode);
-    if (m === Sk.builtins.CORNER || m === Sk.builtins.CORNERS || m === Sk.builtins.CENTER) {
+    if (m === Sk.PyAngelo.CORNER || m === Sk.PyAngelo.CORNERS || m === Sk.PyAngelo.CENTER) {
         Sk.PyAngelo.rectMode = m;
     }
 };
@@ -300,7 +300,7 @@ Sk.builtin.circleMode = function circleMode(mode) {
     Sk.builtin.pyCheckArgsLen("circleMode", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("mode", "integer", Sk.builtin.checkInt(mode));
     let m = Sk.ffi.remapToJs(mode);
-    if (m === Sk.builtins.CORNER || m === Sk.builtins.CENTER) {
+    if (m === Sk.PyAngelo.CORNER || m === Sk.PyAngelo.CENTER) {
         Sk.PyAngelo.circleMode = m;
     }
 };
@@ -326,7 +326,7 @@ Sk.builtin.rotate = function rotate(angle) {
     Sk.builtin.pyCheckArgsLen("rotate", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("angle", "number", Sk.builtin.checkNumber(angle));
     let a = Sk.ffi.remapToJs(angle);
-    if (Sk.PyAngelo.angleModeValue == Sk.builtins.DEGREES) {
+    if (Sk.PyAngelo.angleModeValue == Sk.PyAngelo.DEGREES) {
         a = convertDegreesToRadians(a);
     }
     Sk.PyAngelo.ctx.rotate(a);
@@ -367,7 +367,7 @@ Sk.builtin.shearX = function shearX(angle) {
     Sk.builtin.pyCheckArgsLen("shearX", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("angle", "number", Sk.builtin.checkNumber(angle));
     let a = Sk.ffi.remapToJs(angle);
-    if (Sk.PyAngelo.angleModeValue == Sk.builtins.DEGREES) {
+    if (Sk.PyAngelo.angleModeValue == Sk.PyAngelo.DEGREES) {
         a = convertDegreesToRadians(a);
     }
     Sk.PyAngelo.ctx.transform(1, 0, Math.tan(a), 1, 0, 0);
@@ -390,7 +390,7 @@ Sk.builtin.shearY = function shearY(angle) {
     Sk.builtin.pyCheckArgsLen("shearY", arguments.length, 1, 1);
     Sk.builtin.pyCheckType("angle", "number", Sk.builtin.checkNumber(angle));
     let a = Sk.ffi.remapToJs(angle);
-    if (Sk.PyAngelo.angleModeValue == Sk.builtins.DEGREES) {
+    if (Sk.PyAngelo.angleModeValue == Sk.PyAngelo.DEGREES) {
         a = convertDegreesToRadians(a);
     }
     Sk.PyAngelo.ctx.transform(1, Math.tan(a), 0, 1, 0, 0);
@@ -463,7 +463,7 @@ Sk.builtins["noFill"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.noFill,
         $name: "noFill",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Specifies that shapes should not be filled when drawn. If both noStroke() and noFill() are called then nothing will be drawn to the screen.",
     },
@@ -506,7 +506,7 @@ Sk.builtins["noStroke"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.noStroke,
         $name: "noStroke",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Specifies that no stroke should be drawn for points, lines, and borders. If both noStroke() and noFill() are called then nothing will be drawn to the screen.",
     },
@@ -548,7 +548,7 @@ Sk.builtins["line"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.line,
         $name: "line",
         $flags: { MinArgs: 4, MaxArgs: 4 },
-        $textsig: "($module x1, y1, x2, y2 /)",
+        $textsig: "($module, x1, y1, x2, y2 /)",
         $doc:
             "Draws an line between two points to the screen. By default the line has a width of a single pixel. This can be modified by the strokeWeight() function. The colour of a line can be changed by calling the stroke() function.",
     },
@@ -564,7 +564,7 @@ Sk.builtin.circle = function circle(x, y, radius) {
     x = Sk.ffi.remapToJs(x);
     y = Sk.ffi.remapToJs(y);
     radius = Sk.ffi.remapToJs(radius);
-    if (Sk.PyAngelo.circleMode === Sk.builtins.CORNER) {
+    if (Sk.PyAngelo.circleMode === Sk.PyAngelo.CORNER) {
         x = x + radius;
         y = y + radius;
     }
@@ -578,7 +578,7 @@ Sk.builtins["circle"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.circle,
         $name: "circle",
         $flags: { MinArgs: 3, MaxArgs: 3 },
-        $textsig: "($module x, y, radius /)",
+        $textsig: "($module, x, y, radius /)",
         $doc:
             "Draws a circle on the canvas. By default, the first two parameters set the location of the center of the circle, and the third sets the radius. The way these parameters are interpreted, may be changed with the circleMode() function.",
     },
@@ -596,7 +596,7 @@ Sk.builtin.ellipse = function ellipse(x, y, radiusX, radiusY) {
     y = Sk.ffi.remapToJs(y);
     radiusX = Sk.ffi.remapToJs(radiusX);
     radiusY = Sk.ffi.remapToJs(radiusY);
-    if (Sk.PyAngelo.circleMode === Sk.builtins.CORNER) {
+    if (Sk.PyAngelo.circleMode === Sk.PyAngelo.CORNER) {
         x = x + radiusX;
         y = y + radiusY;
     }
@@ -610,7 +610,7 @@ Sk.builtins["ellipse"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.ellipse,
         $name: "ellipse",
         $flags: { MinArgs: 4, MaxArgs: 4 },
-        $textsig: "($module x, y, radiusX, radiusY /)",
+        $textsig: "($module, x, y, radiusX, radiusY /)",
         $doc:
             "Draws an ellipse (oval) on the canvas. By default, the first two parameters set the location of the center of the circle, the third sets the X radius, and the fourth sets the Y radius. The way these parameters are interpreted, may be changed with the circleMode() function.",
     },
@@ -632,11 +632,11 @@ Sk.builtin.arc = function arc(x, y, radiusX, radiusY, startAngle, endAngle) {
     radiusY = Sk.ffi.remapToJs(radiusY);
     startAngle = Sk.ffi.remapToJs(startAngle);
     endAngle = Sk.ffi.remapToJs(endAngle);
-    if (Sk.PyAngelo.circleMode === Sk.builtins.CORNER) {
+    if (Sk.PyAngelo.circleMode === Sk.PyAngelo.CORNER) {
         x = x + radiusX;
         y = y + radiusY;
     }
-    if (Sk.PyAngelo.angleModeValue == Sk.builtins.DEGREES) {
+    if (Sk.PyAngelo.angleModeValue == Sk.PyAngelo.DEGREES) {
         startAngle = convertDegreesToRadians(startAngle);
         endAngle = convertDegreesToRadians(endAngle);
     }
@@ -650,7 +650,7 @@ Sk.builtins["arc"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.arc,
         $name: "arc",
         $flags: { MinArgs: 6, MaxArgs: 6 },
-        $textsig: "($module x, y, radiusX, radiusY, startAngle, endAngle /)",
+        $textsig: "($module, x, y, radiusX, radiusY, startAngle, endAngle /)",
         $doc:
             "Draws an arc (a portion of an ellipse) on the canvas. By default, the first two parameters set the location of the center of the circle, the third sets the X radius, and the fourth sets the Y radius. The fifth parameter is the start angle and the sixth is the end angle. The arc is always drawn clockwise from the start angle to the end angle. The way these parameters are interpreted, may be changed with the circleMode() function. By default the start and end angle are specified in degrees. This can be changed to radians with the angleMode() function.",
     },
@@ -679,7 +679,7 @@ Sk.builtins["triangle"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.triangle,
         $name: "triangle",
         $flags: { MinArgs: 6, MaxArgs: 6 },
-        $textsig: "($module x1, y2, x2, y2, x3, y3 /)",
+        $textsig: "($module, x1, y2, x2, y2, x3, y3 /)",
         $doc:
             "Draws a triangle on the canvas specified by three points.",
     },
@@ -711,7 +711,7 @@ Sk.builtins["quad"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.quad,
         $name: "quad",
         $flags: { MinArgs: 8, MaxArgs: 8 },
-        $textsig: "($module x1, y2, x2, y2, x3, y3, x4, y4 /)",
+        $textsig: "($module, x1, y2, x2, y2, x3, y3, x4, y4 /)",
         $doc:
             "Draws a quadrilateral (a four sided polygon) on the canvas specified by four points.",
     },
@@ -743,7 +743,7 @@ Sk.builtins["point"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.point,
         $name: "point",
         $flags: { MinArgs: 2, MaxArgs: 2 },
-        $textsig: "($module x, y /)",
+        $textsig: "($module, x, y /)",
         $doc:
             "Draws a pixel to the screen at the position given by the two parameters. The first parameter specifies the x position and the second parameter specifies the y position. By default the pixel has a size of a one pixel. This can be modified by the strokeWeight() function. The colour of a point can be changed by calling the stroke() function.",
     },
@@ -762,10 +762,10 @@ Sk.builtin.rect = function rect(x, y, w, h) {
     w = Sk.ffi.remapToJs(w);
     h = Sk.ffi.remapToJs(h);
 
-    if (Sk.PyAngelo.rectMode === Sk.builtins.CORNERS) {
+    if (Sk.PyAngelo.rectMode === Sk.PyAngelo.CORNERS) {
         w = w - x;
         h = h - y;
-    } else if (Sk.PyAngelo.rectMode === Sk.builtins.CENTER) {
+    } else if (Sk.PyAngelo.rectMode === Sk.PyAngelo.CENTER) {
         x = x - w * 0.5;
         y = y - h * 0.5;
     }
@@ -779,7 +779,7 @@ Sk.builtins["rect"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.rect,
         $name: "rect",
         $flags: { MinArgs: 4, MaxArgs: 4 },
-        $textsig: "($module x, y, w, h /)",
+        $textsig: "($module, x, y, w, h /)",
         $doc:
             "Draws a rectangle on the canvas. By default, the first two parameters set the location of the upper-left corner, the third sets the width, and the fourth sets the height. The way these parameters are interpreted, may be changed with the rectMode() function.",
     },
@@ -796,7 +796,7 @@ Sk.builtins["beginShape"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.beginShape,
         $name: "beginShape",
         $flags: { NoArgs: true },
-        $textsig: "($module x, y, w, h /)",
+        $textsig: "($module, /)",
         $doc:
             "The beginShape(), vertex(), and endShape() functions allow you to create more complex shapes. The beginShape() function starts recording vertices that are added via the vertex() function.",
     },
@@ -816,7 +816,7 @@ Sk.builtins["vertex"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.vertex,
         $name: "vertex",
         $flags: { MinArgs: 2, MaxArgs: 2 },
-        $textsig: "($module x, y /)",
+        $textsig: "($module, x, y /)",
         $doc:
             "The vertex() function adds a point to the list of vertices that will be connected when the endShape() function is called. It takes two parameters, the x and y coordinates of the vertex to add.",
     },
@@ -839,7 +839,7 @@ Sk.builtin.endShape = function endShape(mode) {
     for (let i = 1; i < vLen; i++) {
         Sk.PyAngelo.ctx.lineTo(Sk.PyAngelo.vertex[i][0], Sk.PyAngelo.vertex[i][1]);
     }
-    if (Sk.ffi.remapToJs(mode) === Sk.builtins.CLOSE) {
+    if (Sk.ffi.remapToJs(mode) === Sk.PyAngelo.CLOSE) {
         Sk.PyAngelo.ctx.closePath();
     }
     applyFillAndStroke();
@@ -854,7 +854,7 @@ Sk.builtins["endShape"] = new Sk.builtin.sk_method(
             NamedArgs: ["mode"],
             Defaults: [1],
         },
-        $textsig: "($module mode /)",
+        $textsig: "($module, mode /)",
         $doc:
             "Draws a shape specified by the list of vertices added by calling beginShape() followed by any number of vertex() function calls. By default the entire shape is closed by linking the last vertex back to the first. This can be changed by passing the constant OPEN as a parameter.",
     },
@@ -893,7 +893,7 @@ Sk.builtin.drawImage = function drawImage(image, x, y, width, height, opacity) {
         }
         Sk.PyAngelo.ctx.globalAlpha = opacity;
     }
-    if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+    if (Sk.PyAngelo.yAxisMode === Sk.PyAngelo.CARTESIAN) {
         Sk.PyAngelo.ctx.save();
         Sk.PyAngelo.ctx.translate(x, y);
         Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
@@ -913,7 +913,7 @@ Sk.builtins["drawImage"] = new Sk.builtin.sk_method(
             NamedArgs: [null, null, null, "width", "height", "opacity"],
             Defaults: [Sk.builtin.none.none$, Sk.builtin.none.none$, Sk.builtin.none.none$],
         },
-        $textsig: "($module image, x, y, width, height, opacity /)",
+        $textsig: "($module, image, x, y, width, height, opacity /)",
         $doc:
             "Draws an image on the canvas.",
     },
@@ -941,7 +941,7 @@ Sk.builtins["measureText"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.measureText,
         $name: "measureText",
         $flags: { MinArgs: 3, MaxArgs: 3 },
-        $textsig: "($module text fontSize fontName /)",
+        $textsig: "($module, text fontSize fontName /)",
         $doc:
             "Get the size of the text.",
     },
@@ -985,7 +985,7 @@ Sk.builtins["loadSound"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.loadSound,
         $name: "loadSound",
         $flags: { OneArg: true },
-        $textsig: "($module filename /)",
+        $textsig: "($module, filename /)",
         $doc:
             "Loads a sound into memory.",
     },
@@ -1017,7 +1017,7 @@ Sk.builtins["playSound"] = new Sk.builtin.sk_method(
             NamedArgs: [null, "loop", "volume"],
             Defaults: [Sk.builtin.bool.false$, new Sk.builtin.float_(1.0)],
         },
-        $textsig: "($module filename, loop, volume /)",
+        $textsig: "($module, filename, loop, volume /)",
         $doc:
             "Plays a sound.",
     },
@@ -1039,7 +1039,7 @@ Sk.builtins["stopSound"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.stopSound,
         $name: "stopSound",
         $flags: { OneArg: true },
-        $textsig: "($module sound /)",
+        $textsig: "($module, sound /)",
         $doc:
             "Stops the sound from playing.",
     },
@@ -1061,7 +1061,7 @@ Sk.builtins["pauseSound"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.pauseSound,
         $name: "pauseSound",
         $flags: { OneArg: true },
-        $textsig: "($module sound /)",
+        $textsig: "($module, sound /)",
         $doc:
             "Pauses the sound from playing.",
     },
@@ -1080,7 +1080,7 @@ Sk.builtins["stopAllSounds"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.stopAllSounds,
         $name: "stopAllSounds",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Stops all sounds from playing.",
     },
@@ -1094,7 +1094,7 @@ Sk.builtin.getPixelColour = function getPixelColour(x, y) {
     Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
     x = Sk.ffi.remapToJs(x);
     y = Sk.ffi.remapToJs(y);
-    if (Sk.PyAngelo.yAxisMode == Sk.builtins.CARTESIAN) {
+    if (Sk.PyAngelo.yAxisMode == Sk.PyAngelo.CARTESIAN) {
         y = convertYToCartesian(y);
     }
     const pixel = Sk.PyAngelo.ctx.getImageData(x, y, 1, 1);
@@ -1113,7 +1113,7 @@ Sk.builtins["getPixelColour"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.getPixelColour,
         $name: "getPixelColour",
         $flags: { MinArgs: 2, MaxArgs: 2 },
-        $textsig: "($module x y /)",
+        $textsig: "($module, x y /)",
         $doc:
             "Gets the pixel colour located at (x, y).",
     },
@@ -1136,7 +1136,7 @@ Sk.builtins["isKeyPressed"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.isKeyPressed,
         $name: "isKeyPressed",
         $flags: { OneArg: true },
-        $textsig: "($module code /)",
+        $textsig: "($module, code /)",
         $doc:
             "Returns true or false depending if the key is currently pressed. The paramter should be the event.code value.",
     },
@@ -1163,7 +1163,7 @@ Sk.builtins["wasKeyPressed"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.wasKeyPressed,
         $name: "wasKeyPressed",
         $flags: { OneArg: true },
-        $textsig: "($module code /)",
+        $textsig: "($module, code /)",
         $doc:
             "Returns true or false depending if the key was pressed. This only returns true once per key press as opposed to isKeyPressed which stays true until the key is released.",
     },
@@ -1184,7 +1184,7 @@ Sk.builtins["wasMousePressed"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.wasMousePressed,
         $name: "wasMousePressed",
         $flags: { NoArgs: true },
-        $textsig: "($module /)",
+        $textsig: "($module, /)",
         $doc:
             "Returns true or false depending if the mouse was pressed. This only returns true once per mouse press as opposed to the built-in variable mouseIsPressed which stays true until the mouse is released.",
     },
@@ -1208,7 +1208,7 @@ Sk.builtins["setTextSize"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.setTextSize,
         $name: "setTextSize",
         $flags: { OneArg: true },
-        $textsig: "($module size /)",
+        $textsig: "($module, size /)",
         $doc:
             "Sets the text size used by print statements.",
     },
@@ -1218,54 +1218,54 @@ Sk.builtins["setTextSize"] = new Sk.builtin.sk_method(
 
 function getRGB(colour) {
     switch(colour) {
-        case Sk.builtins.YELLOW:
+        case Sk.PyAngelo.YELLOW:
             return "rgba(181, 137, 0, 1)";
-        case Sk.builtins.ORANGE:
+        case Sk.PyAngelo.ORANGE:
             return "rgba(203, 75, 22, 1)";
-        case Sk.builtins.RED:
+        case Sk.PyAngelo.RED:
             return "rgba(220, 50, 47, 1)";
-        case Sk.builtins.MAGENTA:
+        case Sk.PyAngelo.MAGENTA:
             return "rgba(211, 54, 130, 1)";
-        case Sk.builtins.VIOLET:
+        case Sk.PyAngelo.VIOLET:
             return "rgba(108, 113, 196, 1)";
-        case Sk.builtins.BLUE:
+        case Sk.PyAngelo.BLUE:
             return "rgba(38, 139, 210, 1)";
-        case Sk.builtins.CYAN:
+        case Sk.PyAngelo.CYAN:
             return "rgba(42, 161, 152, 1)";
-        case Sk.builtins.GREEN:
+        case Sk.PyAngelo.GREEN:
             return "rgba(133, 153, 0, 1)";
-        case Sk.builtins.WHITE:
+        case Sk.PyAngelo.WHITE:
             return "rgba(253, 246, 227, 1)";
         // GREY and GRAY are equal to DEFAULT
         // and if an unknown value is passed
         // we will use the default gray
         default:
             return "rgba(147, 161, 161, 1)";
-        case Sk.builtins.BLACK:
+        case Sk.PyAngelo.BLACK:
             return "rgba(0, 0, 0, 1)";
-        case Sk.builtins.DRACULA_BACKGROUND:
+        case Sk.PyAngelo.DRACULA_BACKGROUND:
             return "rgba(40, 42, 54, 1)";
-        case Sk.builtins.DRACULA_CURRENT_LINE:
+        case Sk.PyAngelo.DRACULA_CURRENT_LINE:
             return "rgba(68, 71, 90, 1)";
-        case Sk.builtins.DRACULA_SELECTION:
+        case Sk.PyAngelo.DRACULA_SELECTION:
             return "rgba(68, 71, 90, 1)";
-        case Sk.builtins.DRACULA_FOREGROUND:
+        case Sk.PyAngelo.DRACULA_FOREGROUND:
             return "rgba(248, 248, 242, 1)";
-        case Sk.builtins.DRACULA_COMMENT:
+        case Sk.PyAngelo.DRACULA_COMMENT:
             return "rgba(98, 114, 164, 1)";
-        case Sk.builtins.DRACULA_CYAN:
+        case Sk.PyAngelo.DRACULA_CYAN:
             return "rgba(139, 233, 253, 1)";
-        case Sk.builtins.DRACULA_GREEN:
+        case Sk.PyAngelo.DRACULA_GREEN:
             return "rgba(80, 250, 123, 1)";
-        case Sk.builtins.DRACULA_ORANGE:
+        case Sk.PyAngelo.DRACULA_ORANGE:
             return "rgba(255, 184, 108, 1)";
-        case Sk.builtins.DRACULA_PINK:
+        case Sk.PyAngelo.DRACULA_PINK:
             return "rgba(255, 121, 198, 1)";
-        case Sk.builtins.DRACULA_PURPLE:
+        case Sk.PyAngelo.DRACULA_PURPLE:
             return "rgba(189, 147, 249, 1)";
-        case Sk.builtins.DRACULA_RED:
+        case Sk.PyAngelo.DRACULA_RED:
             return "rgba(255, 85, 85, 1)";
-        case Sk.builtins.DRACULA_YELLOW:
+        case Sk.PyAngelo.DRACULA_YELLOW:
             return "rgba(241, 250, 140, 1)";
     }
 }
@@ -1283,7 +1283,7 @@ Sk.builtins["setTextColour"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.setTextColour,
         $name: "setTextColour",
         $flags: { OneArg: true },
-        $textsig: "($module colour /)",
+        $textsig: "($module, colour /)",
         $doc:
             "Sets the text colour used by print statements.",
     },
@@ -1304,7 +1304,7 @@ Sk.builtins["setHighlightColour"] = new Sk.builtin.sk_method(
         $meth: Sk.builtin.setHighlightColour,
         $name: "setHighlightColour",
         $flags: { OneArg: true },
-        $textsig: "($module colour /)",
+        $textsig: "($module, colour /)",
         $doc:
             "Sets the background colour used by print statements.",
     },
@@ -1330,7 +1330,7 @@ Sk.builtins["clear"] = new Sk.builtin.sk_method(
             NamedArgs: ["colour"],
             Defaults: [11],
         },
-        $textsig: "($module colour /)",
+        $textsig: "($module, colour /)",
         $doc:
             "Clears the screen with the specified colour.",
     },
@@ -1353,7 +1353,7 @@ Sk.builtins["sleep"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.sleep,
         $flags: { OneArg: true },
-        $textsig: "($module delay /)",
+        $textsig: "($module, delay /)",
         $doc:
             "Sleeps for the specified delay in seconds.",
     },
@@ -1502,6 +1502,7 @@ const pointClass = function ($gbl, $loc) {
 };
 Sk.builtin.Point = pointClass;
 Sk.builtins["Point"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Point, "Point", []);
+Sk.builtins["Point"].prototype.$doc = "A 2D point with x and y coordinates.";
 
 const initColour = function (self, r, g, b, a) {
     Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 5);
@@ -1581,7 +1582,7 @@ const drawMethodImage = function (self, x, y, width, height, opacity) {
         Sk.PyAngelo.ctx.globalAlpha = opacity;
     }
 
-    if (Sk.PyAngelo.yAxisMode === Sk.builtins.CARTESIAN) {
+    if (Sk.PyAngelo.yAxisMode === Sk.PyAngelo.CARTESIAN) {
         Sk.PyAngelo.ctx.save();
         Sk.PyAngelo.ctx.translate(x, y);
         Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
@@ -1661,6 +1662,7 @@ Sk.builtin.Image = imageClass;
 Sk.builtins["Image"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Image, "Image", []);
 // Keep loadImage for backwards compatibility
 Sk.builtins["loadImage"] = Sk.builtins["Image"];
+Sk.builtins["Image"].prototype.$doc = "Represents and image that can be drawn to the canvas.";
 
 // Functions for PyAngelo website
 Sk.PyAngelo.reset = function() {
@@ -1710,45 +1712,79 @@ Sk.PyAngelo.reset = function() {
     Sk.builtins.KEY_DOWN = new Sk.builtin.str("ArrowDown");
 
     // Global Python Colours
-    Sk.builtins.YELLOW = 0;
-    Sk.builtins.ORANGE = 1;
-    Sk.builtins.RED = 2;
-    Sk.builtins.MAGENTA = 3;
-    Sk.builtins.VIOLET = 4;
-    Sk.builtins.BLUE = 5;
-    Sk.builtins.CYAN = 6;
-    Sk.builtins.GREEN = 7;
-    Sk.builtins.WHITE = 8;
-    Sk.builtins.GRAY = 9;
-    Sk.builtins.GREY = 9;
-    Sk.builtins.DEFAULT = 9;
-    Sk.builtins.BLACK = 10;
-    Sk.builtins.DRACULA_BACKGROUND = 11;
-    Sk.builtins.DRACULA_CURRENT_LINE = 12;
-    Sk.builtins.DRACULA_SELECTION = 13;
-    Sk.builtins.DRACULA_FOREGROUND = 14;
-    Sk.builtins.DRACULA_COMMENT = 15;
-    Sk.builtins.DRACULA_CYAN = 16;
-    Sk.builtins.DRACULA_GREEN = 17;
-    Sk.builtins.DRACULA_ORANGE = 18;
-    Sk.builtins.DRACULA_PINK = 19;
-    Sk.builtins.DRACULA_PURPLE = 20;
-    Sk.builtins.DRACULA_RED = 21;
-    Sk.builtins.DRACULA_YELLOW = 22;
+    Sk.builtins.YELLOW = new Sk.builtin.int_(0);
+    Sk.PyAngelo.YELLOW = Sk.ffi.remapToJs(Sk.builtins.YELLOW);
+    Sk.builtins.ORANGE = new Sk.builtin.int_(1);
+    Sk.PyAngelo.ORANGE = Sk.ffi.remapToJs(Sk.builtins.ORANGE);
+    Sk.builtins.RED = new Sk.builtin.int_(2);
+    Sk.PyAngelo.RED = Sk.ffi.remapToJs(Sk.builtins.RED);
+    Sk.builtins.MAGENTA = new Sk.builtin.int_(3);
+    Sk.PyAngelo.MAGENTA = Sk.ffi.remapToJs(Sk.builtins.MAGENTA);
+    Sk.builtins.VIOLET = new Sk.builtin.int_(4);
+    Sk.PyAngelo.VIOLET = Sk.ffi.remapToJs(Sk.builtins.VIOLET);
+    Sk.builtins.BLUE = new Sk.builtin.int_(5);
+    Sk.PyAngelo.BLUE = Sk.ffi.remapToJs(Sk.builtins.BLUE);
+    Sk.builtins.CYAN = new Sk.builtin.int_(6);
+    Sk.PyAngelo.CYAN = Sk.ffi.remapToJs(Sk.builtins.CYAN);
+    Sk.builtins.GREEN = new Sk.builtin.int_(7);
+    Sk.PyAngelo.GREEN = Sk.ffi.remapToJs(Sk.builtins.GREEN);
+    Sk.builtins.WHITE = new Sk.builtin.int_(8);
+    Sk.PyAngelo.WHITE = Sk.ffi.remapToJs(Sk.builtins.WHITE);
+    Sk.builtins.GRAY = new Sk.builtin.int_(9);
+    Sk.PyAngelo.GRAY = Sk.ffi.remapToJs(Sk.builtins.GRAY);
+    Sk.builtins.GREY = new Sk.builtin.int_(9);
+    Sk.PyAngelo.GREY = Sk.ffi.remapToJs(Sk.builtins.GREY);
+    Sk.builtins.DEFAULT = new Sk.builtin.int_(9);
+    Sk.PyAngelo.DEFAULT = Sk.ffi.remapToJs(Sk.builtins.DEFAULT);
+    Sk.builtins.BLACK = new Sk.builtin.int_(10);
+    Sk.PyAngelo.BLACK = Sk.ffi.remapToJs(Sk.builtins.BLACK);
+    Sk.builtins.DRACULA_BACKGROUND = new Sk.builtin.int_(11);
+    Sk.PyAngelo.DRACULA_BACKGROUND = Sk.ffi.remapToJs(Sk.builtins.DRACULA_BACKGROUND);
+    Sk.builtins.DRACULA_CURRENT_LINE = new Sk.builtin.int_(12);
+    Sk.PyAngelo.DRACULA_CURRENT_LINE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_CURRENT_LINE);
+    Sk.builtins.DRACULA_SELECTION = new Sk.builtin.int_(13);
+    Sk.PyAngelo.DRACULA_SELECTION = Sk.ffi.remapToJs(Sk.builtins.DRACULA_SELECTION);
+    Sk.builtins.DRACULA_FOREGROUND = new Sk.builtin.int_(14);
+    Sk.PyAngelo.DRACULA_FOREGROUND = Sk.ffi.remapToJs(Sk.builtins.DRACULA_FOREGROUND);
+    Sk.builtins.DRACULA_COMMENT = new Sk.builtin.int_(15);
+    Sk.PyAngelo.DRACULA_COMMENT = Sk.ffi.remapToJs(Sk.builtins.DRACULA_COMMENT);
+    Sk.builtins.DRACULA_CYAN = new Sk.builtin.int_(16);
+    Sk.PyAngelo.DRACULA_CYAN = Sk.ffi.remapToJs(Sk.builtins.DRACULA_CYAN);
+    Sk.builtins.DRACULA_GREEN = new Sk.builtin.int_(17);
+    Sk.PyAngelo.DRACULA_GREEN = Sk.ffi.remapToJs(Sk.builtins.DRACULA_GREEN);
+    Sk.builtins.DRACULA_ORANGE = new Sk.builtin.int_(18);
+    Sk.PyAngelo.DRACULA_ORANGE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_ORANGE);
+    Sk.builtins.DRACULA_PINK = new Sk.builtin.int_(19);
+    Sk.PyAngelo.DRACULA_PINK = Sk.ffi.remapToJs(Sk.builtins.DRACULA_PINK);
+    Sk.builtins.DRACULA_PURPLE = new Sk.builtin.int_(20);
+    Sk.PyAngelo.DRACULA_PURPLE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_PURPLE);
+    Sk.builtins.DRACULA_RED = new Sk.builtin.int_(21);
+    Sk.PyAngelo.DRACULA_RED = Sk.ffi.remapToJs(Sk.builtins.DRACULA_RED);
+    Sk.builtins.DRACULA_YELLOW = new Sk.builtin.int_(22);
+    Sk.PyAngelo.DRACULA_YELLOW = Sk.ffi.remapToJs(Sk.builtins.DRACULA_YELLOW);
 
     // Used to set y axis mode
-    Sk.builtins.CARTESIAN = 1;
-    Sk.builtins.JAVASCRIPT = 2;
+    Sk.builtins.CARTESIAN = new Sk.builtin.int_(1);
+    Sk.PyAngelo.CARTESIAN = Sk.ffi.remapToJs(Sk.builtins.CARTESIAN);
+    Sk.builtins.JAVASCRIPT = new Sk.builtin.int_(2);
+    Sk.PyAngelo.JAVASCRIPT = Sk.ffi.remapToJs(Sk.builtins.JAVASCRIPT);
     // Used to set angle mode
-    Sk.builtins.RADIANS = 1;
-    Sk.builtins.DEGREES = 2;
+    Sk.builtins.RADIANS = new Sk.builtin.int_(1);
+    Sk.PyAngelo.RADIANS = Sk.ffi.remapToJs(Sk.builtins.RADIANS);
+    Sk.builtins.DEGREES = new Sk.builtin.int_(2);
+    Sk.PyAngelo.DEGREES = Sk.ffi.remapToJs(Sk.builtins.DEGREES);
     // Used for rect mode and circle mode
-    Sk.builtins.CORNER = 1;
-    Sk.builtins.CORNERS = 2;
-    Sk.builtins.CENTER = 3;
+    Sk.builtins.CORNER = new Sk.builtin.int_(1);
+    Sk.PyAngelo.CORNER = Sk.ffi.remapToJs(Sk.builtins.CORNER);
+    Sk.builtins.CORNERS = new Sk.builtin.int_(2);
+    Sk.PyAngelo.CORNERS = Sk.ffi.remapToJs(Sk.builtins.CORNERS);
+    Sk.builtins.CENTER = new Sk.builtin.int_(3);
+    Sk.PyAngelo.CENTER = Sk.ffi.remapToJs(Sk.builtins.CENTER);
     // Used for end shape
-    Sk.builtins.CLOSE = 1;
-    Sk.builtins.OPEN = 2;
+    Sk.builtins.CLOSE = new Sk.builtin.int_(1);
+    Sk.PyAngelo.CLOSE = Sk.ffi.remapToJs(Sk.builtins.CLOSE);
+    Sk.builtins.OPEN = new Sk.builtin.int_(2);
+    Sk.PyAngelo.OPEN = Sk.ffi.remapToJs(Sk.builtins.OPEN);
     // Used for console height
     Sk.builtins.SMALL_SCREEN = new Sk.builtin.int_(300);
     Sk.builtins.MEDIUM_SCREEN = new Sk.builtin.int_(500);
@@ -1759,21 +1795,17 @@ Sk.PyAngelo.reset = function() {
     Sk.builtins.LARGE_FONT = new Sk.builtin.int_(24);
 
     // Default values for every call to runSkulpt
-    Sk.PyAngelo.console.innerHTML = "";
-    Sk.PyAngelo.console.style.backgroundColor = "rgba(40, 42, 54, 1)";
     Sk.PyAngelo.textSize = "16px";
     Sk.PyAngelo.textColour = "rgba(248, 248, 242, 1)";
     Sk.PyAngelo.highlightColour = "rgba(40, 42, 54, 1)";
     Sk.PyAngelo.keys = {};
     Sk.PyAngelo.keyWasPressed = {};
     Sk.PyAngelo.yAxisMode = Sk.builtins.JAVASCRIPT;
-    Sk.PyAngelo.angleModeValue = Sk.builtins.DEGREES;
+    Sk.PyAngelo.angleModeValue = Sk.PyAngelo.DEGREES;
     Sk.PyAngelo.doFill = true;
     Sk.PyAngelo.doStroke = true;
-    Sk.PyAngelo.rectMode = Sk.builtins.CORNER;
-    Sk.PyAngelo.circleMode = Sk.builtins.CENTER;
-    Sk.builtins.windowWidth = window.innerWidth - 15;
-    Sk.builtins.windowHeight = window.innerHeight - 15;
+    Sk.PyAngelo.rectMode = Sk.PyAngelo.CORNER;
+    Sk.PyAngelo.circleMode = Sk.PyAngelo.CENTER;
     Sk.builtins.width = new Sk.builtin.int_(0);
     Sk.builtins.height = new Sk.builtin.int_(0);
     Sk.builtins.mouseX = new Sk.builtin.int_(0);
@@ -1786,12 +1818,16 @@ Sk.PyAngelo.preparePage = function() {
     Sk.PyAngelo.canvas = document.getElementById("canvas");
     Sk.PyAngelo.ctx = Sk.PyAngelo.canvas.getContext("2d");
     Sk.PyAngelo.console = document.getElementById("console");
+    Sk.PyAngelo.console.innerHTML = "";
+    Sk.PyAngelo.console.style.backgroundColor = "rgba(40, 42, 54, 1)";
     Sk.PyAngelo.canvas.addEventListener("keydown", _keydown);
     Sk.PyAngelo.canvas.addEventListener("keyup", _keyup);
     Sk.PyAngelo.canvas.addEventListener("mousemove", _canvasMouseMove);
     Sk.PyAngelo.canvas.addEventListener("mousedown", _canvasMouseDown);
     Sk.PyAngelo.canvas.addEventListener("mouseup", _canvasMouseUp);
     Sk.PyAngelo.console.addEventListener("mousedown", _focusInputElement);
+    Sk.builtins.windowWidth = new Sk.builtin.int_(window.innerWidth - 15);
+    Sk.builtins.windowHeight = new Sk.builtin.int_(window.innerHeight - 15);
     window.addEventListener("resize", _resizeWindowVars);
 
     // Add mouse handlers
@@ -1799,7 +1835,7 @@ Sk.PyAngelo.preparePage = function() {
         const boundingRect = Sk.PyAngelo.canvas.getBoundingClientRect();
         Sk.builtins.mouseX = Sk.ffi.remapToPy(Math.round(ev.clientX - boundingRect.left));
         let y = Math.round(ev.clientY - boundingRect.top);
-        if (Sk.PyAngelo.yAxisMode == Sk.builtins.CARTESIAN) {
+        if (Sk.PyAngelo.yAxisMode == Sk.PyAngelo.CARTESIAN) {
             y = convertYToCartesian(y);
         }
         Sk.builtins.mouseY = Sk.ffi.remapToPy(y) ;
@@ -1846,8 +1882,8 @@ Sk.PyAngelo.preparePage = function() {
     }
 
     function _resizeWindowVars(ev) {
-        Sk.builtins.windowWidth = window.innerWidth - 15;
-        Sk.builtins.windowHeight = window.innerHeight - 15;
+        Sk.builtins.windowWidth = new Sk.builtin.int_(window.innerWidth - 15);
+        Sk.builtins.windowHeight = new Sk.builtin.int_(window.innerHeight - 15);
     }
 
     Sk.PyAngelo.reset();
