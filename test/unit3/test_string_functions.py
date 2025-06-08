@@ -712,6 +712,39 @@ class string_functions(unittest.TestCase):
         self.assertEqual(µ1, 1)
         self.assertEqual(রংর, 2)
 
+    def test_isprintable(self):
+        self.assertTrue("".isprintable())
+        self.assertTrue("hello world".isprintable())
+        self.assertTrue("123!@#".isprintable())
+
+        self.assertFalse("line\nbreak".isprintable())
+        self.assertFalse("\t".isprintable())
+
+    def test_isdecimal(self):
+        self.assertTrue("0".isdecimal())
+        self.assertTrue("1234567890".isdecimal())
+
+        self.assertFalse("12.3".isdecimal())
+        self.assertFalse("abc123".isdecimal())
+        self.assertFalse("".isdecimal())
+        self.assertFalse("Ⅷ".isdecimal()) # Roman numeral 8 (U+2167)
+        self.assertFalse("²".isdecimal()) # Superscript 2 (U+00B2)
+
+    def test_removeprefix(self):
+        self.assertTrue("TestHook".removeprefix("Test") == "Hook")
+        self.assertTrue("TestHook".removeprefix("Other") == "TestHook")
+        self.assertTrue("Hello".removeprefix("") == "Hello")
+        self.assertTrue("".removeprefix("Hi") == "")
+        self.assertTrue("RepeatRepeat".removeprefix("Repeat") == "Repeat")
+        self.assertTrue("prefix".removeprefix("prefix") == "")
+
+    def test_removesuffix(self):
+        self.assertTrue("MiscTests".removesuffix("Tests") == "Misc")
+        self.assertTrue("MiscTests".removesuffix("Other") == "MiscTests")
+        self.assertTrue("hello".removesuffix("") == "hello")
+        self.assertTrue("".removesuffix("Hi") == "")
+        self.assertTrue("suffix".removesuffix("suffix") == "")
+        self.assertTrue("filename.py".removesuffix(".py") == "filename")
 
 if __name__ == "__main__":
     unittest.main()
