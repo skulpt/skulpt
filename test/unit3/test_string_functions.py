@@ -712,6 +712,107 @@ class string_functions(unittest.TestCase):
         self.assertEqual(µ1, 1)
         self.assertEqual(রংর, 2)
 
+    def test_isprintable(self):
+        # CPython Tests
+        self.assertTrue("hello world".isprintable())
+        self.assertTrue("123!@#".isprintable())
+
+        self.assertFalse("line\nbreak".isprintable())
+        self.assertFalse("\t".isprintable())
+
+        self.assertTrue("".isprintable())
+        self.assertTrue(" ".isprintable())
+        self.assertTrue("abcdefg".isprintable())
+        self.assertFalse("abcdefg\n".isprintable())
+        # some defined Unicode character
+        self.assertTrue("\u0374".isprintable())
+        # undefined character
+        self.assertFalse("\u0378".isprintable())
+        # single surrogate character
+        self.assertFalse("\ud800".isprintable())
+
+        self.assertTrue('\U0001F46F'.isprintable())
+
+        # These tests involve characters outside the Basic Multilingual Plane (non-BMP),
+        # which require full Unicode code point handling (via .codePointAt or a category map).
+        # Our current implementation only partially supports non-BMP characters,
+# so these tests are commented out until that support is added.
+        # self.assertFalse('\U000E0020'.isprintable())
+
+    def test_isdecimal(self):
+        self.assertTrue("1234567890".isdecimal())
+        self.assertFalse("12.3".isdecimal())
+        self.assertFalse("abc123".isdecimal())
+        self.assertFalse("Ⅷ".isdecimal()) # Roman numeral 8 (U+2167)
+        self.assertFalse("²".isdecimal()) # Superscript 2 (U+00B2)
+
+        # CPython
+        self.assertFalse(''.isdecimal())
+        self.assertFalse('a'.isdecimal())
+        self.assertTrue('0'.isdecimal())
+        self.assertFalse('\u2460'.isdecimal()) # CIRCLED DIGIT ONE
+        self.assertFalse('\xbc'.isdecimal()) # VULGAR FRACTION ONE QUARTER
+        self.assertTrue('\u0660'.isdecimal()) # ARABIC-INDIC DIGIT ZERO
+        self.assertTrue('0123456789'.isdecimal())
+        self.assertFalse('0123456789a'.isdecimal())
+
+        with self.assertRaises(TypeError):
+            "abc".isdecimal(42)
+
+        for ch in ['\U00010401', '\U00010427', '\U00010429', '\U0001044E',
+                   '\U0001F40D', '\U0001F46F', '\U00011065', '\U0001F107']:
+            self.assertFalse(ch.isdecimal(), '{!a} is not decimal.'.format(ch))
+        # These tests involve characters outside the Basic Multilingual Plane (BMP),
+        # which are not currently supported by our Unicode.Nd regex (e.g., U+104A0, U+1D7F6).
+        # Skulpt will need codePoint-based logic to pass these, so they are commented out for now.
+        # for ch in ['\U0001D7F6', '\U00011066', '\U000104A0']:
+        #     self.assertTrue(ch.isdecimal(), '{!a} is decimal.'.format(ch))
+
+    def test_removeprefix(self):
+        self.assertEqual('spam'.removeprefix('sp'), 'am')
+        self.assertEqual('spamspamspam'.removeprefix('spam'), 'spamspam')
+        self.assertEqual('spam'.removeprefix('python'), 'spam')
+        self.assertEqual('spam'.removeprefix('spider'), 'spam')
+        self.assertEqual('spam'.removeprefix('spam and eggs'), 'spam')
+
+        self.assertEqual(''.removeprefix(''), '')
+        self.assertEqual(''.removeprefix('abcde'), '')
+        self.assertEqual('abcde'.removeprefix(''), 'abcde')
+        self.assertEqual('abcde'.removeprefix('abcde'), '')
+
+        with self.assertRaises(TypeError):
+            'hello'.removeprefix()
+        with self.assertRaises(TypeError):
+            'hello'.removeprefix(42)
+        with self.assertRaises(TypeError):
+            'hello'.removeprefix(42, 'h')
+        with self.assertRaises(TypeError):
+            'hello'.removeprefix('h', 42)
+        with self.assertRaises(TypeError):
+            'hello'.removeprefix(("he", "l"))  # tuple not allowed
+
+    def test_removesuffix(self):
+        self.assertEqual('spam'.removesuffix('am'), 'sp')
+        self.assertEqual('spamspamspam'.removesuffix('spam'), 'spamspam')
+        self.assertEqual('spam'.removesuffix('python'), 'spam')
+        self.assertEqual('spam'.removesuffix('blam'), 'spam')
+        self.assertEqual('spam'.removesuffix('eggs and spam'), 'spam')
+
+        self.assertEqual(''.removesuffix(''), '')
+        self.assertEqual(''.removesuffix('abcde'), '')
+        self.assertEqual('abcde'.removesuffix(''), 'abcde')
+        self.assertEqual('abcde'.removesuffix('abcde'), '')
+
+        with self.assertRaises(TypeError):
+            'hello'.removesuffix()
+        with self.assertRaises(TypeError):
+            'hello'.removesuffix(42)
+        with self.assertRaises(TypeError):
+            'hello'.removesuffix(42, 'h')
+        with self.assertRaises(TypeError):
+            'hello'.removesuffix('h', 42)
+        with self.assertRaises(TypeError):
+            'hello'.removesuffix(("lo", "l"))  # tuple not allowed
 
 if __name__ == "__main__":
     unittest.main()
