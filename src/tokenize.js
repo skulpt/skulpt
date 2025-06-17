@@ -222,6 +222,44 @@ for (let t of prefixes) {
 var tabsize = 8
 
 /**
+ * @type {Map<boolean, RegExp>} maps python3 to the regex
+ */
+var PSEUDO_TOKENS = new Map();
+
+
+function getPseudoTokens() {
+    // we make these regexes here because they can
+    // be changed by the configuration.
+    // we cache them here to avoid recompiling them
+    // every time we tokenize
+    var py3 = Sk.__future__.python3;
+    if (PSEUDO_TOKENS.has(py3)) {
+        return PSEUDO_TOKENS.get(py3);
+    }
+
+    var LSuffix = !py3 ? "(?:L?)" : "";
+    var Hexnumber = "0[xX](?:_?[0-9a-fA-F])+" + LSuffix;
+    var Binnumber = "0[bB](?:_?[01])+" + LSuffix;
+    var Octnumber = "0([oO])(?:_?[0-7])+" + LSuffix;
+    var SilentOctnumber = "0([oO]?)(?:_?[0-7])+" + LSuffix;
+    var Decnumber = "(?:0(?:_?0)*|[1-9](?:_?[0-9])*)" + LSuffix;
+    var Intnumber = group(
+        Hexnumber,
+        Binnumber,
+        Sk.__future__.silent_octal_literal ? SilentOctnumber : Octnumber,
+        Decnumber
+    );
+    var Number_ = group(Imagnumber, Floatnumber, Intnumber);
+    var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
+
+    const PseudoTokenRegexp = new RegExp(PseudoToken);
+    PSEUDO_TOKENS.set(py3, PseudoTokenRegexp);
+    return PseudoTokenRegexp;
+}
+
+
+
+/**
  * internal tokenize function
  *
  * @param {function(): string} readline
@@ -229,20 +267,9 @@ var tabsize = 8
  * @param {function(TokenInfo): void} yield_
  */
 function _tokenize(filename, readline, encoding, yield_) {
-    // we make these regexes here because they can
-    // be changed by the configuration.
-    var LSuffix = !Sk.__future__.python3 ? '(?:L?)' : '';
-    var Hexnumber = '0[xX](?:_?[0-9a-fA-F])+' + LSuffix;
-    var Binnumber = '0[bB](?:_?[01])+' + LSuffix;
-    var Octnumber = '0([oO])(?:_?[0-7])+' + LSuffix;
-    var SilentOctnumber = '0([oO]?)(?:_?[0-7])+' + LSuffix;
-    var Decnumber = '(?:0(?:_?0)*|[1-9](?:_?[0-9])*)' + LSuffix;
-    var Intnumber = group(Hexnumber, Binnumber,
-                          (Sk.__future__.silent_octal_literal ? SilentOctnumber : Octnumber), Decnumber);
-    var Number_ = group(Imagnumber, Floatnumber, Intnumber);
-    var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
 
-    const PseudoTokenRegexp = new RegExp(PseudoToken);
+    var PseudoTokenRegexp = getPseudoTokens();
+
 
     var lnum = 0,
         parenlev = 0,
