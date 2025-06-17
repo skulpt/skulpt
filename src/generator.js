@@ -12,105 +12,220 @@
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
-    constructor: function generator(code, globals, args, closure, closure2) {
-        var k;
-        var i;
-        if (!code) {
-            return;
-        } // ctor hack
-
+    constructor: function generator(scope, name, qualname) {
         if (!(this instanceof Sk.builtin.generator)) {
             throw new TypeError("bad internal call to generator, use 'new'");
         }
 
-        this.func_code = code;
-        this.func_globals = globals || null;
+        this.gi$scope = scope;
+        this.$name = name;
+        this.$qualname = qualname;
+        const susp = new Sk.misceval.Suspension();
+        const data = {
+            type: "gen",
+            send: Sk.builtin.none.none$,
+            throw: null,
+            close: null,
+        };
+        const do_close_or_throw = (close_or_throw, args) => {
+            if (this.gi$yieldfrom && this.gi$yieldfrom.gi$data) {
+                this.gi$yieldfrom.gi$data[close_or_throw] = data[close_or_throw];
+                return;
+            }
+            // fall through - we might have a gi$yieldfrom which isn't a generator
+            // call it's close/throw method if it has one
+            let meth;
+            if (this.gi$yieldfrom) {
+                meth = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str(close_or_throw));
+            }
+            if (meth !== undefined) {
+                Sk.misceval.callsimArray(meth, args || []);
+            }
+            // the non-generator didn't throw or we don't have a yieldfrom
+            // either way throw
+            throw data[close_or_throw];
+        };
+        susp.resume = () => {
+            if (data.close) {
+                do_close_or_throw("close");
+            } else if (data.throw) {
+                do_close_or_throw("throw", [data.throw.ob$type, data.throw]);
+            }
+            return data.send;
+        };
+        susp.data = data;
+        this.gi$ret = null;
+        this.gi$susp = susp;
+        this.gi$data = data;
+        this.curr$susp = null; // set inside the compile code
         this.gi$running = false;
-        this.gi$resumeat = 0;
-        this.gi$sentvalue = Sk.builtin.none.none$;
-        this.gi$locals = {};
-        this.gi$cells = {};
-        if (args.length > 0) {
-            // store arguments into locals because they have to be maintained
-            // too. 'fast' var lookups are locals in generator functions.
-            for (i = 0; i < code.co_varnames.length; ++i) {
-                this.gi$locals[code.co_varnames[i]] = args[i];
-            }
-        }
-        if (closure2 !== undefined) {
-            // todo; confirm that modification here can't cause problems
-            for (k in closure2) {
-                closure[k] = closure2[k];
-            }
-        }
-        //print(JSON.stringify(closure));
-        this.func_closure = closure;
+        this.gi$yieldfrom = null;
+        this.gi$closed = false;
     },
     slots: {
         $r() {
-            return new Sk.builtin.str("<generator object " + this.func_code.co_name.v + ">");
+            return new Sk.builtin.str("<generator object " + this.$name + ">");
         },
     },
     iternext(canSuspend, yielded) {
-        var ret;
-        var args;
-        var self = this;
         if (this.gi$running) {
             throw new Sk.builtin.ValueError("generator already executing");
+        } else if (this.gi$closed) {
+            this.gi$ret = null;
+            return undefined;
         }
-        this["gi$running"] = true;
-        if (yielded === undefined) {
-            yielded = Sk.builtin.none.none$;
-        }
-        this["gi$sentvalue"] = yielded;
 
-        // note: functions expect 'this' to be globals to avoid having to
-        // slice/unshift onto the main args
-        args = [this];
-        if (this.func_closure) {
-            args.push(this.func_closure);
-        }
-        ret = this.func_code.apply(this.func_globals, args);
-        return (function finishIteration(ret) {
-            if (ret instanceof Sk.misceval.Suspension) {
-                if (canSuspend) {
-                    return new Sk.misceval.Suspension(finishIteration, ret);
-                } else {
-                    ret = Sk.misceval.retryOptionalSuspensionOrThrow(ret);
+        this.gi$running = true;
+        yielded || (yielded = Sk.builtin.none.none$);
+        this.gi$data.send = yielded;
+
+        const nxt = Sk.misceval.tryCatch(
+            () =>
+                Sk.misceval.chain(this.curr$susp.resume(), (ret) => {
+                    Sk.asserts.assert(ret !== undefined);
+                    this.gi$running = false;
+                    if (Array.isArray(ret)) {
+                        this.curr$susp = ret[0];
+                        return ret[1];
+                    } else {
+                        // Since the StopIteration thrown doesn't have an argument
+                        // We keep the gi$ret value as null
+                        // This allows us to distinguish a next value that throws StopIteration() vs StopIteration(None)
+                        // All gens end up throwing StopIteration() but a custom iterator might not
+                        this.gi$ret = ret === Sk.builtin.none.none$ ? null : ret;
+                        this.gi$closed = true;
+                        return undefined;
+                    }
+                }),
+            (e) => {
+                this.gi$closed = true;
+                this.gi$yieldfrom = null;
+                if (e instanceof Sk.builtin.StopIteration) {
+                    throw new Sk.builtin.RuntimeError("generator raised StopIteration");
                 }
+                throw e;
+            },
+            () => {
+                this.gi$running = false;
             }
-            //print("ret", JSON.stringify(ret));
-            self["gi$running"] = false;
-            Sk.asserts.assert(ret !== undefined);
-            if (Array.isArray(ret)) {
-                // returns a pair: resume target and yielded value
-                self["gi$resumeat"] = ret[0];
-                ret = ret[1];
-            } else {
-                // todo; StopIteration
-                self.gi$ret = ret;
-                return undefined;
-            }
-            //print("returning:", JSON.stringify(ret));
-            return ret;
-        })(ret);
+        );
+
+        return canSuspend ? nxt : Sk.misceval.retryOptionalSuspensionOrThrow(nxt);
     },
     methods: {
         send: {
             $meth(value) {
                 return Sk.misceval.chain(this.tp$iternext(true, value), (ret) => {
                     if (ret === undefined) {
-                        const v = this.gi$ret;
-                        // this is a weird quirk - and only for printing purposes StopIteration(None) vs StopIteration()
-                        // .value ends up being None. But the repr prints the args we pass to StopIteration.
-                        // See tests in test_yield_from and search for StopIteration()
-                        throw v !== undefined && v !== Sk.builtin.none.none$ ? new Sk.builtin.StopIteration(v) : new Sk.builtin.StopIteration();
+                        throw new Sk.builtin.StopIteration(this.gi$ret);
                     }
                     return ret;
                 });
             },
             $flags: { OneArg: true },
             $doc: "send(arg) -> send 'arg' into generator,\nreturn next yielded value or raise StopIteration.",
+        },
+        throw: {
+            $meth(type, value, tb) {
+                /** @todo account for tb and adjust value depending on type*/
+                value || (value = type);
+                if (Sk.builtin.checkClass(value)) {
+                    value = Sk.misceval.callsimArray(value);
+                }
+                let isGenExit = false;
+                if (!(value instanceof Sk.builtin.BaseException)) {
+                    throw new Sk.builtin.TypeError(
+                        "exceptions must be classes or instances deriving from BaseException, not str"
+                    );
+                } else if (value instanceof Sk.builtin.GeneratorExit) {
+                    isGenExit = true;
+                }
+                if (this.gi$yieldfrom && isGenExit) {
+                    const _close = this.gi$yieldfrom.tp$getattr(new Sk.builtin.str("close"));
+                    if (_close !== undefined) {
+                        Sk.misceval.callsimArray(_close);
+                    }
+                    this.gi$yieldfrom = null;
+                }
+                this.gi$data.throw = value;
+                return Sk.misceval.tryCatch(
+                    () =>
+                        Sk.misceval.chain(this.tp$iternext(true), (ret) => {
+                            if (ret === undefined) {
+                                throw new Sk.builtin.StopIteration(this.gi$ret);
+                            }
+                            return ret;
+                        }),
+                    (e) => {
+                        throw e;
+                    },
+                    () => {
+                        this.gi$data.throw = null;
+                        this.gi$yieldfrom && this.gi$yieldfrom.gi$data && (this.gi$yieldfrom.gi$data.throw = null);
+                    }
+                );
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $doc: "throw(typ[,val[,tb]]) -> raise exception in generator,\nreturn next yielded value or raise StopIteration",
+        },
+        close: {
+            $meth() {
+                this.gi$data.close = new Sk.builtin.GeneratorExit();
+                return Sk.misceval.tryCatch(
+                    () =>
+                        Sk.misceval.chain(this.tp$iternext(true), (ret) => {
+                            if (!this.gi$closed) {
+                                throw new Sk.builtin.RuntimeError("generator ignored GeneratorExit");
+                            }
+                            return Sk.builtin.none.none$;
+                        }),
+                    (e) => {
+                        if (e instanceof Sk.builtin.GeneratorExit) {
+                            return Sk.builtin.none.none$;
+                        }
+                        throw e;
+                    },
+                    () => {
+                        this.gi$data.close = null;
+                    }
+                );
+            },
+            $flags: { NoArgs: true },
+            $doc: "close() -> raise GeneratorExit inside generator.",
+        },
+    },
+    getsets: {
+        __name__: {
+            $get() {
+                return new Sk.builtin.str(this.$name);
+            },
+            $set(v) {
+                if (!Sk.builtin.checkString(v)) {
+                    throw new Sk.builtin.TypeError("__name__ must be set to a string object");
+                }
+                this.$name = v.toString();
+            },
+        },
+        __qualname__: {
+            $get() {
+                return new Sk.builtin.str(this.$qualname);
+            },
+            $set(v) {
+                if (!Sk.builtin.checkString(v)) {
+                    throw new Sk.builtin.TypeError("__qualname__ must be set to a string object");
+                }
+                this.$qualname = v.toString();
+            },
+        },
+        gi_running: {
+            $get() {
+                return new Sk.builtin.bool(this.gi$running);
+            },
+        },
+        gi_yieldfrom: {
+            $get() {
+                return this.gi$yieldfrom || Sk.builtin.none.none$;
+            },
         },
     },
 });
