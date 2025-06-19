@@ -7,10 +7,10 @@ class MeasureTextTestCase(unittest.TestCase):
             'width': 45.576171875,
             'actualBoundingBoxLeft': -1,
             'actualBoundingBoxRight': 45.453125,
-            'fontBoundingBoxAscent': 2.484375,
-            'fontBoundingBoxDescent': 19.515625,
+            'fontBoundingBoxAscent': 1.484375,
+            'fontBoundingBoxDescent': 20.515625,
             'actualBoundingBoxAscent': -0.515625,
-            'actualBoundingBoxDescent': 15.515625
+            'actualBoundingBoxDescent': 16.515625
         }
         actualResult = measureText("Hello", 20, "Arial")
         self.assertEqual(actualResult["width"], expectedResult["width"])
@@ -26,10 +26,10 @@ class MeasureTextTestCase(unittest.TestCase):
             'width': 91.15234375,
             'actualBoundingBoxLeft': -3,
             'actualBoundingBoxRight': 89.90625,
-            'fontBoundingBoxAscent': 4.96875,
-            'fontBoundingBoxDescent': 39.03125,
-            'actualBoundingBoxAscent': -1.03125,
-            'actualBoundingBoxDescent': 31.03125
+            'fontBoundingBoxAscent': 3.96875,
+            'fontBoundingBoxDescent': 40.03125,
+            'actualBoundingBoxAscent': -2.03125,
+            'actualBoundingBoxDescent': 32.03125
         }
         actualResult = measureText("Hello", 40, "Arial")
         self.assertEqual(actualResult["width"], expectedResult["width"])

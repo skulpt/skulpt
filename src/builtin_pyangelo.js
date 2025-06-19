@@ -4,6 +4,7 @@ Sk.PyAngelo.keys = {};
 Sk.PyAngelo.keyWasPressed = {};
 Sk.PyAngelo.mouseWasPressed = false;
 Sk.PyAngelo.sounds = {};
+Sk.PyAngelo.soundInstances = [];
 Sk.PyAngelo.fillStates = [];
 Sk.PyAngelo.strokeStates = [];
 
@@ -972,6 +973,7 @@ Sk.builtin.loadSound = function loadSound(filename) {
                 },
                 onload: function () {
                     Sk.PyAngelo.sounds[filename] = sound;
+                    Sk.PyAngelo.soundInstances.push(sound);
                     resolve(Sk.ffi.remapToPy(filename));
                 }
             });
@@ -1070,8 +1072,13 @@ Sk.builtins["pauseSound"] = new Sk.builtin.sk_method(
 );
 
 Sk.builtin.stopAllSounds = function stopAllSounds() {
-    for (const sound in Sk.PyAngelo.sounds) {
-        Sk.PyAngelo.sounds[sound].stop();
+    const soundList = Sk.PyAngelo.soundInstances || [];
+    for (const sound of soundList) {
+        try {
+            sound.stop();
+        } catch (e) {
+            // ignore disposed or errored instances
+        }
     }
 };
 
