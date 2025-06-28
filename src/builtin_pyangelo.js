@@ -322,6 +322,7 @@ Sk.builtins["circleMode"] = new Sk.builtin.sk_method(
 function convertDegreesToRadians(degrees) {
     return Sk.ffi.remapToJs(Sk.builtins.PI)/180 * degrees;
 }
+Sk.builtin.convertDegreesToRadians = convertDegreesToRadians;
 
 Sk.builtin.rotate = function rotate(angle) {
     Sk.builtin.pyCheckArgsLen("rotate", arguments.length, 1, 1);
@@ -1556,120 +1557,6 @@ const colourClass = function ($gbl, $loc) {
 };
 Sk.builtin.Colour = colourClass;
 Sk.builtins["Colour"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Colour, "Colour", []);
-
-const drawMethodImage = function (self, x, y, width, height, opacity) {
-    Sk.builtin.pyCheckArgsLen("draw", arguments.length, 3, 6);
-    Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-    Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-    x = Sk.ffi.remapToJs(x);
-    y = Sk.ffi.remapToJs(y);
-    width = (width === undefined || width === Sk.builtin.none.none$) ? self.width : Sk.ffi.remapToJs(width);
-    height = (height === undefined || height === Sk.builtin.none.none$) ? self.height : Sk.ffi.remapToJs(height);
-    opacity = (opacity === undefined || opacity === Sk.builtin.none.none$) ? 1.0 : Sk.ffi.remapToJs(opacity);
-
-    const img = self.image;
-    if (!img) {
-        throw new Sk.builtin.RuntimeError("Image not loaded yet.");
-    }
-
-    if (width === null) {
-        width = self.width;
-    }
-    if (height === null) {
-        height = self.height;
-    }
-
-    let ga = Sk.PyAngelo.ctx.globalAlpha;
-    if (opacity !== null) {
-        if (opacity > 1.0) {
-            opacity = 1.0;
-        } else if (opacity < 0.0) {
-            opacity = 0.0;
-        }
-        Sk.PyAngelo.ctx.globalAlpha = opacity;
-    }
-
-    if (Sk.PyAngelo.yAxisMode === Sk.PyAngelo.CARTESIAN) {
-        Sk.PyAngelo.ctx.save();
-        Sk.PyAngelo.ctx.translate(x, y);
-        Sk.PyAngelo.ctx.transform(1, 0, 0, -1, 0, height);
-        Sk.PyAngelo.ctx.drawImage(img, 0, 0, width, height);
-        Sk.PyAngelo.ctx.restore();
-    } else {
-        Sk.PyAngelo.ctx.drawImage(img, x, y, width, height);
-    }
-
-    Sk.PyAngelo.ctx.globalAlpha = ga;
-
-    return Sk.builtin.none.none$;
-};
-
-drawMethodImage.co_name = "drawMethodImage";
-drawMethodImage.co_varnames = ["self", "x", "y", "width", "height", "opacity"];
-drawMethodImage.$defaults = [null, null, null, null, null, null];
-drawMethodImage.co_argcount = 6;
-
-const imageClass = function ($gbl, $loc) {
-    $loc.__init__ = new Sk.builtin.func(function (self, file) {
-        let susp;
-        Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 2, 2);
-
-        susp = new Sk.misceval.Suspension();
-        susp.resume = function () {
-            if (susp.data["error"]) {
-                throw new Sk.builtin.IOError(susp.data["error"].message);
-            }
-            return susp.data.result;
-        };
-        susp.data = {
-            type: "Sk.promise",
-            promise: new Promise(function (resolve, reject) {
-                let newImg = new Image();
-                newImg.onerror = function () {
-                    reject(Error("Could not load the image. Check your have uploaded the file " + newImg.file + " to your sketch"));
-                };
-                newImg.onload = function () {
-                    self.image = this;
-                    self.width = this.naturalWidth;
-                    self.height = this.naturalHeight;
-                    self.file = this.file;
-                    Sk.PyAngelo.images[this.file] = this;
-                    resolve(Sk.builtin.none.none$);
-                };
-                file = Sk.ffi.remapToJs(file);
-                newImg.src = file;
-                newImg.file = file;
-            })
-        };
-        return susp;
-    });
-    $loc.__repr__ = new Sk.builtin.func(function (self) {
-        return new Sk.builtin.str("Image(" + self.file + ")");
-    });
-    $loc.__str__ = new Sk.builtin.func(function (self) {
-        return new Sk.builtin.str("Image Object - file: " + self.file + ", width: " + self.width + ", height: " + self.height);
-    });
-
-    // allow direct access to height/width properties
-    $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
-        key = Sk.ffi.remapToJs(key);
-        if (key === "height") {
-            return Sk.ffi.remapToPy(self.height);
-        } else if (key === "width") {
-            return Sk.ffi.remapToPy(self.width);
-        } else if (key === "file") {
-            return Sk.ffi.remapToPy(self.file);
-        }
-    });
-
-    $loc.draw = new Sk.builtin.func(drawMethodImage);
-};
-
-Sk.builtin.Image = imageClass;
-Sk.builtins["Image"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Image, "Image", []);
-// Keep loadImage for backwards compatibility
-Sk.builtins["loadImage"] = Sk.builtins["Image"];
-Sk.builtins["Image"].prototype.$doc = "Represents and image that can be drawn to the canvas.";
 
 // Functions for PyAngelo website
 Sk.PyAngelo.reset = function() {

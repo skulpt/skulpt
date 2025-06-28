@@ -11,7 +11,7 @@ class DrawImageTestCase(unittest.TestCase):
         setCanvasSize(200, 200, CARTESIAN)
         background()
         drawImage(img, 0, 0)
-        img.draw(100, 100, 10, 10, 0.5)
+        img.draw(100, 100, 10, 10)
 
     def test_drawImageIOError(self):
         with self.assertRaises(IOError):
