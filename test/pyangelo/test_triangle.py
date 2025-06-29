@@ -11,14 +11,14 @@ class TriangleTestCase(unittest.TestCase):
         triangle(0, 0, 0, 99, 99, 0)
 
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, triangleColour)
-        self.assertEqual(c.g, triangleColour)
-        self.assertEqual(c.b, triangleColour)
+        self.assertEqual(c.red, triangleColour)
+        self.assertEqual(c.green, triangleColour)
+        self.assertEqual(c.blue, triangleColour)
 
         c = getPixelColour(90, 90)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_triangleParameterTypes(self):
         with self.assertRaises(TypeError):

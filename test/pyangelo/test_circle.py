@@ -11,14 +11,14 @@ class CircleTestCase(unittest.TestCase):
         circle(100, 100, 10)
 
         c = getPixelColour(100, 100)
-        self.assertEqual(c.r, circleColour)
-        self.assertEqual(c.g, circleColour)
-        self.assertEqual(c.b, circleColour)
+        self.assertEqual(c.red, circleColour)
+        self.assertEqual(c.green, circleColour)
+        self.assertEqual(c.blue, circleColour)
 
         c = getPixelColour(80, 80)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_circleParameterTypes(self):
         with self.assertRaises(TypeError):

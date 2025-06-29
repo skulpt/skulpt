@@ -11,14 +11,14 @@ class LineTestCase(unittest.TestCase):
         ellipse(100, 100, 10, 20)
 
         c = getPixelColour(100, 100)
-        self.assertEqual(c.r, ellipseColour)
-        self.assertEqual(c.g, ellipseColour)
-        self.assertEqual(c.b, ellipseColour)
+        self.assertEqual(c.red, ellipseColour)
+        self.assertEqual(c.green, ellipseColour)
+        self.assertEqual(c.blue, ellipseColour)
 
         c = getPixelColour(80, 80)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_ellipseParameterTypes(self):
         with self.assertRaises(TypeError):

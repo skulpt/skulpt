@@ -12,9 +12,9 @@ class ApplyMatrixTestCase(unittest.TestCase):
             applyMatrix(1, i*0.1, i*-0.1, 1, i*30, i*10)
             rect(0, 0, 250, 100)
         c = getPixelColour(250, 350)
-        self.assertEqual(c.r, rectColour)
-        self.assertEqual(c.g, rectColour)
-        self.assertEqual(c.b, rectColour)
+        self.assertEqual(c.red, rectColour)
+        self.assertEqual(c.green, rectColour)
+        self.assertEqual(c.blue, rectColour)
 
     def test_applyMatrixParameterTypes(self):
         with self.assertRaises(TypeError):

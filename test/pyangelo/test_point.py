@@ -10,14 +10,14 @@ class PointTestCase(unittest.TestCase):
         stroke(pointColour, pointColour, pointColour)
         point(10, 10)
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, pointColour)
-        self.assertEqual(c.g, pointColour)
-        self.assertEqual(c.b, pointColour)
+        self.assertEqual(c.red, pointColour)
+        self.assertEqual(c.green, pointColour)
+        self.assertEqual(c.blue, pointColour)
 
         c = getPixelColour(0, 0)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_pointFive(self):
         setCanvasSize(100, 100, CARTESIAN)
@@ -29,14 +29,14 @@ class PointTestCase(unittest.TestCase):
         fill(pointColour, pointColour, pointColour)
         point(10, 10)
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, pointColour)
-        self.assertEqual(c.g, pointColour)
-        self.assertEqual(c.b, pointColour)
+        self.assertEqual(c.red, pointColour)
+        self.assertEqual(c.green, pointColour)
+        self.assertEqual(c.blue, pointColour)
 
         c = getPixelColour(0, 0)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_fillRestored(self):
         setCanvasSize(100, 100, JAVASCRIPT)
@@ -48,14 +48,14 @@ class PointTestCase(unittest.TestCase):
         stroke(pointColour, pointColour, pointColour)
         point(10, 10)
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, pointColour)
-        self.assertEqual(c.g, pointColour)
-        self.assertEqual(c.b, pointColour)
+        self.assertEqual(c.red, pointColour)
+        self.assertEqual(c.green, pointColour)
+        self.assertEqual(c.blue, pointColour)
         rect(70, 70, 10, 10)
         c = getPixelColour(75, 75)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
 
     def test_pointParameterTypes(self):

@@ -17,12 +17,12 @@ class SaveStateRestoreStateTestCase(unittest.TestCase):
 
         greenColour = getPixelColour(15, 15)
         blueColour = getPixelColour(160, 50)
-        self.assertEqual(greenColour.r, 0)
-        self.assertEqual(greenColour.g, 255)
-        self.assertEqual(greenColour.b, 0)
-        self.assertEqual(blueColour.r, 0)
-        self.assertEqual(blueColour.g, 0)
-        self.assertEqual(blueColour.b, 255)
+        self.assertEqual(greenColour.red, 0)
+        self.assertEqual(greenColour.green, 255)
+        self.assertEqual(greenColour.blue, 0)
+        self.assertEqual(blueColour.red, 0)
+        self.assertEqual(blueColour.green, 0)
+        self.assertEqual(blueColour.blue, 255)
 
     def test_textParameterTypes(self):
         # saveState and restoreState take no args

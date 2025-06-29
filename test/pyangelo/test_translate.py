@@ -14,9 +14,9 @@ class TranslateTestCase(unittest.TestCase):
         rect(0, 0, 10, 10)
         restoreState()
         c = getPixelColour(115, 55)
-        self.assertEqual(c.r, gray)
-        self.assertEqual(c.g, gray)
-        self.assertEqual(c.b, gray)
+        self.assertEqual(c.red, gray)
+        self.assertEqual(c.green, gray)
+        self.assertEqual(c.blue, gray)
 
     def test_textParameterTypes(self):
         # saveState and restoreState take no args

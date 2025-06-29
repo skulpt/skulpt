@@ -88,6 +88,7 @@ require("./builtindict.js");
 require("./constants.js");
 
 // PyAngelo
+require("./builtin_colour.js");
 require("./builtin_pyangelo.js");
 require("./builtin_image.js");
 require("./builtin_sound.js");

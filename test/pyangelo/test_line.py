@@ -12,9 +12,9 @@ class LineTestCase(unittest.TestCase):
         fill(lineColour, lineColour, lineColour)
         line(0, 0, 199, 199)
         c = getPixelColour(100, 100)
-        self.assertEqual(c.r, lineColour)
-        self.assertEqual(c.g, lineColour)
-        self.assertEqual(c.b, lineColour)
+        self.assertEqual(c.red, lineColour)
+        self.assertEqual(c.green, lineColour)
+        self.assertEqual(c.blue, lineColour)
 
     def test_lineParameterTypes(self):
         with self.assertRaises(TypeError):

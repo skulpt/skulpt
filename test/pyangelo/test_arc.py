@@ -11,14 +11,14 @@ class ArcTestCase(unittest.TestCase):
         arc(50, 50, 40, 30, 0, 270)
 
         c = getPixelColour(50, 50)
-        self.assertEqual(c.r, arcColour)
-        self.assertEqual(c.g, arcColour)
-        self.assertEqual(c.b, arcColour)
+        self.assertEqual(c.red, arcColour)
+        self.assertEqual(c.green, arcColour)
+        self.assertEqual(c.blue, arcColour)
 
         c = getPixelColour(70, 30)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_arcParameterTypes(self):
         with self.assertRaises(TypeError):

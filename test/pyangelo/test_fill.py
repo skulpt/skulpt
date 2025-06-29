@@ -10,14 +10,14 @@ class FillTestCase(unittest.TestCase):
         fill(fillColour, fillColour, fillColour)
         rect(10, 10, 20, 20)
         c = getPixelColour(5, 5)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
         c = getPixelColour(15, 15)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
     def test_fill_defaults(self):
         setCanvasSize(100, 100, CARTESIAN)
@@ -25,14 +25,14 @@ class FillTestCase(unittest.TestCase):
         fill()
         rect(10, 10, 20, 20)
         c = getPixelColour(5, 5)
-        self.assertEqual(c.r, 220)
-        self.assertEqual(c.g, 220)
-        self.assertEqual(c.b, 220)
+        self.assertEqual(c.red, 220)
+        self.assertEqual(c.green, 220)
+        self.assertEqual(c.blue, 220)
 
         c = getPixelColour(15, 15)
-        self.assertEqual(c.r, 255)
-        self.assertEqual(c.g, 255)
-        self.assertEqual(c.b, 255)
+        self.assertEqual(c.red, 255)
+        self.assertEqual(c.green, 255)
+        self.assertEqual(c.blue, 255)
 
     def test_fillParameterTypes(self):
         with self.assertRaises(TypeError):

@@ -11,14 +11,14 @@ class QuadTestCase(unittest.TestCase):
         quad(0, 10, 10, 0, 90, 99, 99, 90)
 
         c = getPixelColour(20, 20)
-        self.assertEqual(c.r, quadColour)
-        self.assertEqual(c.g, quadColour)
-        self.assertEqual(c.b, quadColour)
+        self.assertEqual(c.red, quadColour)
+        self.assertEqual(c.green, quadColour)
+        self.assertEqual(c.blue, quadColour)
 
         c = getPixelColour(0, 0)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_quadParameterTypes(self):
         with self.assertRaises(TypeError):

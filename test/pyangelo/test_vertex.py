@@ -20,19 +20,19 @@ class VertexTestCase(unittest.TestCase):
         endShape()
 
         c = getPixelColour(20, 20)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
         c = getPixelColour(100, 10)
-        self.assertEqual(c.r, strokeColour)
-        self.assertEqual(c.g, strokeColour)
-        self.assertEqual(c.b, strokeColour)
+        self.assertEqual(c.red, strokeColour)
+        self.assertEqual(c.green, strokeColour)
+        self.assertEqual(c.blue, strokeColour)
 
         c = getPixelColour(0, 0)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_vertex_open(self):
         setCanvasSize(400, 400, JAVASCRIPT)
@@ -52,24 +52,24 @@ class VertexTestCase(unittest.TestCase):
         endShape(OPEN)
 
         c = getPixelColour(20, 20)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
         c = getPixelColour(100, 10)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, strokeColour)
-        self.assertEqual(c.g, strokeColour)
-        self.assertEqual(c.b, strokeColour)
+        self.assertEqual(c.red, strokeColour)
+        self.assertEqual(c.green, strokeColour)
+        self.assertEqual(c.blue, strokeColour)
 
         c = getPixelColour(5, 5)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_vertexParameterTypes(self):
         with self.assertRaises(TypeError):

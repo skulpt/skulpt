@@ -8,18 +8,18 @@ class TextTestCase(unittest.TestCase):
         fill(0, 0, 0)
         text("Hello", 0, 0, 100)
         bgColour = getPixelColour(12, 12)
-        self.assertEqual(bgColour.r, 0)
-        self.assertEqual(bgColour.g, 0)
-        self.assertEqual(bgColour.b, 0)
+        self.assertEqual(bgColour.red, 0)
+        self.assertEqual(bgColour.green, 0)
+        self.assertEqual(bgColour.blue, 0)
 
         setCanvasSize(400, 400, JAVASCRIPT)
         background(255, 255, 255)
         fill(0, 0, 0)
         text("Hello", 0, 0, 100)
         bgColour = getPixelColour(12, 12)
-        self.assertEqual(bgColour.r, 0)
-        self.assertEqual(bgColour.g, 0)
-        self.assertEqual(bgColour.b, 0)
+        self.assertEqual(bgColour.red, 0)
+        self.assertEqual(bgColour.green, 0)
+        self.assertEqual(bgColour.blue, 0)
 
     def test_textParameterTypes(self):
         with self.assertRaises(TypeError):

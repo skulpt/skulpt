@@ -14,13 +14,13 @@ class ShearXTestCase(unittest.TestCase):
         rect(0, 0, 30, 30)
         restoreState()
         c = getPixelColour(250, 215)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
         c = getPixelColour(275, 220)
-        self.assertEqual(c.r, rectColour)
-        self.assertEqual(c.g, rectColour)
-        self.assertEqual(c.b, rectColour)
+        self.assertEqual(c.red, rectColour)
+        self.assertEqual(c.green, rectColour)
+        self.assertEqual(c.blue, rectColour)
 
     def test_shearXParameterTypes(self):
         with self.assertRaises(TypeError):

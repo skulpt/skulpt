@@ -12,14 +12,14 @@ class StrokeWeightTestCase(unittest.TestCase):
         fill(lineColour, lineColour, lineColour)
         line(5, 0, 5, 360)
         c = getPixelColour(5, 10)
-        self.assertEqual(c.r, lineColour)
-        self.assertEqual(c.g, lineColour)
-        self.assertEqual(c.b, lineColour)
+        self.assertEqual(c.red, lineColour)
+        self.assertEqual(c.green, lineColour)
+        self.assertEqual(c.blue, lineColour)
 
         c = getPixelColour(12, 10)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_strokeWeightFive(self):
         setCanvasSize(640, 360, CARTESIAN)
@@ -31,13 +31,13 @@ class StrokeWeightTestCase(unittest.TestCase):
         fill(lineColour, lineColour, lineColour)
         line(5, 0, 5, 360)
         c = getPixelColour(5, 10)
-        self.assertEqual(c.r, lineColour)
-        self.assertEqual(c.g, lineColour)
-        self.assertEqual(c.b, lineColour)
+        self.assertEqual(c.red, lineColour)
+        self.assertEqual(c.green, lineColour)
+        self.assertEqual(c.blue, lineColour)
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_strokeWeightParameterTypes(self):
         with self.assertRaises(TypeError):

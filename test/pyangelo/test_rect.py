@@ -10,14 +10,14 @@ class RectTestCase(unittest.TestCase):
         fill(rectColour, rectColour, rectColour)
         rect(0, 0, 20, 20)
         c = getPixelColour(10, 10)
-        self.assertEqual(c.r, rectColour)
-        self.assertEqual(c.g, rectColour)
-        self.assertEqual(c.b, rectColour)
+        self.assertEqual(c.red, rectColour)
+        self.assertEqual(c.green, rectColour)
+        self.assertEqual(c.blue, rectColour)
 
         c = getPixelColour(30, 30)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_rectParameterTypes(self):
         with self.assertRaises(TypeError):

@@ -1512,52 +1512,6 @@ Sk.builtin.Point = pointClass;
 Sk.builtins["Point"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Point, "Point", []);
 Sk.builtins["Point"].prototype.$doc = "A 2D point with x and y coordinates.";
 
-const initColour = function (self, r, g, b, a) {
-    Sk.builtin.pyCheckArgsLen("__init__", arguments.length, 1, 5);
-    Sk.builtin.pyCheckType("r", "number", Sk.builtin.checkNumber(r));
-    Sk.builtin.pyCheckType("g", "number", Sk.builtin.checkNumber(g));
-    Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
-    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-    self.r = Sk.ffi.remapToJs(r);
-    self.g = Sk.ffi.remapToJs(g);
-    self.b = Sk.ffi.remapToJs(b);
-    self.a = Sk.ffi.remapToJs(a);
-};
-initColour.co_name = "initColour";
-initColour.co_varnames = ["self", "r", "g", "b", "a"];
-initColour.$defaults = [
-    null,
-    new Sk.builtin.int_(255),
-    new Sk.builtin.int_(255),
-    new Sk.builtin.int_(255),
-    new Sk.builtin.float_(1.0)
-];
-initColour.co_argcount = 5;
-
-const colourClass = function ($gbl, $loc) {
-    $loc.__init__ = new Sk.builtin.func(initColour);
-    $loc.__repr__ = new Sk.builtin.func(function (self) {
-        return new Sk.builtin.str("Colour(" + self.r + ", " + self.g + ", " + self.b + ", " + self.a + ")");
-    });
-    $loc.__str__ = $loc.__repr__;
-
-    // allow direct access to r, g, b, a properties
-    $loc.__getattr__ = new Sk.builtin.func(function (self, key) {
-        key = Sk.ffi.remapToJs(key);
-        if (key === "r") {
-            return Sk.ffi.remapToPy(self.r);
-        } else if (key === "g") {
-            return Sk.ffi.remapToPy(self.g);
-        } else if (key === "b") {
-            return Sk.ffi.remapToPy(self.b);
-        } else if (key === "a") {
-            return Sk.ffi.remapToPy(self.a);
-        }
-    });
-};
-Sk.builtin.Colour = colourClass;
-Sk.builtins["Colour"] = Sk.misceval.buildClass(Sk.builtin, Sk.builtin.Colour, "Colour", []);
-
 // Functions for PyAngelo website
 Sk.PyAngelo.reset = function() {
     // Maths

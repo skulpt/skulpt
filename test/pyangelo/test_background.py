@@ -10,19 +10,19 @@ class BackgroundTestCase(unittest.TestCase):
         setCanvasSize(20, 20, CARTESIAN)
         background(red, green, blue)
         bgColour = getPixelColour(10, 10)
-        self.assertEqual(bgColour.r, red)
-        self.assertEqual(bgColour.g, green)
-        self.assertEqual(bgColour.b, blue)
-        self.assertEqual(bgColour.a, alpha)
+        self.assertEqual(bgColour.red, red)
+        self.assertEqual(bgColour.green, green)
+        self.assertEqual(bgColour.blue, blue)
+        self.assertEqual(bgColour.alpha, alpha)
 
     def test_background_default_parameters(self):
         setCanvasSize(20, 20, CARTESIAN)
         background()
         bgColour = getPixelColour(10, 10)
-        self.assertEqual(bgColour.r, 220)
-        self.assertEqual(bgColour.g, 220)
-        self.assertEqual(bgColour.b, 220)
-        self.assertEqual(bgColour.a, 255)
+        self.assertEqual(bgColour.red, 220)
+        self.assertEqual(bgColour.green, 220)
+        self.assertEqual(bgColour.blue, 220)
+        self.assertEqual(bgColour.alpha, 255)
 
     def test_background_half_alpha(self):
         red = 100
@@ -32,10 +32,10 @@ class BackgroundTestCase(unittest.TestCase):
         setCanvasSize(20, 20, CARTESIAN)
         background(red, green, blue, 0.5)
         bgColour = getPixelColour(10, 10)
-        self.assertEqual(bgColour.r, red)
-        self.assertEqual(bgColour.g, green)
-        self.assertEqual(bgColour.b, blue)
-        self.assertEqual(bgColour.a, alpha)
+        self.assertEqual(bgColour.red, red)
+        self.assertEqual(bgColour.green, green)
+        self.assertEqual(bgColour.blue, blue)
+        self.assertEqual(bgColour.alpha, alpha)
 
     def test_backgroundNotInt(self):
         with self.assertRaises(TypeError):

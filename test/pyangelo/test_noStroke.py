@@ -11,13 +11,14 @@ class NoStrokeTestCase(unittest.TestCase):
         fill(fillColour, fillColour, fillColour)
         rect(0, 0, 20, 20)
         c = getPixelColour(0, 0)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
-        self.assertEqual(c.b, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
         c = getPixelColour(19, 19)
-        self.assertEqual(c.r, fillColour)
-        self.assertEqual(c.g, fillColour)
+        self.assertEqual(c.red, fillColour)
+        self.assertEqual(c.green, fillColour)
+        self.assertEqual(c.blue, fillColour)
 
     def test_noStrokeParameterTypes(self):
         with self.assertRaises(TypeError):

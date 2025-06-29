@@ -11,14 +11,14 @@ class StrokeTestCase(unittest.TestCase):
         strokeWeight(5)
         rect(0, 0, 20, 20)
         c = getPixelColour(1, 1)
-        self.assertEqual(c.r, strokeColour)
-        self.assertEqual(c.g, strokeColour)
-        self.assertEqual(c.b, strokeColour)
+        self.assertEqual(c.red, strokeColour)
+        self.assertEqual(c.green, strokeColour)
+        self.assertEqual(c.blue, strokeColour)
 
         c = getPixelColour(30, 30)
-        self.assertEqual(c.r, bgColour)
-        self.assertEqual(c.g, bgColour)
-        self.assertEqual(c.b, bgColour)
+        self.assertEqual(c.red, bgColour)
+        self.assertEqual(c.green, bgColour)
+        self.assertEqual(c.blue, bgColour)
 
     def test_stroke_defaults(self):
         setCanvasSize(100, 100, CARTESIAN)
@@ -27,9 +27,9 @@ class StrokeTestCase(unittest.TestCase):
         strokeWeight(5)
         rect(10, 10, 20, 20)
         c = getPixelColour(11, 11)
-        self.assertEqual(c.r, 0)
-        self.assertEqual(c.g, 0)
-        self.assertEqual(c.b, 0)
+        self.assertEqual(c.red, 0)
+        self.assertEqual(c.green, 0)
+        self.assertEqual(c.blue, 0)
 
     def test_strokeParameterTypes(self):
         with self.assertRaises(TypeError):
