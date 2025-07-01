@@ -120,33 +120,43 @@ Sk.builtins["focusCanvas"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
-Sk.builtin.background = function background(r, g, b, a) {
-    Sk.builtin.pyCheckArgsLen("background", arguments.length, 0, 4);
-    Sk.builtin.pyCheckType("r", "integer", Sk.builtin.checkInt(r));
-    Sk.builtin.pyCheckType("g", "integer", Sk.builtin.checkInt(g));
-    Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
-    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-    r = Sk.ffi.remapToJs(r);
-    g = Sk.ffi.remapToJs(g);
-    b = Sk.ffi.remapToJs(b);
-    a = Sk.ffi.remapToJs(a);
+Sk.builtin.background = function background() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 0) {
+        colObj = Sk.builtins.BACKGROUND_DEFAULT;
+    } else if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
+    }
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
     const fs = Sk.PyAngelo.ctx.fillStyle;
-    Sk.PyAngelo.ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a + ")";
+    Sk.PyAngelo.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
     Sk.PyAngelo.ctx.fillRect(0, 0, Sk.PyAngelo.canvas.width, Sk.PyAngelo.canvas.height);
     Sk.PyAngelo.ctx.fillStyle = fs;
+    Sk.PyAngelo.doFill = true;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["background"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.background,
         $name: "background",
-        $flags: {
-            NamedArgs: ["r", "g", "b", "a"],
-            Defaults: [220, 220, 220, 1],
-        },
-        $textsig: "($module, r, g, b, a /)",
+        $flags: { MinArgs: 0, MaxArgs: 4 },
+        $textsig: "(*args)",
         $doc:
-            "Draws a rectangle the size of the canvas. The colour of the rectangle is specifed by the first three parameters representing an RGB colour. If a fourth parameter is passed it specifies an alpha value ranging from 0 to 1 where 0 is fully transparent and 1 specifies no transparency.",
+            "Draws a rectangle the size of the canvas. The colour is passed to the function which accepts:\n" +
+            "  - a grey scale number\n" +
+            "  - a Colour instance\n" +
+            "  - a CSS-format string (#hex, rgb(), rgba(), named colour)\n" +
+            "  - a [r, g, b] or [r, g, b, a] list/tuple\n" +
+            "  - 1–4 numeric args (greyscale, RGB, or RGBA)\n",
     },
     null,
     "builtins"
@@ -430,27 +440,38 @@ Sk.builtins["strokeWeight"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
-Sk.builtin.fill = function fill(r, g, b, a) {
-    Sk.builtin.pyCheckArgsLen("fill", arguments.length, 0, 4);
-    Sk.builtin.pyCheckType("r", "integer", Sk.builtin.checkInt(r));
-    Sk.builtin.pyCheckType("g", "integer", Sk.builtin.checkInt(g));
-    Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
-    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-    Sk.PyAngelo.ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + a + ")";
+Sk.builtin.fill = function fill() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
+    }
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
+    Sk.PyAngelo.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
     Sk.PyAngelo.doFill = true;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["fill"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.fill,
         $name: "fill",
-        $flags: {
-            NamedArgs: ["r", "g", "b", "a"],
-            Defaults: [255, 255, 255, 1],
-        },
-        $textsig: "($module, r, g, b, a /)",
+        $flags: { MinArgs: 1, MaxArgs: 4 },
+        $textsig: "(*args)",
         $doc:
-            "Sets the colour used to fill shapes. The colour is specified using the RGB colour scheme. The first parameter represents the amount of red, the second the amount of green, and the third the amount of blue in the colour. If a fourth parameter is passed it represents the alpha value ranging from 0 to 1.",
+            "Sets the colour used to fill shapes. Accepts:\n" +
+            "  - a grey scale number\n" +
+            "  - a Colour instance\n" +
+            "  - a CSS-format string (#hex, rgb(), rgba(), named colour)\n" +
+            "  - a [r, g, b] or [r, g, b, a] list/tuple\n" +
+            "  - 1–4 numeric args (greyscale, RGB, or RGBA)\n",
     },
     null,
     "builtins"
@@ -473,27 +494,38 @@ Sk.builtins["noFill"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
-Sk.builtin.stroke = function stroke(r, g, b, a) {
-    Sk.builtin.pyCheckArgsLen("stroke", arguments.length, 0, 4);
-    Sk.builtin.pyCheckType("r", "integer", Sk.builtin.checkInt(r));
-    Sk.builtin.pyCheckType("g", "integer", Sk.builtin.checkInt(g));
-    Sk.builtin.pyCheckType("b", "integer", Sk.builtin.checkInt(b));
-    Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-    Sk.PyAngelo.ctx.strokeStyle = "rgba(" + r + "," + g + "," + b + "," + a + ")";
+Sk.builtin.stroke = function stroke() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
+    }
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
+    Sk.PyAngelo.ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
     Sk.PyAngelo.doStroke = true;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["stroke"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.stroke,
         $name: "stroke",
-        $flags: {
-            NamedArgs: ["r", "g", "b", "a"],
-            Defaults: [0, 0, 0, 1],
-        },
-        $textsig: "($module, r, g, b, a /)",
+        $flags: { MinArgs: 1, MaxArgs: 4 },
+        $textsig: "(*args)",
         $doc:
-            "Sets the colour used to draw points, lines, and the border around shapes. The colour is specified using the RGB colour scheme. The first parameter represents the amount of red, the second the amount of green, and the third the amount of blue in the colour. If a fourth parameter is passed it represents the alpha value ranging from 0 to 1.",
+            "Sets the colour used to draw points, lines, and the border around shapes. Accepts:\n" +
+            "  - a grey scale number\n" +
+            "  - a Colour instance\n" +
+            "  - a CSS-format string (#hex, rgb(), rgba(), named colour)\n" +
+            "  - a [r, g, b] or [r, g, b, a] list/tuple\n" +
+            "  - 1–4 numeric args (greyscale, RGB, or RGBA)\n",
     },
     null,
     "builtins"
@@ -1111,7 +1143,7 @@ Sk.builtin.getPixelColour = function getPixelColour(x, y) {
             Sk.ffi.remapToPy(pixel.data["0"]),
             Sk.ffi.remapToPy(pixel.data["1"]),
             Sk.ffi.remapToPy(pixel.data["2"]),
-            Sk.ffi.remapToPy(pixel.data["3"])
+            Sk.ffi.remapToPy(pixel.data["3"]/255.0)
         ]
     );
 };
@@ -1224,121 +1256,94 @@ Sk.builtins["setTextSize"] = new Sk.builtin.sk_method(
     "builtins"
 );
 
-function getRGB(colour) {
-    switch(colour) {
-        case Sk.PyAngelo.YELLOW:
-            return "rgba(181, 137, 0, 1)";
-        case Sk.PyAngelo.ORANGE:
-            return "rgba(203, 75, 22, 1)";
-        case Sk.PyAngelo.RED:
-            return "rgba(220, 50, 47, 1)";
-        case Sk.PyAngelo.MAGENTA:
-            return "rgba(211, 54, 130, 1)";
-        case Sk.PyAngelo.VIOLET:
-            return "rgba(108, 113, 196, 1)";
-        case Sk.PyAngelo.BLUE:
-            return "rgba(38, 139, 210, 1)";
-        case Sk.PyAngelo.CYAN:
-            return "rgba(42, 161, 152, 1)";
-        case Sk.PyAngelo.GREEN:
-            return "rgba(133, 153, 0, 1)";
-        case Sk.PyAngelo.WHITE:
-            return "rgba(253, 246, 227, 1)";
-        // GREY and GRAY are equal to DEFAULT
-        // and if an unknown value is passed
-        // we will use the default gray
-        default:
-            return "rgba(147, 161, 161, 1)";
-        case Sk.PyAngelo.BLACK:
-            return "rgba(0, 0, 0, 1)";
-        case Sk.PyAngelo.DRACULA_BACKGROUND:
-            return "rgba(40, 42, 54, 1)";
-        case Sk.PyAngelo.DRACULA_CURRENT_LINE:
-            return "rgba(68, 71, 90, 1)";
-        case Sk.PyAngelo.DRACULA_SELECTION:
-            return "rgba(68, 71, 90, 1)";
-        case Sk.PyAngelo.DRACULA_FOREGROUND:
-            return "rgba(248, 248, 242, 1)";
-        case Sk.PyAngelo.DRACULA_COMMENT:
-            return "rgba(98, 114, 164, 1)";
-        case Sk.PyAngelo.DRACULA_CYAN:
-            return "rgba(139, 233, 253, 1)";
-        case Sk.PyAngelo.DRACULA_GREEN:
-            return "rgba(80, 250, 123, 1)";
-        case Sk.PyAngelo.DRACULA_ORANGE:
-            return "rgba(255, 184, 108, 1)";
-        case Sk.PyAngelo.DRACULA_PINK:
-            return "rgba(255, 121, 198, 1)";
-        case Sk.PyAngelo.DRACULA_PURPLE:
-            return "rgba(189, 147, 249, 1)";
-        case Sk.PyAngelo.DRACULA_RED:
-            return "rgba(255, 85, 85, 1)";
-        case Sk.PyAngelo.DRACULA_YELLOW:
-            return "rgba(241, 250, 140, 1)";
+Sk.builtin.setTextColour = function setTextColour() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
     }
-}
-
-Sk.builtin.setTextColour = function setTextColour(colour) {
-    Sk.builtin.pyCheckArgsLen("setTextColour", arguments.length, 1, 1);
-    Sk.builtin.pyCheckType("colour", "integer", Sk.builtin.checkInt(colour));
-    colour = Sk.ffi.remapToJs(colour);
-    const rgb = getRGB(colour);
-    Sk.PyAngelo.textColour = rgb;
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
+    Sk.PyAngelo.textColour = `rgba(${r}, ${g}, ${b}, ${a})`;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["setTextColour"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.setTextColour,
         $name: "setTextColour",
-        $flags: { OneArg: true },
-        $textsig: "($module, colour /)",
-        $doc:
-            "Sets the text colour used by print statements.",
+        $flags: { MinArgs: 1, MaxArgs: 4 },
+        $textsig: "(*args)",
+        $doc: "Sets the text colour used by print statements.",
     },
     null,
     "builtins"
 );
 
-Sk.builtin.setHighlightColour = function setHighlightColour(colour) {
-    Sk.builtin.pyCheckArgsLen("setHighlightColour", arguments.length, 1, 1);
-    Sk.builtin.pyCheckType("colour", "integer", Sk.builtin.checkInt(colour));
-    colour = Sk.ffi.remapToJs(colour);
-    const rgb = getRGB(colour);
-    Sk.PyAngelo.highlightColour = rgb;
+Sk.builtin.setHighlightColour = function setHighlightColour() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
+    }
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
+    Sk.PyAngelo.highlightColour = `rgba(${r}, ${g}, ${b}, ${a})`;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["setHighlightColour"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.setHighlightColour,
         $name: "setHighlightColour",
-        $flags: { OneArg: true },
-        $textsig: "($module, colour /)",
-        $doc:
-            "Sets the background colour used by print statements.",
+        $flags: { MinArgs: 1, MaxArgs: 4 },
+        $textsig: "(*args)",
+        $doc: "Sets the background colour used by print statements.",
     },
     null,
     "builtins"
 );
 
-Sk.builtin.clear = function clear(colour) {
-    Sk.builtin.pyCheckArgsLen("clear", arguments.length, 0, 1);
-    Sk.builtin.pyCheckType("colour", "integer", Sk.builtin.checkInt(colour));
+Sk.builtin.clear = function clear() {
+    // Grab the raw Python args as an Array
+    const pyArgs = Array.prototype.slice.call(arguments);
+    // If they passed a Colour instance already, use it…
+    let colObj;
+    if (pyArgs.length === 0) {
+        colObj = Sk.builtins.DRACULA_BACKGROUND;
+    } else if (pyArgs.length === 1 && pyArgs[0] instanceof Sk.builtins.Colour) {
+        colObj = pyArgs[0];
+    } else {
+        colObj = Sk.misceval.callsimArray(Sk.builtins.Colour, pyArgs);
+    }
+    const r = colObj._r;
+    const g = colObj._g;
+    const b = colObj._b;
+    const a = colObj._a;
     Sk.PyAngelo.console.innerHTML = "";
-    colour = Sk.ffi.remapToJs(colour);
-    const rgb = getRGB(colour);
-    Sk.PyAngelo.console.style.backgroundColor = rgb;
-    Sk.PyAngelo.highlightColour = rgb;
+    Sk.PyAngelo.console.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+    Sk.PyAngelo.highlightColour = `rgba(${r}, ${g}, ${b}, ${a})`;
+    return Sk.builtin.none.none$;
 };
 
 Sk.builtins["clear"] = new Sk.builtin.sk_method(
     {
         $meth: Sk.builtin.clear,
         $name: "clear",
-        $flags: {
-            NamedArgs: ["colour"],
-            Defaults: [11],
-        },
-        $textsig: "($module, colour /)",
+        $flags: { MinArgs: 0, MaxArgs: 4 },
+        $textsig: "(*args)",
         $doc:
             "Clears the screen with the specified colour.",
     },
@@ -1560,56 +1565,104 @@ Sk.PyAngelo.reset = function() {
     Sk.builtins.KEY_DOWN = new Sk.builtin.str("ArrowDown");
 
     // Global Python Colours
-    Sk.builtins.YELLOW = new Sk.builtin.int_(0);
-    Sk.PyAngelo.YELLOW = Sk.ffi.remapToJs(Sk.builtins.YELLOW);
-    Sk.builtins.ORANGE = new Sk.builtin.int_(1);
-    Sk.PyAngelo.ORANGE = Sk.ffi.remapToJs(Sk.builtins.ORANGE);
-    Sk.builtins.RED = new Sk.builtin.int_(2);
-    Sk.PyAngelo.RED = Sk.ffi.remapToJs(Sk.builtins.RED);
-    Sk.builtins.MAGENTA = new Sk.builtin.int_(3);
-    Sk.PyAngelo.MAGENTA = Sk.ffi.remapToJs(Sk.builtins.MAGENTA);
-    Sk.builtins.VIOLET = new Sk.builtin.int_(4);
-    Sk.PyAngelo.VIOLET = Sk.ffi.remapToJs(Sk.builtins.VIOLET);
-    Sk.builtins.BLUE = new Sk.builtin.int_(5);
-    Sk.PyAngelo.BLUE = Sk.ffi.remapToJs(Sk.builtins.BLUE);
-    Sk.builtins.CYAN = new Sk.builtin.int_(6);
-    Sk.PyAngelo.CYAN = Sk.ffi.remapToJs(Sk.builtins.CYAN);
-    Sk.builtins.GREEN = new Sk.builtin.int_(7);
-    Sk.PyAngelo.GREEN = Sk.ffi.remapToJs(Sk.builtins.GREEN);
-    Sk.builtins.WHITE = new Sk.builtin.int_(8);
-    Sk.PyAngelo.WHITE = Sk.ffi.remapToJs(Sk.builtins.WHITE);
-    Sk.builtins.GRAY = new Sk.builtin.int_(9);
-    Sk.PyAngelo.GRAY = Sk.ffi.remapToJs(Sk.builtins.GRAY);
-    Sk.builtins.GREY = new Sk.builtin.int_(9);
-    Sk.PyAngelo.GREY = Sk.ffi.remapToJs(Sk.builtins.GREY);
-    Sk.builtins.DEFAULT = new Sk.builtin.int_(9);
-    Sk.PyAngelo.DEFAULT = Sk.ffi.remapToJs(Sk.builtins.DEFAULT);
-    Sk.builtins.BLACK = new Sk.builtin.int_(10);
-    Sk.PyAngelo.BLACK = Sk.ffi.remapToJs(Sk.builtins.BLACK);
-    Sk.builtins.DRACULA_BACKGROUND = new Sk.builtin.int_(11);
-    Sk.PyAngelo.DRACULA_BACKGROUND = Sk.ffi.remapToJs(Sk.builtins.DRACULA_BACKGROUND);
-    Sk.builtins.DRACULA_CURRENT_LINE = new Sk.builtin.int_(12);
-    Sk.PyAngelo.DRACULA_CURRENT_LINE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_CURRENT_LINE);
-    Sk.builtins.DRACULA_SELECTION = new Sk.builtin.int_(13);
-    Sk.PyAngelo.DRACULA_SELECTION = Sk.ffi.remapToJs(Sk.builtins.DRACULA_SELECTION);
-    Sk.builtins.DRACULA_FOREGROUND = new Sk.builtin.int_(14);
-    Sk.PyAngelo.DRACULA_FOREGROUND = Sk.ffi.remapToJs(Sk.builtins.DRACULA_FOREGROUND);
-    Sk.builtins.DRACULA_COMMENT = new Sk.builtin.int_(15);
-    Sk.PyAngelo.DRACULA_COMMENT = Sk.ffi.remapToJs(Sk.builtins.DRACULA_COMMENT);
-    Sk.builtins.DRACULA_CYAN = new Sk.builtin.int_(16);
-    Sk.PyAngelo.DRACULA_CYAN = Sk.ffi.remapToJs(Sk.builtins.DRACULA_CYAN);
-    Sk.builtins.DRACULA_GREEN = new Sk.builtin.int_(17);
-    Sk.PyAngelo.DRACULA_GREEN = Sk.ffi.remapToJs(Sk.builtins.DRACULA_GREEN);
-    Sk.builtins.DRACULA_ORANGE = new Sk.builtin.int_(18);
-    Sk.PyAngelo.DRACULA_ORANGE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_ORANGE);
-    Sk.builtins.DRACULA_PINK = new Sk.builtin.int_(19);
-    Sk.PyAngelo.DRACULA_PINK = Sk.ffi.remapToJs(Sk.builtins.DRACULA_PINK);
-    Sk.builtins.DRACULA_PURPLE = new Sk.builtin.int_(20);
-    Sk.PyAngelo.DRACULA_PURPLE = Sk.ffi.remapToJs(Sk.builtins.DRACULA_PURPLE);
-    Sk.builtins.DRACULA_RED = new Sk.builtin.int_(21);
-    Sk.PyAngelo.DRACULA_RED = Sk.ffi.remapToJs(Sk.builtins.DRACULA_RED);
-    Sk.builtins.DRACULA_YELLOW = new Sk.builtin.int_(22);
-    Sk.PyAngelo.DRACULA_YELLOW = Sk.ffi.remapToJs(Sk.builtins.DRACULA_YELLOW);
+    Sk.builtins.YELLOW = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(181, 137, 0, 1)")]
+    );
+    Sk.builtins.ORANGE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(203, 75, 22, 1)")]
+    );
+    Sk.builtins.RED = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(220, 50, 47, 1)")]
+    );
+    Sk.builtins.MAGENTA = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(211, 54, 130, 1)")]
+    );
+    Sk.builtins.VIOLET = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(108, 113, 196, 1)")]
+    );
+    Sk.builtins.BLUE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(38, 139, 210, 1)")]
+    );
+    Sk.builtins.CYAN = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(42, 161, 152, 1)")]
+    );
+    Sk.builtins.GREEN = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(133, 153, 0, 1)")]
+    );
+    Sk.builtins.WHITE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(253, 246, 227, 1)")]
+    );
+    Sk.builtins.GRAY = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(147, 161, 161, 1)")]
+    );
+    Sk.builtins.GREY = Sk.builtins.GRAY;
+    Sk.builtins.DEFAULT = Sk.builtins.GRAY;
+    Sk.builtins.BLACK = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(0, 0, 0, 1)")]
+    );
+    Sk.builtins.DRACULA_BACKGROUND = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(40, 42, 54, 1)")]
+    );
+    Sk.builtins.DRACULA_CURRENT_LINE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(68, 71, 90, 1)")]
+    );
+    Sk.builtins.DRACULA_SELECTION = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(68, 71, 90, 1)")]
+    );
+    Sk.builtins.DRACULA_FOREGROUND = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(248, 248, 242, 1)")]
+    );
+    Sk.builtins.DRACULA_COMMENT = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(98, 114, 164, 1)")]
+    );
+    Sk.builtins.DRACULA_CYAN = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(139, 233, 253, 1)")]
+    );
+    Sk.builtins.DRACULA_GREEN = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(80, 250, 123, 1)")]
+    );
+    Sk.builtins.DRACULA_ORANGE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(255, 184, 108, 1)")]
+    );
+    Sk.builtins.DRACULA_PINK = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(255, 121, 198, 1)")]
+    );
+    Sk.builtins.DRACULA_PURPLE = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(189, 147, 249, 1)")]
+    );
+    Sk.builtins.DRACULA_RED = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(255, 85, 85, 1)")]
+    );
+    Sk.builtins.DRACULA_YELLOW = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(241, 250, 140, 1)")]
+    );
+    Sk.builtins.BACKGROUND_DEFAULT = Sk.misceval.callsimArray(
+        Sk.builtins.Colour,
+        [Sk.ffi.remapToPy("rgba(220, 220, 220, 1)")]
+    );
 
     // Used to set y axis mode
     Sk.builtins.CARTESIAN = new Sk.builtin.int_(1);

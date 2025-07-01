@@ -33,7 +33,7 @@ class NoFillTestCase(unittest.TestCase):
 
     def test_fillParameterTypes(self):
         with self.assertRaises(TypeError):
-            fill("takes no parameters")
+            noFill("takes no parameters")
 
 if __name__ == "__main__":
     unittest.main()

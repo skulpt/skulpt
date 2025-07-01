@@ -5,6 +5,9 @@
 
 Sk.Colour = Sk.Colour || {};
 
+Sk.Colour._cssCache = new Map();
+Sk.Colour._cssCacheSize = 100;
+
 // Named CSS colours
 Sk.Colour.namedColours = {
     aliceblue: "#f0f8ff",
@@ -178,71 +181,201 @@ Sk.Colour.colorPatterns = {
 
 // Unified parser
 Sk.Colour._parseCss = function(str) {
-    const s = str.trim().toLowerCase();
-    let m;
-    // Named colour
-    if (Sk.Colour.namedColours[s]) {
-        return Sk.Colour._parseCss(Sk.Colour.namedColours[s]);
+    // Normalize and key the cache
+    const key = str.trim().toLowerCase();
+    const cache = Sk.Colour._cssCache;
+
+    // 1) Cache hit → bump to most-recent and return
+    if (cache.has(key)) {
+        const cached = cache.get(key);
+        cache.delete(key);
+        cache.set(key, cached);
+        return cached;
     }
-    // Hex formats
-    if ((m = Sk.Colour.colorPatterns.HEX3.exec(s))) {
-        return { r: parseInt(m[1] + m[1], 16), g: parseInt(m[2] + m[2], 16), b: parseInt(m[3] + m[3], 16), a: 255 };
+
+    // 2) Not cached → parse
+    let m, result;
+
+    // Named CSS colour?
+    if (Sk.Colour.namedColours[key]) {
+        result = Sk.Colour._parseCss(Sk.Colour.namedColours[key]);
+    } else if ((m = Sk.Colour.colorPatterns.HEX3.exec(key))) {
+        // HEX
+        result = {
+            r: parseInt(m[1] + m[1], 16),
+            g: parseInt(m[2] + m[2], 16),
+            b: parseInt(m[3] + m[3], 16),
+            a: 255
+        };
+    } else if ((m = Sk.Colour.colorPatterns.HEX4.exec(key))) {
+        result = {
+            r: parseInt(m[1] + m[1], 16),
+            g: parseInt(m[2] + m[2], 16),
+            b: parseInt(m[3] + m[3], 16),
+            a: parseInt(m[4] + m[4], 16)
+        };
+    } else if ((m = Sk.Colour.colorPatterns.HEX6.exec(key))) {
+        result = {
+            r: parseInt(m[1], 16),
+            g: parseInt(m[2], 16),
+            b: parseInt(m[3], 16),
+            a: 255
+        };
+    } else if ((m = Sk.Colour.colorPatterns.HEX8.exec(key))) {
+        result = {
+            r: parseInt(m[1], 16),
+            g: parseInt(m[2], 16),
+            b: parseInt(m[3], 16),
+            a: parseInt(m[4], 16)
+        };
+    } else if ((m = Sk.Colour.colorPatterns.RGB.exec(key))) {
+        // rgb()
+        result = {
+            r: Number(m[1]),
+            g: Number(m[2]),
+            b: Number(m[3]),
+            a: 255
+        };
+    } else if ((m = Sk.Colour.colorPatterns.RGB_PERCENT.exec(key))) {
+        // rgb(%)
+        result = {
+            r: Math.round(parseFloat(m[1]) * 255 / 100),
+            g: Math.round(parseFloat(m[2]) * 255 / 100),
+            b: Math.round(parseFloat(m[3]) * 255 / 100),
+            a: 255
+        };
+    } else if ((m = Sk.Colour.colorPatterns.RGBA.exec(key))) {
+        // rgba()
+        result = {
+            r: Number(m[1]),
+            g: Number(m[2]),
+            b: Number(m[3]),
+            a: parseFloat(m[4]) * 255
+        };
+    } else if ((m = Sk.Colour.colorPatterns.RGBA_PERCENT.exec(key))) {
+        // rgba(%)
+        result = {
+            r: Math.round(parseFloat(m[1]) * 255 / 100),
+            g: Math.round(parseFloat(m[2]) * 255 / 100),
+            b: Math.round(parseFloat(m[3]) * 255 / 100),
+            a: parseFloat(m[4]) * 255 / 100
+        };
+    } else {
+        throw new Sk.builtin.ValueError(`Invalid CSS colour string: '${str}'`);
     }
-    if ((m = Sk.Colour.colorPatterns.HEX4.exec(s))) {
-        return { r: parseInt(m[1] + m[1], 16), g: parseInt(m[2] + m[2], 16), b: parseInt(m[3] + m[3], 16), a: parseInt(m[4] + m[4], 16) };
+
+    // 3) Store in cache (evict if full)
+    if (cache.size >= Sk.Colour._cssCacheSize) {
+        const oldestKey = cache.keys().next().value;
+        cache.delete(oldestKey);
     }
-    if ((m = Sk.Colour.colorPatterns.HEX6.exec(s))) {
-        return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16), a: 255 };
-    }
-    if ((m = Sk.Colour.colorPatterns.HEX8.exec(s))) {
-        return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16), a: parseInt(m[4], 16) };
-    }
-    // rgb(), percentage rgb, rgba, rgba percentage
-    if ((m = Sk.Colour.colorPatterns.RGB.exec(s))) {
-        return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: 255 };
-    }
-    if ((m = Sk.Colour.colorPatterns.RGB_PERCENT.exec(s))) {
-        return { r: Math.round(parseFloat(m[1]) * 255 / 100), g: Math.round(parseFloat(m[2]) * 255 / 100), b: Math.round(parseFloat(m[3]) * 255 / 100), a: 255 };
-    }
-    if ((m = Sk.Colour.colorPatterns.RGBA.exec(s))) {
-        return { r: Number(m[1]), g: Number(m[2]), b: Number(m[3]), a: parseFloat(m[4]) * 255 };
-    }
-    if ((m = Sk.Colour.colorPatterns.RGBA_PERCENT.exec(s))) {
-        return { r: Math.round(parseFloat(m[1]) * 255 / 100), g: Math.round(parseFloat(m[2]) * 255 / 100), b: Math.round(parseFloat(m[3]) * 255 / 100), a: parseFloat(m[4]) * 255 / 100 };
-    }
-    throw new Sk.builtin.ValueError(`Invalid CSS colour string: '${str}'`);
+    cache.set(key, result);
+
+    return result;
 };
+
 
 // Constructor using unified parser or numeric args
 const initColour = function(self, input, g, b, a) {
     const argc = arguments.length;
-    if (argc === 2 && Sk.builtin.checkString(input)) {
+    // list or tuple: one Python list/tuple of length 3 or 4
+    if (argc === 2 &&
+        (input instanceof Sk.builtin.list || input instanceof Sk.builtin.tuple)
+    ) {
+        const arr = Sk.ffi.remapToJs(input);
+        if (arr.length === 3) {
+            self._r = arr[0]; self._g = arr[1]; self._b = arr[2]; self._a = 1.0;
+            return Sk.builtin.none.none$;
+        }
+        if (arr.length === 4) {
+            self._r = arr[0]; self._g = arr[1]; self._b = arr[2]; self._a = arr[3];
+            return Sk.builtin.none.none$;
+        }
+        throw new Sk.builtin.ValueError(
+            "Colour(list) or Colour(tuple) must have length 3 or 4"
+        );
+    } else if (argc === 2 && Sk.builtin.checkNumber(input)) {
+    // greyscale
+        const v = Sk.ffi.remapToJs(input);
+        if (v < 0 || v > 255) {
+            throw new Sk.builtin.ValueError(`Greyscale value must be in 0–255, got ${v}`);
+        }
+        self._r = v;
+        self._g = v;
+        self._b = v;
+        self._a = 1.0;
+        return Sk.builtin.none.none$;
+    } else if (argc === 2 && Sk.builtin.checkString(input)) {
         const parsed = Sk.Colour._parseCss(Sk.ffi.remapToJs(input));
         self._r = parsed.r;
         self._g = parsed.g;
         self._b = parsed.b;
         self._a = parsed.a / 255.0;
         return Sk.builtin.none.none$;
-    }
-    if ((argc === 4 || argc === 5) && Sk.builtin.checkNumber(input)) {
+    } else if (argc === 3
+        // Two numeric args → greyscale + alpha
+        && Sk.builtin.checkNumber(input)
+        && Sk.builtin.checkNumber(g)
+    ) {
+        const v     = Sk.ffi.remapToJs(input);
+        const alpha = Sk.ffi.remapToJs(g);
+        if (v < 0 || v > 255) {
+            throw new Sk.builtin.ValueError(`Greyscale must be 0–255, got ${v}`);
+        }
+        if (alpha < 0 || alpha > 1) {
+            throw new Sk.builtin.ValueError(`Alpha must be 0.0–1.0, got ${alpha}`);
+        }
+        self._r = v; self._g = v; self._b = v; self._a = alpha;
+        return Sk.builtin.none.none$;
+    } else if ((argc === 4 || argc === 5) && Sk.builtin.checkNumber(input)) {
         Sk.builtin.pyCheckType("g", "number", Sk.builtin.checkNumber(g));
         Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
         self._r = Sk.ffi.remapToJs(input);
         self._g = Sk.ffi.remapToJs(g);
         self._b = Sk.ffi.remapToJs(b);
         self._a = (argc === 5 && a !== Sk.builtin.none.none$) ? Sk.ffi.remapToJs(a) : 1.0;
+        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(self._a));
+        if (self._a < 0 || self._a > 1) {
+            throw new Sk.builtin.ValueError(`Alpha must be 0.0–1.0, got ${self._a}`);
+        }
         return Sk.builtin.none.none$;
     }
     throw new Sk.builtin.TypeError(
-        "__init__() accepts (CSS string) or (r, g, b[, a]) formats."
+        "__init__() accepts a named colour, (CSS string) or (r, g, b[, a]) formats."
     );
 };
 initColour.co_name = "__init__";
 initColour.func_doc =
-    "__init__(css: str) -> None\n" +
-    "__init__(r: int, g: int, b: int[, a: float]) -> None\n\n" +
-    "Create a Colour instance from a CSS string or numeric RGBA values.\n" +
-    "Supported CSS: #RGB, #RGBA, #RRGGBB, #RRGGBBAA, rgb(), rgba(), percentage formats, named colours.";
+    "__init__(value: int) -> None\n" +
+    "__init__(value: int, alpha: float) -> None\n" +
+    "__init__(r: int, g: int, b: int) -> None\n" +
+    "__init__(r: int, g: int, b: int, a: float) -> None\n" +
+    "__init__(css: str) -> None\n\n" +
+    "Create a Colour instance. Supported forms:\n" +
+    "  - Single integer: greyscale (0–255), alpha defaults to 1.0\n" +
+    "  - Two numbers: greyscale + alpha (0.0–1.0)\n" +
+    "  - Three integers: red, green, blue (0–255)\n" +
+    "  - Four args: red, green, blue, alpha\n" +
+    "  - CSS string: hex (\"#RGB\", \"#RRGGBB\", with optional alpha),\n" +
+    "    rgb()/rgba() functions, named colours\n" +
+    "  - Python list/tuple of 3 or 4 numbers (unpacked as RGB(A))\n\n" +
+    "Properties:\n" +
+    "    red, green, blue  — get/set each channel (0–255)\n" +
+    "    alpha             — get/set alpha (0.0–1.0)\n\n" +
+    "Methods:\n" +
+    "    css()             — return a CSS-style \"rgba(r, g, b, a)\" string\n\n" +
+    "Examples:\n" +
+    "    Colour(128)                  # greyscale\n" +
+    "    Colour(128, 0.5)             # greyscale with alpha\n" +
+    "    Colour(255, 0, 128)          # RGB\n" +
+    "    Colour(255, 0, 128, 0.2)     # RGBA\n" +
+    "    Colour('#abc')               # hex\n" +
+    "    Colour('rgba(10,20,30,0.5)') # CSS string\n" +
+    "    Colour([10,20,30])           # list unpack\n" +
+    "    c = Colour(10,20,30)\n" +
+    "    c.red = 200\n" +
+    "    print(c.css())               # \"rgba(200, 20, 30, 1.00)\"";
+
 
 // Build class
 const colourClass = function($gbl, $loc) {
@@ -250,6 +383,12 @@ const colourClass = function($gbl, $loc) {
     $loc.__repr__ = new Sk.builtin.func(function(self) {
         return new Sk.builtin.str(
             `Colour(${self._r}, ${self._g}, ${self._b}, ${self._a})`
+        );
+    });
+    $loc.__str__ = new Sk.builtin.func(function(self) {
+        const a = +self._a.toFixed(2);
+        return new Sk.builtin.str(
+            `rgba(${self._r}, ${self._g}, ${self._b}, ${a})`
         );
     });
 
@@ -323,6 +462,9 @@ const colourClass = function($gbl, $loc) {
         const a = +self._a.toFixed(2);
         return new Sk.builtin.str(`rgba(${self._r}, ${self._g}, ${self._b}, ${a})`);
     });
+    $loc.css.func_doc =
+        "css(self) -> str\n\n" +
+        "Return the CSS string representation: \"rgba(r, g, b, a)\".";
 };
 
 Sk.builtin.Colour = colourClass;
@@ -330,4 +472,4 @@ Sk.builtins["Colour"] = Sk.misceval.buildClass(
     Sk.builtin, Sk.builtin.Colour, "Colour", []
 );
 Sk.builtins["Colour"].prototype.$doc =
-    "Represents a colour via RGBA.";
+  "Represents an RGBA colour.  Supports numeric overloads, CSS strings, and list/tuple inputs.";

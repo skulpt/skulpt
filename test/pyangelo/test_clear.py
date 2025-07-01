@@ -18,8 +18,8 @@ class ClearTestCase(unittest.TestCase):
         self.assertEqual(colour, expectedBackgroundColour)
 
     def test_clearParameters(self):
-        with self.assertRaises(TypeError):
-            clear("not an int")
+        with self.assertRaises(ValueError):
+            clear("not a colour")
         with self.assertRaises(TypeError):
             clear(RED, GREEN)
 

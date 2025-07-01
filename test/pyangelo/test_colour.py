@@ -114,9 +114,54 @@ class ColourTestCase(unittest.TestCase):
 
     def test_invalid_constructor(self):
         with self.assertRaises(ValueError): Colour("notacolour")
-        with self.assertRaises(TypeError): Colour(10)
-        with self.assertRaises(TypeError): Colour(1, 2)
+        with self.assertRaises(ValueError): Colour(1, 2)
 
+    def test_list_constructor_rgb(self):
+        # 3-element list → RGB, alpha defaults to 1.0
+        c = Colour([10, 20, 30])
+        self.assertEqual(c.red, 10)
+        self.assertEqual(c.green, 20)
+        self.assertEqual(c.blue, 30)
+        self.assertAlmostEqual(c.alpha, 1.0, places=3)
+
+    def test_list_constructor_rgba(self):
+        # 4-element list → RGBA
+        c = Colour([60, 70, 80, 0.25])
+        self.assertEqual(c.red, 60)
+        self.assertEqual(c.green, 70)
+        self.assertEqual(c.blue, 80)
+        expected_alpha = 0.25
+        self.assertAlmostEqual(c.alpha, expected_alpha, places=3)
+
+    def test_tuple_constructor_rgb(self):
+        # 3-element tuple → RGB, alpha defaults to 1.0
+        c = Colour((100, 110, 120))
+        self.assertEqual(c.red, 100)
+        self.assertEqual(c.green, 110)
+        self.assertEqual(c.blue, 120)
+        self.assertAlmostEqual(c.alpha, 1.0, places=3)
+
+    def test_tuple_constructor_rgba(self):
+        # 4-element tuple → RGBA
+        c = Colour((130, 140, 150, 0.75))
+        self.assertEqual(c.red, 130)
+        self.assertEqual(c.green, 140)
+        self.assertEqual(c.blue, 150)
+        expected_alpha = 0.75
+        self.assertAlmostEqual(c.alpha, expected_alpha, places=3)
+
+    def test_list_invalid_length(self):
+        # lists/tuples must be length 3 or 4
+        with self.assertRaises(ValueError):
+            Colour([1, 2])        # too short
+        with self.assertRaises(ValueError):
+            Colour([1, 2, 3, 4, 5])  # too long
+
+    def test_tuple_invalid_length(self):
+        with self.assertRaises(ValueError):
+            Colour((1,))           # too short
+        with self.assertRaises(ValueError):
+            Colour((1, 2, 3, 4, 5))  # too long
 
 if __name__ == "__main__":
     unittest.main()
