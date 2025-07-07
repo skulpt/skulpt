@@ -135,8 +135,8 @@ class Tween:
 # --- Collision handler implementations ---
 
 def aabbCollision(a, b):
-    return (a.left < b.right and a.right > b.left
-            and a.top < b.bottom and a.bottom > b.top)
+    return (a.left <= b.right and a.right >= b.left
+            and a.top >= b.bottom and a.bottom <= b.top)
 
 def circleCircleCollision(c1, c2):
     dx = c1.x - c2.x; dy = c1.y - c2.y
@@ -144,7 +144,7 @@ def circleCircleCollision(c1, c2):
 
 def circleRectCollision(circle, rect):
     cx = clamp(circle.x, rect.left, rect.right)
-    cy = clamp(circle.y, rect.top, rect.bottom)
+    cy = clamp(circle.y, rect.bottom, rect.top)
     dx = circle.x - cx; dy = circle.y - cy
     return dx*dx + dy*dy <= circle.radius**2
 
@@ -157,7 +157,7 @@ def ellipseEllipseCollision(e1, e2):
 
 def ellipseRectCollision(ellipse, rect):
     cx = clamp(ellipse.x, rect.left, rect.right)
-    cy = clamp(ellipse.y, rect.top, rect.bottom)
+    cy = clamp(ellipse.y, rect.bottom, rect.top)
     dx = ellipse.x - cx; dy = ellipse.y - cy
     return (dx*dx)/(ellipse.radiusX**2) + (dy*dy)/(ellipse.radiusY**2) <= 1
 
@@ -178,8 +178,8 @@ def polygonPolygonCollision(p1, p2):
     return True
 
 def polygonRectCollision(poly, rect):
-    rect_pts = [(rect.left, rect.top), (rect.right, rect.top),
-                (rect.right, rect.bottom), (rect.left, rect.bottom)]
+    rect_pts = [(rect.left, rect.bottom), (rect.right, rect.bottom),
+                (rect.right, rect.top), (rect.left, rect.top)]
     axes = poly.getAxes() + [(1, 0), (0, 1)]
     for ax, ay in axes:
         min1, max1 = poly.project((ax, ay))
@@ -208,16 +208,27 @@ def polygonCircleCollision(poly, circle):
 
 def polygonEllipseCollision(poly, ellipse):
     axes = poly.getAxes()
-    verts = poly.getVertices()
+    # Add the ellipse’s axes (its local X and Y, rotated by ellipse.angle)
+    θ = math.radians(ellipse.angle)
+    cos_t, sin_t = math.cos(θ), math.sin(θ)
+    # local X-axis
+    axes.append(( cos_t, sin_t))
+    # local Y-axis
+    axes.append((-sin_t, cos_t))
+
+    # 3. For each axis, project both shapes and look for a gap
     for ax, ay in axes:
-        # project polygon
+        # polygon projection
         min1, max1 = poly.project((ax, ay))
-        # project ellipse center and radius
+        # ellipse projection: centre ± radius along this axis
         center_proj = ellipse.x*ax + ellipse.y*ay
+        # effective radius on this axis = rx*|ax| + ry*|ay|
         r = ellipse.radiusX*abs(ax) + ellipse.radiusY*abs(ay)
         min2, max2 = center_proj - r, center_proj + r
+
         if max1 < min2 or max2 < min1:
             return False
+
     return True
 
 # --- Collision registry ---
@@ -238,6 +249,8 @@ COLLISION_HANDLERS = {
     ('CircleSprite','PolygonSprite'): lambda c, p: polygonCircleCollision(p, c),
     ('PolygonSprite','EllipseSprite'): polygonEllipseCollision,
     ('EllipseSprite','PolygonSprite'): lambda e, p: polygonEllipseCollision(p, e),
+    ('CircleSprite','Sprite'): circleRectCollision,
+    ('Sprite','CircleSprite'): lambda s, c: circleRectCollision(c, s),
 }
 
 # --- Base class for all transformable objects ---
@@ -268,7 +281,7 @@ class Transformable:
         if self._hitTest:
             return self._hitTest(self, point)
         return (point.x >= self.left and point.x <= self.right
-                and point.y >= self.top and point.y <= self.bottom)
+                and point.y >= self.bottom and point.y <= self.top)
 
     def overlaps(self, other):
         if self._overlapTest:
@@ -316,9 +329,9 @@ class Transformable:
     @property
     def right(self): return self.x + self.width
     @property
-    def top(self): return self.y
+    def bottom(self): return self.y
     @property
-    def bottom(self): return self.y + self.height
+    def top(self): return self.y + self.height
 
     # Drawing (render only)
     def draw(self):
@@ -354,6 +367,7 @@ class Sprite(Transformable):
         self.width = width if width is not None else getattr(img, 'width', 0)
         self.height = height if height is not None else getattr(img, 'height', 0)
         self._opacity = None; self.opacity = 1
+        self.hitboxScale = 1.0
 
     @property
     def imageFile(self):
@@ -380,6 +394,31 @@ class Sprite(Transformable):
             pass
 
     @property
+    def left(self):
+        full_w = self.width
+        shrunk_w = full_w * self.hitboxScale
+        # shift inwards by half the lost width to keep centered
+        return self.x + (full_w - shrunk_w) / 2
+
+    @property
+    def right(self):
+        full_w = self.width
+        shrunk_w = full_w * self.hitboxScale
+        return self.x + (full_w - shrunk_w) / 2 + shrunk_w
+
+    @property
+    def bottom(self):
+        full_h = self.height
+        shrunk_h = full_h * self.hitboxScale
+        return self.y + (full_h - shrunk_h) / 2
+
+    @property
+    def top(self):
+        full_h = self.height
+        shrunk_h = full_h * self.hitboxScale
+        return self.y + (full_h - shrunk_h) / 2 + shrunk_h
+
+    @property
     def width(self):
         return self._width
 
@@ -399,6 +438,10 @@ class Sprite(Transformable):
     def opacity(self): return self._opacity
     @opacity.setter
     def opacity(self, v): self._opacity = max(0.0, min(1.0, v))
+
+    def setHitboxScale(self, scale: float):
+        """Scale hit-box between 0.0 (none) and 1.0 (full image)."""
+        self.hitboxScale = clamp(scale, 0.0, 1.0)
 
     def _render(self):
         drawImage(self._image, 0, 0, self.width, self.height, opacity=self.opacity)
@@ -519,9 +562,9 @@ class CircleSprite(ShapeSprite):
     @property
     def right(self): return self.x + self.radius
     @property
-    def top(self): return self.y - self.radius
+    def bottom(self): return self.y - self.radius
     @property
-    def bottom(self): return self.y + self.radius
+    def top(self): return self.y + self.radius
     def _renderShape(self): circle(0, 0, self.radius)
     def __repr__(self): return f"CircleSprite(x={self.x},y={self.y},r={self.radius})"
 
@@ -534,9 +577,9 @@ class EllipseSprite(ShapeSprite):
     @property
     def right(self): return self.x + self.radiusX
     @property
-    def top(self): return self.y - self.radiusY
+    def bottom(self): return self.y - self.radiusY
     @property
-    def bottom(self): return self.y + self.radiusY
+    def top(self): return self.y + self.radiusY
     def _renderShape(self): ellipse(0, 0, self.radiusX, self.radiusY)
     def __repr__(self): return f"EllipseSprite(x={self.x},y={self.y},rx={self.radiusX},ry={self.radiusY})"
 
