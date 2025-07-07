@@ -242,9 +242,8 @@ COLLISION_HANDLERS = {
 
 # --- Base class for all transformable objects ---
 class Transformable:
-    def __init__(self, x=0, y=0, angle=0.0, opacity=1.0, anchorX=0.5, anchorY=0.5):
+    def __init__(self, x=0, y=0, angle=0.0, anchorX=0.5, anchorY=0.5):
         self._x = x; self._y = y; self._angle = angle
-        self._opacity = None; self.opacity = opacity
         self._anchorX = clamp(anchorX, 0, 1)
         self._anchorY = clamp(anchorY, 0, 1)
         self._tweens = []
@@ -293,10 +292,6 @@ class Transformable:
     def angle(self): return self._angle
     @angle.setter
     def angle(self, v): self._angle = v
-    @property
-    def opacity(self): return self._opacity
-    @opacity.setter
-    def opacity(self, v): self._opacity = max(0.0, min(1.0, v))
 
     # Anchor
     @property
@@ -358,6 +353,7 @@ class Sprite(Transformable):
         # Set dimensions
         self.width = width if width is not None else getattr(img, 'width', 0)
         self.height = height if height is not None else getattr(img, 'height', 0)
+        self._opacity = None; self.opacity = 1
 
     @property
     def imageFile(self):
@@ -399,6 +395,11 @@ class Sprite(Transformable):
     def height(self, v):
         self._height = max(0, v)
 
+    @property
+    def opacity(self): return self._opacity
+    @opacity.setter
+    def opacity(self, v): self._opacity = max(0.0, min(1.0, v))
+
     def _render(self):
         drawImage(self._image, 0, 0, self.width, self.height, opacity=self.opacity)
 
@@ -415,7 +416,7 @@ class TextSprite(Transformable):
         self._textContent = textContent
         self._fontSize = fontSize
         self._fontName = fontName
-        self._fillR = 255; self._fillG = 255; self._fillB = 255
+        self.fillColour = Colour(255)
         self._recalculate_metrics()
 
     def _recalculate_metrics(self):
@@ -447,16 +448,14 @@ class TextSprite(Transformable):
         self._fontName = v
         self._recalculate_metrics()
 
-    def setColour(self, r, g, b, a=None):
-        """Set fill colour (and optional opacity) for text"""
-        self._fillR = clamp(r, 0, 255)
-        self._fillG = clamp(g, 0, 255)
-        self._fillB = clamp(b, 0, 255)
-        if a is not None:
-            self.opacity = a
+    def setColour(self, *args):
+        """Set fill colour"""
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+        self.fillColour = args[0] if isinstance(args[0], Colour) else Colour(*args)
 
     def _render(self):
-        fill(self._fillR, self._fillG, self._fillB, self.opacity)
+        fill(self.fillColour)
         text(self._textContent, 0, 0, self._fontSize, self._fontName)
 
     def __repr__(self):
@@ -473,56 +472,31 @@ class TextSprite(Transformable):
 class ShapeSprite(Transformable):
     def __init__(self, x=0, y=0):
         super().__init__(x, y)
-        self._fillR = 255; self._fillG = 255; self._fillB = 255
+        self.fillColour = Colour(255)
         self._strokeEnabled = False
-        self._strokeR = 0; self._strokeG = 0; self._strokeB = 0; self._strokeA = 1.0
+        self.strokeColour = Colour(0)
         self._strokeWeight = 1
 
-    def setColour(self, r, g, b, a=None):
-        self._fillR = clamp(r, 0, 255)
-        self._fillG = clamp(g, 0, 255)
-        self._fillB = clamp(b, 0, 255)
-        if a is not None: self.opacity = a
+    def setColour(self, *args):
+        """Set fill colour"""
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+        self.fillColour = args[0] if isinstance(args[0], Colour) else Colour(*args)
 
-    def setStroke(self, r, g, b, a=None):
+    def setStroke(self, *args):
+        """Set stroke colour"""
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            args = args[0]
+        self.strokeColour = args[0] if isinstance(args[0], Colour) else Colour(*args)
         self._strokeEnabled = True
-        self._strokeR = clamp(r,0,255)
-        self._strokeG = clamp(g,0,255)
-        self._strokeB = clamp(b,0,255)
-        if a is not None: self._strokeA = clamp(a, 0.0, 1.0)
 
     def strokeWeight(self, w): self._strokeWeight = max(0, w)
     def noStroke(self): self._strokeEnabled = False
 
-    @property
-    def fillR(self): return self._fillR
-    @property
-    def fillG(self): return self._fillG
-    @property
-    def fillB(self): return self._fillB
-    @property
-    def strokeR(self): return self._strokeR
-    @strokeR.setter
-    def strokeR(self, v): self._strokeR = clamp(v,0,255)
-    @property
-    def strokeG(self): return self._strokeG
-    @strokeG.setter
-    def strokeG(self, v): self._strokeG = clamp(v,0,255)
-    @property
-    def strokeB(self): return self._strokeB
-    @strokeB.setter
-    def strokeB(self, v): self._strokeB = clamp(v,0,255)
-    @property
-    def strokeA(self): return self._strokeA
-    @strokeA.setter
-    def strokeA(self, v): self._strokeA = clamp(v,0.0,1.0)
-    @property
-    def strokeWeightValue(self): return self._strokeWeight
-
     def _render(self):
-        fill(self._fillR, self._fillG, self._fillB, self.opacity)
+        fill(self.fillColour)
         if self._strokeEnabled:
-            stroke(self._strokeR, self._strokeG, self._strokeB, self._strokeA)
+            stroke(self.strokeColour)
             strokeWeight(self._strokeWeight)
         else:
             noStroke()
