@@ -701,7 +701,8 @@ Sk.builtin.raw_input = function (prompt) {
     var lprompt = prompt ? prompt : "";
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
-        if (Sk.inputfunTakesPrompt) {
+        const isTrueStdin = sys["$d"]["stdin"]["fileno"] == 0;
+        if (Sk.inputfunTakesPrompt && isTrueStdin) {
             return Sk.builtin.file.$readline(sys["$d"]["stdin"], null, lprompt);
         } else {
             return Sk.misceval.chain(
@@ -791,7 +792,7 @@ Sk.builtin.exec = function (code, globals, locals) {
     );
     /**@todo shouldn't have to do this - Sk.globals loses scope*/
     const tmp = Sk.globals;
-    /** 
+    /**
      * @todo this is not correct outside of __main__ i.e. exec doesn't work inside modules using the module scope
      * This is because globals don't work outside of __main__
     */
