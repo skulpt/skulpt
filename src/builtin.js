@@ -711,7 +711,8 @@ Sk.builtin.raw_input = function (prompt) {
                     return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]);
                 },
                 function () {
-                    return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]);
+                    const s = Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]);
+                    return new Sk.builtin.str(s.$jsstr().replace(/[\r\n]+$/, ""));
                 }
             );
         }
