@@ -701,19 +701,15 @@ Sk.builtin.raw_input = function (prompt) {
     var lprompt = prompt ? prompt : "";
 
     return Sk.misceval.chain(Sk.importModule("sys", false, true), function (sys) {
-        const isTrueStdin = sys["$d"]["stdin"]["fileno"] == 0;
+        const isTrueStdin = sys["$d"]["stdin"]["fileno"] === 0;
         if (Sk.inputfunTakesPrompt && isTrueStdin) {
             return Sk.builtin.file.$readline(sys["$d"]["stdin"], null, lprompt);
         } else {
             return Sk.misceval.chain(
                 undefined,
-                function () {
-                    return Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]);
-                },
-                function () {
-                    const s = Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]);
-                    return new Sk.builtin.str(s.$jsstr().replace(/[\r\n]+$/, ""));
-                }
+                () => Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdout"]["write"], [sys["$d"]["stdout"], new Sk.builtin.str(lprompt)]),
+                () => Sk.misceval.callsimOrSuspendArray(sys["$d"]["stdin"]["readline"], [sys["$d"]["stdin"]]),
+                (s) => new Sk.builtin.str(s.$jsstr().replace(/[\r\n]+$/, ""))
             );
         }
     });
