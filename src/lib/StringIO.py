@@ -268,3 +268,14 @@ class StringIO:
             self.buf += ''.join(self.buflist)
             self.buflist = []
         return self.buf
+
+    # The following two methods implement the PEP343 context management protocol
+    # for StringIO objects, allowing them to be used in with statements.
+    # In standard Python this is done via inheriting from IOBase
+    # Possible pure Python implementation: https://github.com/python/cpython/blob/main/Lib/_pyio.py
+    def __enter__(self):
+        _complain_ifclosed(self.closed)
+        return self
+
+    def __exit__(self, *args):
+        self.close()
