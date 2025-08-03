@@ -25,7 +25,7 @@ function test (python3, opt, module = undefined) {
         pyver = Sk.python2;
     }
 
-    const regexp = /.*Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)/g;
+    const regexp = /.*Ran.*passed:\s+(\d+),?\s+failed:\s+(\d+)/g;
 
     // Configure Skulpt to run unit tests
     Sk.configure({
@@ -68,7 +68,7 @@ function test (python3, opt, module = undefined) {
             endtime = Date.now();
             elapsed = (endtime - starttime) / 1000;
             console.log("Summary");
-            console.log("Passed: " + passed + " Failed: " + failed);
+            console.log("Passed: " + passed + ", Failed: " + failed);
             console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
             if (failed > 0) {
                 process.exit(1);
