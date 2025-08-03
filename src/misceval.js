@@ -31,14 +31,16 @@ Sk.misceval = {};
  */
 Sk.misceval.Suspension = function Suspension(resume, child, data) {
     this.$isSuspension = true;
-    if (resume !== undefined && child !== undefined) {
+    if (resume !== undefined && child != null) {
         this.resume = function () {
             return resume(child.resume());
         };
+    } else {
+        this.resume = resume;
     }
     this.child = child;
-    this.optional = child !== undefined && child.optional;
-    if (data === undefined && child !== undefined) {
+    this.optional = child != null && child.optional;
+    if (data === undefined && child != null) {
         this.data = child.data;
     } else {
         this.data = data;
@@ -1090,19 +1092,23 @@ Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
  * Because exceptions are returned asynchronously aswell you can't catch them
  * with a try/catch. That's what this function is for.
  */
-Sk.misceval.tryCatch = function (tryFn, catchFn) {
+Sk.misceval.tryCatch = function (tryFn, catchFn, cleanUp) {
     var r;
 
     try {
         r = tryFn();
     } catch (e) {
         return catchFn(e);
+    } finally {
+        if (cleanUp) {
+            cleanUp();
+        }
     }
 
     if (r instanceof Sk.misceval.Suspension) {
         var susp = new Sk.misceval.Suspension(undefined, r);
         susp.resume = function () {
-            return Sk.misceval.tryCatch(r.resume, catchFn);
+            return Sk.misceval.tryCatch(r.resume, catchFn, cleanUp);
         };
         return susp;
     } else {
