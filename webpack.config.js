@@ -80,9 +80,12 @@ module.exports = (env, argv) => {
         devtool: 'source-map',
         plugins: [
             new CleanWebpackPlugin(),
-            new CopyWebpackPlugin([
+            new CopyWebpackPlugin(
+                {
+                    patterns:[
                 { from: 'debugger/debugger.js', to: 'debugger.js' }
-            ]),
+            ]
+        }),
             new webpack.DefinePlugin({
                 GITVERSION: JSON.stringify(git.version()),
                 GITHASH: JSON.stringify(git.commithash()),
