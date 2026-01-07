@@ -1,7 +1,7 @@
 const $builtinmodule = function (name) {
 
     const {
-        builtin: { str: pyStr, int_: pyInt, float_: pyFloat, TypeError: pyTypeError, pyCheckType, checkNumber },
+        builtin: { str: pyStr, int_: pyInt, float_: pyFloat, TypeError: pyTypeError, pyCheckType, checkRealNumber },
         abstr: { lookupSpecial },
         misceval: { callsimOrSuspendArray: pyCallOrSuspend },
     } = Sk;
@@ -25,7 +25,7 @@ const $builtinmodule = function (name) {
             if (method !== undefined) {
                 return pyCallOrSuspend(method);
             }
-            pyCheckType("", "real number", checkNumber(x));
+            pyCheckType("", "real number", checkRealNumber(x));
             _x = Sk.builtin.asnum$(x);
         } else {
             _x = x.v;
@@ -83,8 +83,8 @@ const $builtinmodule = function (name) {
     function copysign(x, y) {
         // returns abs of x with sign y
         // does sign x * sign y * x which is equivalent
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
 
         const _y = Sk.builtin.asnum$(y);
         const _x = Sk.builtin.asnum$(x);
@@ -96,7 +96,7 @@ const $builtinmodule = function (name) {
     };
 
     function fabs(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         let _x = x.v;
         if (JSBI.__isBigInt(_x)) {
             _x = x.nb$float().v; //should raise OverflowError for large ints to floats
@@ -108,7 +108,7 @@ const $builtinmodule = function (name) {
 
     const MAX_SAFE_INTEGER_FACTORIAL = 18; // 19! > Number.MAX_SAFE_INTEGER
     function factorial(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
         x = Math.floor(_x);
@@ -146,15 +146,15 @@ const $builtinmodule = function (name) {
             if (method !== undefined) {
                 return pyCallOrSuspend(method);
             } 
-            pyCheckType("x", "number", checkNumber(x));
+            pyCheckType("x", "number", checkRealNumber(x));
             _x = Sk.builtin.asnum$(x);
         }
         return new pyInt(Math.floor(_x));
     };
 
     function fmod(x, y) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
         let _x = x.v;
         let _y = y.v;
         if (typeof _x !== "number") {
@@ -178,7 +178,7 @@ const $builtinmodule = function (name) {
 
     function frexp(x) {
         //  algorithm taken from https://locutus.io/c/math/frexp/
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         const arg = Sk.builtin.asnum$(x);
         const res = [arg, 0];
 
@@ -218,7 +218,7 @@ const $builtinmodule = function (name) {
         iter = Sk.abstr.iter(iter);
         let i, hi, lo;
         for (let x = iter.tp$iternext(); x !== undefined; x = iter.tp$iternext()) {
-            Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkNumber(x));
+            Sk.builtin.pyCheckType("", "real number", Sk.builtin.checkRealNumber(x));
             i = 0;
             let _x = x.v;
             if (typeof _x !== "number") {
@@ -315,10 +315,10 @@ const $builtinmodule = function (name) {
         const rel_tol = rel_abs_vals[0];
         const abs_tol = rel_abs_vals[1];
 
-        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkNumber(a));
-        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkNumber(b));
-        Sk.builtin.pyCheckType("rel_tol", "number", Sk.builtin.checkNumber(rel_tol));
-        Sk.builtin.pyCheckType("abs_tol", "number", Sk.builtin.checkNumber(abs_tol));
+        Sk.builtin.pyCheckType("a", "number", Sk.builtin.checkRealNumber(a));
+        Sk.builtin.pyCheckType("b", "number", Sk.builtin.checkRealNumber(b));
+        Sk.builtin.pyCheckType("rel_tol", "number", Sk.builtin.checkRealNumber(rel_tol));
+        Sk.builtin.pyCheckType("abs_tol", "number", Sk.builtin.checkRealNumber(abs_tol));
 
         const _a = Sk.builtin.asnum$(a);
         const _b = Sk.builtin.asnum$(b);
@@ -342,7 +342,7 @@ const $builtinmodule = function (name) {
     };
 
     function isfinite(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
         if (Sk.builtin.checkInt(x)) {
@@ -356,7 +356,7 @@ const $builtinmodule = function (name) {
 
     function isinf(x) {
         /* Return True if x is infinite or nan, and False otherwise. */
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
         if (Sk.builtin.checkInt(x)) {
@@ -370,7 +370,7 @@ const $builtinmodule = function (name) {
 
     function isnan(x) {
         // Return True if x is a NaN (not a number), and False otherwise.
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
         if (isNaN(_x)) {
@@ -485,7 +485,7 @@ const $builtinmodule = function (name) {
 
     function ldexp(x, i) {
         // return x * (2**i)
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         Sk.builtin.pyCheckType("i", "integer", Sk.builtin.checkInt(i));
 
         let _x = x.v;
@@ -505,7 +505,7 @@ const $builtinmodule = function (name) {
     };
 
     function modf(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
         if (!isFinite(_x)) {
@@ -623,8 +623,8 @@ const $builtinmodule = function (name) {
 
     function remainder(x, y) {
         // as per cpython algorithm see cpython for details
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
 
         let _x = x.v;
         let _y = y.v;
@@ -686,7 +686,7 @@ const $builtinmodule = function (name) {
 
     // Power and logarithmic functions
     function exp(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         let _x = x.v;
         if (typeof _x !== "number") {
             _x = x.nb$float().v;
@@ -705,7 +705,7 @@ const $builtinmodule = function (name) {
     function expm1(x) {
         // as per python docs this implements an algorithm for evaluating exp(x) - 1
         // for smaller values of x
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         const _x = Sk.builtin.asnum$(x);
 
         if (Math.abs(_x) < 0.7) {
@@ -723,7 +723,7 @@ const $builtinmodule = function (name) {
     };
 
     function log(x, base) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
         let _base, res;
@@ -733,7 +733,7 @@ const $builtinmodule = function (name) {
         if (base === undefined) {
             _base = Math.E;
         } else {
-            Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkNumber(base));
+            Sk.builtin.pyCheckType("base", "number", Sk.builtin.checkRealNumber(base));
             _base = Sk.builtin.asnum$(base);
         }
 
@@ -756,7 +756,7 @@ const $builtinmodule = function (name) {
     function log1p(x) {
         // as per python docs this is an algorithm for evaluating log 1+x (base e)
         // designed to be more accurate close to 0
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         let _x = x.v;
         if (typeof _x !== "number") {
@@ -780,7 +780,7 @@ const $builtinmodule = function (name) {
     };
 
     function log2(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         let _x = Sk.builtin.asnum$(x);
         let res;
@@ -801,7 +801,7 @@ const $builtinmodule = function (name) {
     };
 
     function log10(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         let _x = Sk.builtin.asnum$(x);
         let res;
         if (_x <= 0) {
@@ -821,8 +821,8 @@ const $builtinmodule = function (name) {
     };
 
     function pow(x, y) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
 
         let _x = x.v;
         let _y = y.v;
@@ -853,7 +853,7 @@ const $builtinmodule = function (name) {
     };
 
     function sqrt(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
         const _x = Sk.builtin.asnum$(x);
         if (_x < 0) {
             throw new Sk.builtin.ValueError("math domain error");
@@ -864,44 +864,44 @@ const $builtinmodule = function (name) {
     // Trigonometric functions and Hyperbolic
 
     function asin(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.asin(Sk.builtin.asnum$(rad)));
     };
 
     function acos(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.acos(Sk.builtin.asnum$(rad)));
     };
 
     function atan(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.atan(Sk.builtin.asnum$(rad)));
     };
 
     function atan2(y, x) {
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         return new Sk.builtin.float_(Math.atan2(Sk.builtin.asnum$(y), Sk.builtin.asnum$(x)));
     };
 
     function sin(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.sin(Sk.builtin.asnum$(rad)));
     };
 
     function cos(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.cos(Sk.builtin.asnum$(rad)));
     };
 
     function tan(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         return new Sk.builtin.float_(Math.tan(Sk.builtin.asnum$(rad)));
     };
@@ -911,8 +911,8 @@ const $builtinmodule = function (name) {
     };
 
     function hypot(x, y) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
-        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkNumber(y));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
+        Sk.builtin.pyCheckType("y", "number", Sk.builtin.checkRealNumber(y));
 
         x = Sk.builtin.asnum$(x);
         y = Sk.builtin.asnum$(y);
@@ -920,7 +920,7 @@ const $builtinmodule = function (name) {
     };
 
     function asinh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         x = Sk.builtin.asnum$(x);
 
@@ -930,7 +930,7 @@ const $builtinmodule = function (name) {
     };
 
     function acosh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         x = Sk.builtin.asnum$(x);
 
@@ -940,7 +940,7 @@ const $builtinmodule = function (name) {
     };
 
     function atanh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         x = Sk.builtin.asnum$(x);
 
@@ -950,7 +950,7 @@ const $builtinmodule = function (name) {
     };
 
     function sinh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         x = Sk.builtin.asnum$(x);
 
@@ -963,7 +963,7 @@ const $builtinmodule = function (name) {
     };
 
     function cosh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         x = Sk.builtin.asnum$(x);
 
@@ -976,7 +976,7 @@ const $builtinmodule = function (name) {
     };
 
     function tanh(x) {
-        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkNumber(x));
+        Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
 
         const _x = Sk.builtin.asnum$(x);
 
@@ -994,14 +994,14 @@ const $builtinmodule = function (name) {
 
     // Angular Conversion
     function radians(deg) {
-        Sk.builtin.pyCheckType("deg", "number", Sk.builtin.checkNumber(deg));
+        Sk.builtin.pyCheckType("deg", "number", Sk.builtin.checkRealNumber(deg));
 
         const ret = (Math.PI / 180.0) * Sk.builtin.asnum$(deg);
         return new Sk.builtin.float_(ret);
     };
 
     function degrees(rad) {
-        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkNumber(rad));
+        Sk.builtin.pyCheckType("rad", "number", Sk.builtin.checkRealNumber(rad));
 
         const ret = (180.0 / Math.PI) * Sk.builtin.asnum$(rad);
         return new Sk.builtin.float_(ret);

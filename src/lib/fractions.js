@@ -172,7 +172,10 @@ function fractionsMod({ math, sys }) {
                         self.$den = getDenom(numerator);
                         return self;
                     } else if (numerator instanceof pyFloat) {
-                        // todo decimal.Decimal
+                        [self.$num, self.$den] = pyCall(numerator.tp$getattr(s_int_ratio)).valueOf();
+                        return self;
+                    } else if (numerator.tp$getattr && numerator.tp$getattr(s_int_ratio) !== undefined) {
+                        // Handle types with as_integer_ratio (like Decimal)
                         [self.$num, self.$den] = pyCall(numerator.tp$getattr(s_int_ratio)).valueOf();
                         return self;
                     } else if (numerator instanceof pyStr) {
@@ -496,8 +499,21 @@ function fractionsMod({ math, sys }) {
                 $flags: METH_ONE_ARG,
             },
             from_decimal: {
-                $meth() {
-                    throw pyNotImplementedError("from_decimal not yet implemented in SKulpt");
+                $meth(dec) {
+                    if (dec instanceof pyInt) {
+                        return pyCall(this, [dec]);
+                    }
+                    // Check if it has as_integer_ratio (Decimal does)
+                    const airMethod = dec.tp$getattr ? dec.tp$getattr(s_int_ratio) : undefined;
+                    if (airMethod === undefined) {
+                        throw new pyTypeError(
+                            `${typeName(this)}.from_decimal() only takes Decimals, not ${objectRepr(dec)}, (${typeName(
+                                dec
+                            )})`
+                        );
+                    }
+                    const [num, den] = pyCall(airMethod).valueOf();
+                    return pyCall(this, [num, den]);
                 },
                 $flags: METH_ONE_ARG,
             },

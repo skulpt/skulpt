@@ -6,6 +6,40 @@ the unittest module from cpython.
 '''
 import re
 
+
+class SkipTest(Exception):
+    """Exception raised to skip a test."""
+    pass
+
+
+def skip(reason):
+    """
+    Unconditionally skip a test.
+    """
+    def decorator(test_item):
+        test_item.__unittest_skip__ = True
+        test_item.__unittest_skip_why__ = reason
+        return test_item
+    return decorator
+
+
+def skipIf(condition, reason):
+    """
+    Skip a test if the condition is true.
+    """
+    if condition:
+        return skip(reason)
+    return lambda func: func
+
+
+def skipUnless(condition, reason):
+    """
+    Skip a test unless the condition is true.
+    """
+    if not condition:
+        return skip(reason)
+    return lambda func: func
+
 class _AssertRaisesContext(object):
     """A context manager used to implement TestCase.assertRaises* methods."""
     def __init__(self, expected, test_case, expected_regex=None):
@@ -81,6 +115,7 @@ class TestCase(object):
     def __init__(self):
         self.numPassed = 0
         self.numFailed = 0
+        self.numSkipped = 0
         self.assertPassed = 0
         self.assertFailed = 0
         self.verbosity = 1
@@ -103,6 +138,16 @@ class TestCase(object):
     def main(self):
 
         for func in self.tlist:
+            # Check if test is marked as skipped
+            # Need to check __func__ for bound methods to get the decorated function attributes
+            underlying_func = getattr(func, '__func__', func)
+            if getattr(underlying_func, '__unittest_skip__', False):
+                skip_reason = getattr(underlying_func, '__unittest_skip_why__', '')
+                self.numSkipped += 1
+                if self.verbosity > 1:
+                    print('Skipped %s: %s' % (self.cleanName(func), skip_reason))
+                continue
+
             if self.verbosity > 1:
                 print('Running %s' % self.cleanName(func))
             try:
@@ -116,6 +161,10 @@ class TestCase(object):
                 else:
                     self.numFailed += 1
                     print('Tests failed in %s ' % self.cleanName(func))
+            except SkipTest as e:
+                self.numSkipped += 1
+                if self.verbosity > 1:
+                    print('Skipped %s: %s' % (self.cleanName(func), str(e)))
             except Exception as e:
                 self.assertFailed += 1
                 self.numFailed += 1
@@ -302,11 +351,16 @@ class TestCase(object):
         print(msg)
         self.assertFailed += 1
 
+    def skipTest(self, reason):
+        """Skip this test."""
+        raise SkipTest(reason)
+
     def showSummary(self):
         # don't divde by zero
         # pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
-                                               self.numPassed, self.numFailed))
+        total = self.numPassed + self.numFailed + self.numSkipped
+        print("Ran %d tests, passed: %d failed: %d skipped: %d\n" % (total,
+                                               self.numPassed, self.numFailed, self.numSkipped))
 
 
 
