@@ -1963,6 +1963,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     isGenerator = this.u.ste.generator;
     hasFree = this.u.ste.hasFree;
     hasCell = this.u.ste.childHasFree;
+    const cellNames = Object.keys(this.u.ste.symFlags).filter(name =>
+        this.u.ste.getScope(name) === Sk.SYMTAB_CONSTS.CELL);
 
     entryBlock = this.newBlock("codeobj entry");
 
@@ -2041,7 +2043,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         entryBlock = "$gen.gi$resumeat";
         locals = "$gen.gi$locals";
     }
-    cells = ",$cell={}";
+    // Reserve every local cell, even before its first assignment, so outer
+    // bindings with the same name cannot be found through the prototype.
+    cells = ",$cell={" + cellNames.map(name => name + ":undefined").join(",") + "}";
     if (hasCell) {
         if (isGenerator) {
             cells = ",$cell=$gen.gi$cells";
@@ -2211,6 +2215,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         out(scopename, ".co_varnames=[];");
     }
 
+    if (isGenerator) {
+        out(scopename, ".co_cellvars=", JSON.stringify(cellNames), ";");
+    }
+
     //
     // Skulpt doesn't have "co_consts", so record the docstring (or
     // None) in the "co_docstring" property of the code object, ready
@@ -2246,11 +2254,10 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     frees = "";
     if (hasFree) {
-        frees = ",$cell";
-        // if the scope we're in where we're defining this one has free
-        // vars, they may also be cell vars, so we pass those to the
-        // closure too.
-        containingHasFree = this.u.ste.hasFree;
+        if (this.u.ste.hasCells) {
+            frees = ",$cell";
+        }
+        containingHasFree = this.u.ste.hasFree || this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock;
         if (containingHasFree) {
             frees += ",$free";
         }
@@ -2672,6 +2679,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case Sk.astnodes.ImportFrom:
             return this.cfromimport(s);
         case Sk.astnodes.Global:
+        case Sk.astnodes.Nonlocal:
             break;
         case Sk.astnodes.Expr:
             this.vexpr(s.value);
@@ -2836,6 +2844,7 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
         case OP_DEREF:
             switch (ctx) {
                 case Sk.astnodes.Load:
+                case Sk.astnodes.Del:
                     // The cell may exist but hold no value yet (e.g. a free variable
                     // read before the enclosing binding has executed). A bound Python
                     // value is never JS undefined (None is Sk.builtin.none.none$), so
@@ -2852,8 +2861,17 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
                             "' where it is not associated with a value\");");
                     }
                     out("}\n");
+                    if (ctx === Sk.astnodes.Del) {
+                        const owner = scope === Sk.SYMTAB_CONSTS.FREE
+                            ? "Sk.misceval.cellOwner(" + dict + "," + JSON.stringify(mangledNoPre) + ")" : dict;
+                        out(owner, ".", mangledNoPre, "=undefined;");
+                        break;
+                    }
                     return dict + "." + mangledNoPre;
                 case Sk.astnodes.Store:
+                    if (scope === Sk.SYMTAB_CONSTS.FREE) {
+                        dict = "Sk.misceval.cellOwner(" + dict + "," + JSON.stringify(mangledNoPre) + ")";
+                    }
                     out(dict, ".", mangledNoPre, "=", dataToStore, ";");
                     break;
                 case Sk.astnodes.Param:
