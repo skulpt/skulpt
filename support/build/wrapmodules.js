@@ -46,12 +46,11 @@ async function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes
                                     drop_debugger: false,
                                     typeofs: false,
                                 },
-                                mangle: false,
-                                // mangle: {
-                                //     keep_classnames: true,
-                                //     keep_fnames: true,
-                                //     safari10: true,
-                                // },
+                                mangle: {
+                                    keep_classnames: true,
+                                    keep_fnames: true,
+                                    safari10: true,
+                                },
                             });
                             contents = result.code;
                         }
