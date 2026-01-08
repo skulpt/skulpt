@@ -124,5 +124,114 @@ class TestBugs(unittest.TestCase):
             self.assertEqual(y, "b")
 
 
+class TestClassCell(unittest.TestCase):
+    """Tests for __class__ cell and super() handling - Issues #1171, #1340"""
+
+    def test_issue_1171_super_in_nested_class_in_function(self):
+        """super() in __init_subclass__ of class defined inside a function"""
+        def bar():
+            class A:
+                def __init_subclass__(cls):
+                    super().__init_subclass__()
+
+            class B(A):
+                pass
+            return A, B
+
+        A, B = bar()
+        self.assertEqual(A.__name__, 'A')
+        self.assertEqual(B.__name__, 'B')
+
+    def test_super_with_closure_in_method(self):
+        """super() in method that also has a closure (Issue #4360 in CPython)"""
+        class A:
+            def f(self):
+                return 'A'
+
+        class E(A):
+            def f(self):
+                def nested():
+                    self  # creates closure
+                return super().f() + 'E'
+
+        self.assertEqual(E().f(), 'AE')
+
+    def test___class___in_instancemethod(self):
+        """__class__ should be available in instance methods"""
+        class X:
+            def f(self):
+                return __class__
+
+        self.assertIs(X().f(), X)
+
+    def test___class___in_classmethod(self):
+        """__class__ should be available in classmethods"""
+        class Y:
+            @classmethod
+            def f(cls):
+                return __class__
+
+        self.assertIs(Y.f(), Y)
+
+    def test___class___in_staticmethod(self):
+        """__class__ should be available in staticmethods"""
+        class Z:
+            @staticmethod
+            def f():
+                return __class__
+
+        self.assertIs(Z.f(), Z)
+
+    def test_super_in_nested_classes(self):
+        """super() works correctly in nested class hierarchies"""
+        class Outer:
+            class Inner:
+                def greet(self):
+                    return "Inner"
+
+            class InnerChild(Inner):
+                def greet(self):
+                    return super().greet() + "Child"
+
+        self.assertEqual(Outer.InnerChild().greet(), "InnerChild")
+
+    def test_multiple_levels_of_super(self):
+        """super() works through multiple inheritance levels"""
+        class A:
+            def f(self):
+                return 'A'
+
+        class B(A):
+            def f(self):
+                return super().f() + 'B'
+
+        class C(B):
+            def f(self):
+                return super().f() + 'C'
+
+        class D(C):
+            def f(self):
+                return super().f() + 'D'
+
+        self.assertEqual(D().f(), 'ABCD')
+
+    def test_super_in_init_subclass_chain(self):
+        """super().__init_subclass__() works through inheritance chain"""
+        calls = []
+
+        class Base:
+            def __init_subclass__(cls, **kwargs):
+                super().__init_subclass__(**kwargs)
+                calls.append(cls.__name__)
+
+        class Middle(Base):
+            pass
+
+        class Leaf(Middle):
+            pass
+
+        self.assertEqual(calls, ['Middle', 'Leaf'])
+
+
 if __name__ == "__main__":
     unittest.main()

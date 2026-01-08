@@ -1807,19 +1807,6 @@ class CachedCostItemWithSlots:
     def cost(self):
         raise RuntimeError('never called, slots not supported')
 
-counter = [0]
-
-@py_functools.cached_property
-def _cp(_self):
-    # nonlocal counter
-    counter[0] += 1
-    return counter[0]
-
-class A_Counter:
-    cp = _cp
-
-class B_Counter:
-    cp = _cp
 
 class readonly_cached_property(py_functools.cached_property):
     def __set__(self, obj, value):
@@ -1882,9 +1869,22 @@ class TestCachedProperty(unittest.TestCase):
     def test_reuse_same_name(self):
         """Reusing a cached_property on different classes under the same name is OK."""
 
+        counter = 0
 
-        a = A_Counter()
-        b = B_Counter()
+        @py_functools.cached_property
+        def _cp(_self):
+            nonlocal counter
+            counter += 1
+            return counter
+
+        class A:
+            cp = _cp
+
+        class B:
+            cp = _cp
+
+        a = A()
+        b = B()
 
         self.assertEqual(a.cp, 1)
         self.assertEqual(b.cp, 2)

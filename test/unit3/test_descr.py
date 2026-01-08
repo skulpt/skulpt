@@ -478,8 +478,6 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_metaclass(self):
         # Testing metaclasses...
-        global A, B, C, D, E, M1, M2, T, autosuper, autoproperty, multimetaclass, _instance, AMeta, BMeta, C2 #1178
-        global ANotMeta, BNotMeta, func
         class C(metaclass=type):
             def __init__(self):
                 self.__state = 0
@@ -856,7 +854,6 @@ class ClassPropertiesAndMethods(unittest.TestCase):
 
     def test_multiple_inheritance(self):
         # Testing multiple inheritance...
-        global C_Multi #1178
         class C_Multi(object):
             def __init__(self):
                 self.__state = 0
@@ -1104,7 +1101,6 @@ order (MRO) for bases """
 
     def test_slots(self):
         # Testing __slots__...
-        global C, slots #1178
         class C0(object):
             __slots__ = []
         x = C0()
@@ -1307,7 +1303,6 @@ order (MRO) for bases """
 
     def test_slots_special(self):
         # Testing __dict__ and __weakref__ in __slots__...
-        global D, C, C2
         class D(object):
             __slots__ = ["__dict__"]
         a = D()
@@ -1465,7 +1460,6 @@ order (MRO) for bases """
         self.assertEqual(I(3)*I(2), 6)
 
         # Test comparison of classes with dynamic metaclasses
-        global dynamicmetaclass #1178
         class dynamicmetaclass(type):
             pass
         class someclass(metaclass=dynamicmetaclass):
@@ -1516,7 +1510,6 @@ order (MRO) for bases """
         else:
             self.fail("__slots__ = [1] should be illegal")
 
-        global M1, M2, A1, A2, B #1178
         class M1(type):
             pass
         class M2(type):
@@ -1712,11 +1705,10 @@ order (MRO) for bases """
         self.assertEqual(d.goo(1), (D, 1))
         self.assertEqual(d.foo(1), (d, 1))
         self.assertEqual(D.foo(d, 1), (d, 1))
-        # see skulpt issue 1178
-        # class E: # *not* subclassing from C
-        #     foo = C.foo
-        # self.assertEqual(E().foo.__func__, C.foo) # i.e., unbound
-        # self.assertTrue(repr(C.foo.__get__(C())).startswith("<bound method "))
+        class E: # *not* subclassing from C
+            foo = C.foo
+        self.assertEqual(E().foo.__func__, C.foo) # i.e., unbound
+        self.assertTrue(repr(C.foo.__get__(C())).startswith("<bound method "))
 
     def test_compattr(self):
         # Testing computed attributes...
@@ -1914,7 +1906,6 @@ order (MRO) for bases """
 
     def test_overloading(self):
         # Testing operator overloading...
-        global B, C
 
         class B(object):
             "Intermediate class because object doesn't have a __setattr__"
@@ -1964,7 +1955,6 @@ order (MRO) for bases """
 
     def test_methods(self):
         # Testing methods...
-        global C_methods, c1_methods #1178 moving this to global scope
         class C_methods(object):
             def __init__(self, x):
                 self.x = x
@@ -2070,15 +2060,10 @@ order (MRO) for bases """
             ("__round__", round, zero, set(), {}),
             ]
 
-        # Skulpt #1178 moved to global scope
-        global Checker, SpecialDescr, MyException, ErrDescr, X
-        global _self
         _self = self
         class Checker(object):
             def __init__(self, test, ok=set()):
                 self.test = test
-                global _ok
-                _ok = ok
             def __getattr__(self, attr, test=_self):
                 test.fail("__getattr__ called with {0}".format(attr))
             def __getattribute__(self, attr, test=_self):
@@ -2341,7 +2326,6 @@ order (MRO) for bases """
     #             p = property(_testcapi.test_with_docstring)
 
     def test_properties_plus(self):
-        global C, D, E, F
         class C(object):
             foo = property(doc="hello")
             @foo.getter
@@ -2586,7 +2570,6 @@ order (MRO) for bases """
 
     def test_supers(self):
         # Testing super...
-        global A, B, C, D, E, F # 1178
 
         class A(object):
             def meth(self, a):
@@ -3250,8 +3233,6 @@ order (MRO) for bases """
     def test_doc_descriptor(self):
         # Testing __doc__ descriptor...
         # SF bug 542984
-        # Skulpt BUG #1178 move this to global scope
-        global DocDescr
         class DocDescr(object):
             def __get__(self, object, otype):
                 if object:
@@ -3365,7 +3346,6 @@ order (MRO) for bases """
 
     def test_set_dict(self):
         # Testing __dict__ assignment...
-        global Base, Meta1, Meta2, D, E, C, Module1, Module2, Exception1, Exception2 #1178
         class C(object): pass
         a = C()
         a.__dict__ = {'b': 1}
@@ -4632,8 +4612,6 @@ order (MRO) for bases """
     def test_set_and_no_get(self):
         # See
         # http://mail.python.org/pipermail/python-dev/2010-January/095637.html
-        global Descr, X, Meta, descr
-        #moved to global scope see skulpt #1178
         class Descr(object):
 
             def __init__(self, name):
@@ -4663,8 +4641,6 @@ order (MRO) for bases """
     def test_getattr_hooks(self):
         # issue 4230
 
-        # moved to global scope # skulpt #1178
-        global getattr_descr, GetattrDescriptor
         class GetattrDescriptor(object):
             counter = 0
             def __get__(self, obj, objtype=None):
@@ -4982,7 +4958,6 @@ class DictProxyTests(unittest.TestCase):
 
     def test_dict_type_with_metaclass(self):
         # Testing type of __dict__ when metaclass set...
-        global M
         class B(object):
             pass
         class M(type):
