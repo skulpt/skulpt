@@ -1,28 +1,16 @@
 //@ts-check
 function $builtinmodule(name) {
-    const requiredImports = {};
-
     const {
         misceval: { chain: chainOrSuspend },
         importModule,
     } = Sk;
 
-    const importOrSuspend = (moduleName) => importModule(moduleName, false, true);
-
-    return chainOrSuspend(
-        importOrSuspend("sys"),
-        (sys) => {
-            requiredImports.sys = sys;
-            return importOrSuspend("math");
-        },
-        (math) => {
-            requiredImports.math = math;
-            return decimalImpl(requiredImports);
-        }
-    );
+    return chainOrSuspend(importModule("math", false, true), (math) => {
+        return decimalImpl({ math });
+    });
 }
 
-function decimalImpl(requiredModules) {
+function decimalImpl({ math }) {
     const {
         builtin: {
             bool: pyBool,
@@ -82,14 +70,12 @@ function decimalImpl(requiredModules) {
 
     // Helper for unimplemented methods
     const notImplementedYet = () => {
-        notImplementedYet();
+        throw new NotImplementedError("method not yet implemented in Skulpt");
     };
 
     const STR = Object.fromEntries(
         ["as_integer_ratio", "bit_length", "from_float", "0", "F"].map((x) => [x, new pyStr(x)])
     );
-
-    const { sys, math } = requiredModules;
 
     const _math = math.$d;
 
@@ -2009,7 +1995,12 @@ function decimalImpl(requiredModules) {
                 // Handle Rational-like objects (Fraction, etc.) - they have numerator and denominator
                 const numerator = other.tp$getattr ? other.tp$getattr(new pyStr("numerator")) : undefined;
                 const denominator = other.tp$getattr ? other.tp$getattr(new pyStr("denominator")) : undefined;
-                if (numerator !== undefined && denominator !== undefined && checkInt(numerator) && checkInt(denominator)) {
+                if (
+                    numerator !== undefined &&
+                    denominator !== undefined &&
+                    checkInt(numerator) &&
+                    checkInt(denominator)
+                ) {
                     // CPython approach: scale self by denominator and compare to numerator
                     // This avoids precision loss from division
                     // Compare: self vs num/den  =>  self * den vs num
