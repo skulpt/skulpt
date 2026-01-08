@@ -337,13 +337,30 @@ function getReParser() {
                 const startPos = this.tokenizer.pos;
                 this.tokenizer.get();
                 // Check if this could be a valid quantifier (has digits or comma)
+                // Note: Must check for null first - JavaScript's type coercion makes
+                // null >= "0" && null <= "9" evaluate to true!
                 const next = this.tokenizer.peek();
-                if (next >= "0" && next <= "9" || next === ",") {
-                    // This looks like a quantifier - reset and let it error
-                    this.tokenizer.pos = startPos;
-                    this.tokenizer.error("nothing to repeat");
+                if (next !== null && (next >= "0" && next <= "9" || next === ",")) {
+                    // Looks like it might be a quantifier - check if it's COMPLETE
+                    // (has closing }). If incomplete like {1 or {1,2 without },
+                    // Python treats { as literal.
+                    const savePos = this.tokenizer.pos;
+                    // Skip digits
+                    this.tokenizer.getwhile((c) => c >= "0" && c <= "9");
+                    // Check for comma and more digits
+                    if (this.tokenizer.peek() === ",") {
+                        this.tokenizer.get();
+                        this.tokenizer.getwhile((c) => c >= "0" && c <= "9");
+                    }
+                    // If we find }, this is a real quantifier with nothing to repeat
+                    if (this.tokenizer.peek() === "}") {
+                        this.tokenizer.pos = startPos;
+                        this.tokenizer.error("nothing to repeat");
+                    }
+                    // No closing } - treat { as literal, reset to after {
+                    this.tokenizer.pos = savePos;
                 }
-                // Not a valid quantifier start, treat { as literal
+                // Not a valid quantifier, treat { as literal
                 return new Literal(char);
             }
             if (char !== null && !"|)*+?".includes(char)) {
@@ -1221,7 +1238,6 @@ function $builtinmodule(name) {
     // Get parser from module-level getReParser() function
     const { parseAndConvert } = getReParser();
 
-    const quantifierErrors = /Incomplete quantifier|Lone quantifier/g;
     const _compiled_patterns = Object.create(null);
 
     function compile_pattern(pyPattern, pyFlag) {
@@ -1249,22 +1265,11 @@ function $builtinmodule(name) {
         }
 
         let regex;
-        let msg;
         try {
             regex = new RegExp(convertedPattern, jsFlags);
         } catch (e) {
-            if (quantifierErrors.test(e.message)) {
-                try {
-                    // try without the unicode flag since unicode mode is stricter
-                    regex = new RegExp(convertedPattern, jsFlags.replace("u", ""));
-                } catch (e) {
-                    msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
-                    throw new re.error(msg, pyPattern);
-                }
-            } else {
-                msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
-                throw new re.error(msg, pyPattern);
-            }
+            const msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
+            throw new re.error(msg, pyPattern);
         }
         const ret = new re.Pattern(regex, pyPattern, pyFlag);
         _compiled_patterns[cacheKey] = ret;

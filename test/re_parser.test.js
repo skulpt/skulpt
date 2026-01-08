@@ -236,6 +236,46 @@ function run(options = {}) {
             const result = parseAndConvert('a*?');
             expect(result.pattern).toBe('a*?');
         });
+
+        // Incomplete quantifiers should be treated as literal characters
+        // This matches Python's behavior where {, {1, {1,2 without closing } are literal
+        it('should treat { at end of pattern as literal', () => {
+            const result = parseAndConvert('a{');
+            expect(result.pattern).toBe('a\\{');
+        });
+
+        it('should treat {digit without closing } as literal', () => {
+            const result = parseAndConvert('a{1');
+            expect(result.pattern).toBe('a\\{1');
+        });
+
+        it('should treat {digit, without closing } as literal', () => {
+            const result = parseAndConvert('a{1,');
+            expect(result.pattern).toBe('a\\{1,');
+        });
+
+        it('should treat {digit,digit without closing } as literal', () => {
+            const result = parseAndConvert('a{1,2');
+            expect(result.pattern).toBe('a\\{1,2');
+        });
+
+        it('should treat {letters} as literal braces', () => {
+            const result = parseAndConvert('a{b}');
+            expect(result.pattern).toBe('a\\{b\\}');
+        });
+
+        it('should treat {} as literal braces', () => {
+            const result = parseAndConvert('a{}');
+            expect(result.pattern).toBe('a\\{\\}');
+        });
+
+        it('should error on complete quantifier with nothing to repeat', () => {
+            expect(() => parseAndConvert('{1,2}')).toThrow(/nothing to repeat/);
+        });
+
+        it('should error on {n} with nothing to repeat', () => {
+            expect(() => parseAndConvert('{1}')).toThrow(/nothing to repeat/);
+        });
     });
 
     // ============================================================================
