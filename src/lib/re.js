@@ -4,6 +4,21 @@
 // ========================================================================
 
 function getReParser() {
+    // Pre-compiled regex patterns for performance
+    const RE_CHAR_CLASS_ESCAPES = /[dDwWsS]/;
+    const RE_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
+    const RE_SPECIAL_CHARS_IN_CLASS = /[.*+?^${}()|[\]\\-]/;
+    const RE_HEX_DIGIT = /[0-9a-fA-F]/;
+    const RE_OCTAL_DIGIT = /[0-7]/;
+    const RE_INVALID_OCTAL = /[89]/;
+    const RE_ALPHA = /[a-zA-Z]/;
+    const RE_BACKREF_START = /[1-9]/;
+    const RE_DIGIT = /[0-9]/;
+    const RE_GROUP_NAME = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+    const RE_INLINE_FLAGS_START = /[aiLmsux-]/;
+    const RE_INLINE_FLAGS = /[aiLmsux]/;
+    const RE_INCOMPATIBLE_FLAGS = /[auL]/;
+
     // Access Unicode character classes from Sk.builtin.str._unicode (set in str.js)
     // Build Python-compatible character classes lazily
     let _unicodeClasses = null;
@@ -356,7 +371,7 @@ function getReParser() {
                         this.tokenizer.get();
                         const name = this.tokenizer.getUntil(">");
                         if (!this.tokenizer.match(">")) this.tokenizer.error("Unclosed group name");
-                        if (!name || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name))
+                        if (!name || !RE_GROUP_NAME.test(name))
                             this.tokenizer.error(`Invalid group name '${name}'`);
                         if (this.groupNames.has(name)) this.tokenizer.error(`Duplicate group name '${name}'`);
                         this.groupNames.add(name);
@@ -396,7 +411,7 @@ function getReParser() {
                         if (!this.tokenizer.match(")")) this.tokenizer.error("Unclosed lookbehind");
                         return new Lookaround(lookType === "=", false, subpattern);
                     } else this.tokenizer.error(`Unknown lookbehind type '(?<${lookType}'`);
-                } else if (/[aiLmsux-]/.test(next)) {
+                } else if (RE_INLINE_FLAGS_START.test(next)) {
                     // Parse inline flags with full validation
                     let onFlags = "",
                         offFlags = "";
@@ -409,25 +424,25 @@ function getReParser() {
                         if (!negNext || negNext === ":" || negNext === ")") {
                             this.tokenizer.error("missing flag");
                         }
-                        if (!/[aiLmsux]/.test(negNext)) {
+                        if (!RE_INLINE_FLAGS.test(negNext)) {
                             this.tokenizer.error("unknown flag");
                         }
-                        offFlags = this.tokenizer.getwhile((c) => /[aiLmsux]/.test(c));
+                        offFlags = this.tokenizer.getwhile((c) => RE_INLINE_FLAGS.test(c));
                         // After negative flags must be :
                         const afterOff = this.tokenizer.peek();
-                        if (afterOff && /[a-zA-Z]/.test(afterOff)) {
+                        if (afterOff && RE_ALPHA.test(afterOff)) {
                             this.tokenizer.error("unknown flag");
                         }
                         if (afterOff !== ":") {
                             this.tokenizer.error("missing :");
                         }
                         // Check for turning off a, u, L flags
-                        if (/[auL]/.test(offFlags)) {
+                        if (RE_INCOMPATIBLE_FLAGS.test(offFlags)) {
                             this.tokenizer.error("bad inline flags: cannot turn off flags 'a', 'u' and 'L'");
                         }
                     } else {
                         // Positive flags first
-                        onFlags = this.tokenizer.getwhile((c) => /[aiLmsux]/.test(c));
+                        onFlags = this.tokenizer.getwhile((c) => RE_INLINE_FLAGS.test(c));
 
                         // Check for incompatible flags
                         let auL = 0;
@@ -457,12 +472,12 @@ function getReParser() {
                             if (!negNext || negNext === ":" || negNext === ")") {
                                 this.tokenizer.error("missing flag");
                             }
-                            if (!/[aiLmsux]/.test(negNext)) {
+                            if (!RE_INLINE_FLAGS.test(negNext)) {
                                 this.tokenizer.error("unknown flag");
                             }
-                            offFlags = this.tokenizer.getwhile((c) => /[aiLmsux]/.test(c));
+                            offFlags = this.tokenizer.getwhile((c) => RE_INLINE_FLAGS.test(c));
                             const afterOff = this.tokenizer.peek();
-                            if (afterOff && /[a-zA-Z]/.test(afterOff)) {
+                            if (afterOff && RE_ALPHA.test(afterOff)) {
                                 this.tokenizer.error("unknown flag");
                             }
                             if (afterOff !== ":") {
@@ -475,10 +490,10 @@ function getReParser() {
                                 }
                             }
                             // Check for turning off a, u, L flags
-                            if (/[auL]/.test(offFlags)) {
+                            if (RE_INCOMPATIBLE_FLAGS.test(offFlags)) {
                                 this.tokenizer.error("bad inline flags: cannot turn off flags 'a', 'u' and 'L'");
                             }
-                        } else if (afterFlags && /[a-zA-Z]/.test(afterFlags)) {
+                        } else if (afterFlags && RE_ALPHA.test(afterFlags)) {
                             this.tokenizer.error("unknown flag");
                         } else {
                             this.tokenizer.error("missing -, : or )");
@@ -557,14 +572,14 @@ function getReParser() {
                 if (escapeMap[next] !== undefined) return { type: "literal", char: escapeMap[next] };
 
                 // Character class escapes
-                if (/[dDwWsS]/.test(next)) return { type: "escape", sequence: next };
+                if (RE_CHAR_CLASS_ESCAPES.test(next)) return { type: "escape", sequence: next };
 
                 // Unicode escape \uXXXX
                 if (next === "u") {
                     let hex = "";
                     for (let i = 0; i < 4; i++) {
                         const h = this.tokenizer.peek();
-                        if (h && /[0-9a-fA-F]/.test(h)) {
+                        if (h && RE_HEX_DIGIT.test(h)) {
                             hex += this.tokenizer.get();
                         } else break;
                     }
@@ -580,7 +595,7 @@ function getReParser() {
                     let hex = "";
                     for (let i = 0; i < 8; i++) {
                         const h = this.tokenizer.peek();
-                        if (h && /[0-9a-fA-F]/.test(h)) {
+                        if (h && RE_HEX_DIGIT.test(h)) {
                             hex += this.tokenizer.get();
                         } else break;
                     }
@@ -599,7 +614,7 @@ function getReParser() {
                     let hex = "";
                     for (let i = 0; i < 2; i++) {
                         const h = this.tokenizer.peek();
-                        if (h && /[0-9a-fA-F]/.test(h)) {
+                        if (h && RE_HEX_DIGIT.test(h)) {
                             hex += this.tokenizer.get();
                         } else break;
                     }
@@ -611,9 +626,9 @@ function getReParser() {
                 }
 
                 // Octal escapes \0-\377
-                if (/[0-7]/.test(next)) {
+                if (RE_OCTAL_DIGIT.test(next)) {
                     let octal = next;
-                    while (/[0-7]/.test(this.tokenizer.peek()) && octal.length < 3) {
+                    while (RE_OCTAL_DIGIT.test(this.tokenizer.peek()) && octal.length < 3) {
                         octal += this.tokenizer.get();
                     }
                     const value = parseInt(octal, 8);
@@ -624,15 +639,15 @@ function getReParser() {
                 }
 
                 // Backreference escapes \1-\9 are invalid in character classes
-                if (/[89]/.test(next)) {
+                if (RE_INVALID_OCTAL.test(next)) {
                     this.tokenizer.error(`bad escape \\${next}`, startPos - 1);
                 }
 
                 // Special metacharacters - escape them to match literally
-                if (/[.*+?^${}()|[\]\\-]/.test(next)) return { type: "literal", char: next, wasEscaped: true };
+                if (RE_SPECIAL_CHARS_IN_CLASS.test(next)) return { type: "literal", char: next, wasEscaped: true };
 
                 // Invalid alphabetic escapes - Python raises error for these in char classes
-                if (/[a-zA-Z]/.test(next)) {
+                if (RE_ALPHA.test(next)) {
                     this.tokenizer.error(`bad escape \\${next}`, startPos - 1);
                 }
 
@@ -655,9 +670,9 @@ function getReParser() {
             if (next === "B") return new Anchor("not_word_boundary");
 
             // Backreferences
-            if (/[1-9]/.test(next)) {
+            if (RE_BACKREF_START.test(next)) {
                 let num = next;
-                while (/[0-9]/.test(this.tokenizer.peek())) num += this.tokenizer.get();
+                while (RE_DIGIT.test(this.tokenizer.peek())) num += this.tokenizer.get();
                 const groupNum = parseInt(num, 10);
                 if (this.openGroupNumbers.has(groupNum)) {
                     this.tokenizer.error("cannot refer to an open group");
@@ -674,7 +689,7 @@ function getReParser() {
                 let hex = "";
                 for (let i = 0; i < 4; i++) {
                     const h = this.tokenizer.peek();
-                    if (h && /[0-9a-fA-F]/.test(h)) {
+                    if (h && RE_HEX_DIGIT.test(h)) {
                         hex += this.tokenizer.get();
                     } else break;
                 }
@@ -689,7 +704,7 @@ function getReParser() {
                 let hex = "";
                 for (let i = 0; i < 2; i++) {
                     const h = this.tokenizer.peek();
-                    if (h && /[0-9a-fA-F]/.test(h)) {
+                    if (h && RE_HEX_DIGIT.test(h)) {
                         hex += this.tokenizer.get();
                     } else break;
                 }
@@ -700,15 +715,15 @@ function getReParser() {
             }
 
             // Character class escapes and other escapes valid in both Python and JS
-            if (/[dDwWsS]/.test(next)) return new Escape(next);
+            if (RE_CHAR_CLASS_ESCAPES.test(next)) return new Escape(next);
 
             // Special metacharacters - escape them to match literally
             // These are: . * + ? ^ $ { } ( ) | [ ] \
-            if (/[.*+?^${}()|[\]\\]/.test(next)) return new Literal(next);
+            if (RE_SPECIAL_CHARS.test(next)) return new Literal(next);
 
             // Invalid alphabetic escapes - Python raises error for these
             // Valid escapes are: d D w W s S b B A Z n r t f v a 0 x u (already handled above)
-            if (/[a-zA-Z]/.test(next)) {
+            if (RE_ALPHA.test(next)) {
                 this.tokenizer.error(`bad escape \\${next}`);
             }
 
