@@ -205,6 +205,8 @@ function getReParser() {
             this.tokenizer = new Tokenizer(pattern);
             this.groupCount = 0;
             this.groupNames = new Set();
+            this.openGroups = new Set();       // open named groups
+            this.openGroupNumbers = new Set(); // open numbered groups
         }
 
         parse() {
@@ -286,6 +288,11 @@ function getReParser() {
             }
             this.tokenizer.get();
 
+            // {} without digits is not a valid quantifier - treat as literal
+            if (min === "" && !hasComma) {
+                this.tokenizer.pos = startPos;
+                return null;
+            }
             if (!hasComma) return { min: parseInt(min, 10), max: parseInt(min, 10) };
             if (min === "" && max !== "") return { min: 0, max: parseInt(max, 10) };
             if (min !== "" && max === "") return { min: parseInt(min, 10), max: null };
@@ -310,7 +317,21 @@ function getReParser() {
                 this.tokenizer.get();
                 return new Anchor("end");
             }
-            if (char !== null && !"|)*+?{".includes(char)) {
+            // Handle { specially - it's a literal only if not a valid quantifier
+            if (char === "{") {
+                const startPos = this.tokenizer.pos;
+                this.tokenizer.get();
+                // Check if this could be a valid quantifier (has digits or comma)
+                const next = this.tokenizer.peek();
+                if (next >= "0" && next <= "9" || next === ",") {
+                    // This looks like a quantifier - reset and let it error
+                    this.tokenizer.pos = startPos;
+                    this.tokenizer.error("nothing to repeat");
+                }
+                // Not a valid quantifier start, treat { as literal
+                return new Literal(char);
+            }
+            if (char !== null && !"|)*+?".includes(char)) {
                 this.tokenizer.get();
                 return new Literal(char);
             }
@@ -339,15 +360,21 @@ function getReParser() {
                             this.tokenizer.error(`Invalid group name '${name}'`);
                         if (this.groupNames.has(name)) this.tokenizer.error(`Duplicate group name '${name}'`);
                         this.groupNames.add(name);
+                        this.openGroups.add(name);
                         this.groupCount++;
+                        const groupNum = this.groupCount;
+                        this.openGroupNumbers.add(groupNum);
                         const subpattern = this.parseAlternation();
                         if (!this.tokenizer.match(")")) this.tokenizer.error("Unclosed group");
+                        this.openGroups.delete(name);
+                        this.openGroupNumbers.delete(groupNum);
                         return new Group(true, name, subpattern);
                     } else if (nextNext === "=") {
                         this.tokenizer.get();
                         const name = this.tokenizer.getUntil(")");
                         if (!this.tokenizer.match(")")) this.tokenizer.error("Unclosed backreference");
                         if (!this.groupNames.has(name)) this.tokenizer.error(`Unknown group name '${name}'`);
+                        if (this.openGroups.has(name)) this.tokenizer.error("cannot refer to an open group");
                         return new Backreference(name);
                     } else this.tokenizer.error(`Unknown group type '(?P${nextNext}'`);
                 } else if (next === "=") {
@@ -469,8 +496,11 @@ function getReParser() {
                 } else this.tokenizer.error(`Unknown group type '(?${next}'`);
             } else {
                 this.groupCount++;
+                const groupNum = this.groupCount;
+                this.openGroupNumbers.add(groupNum);
                 const subpattern = this.parseAlternation();
                 if (!this.tokenizer.match(")")) this.tokenizer.error("Unclosed group");
+                this.openGroupNumbers.delete(groupNum);
                 return new Group(true, null, subpattern);
             }
         }
@@ -628,7 +658,11 @@ function getReParser() {
             if (/[1-9]/.test(next)) {
                 let num = next;
                 while (/[0-9]/.test(this.tokenizer.peek())) num += this.tokenizer.get();
-                return new Backreference(parseInt(num, 10));
+                const groupNum = parseInt(num, 10);
+                if (this.openGroupNumbers.has(groupNum)) {
+                    this.tokenizer.error("cannot refer to an open group");
+                }
+                return new Backreference(groupNum);
             }
 
             // Simple escape sequences - convert to literal
@@ -771,16 +805,13 @@ function getReParser() {
             for (let i = 0; i < node.items.length; i++) {
                 const item = node.items[i];
                 if (item.type === "literal") {
-                    // In JS regex inside character classes:
-                    // - ] at position 0 (after optional ^) can be unescaped
-                    // - ] from explicit \] must be escaped
+                    // In JS regex inside character classes (unicode mode):
+                    // - ] must ALWAYS be escaped (unicode mode doesn't allow unescaped ])
                     // - \ must always be escaped
                     // - ^ must be escaped if at position 0 and not negated
                     // - - must be escaped if in the middle
                     if (item.char === "]") {
-                        // If it was escaped in the original or not at position 0, escape it
-                        if (item.wasEscaped || i > 0) result += "\\]";
-                        else result += "]";
+                        result += "\\]";
                     } else if (item.char === "\\") result += "\\\\";
                     else if (item.char === "^" && i === 0 && !node.negated) result += "\\^";
                     else if (item.char === "-" && i > 0 && i < node.items.length - 1) result += "\\-";
@@ -1855,27 +1886,82 @@ function $builtinmodule(name) {
                 return new pyTuple([new pyInt(idx), new pyInt(idx + [...group].length)]); // want char length
             },
             hasOwnProperty: Object.prototype.hasOwnProperty,
-            template$regex: /\\([1-9][0-9]|[1-9])|\\g<([1-9][0-9]*)>|\\g<([^\d\W]\w*)>|\\g<?.*>?/g,
+            // Matches: \g<num>, \g<name>, \0XX (octal), \1XX (3-digit octal), \1-\99 (group ref), \n, \t, etc.
+            // 3 valid octal digits (1-3 followed by two 0-7) = octal
+            // 2 digits (1-9 followed by 0-9) = group reference
+            // Note: \400+ is out of range octal (handled below)
+            template$regex: /\\g<([1-9][0-9]*)>|\\g<([^\d\W]\w*)>|\\g<?.*>?|\\(0[0-7]{0,2})|\\([1-3][0-7]{2})|\\([1-9][0-9]?)|\\(.)/g,
+            template$escapes: {
+                'n': '\n',
+                't': '\t',
+                'r': '\r',
+                'f': '\f',
+                'v': '\v',
+                'a': '\x07',
+                'b': '\b',
+                '\\': '\\'
+            },
             template$repl(template) {
-                return template.replace(this.template$regex, (match, idx, idxg, name, offset, orig) => {
+                // Capture groups: (idxg), (name), (octal0), (octal3), (groupRef), (escape)
+                // octal0 = \0, \00, \000-\077 (starts with 0)
+                // octal3 = \100-\377 (3-digit octal in range, all digits 0-7)
+                // groupRef = \1-\99 (1-2 digits, may contain 8/9)
+                return template.replace(this.template$regex, (match, idxg, name, octal0, octal3, groupRef, escape, offset, orig) => {
+                    // Handle octal escapes starting with 0: \0, \00, \000-\077
+                    if (octal0 !== undefined) {
+                        const octalVal = parseInt(octal0, 8);
+                        return String.fromCharCode(octalVal);
+                    }
+
+                    // Handle 3-digit octal: \100-\377
+                    if (octal3 !== undefined) {
+                        const octalVal = parseInt(octal3, 8);
+                        return String.fromCharCode(octalVal);
+                    }
+
+                    // Handle group references \1-\99
+                    if (groupRef !== undefined) {
+                        const num = parseInt(groupRef, 10);
+                        const ret = num < this.v.length ? this.v[num] || "" : undefined;
+                        if (ret === undefined) {
+                            throw new re.error(
+                                "invalid group reference " + num + " at position " + offset
+                            );
+                        }
+                        return ret;
+                    }
+
+                    // Handle character escapes like \n, \t, etc.
+                    if (escape !== undefined) {
+                        const replacement = this.template$escapes[escape];
+                        if (replacement !== undefined) {
+                            return replacement;
+                        }
+                        // Invalid escape
+                        throw new re.error("bad escape \\" + escape + " at position " + offset);
+                    }
+
+                    // Handle group references \g<num> and \g<name>
                     let ret;
-                    idx = idx || idxg;
-                    if (idx !== undefined) {
+                    if (idxg !== undefined) {
+                        const idx = parseInt(idxg, 10);
                         ret = idx < this.v.length ? this.v[idx] || "" : undefined;
-                    } else {
+                        if (ret === undefined) {
+                            throw new re.error(
+                                "invalid group reference " + idx + " at position " + (offset + 1)
+                            );
+                        }
+                        return ret;
+                    } else if (name !== undefined) {
+                        // Handle named groups \g<name>
                         if (this.v.groups && this.hasOwnProperty.call(this.v.groups, name)) {
                             ret = this.v.groups[name] || "";
+                            return ret;
                         }
+                        throw new IndexError("unknown group name '" + name + "'");
                     }
-                    if (ret === undefined) {
-                        if (name) {
-                            throw new IndexError("unknown group name '" + name + "'");
-                        }
-                        throw new re.error(
-                            "invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1)
-                        );
-                    }
-                    return ret;
+                    // Malformed \g<...> - this shouldn't happen with our regex, but just in case
+                    throw new re.error("bad escape " + match + " at position " + offset);
                 });
             },
         },

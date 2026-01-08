@@ -105,7 +105,7 @@ class ReTests(unittest.TestCase):
                          '9.3 -3 23x99y')
 
         self.assertEqual(re.sub('.', lambda m: r"\n", 'x'), '\\n')
-        # self.assertEqual(re.sub('.', r"\n", 'x'), '\n')
+        self.assertEqual(re.sub('.', r"\n", 'x'), '\n')
 
         s = r"\1\1"
         self.assertEqual(re.sub('(.)', s, 'x'), 'xx')
@@ -117,18 +117,14 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.sub('(?P<unk>x)', r'\g<unk>\g<unk>', 'xx'), 'xxxx')
         self.assertEqual(re.sub('(?P<unk>x)', r'\g<1>\g<1>', 'xx'), 'xxxx')
 
-        # @TODO escape characters break this
-        # self.assertEqual(re.sub('a', r'\t\n\v\r\f\a\b', 'a'), '\t\n\v\r\f\a\b')
+        self.assertEqual(re.sub('a', r'\t\n\v\r\f\a\b', 'a'), '\t\n\v\r\f\a\b')
         self.assertEqual(re.sub('a', '\t\n\v\r\f\b', 'a'), '\t\n\v\r\f\b')
-        self.assertEqual(re.sub('a', '\t\n\v\r\f\b', 'a'),
-                         (chr(9)+chr(10)+chr(11)+chr(13)+chr(12)+chr(8)))
-        # self.assertEqual(re.sub('a', '\t\n\v\r\f\a\b', 'a'),
-        #                  (chr(9)+chr(10)+chr(11)+chr(13)+chr(12)+chr(7)+chr(8)))
+        self.assertEqual(re.sub('a', '\t\n\v\r\f\a\b', 'a'), '\t\n\v\r\f\a\b')
 
-        # for c in 'cdehijklmopqsuwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ':
-        #     # with self.subTest(c):
-        #         with self.assertRaises(re.error):
-        #             self.assertEqual(re.sub('a', '\\' + c, 'a'), '\\' + c)
+        for c in 'cdehijklmopqsuwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ':
+            # with self.subTest(c):
+                with self.assertRaises(re.error):
+                    self.assertEqual(re.sub('a', '\\' + c, 'a'), '\\' + c)
 
         self.assertEqual(re.sub(r'^\s*', 'X', 'test'), 'Xtest')
 
@@ -136,23 +132,20 @@ class ReTests(unittest.TestCase):
         # fails for group followed by other escape
         self.assertEqual(re.sub(r'(?P<unk>x)', '\g<1>\g<1>\b', 'xx'),
                          'xx\bxx\b')
-        # skulpt - the raw string doesn't work here
-        # self.assertEqual(re.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
-        #                  'xx\bxx\b')
+        # skulpt now supports raw string escapes in replacement templates
+        self.assertEqual(re.sub(r'(?P<unk>x)', r'\g<1>\g<1>\b', 'xx'),
+                         'xx\bxx\b')
 
     def test_bug_449000(self):
-        pass
         # Test for sub() on escaped characters
-
-        # escaped characters like this don't really work!
-        # self.assertEqual(re.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
-        #                  'abc\ndef\n')
-        # self.assertEqual(re.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
-        #                  'abc\ndef\n')
-        # self.assertEqual(re.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
-        #                  'abc\ndef\n')
-        # self.assertEqual(re.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
-        #                  'abc\ndef\n')
+        self.assertEqual(re.sub(r'\r\n', r'\n', 'abc\r\ndef\r\n'),
+                         'abc\ndef\n')
+        self.assertEqual(re.sub('\r\n', r'\n', 'abc\r\ndef\r\n'),
+                         'abc\ndef\n')
+        self.assertEqual(re.sub(r'\r\n', '\n', 'abc\r\ndef\r\n'),
+                         'abc\ndef\n')
+        self.assertEqual(re.sub('\r\n', '\n', 'abc\r\ndef\r\n'),
+                         'abc\ndef\n')
 
     def test_bug_1661(self):
         # Verify that flags do not get silently ignored with compiled patterns
@@ -169,23 +162,23 @@ class ReTests(unittest.TestCase):
 
     def test_sub_template_numeric_escape(self):
         # bug 776311 and friends
-        # self.assertEqual(re.sub('x', r'\0', 'x'), '\0')
-        # self.assertEqual(re.sub('x', r'\000', 'x'), '\000')
-        # self.assertEqual(re.sub('x', r'\001', 'x'), '\001')
-        # self.assertEqual(re.sub('x', r'\008', 'x'), '\0' + '8')
-        # self.assertEqual(re.sub('x', r'\009', 'x'), '\0' + '9')
-        # self.assertEqual(re.sub('x', r'\111', 'x'), '\111')
-        # self.assertEqual(re.sub('x', r'\117', 'x'), '\117')
-        # self.assertEqual(re.sub('x', r'\377', 'x'), '\377')
+        self.assertEqual(re.sub('x', r'\0', 'x'), '\0')
+        # skulpt string literal doesn't parse multi-digit octal, use chr()
+        self.assertEqual(re.sub('x', r'\000', 'x'), chr(0))
+        self.assertEqual(re.sub('x', r'\001', 'x'), chr(1))
+        self.assertEqual(re.sub('x', r'\008', 'x'), '\0' + '8')
+        self.assertEqual(re.sub('x', r'\009', 'x'), '\0' + '9')
+        self.assertEqual(re.sub('x', r'\111', 'x'), chr(73))  # 'I'
+        self.assertEqual(re.sub('x', r'\117', 'x'), chr(79))  # 'O'
+        self.assertEqual(re.sub('x', r'\377', 'x'), chr(255))
 
-        # self.assertEqual(re.sub('x', r'\1111', 'x'), '\1111')
-        # self.assertEqual(re.sub('x', r'\1111', 'x'), '\111' + '1')
+        self.assertEqual(re.sub('x', r'\1111', 'x'), chr(73) + '1')
 
-        # self.assertEqual(re.sub('x', r'\00', 'x'), '\x00')
-        # self.assertEqual(re.sub('x', r'\07', 'x'), '\x07')
-        # self.assertEqual(re.sub('x', r'\08', 'x'), '\0' + '8')
-        # self.assertEqual(re.sub('x', r'\09', 'x'), '\0' + '9')
-        # self.assertEqual(re.sub('x', r'\0a', 'x'), '\0' + 'a')
+        self.assertEqual(re.sub('x', r'\00', 'x'), '\x00')
+        self.assertEqual(re.sub('x', r'\07', 'x'), '\x07')
+        self.assertEqual(re.sub('x', r'\08', 'x'), '\0' + '8')
+        self.assertEqual(re.sub('x', r'\09', 'x'), '\0' + '9')
+        self.assertEqual(re.sub('x', r'\0a', 'x'), '\0' + 'a')
 
         # self.checkTemplateError('x', r'\400', 'x',
         #                         r'octal escape value \400 outside of '
@@ -231,8 +224,8 @@ class ReTests(unittest.TestCase):
         self.checkPatternError(r'(?P<a>)(?P<a>)',
                                "redefinition of group name 'a' as group 2; "
                                "was group 1")
-        # self.checkPatternError(r'(?P<a>(?P=a))',
-        #                        "cannot refer to an open group", 10)
+        self.checkPatternError(r'(?P<a>(?P=a))',
+                               "cannot refer to an open group", 10)
         self.checkPatternError(r'(?Pxy)', 'unknown extension ?Px')
         self.checkPatternError(r'(?P<a>)(?P=a', 'missing ), unterminated name', 11)
         self.checkPatternError(r'(?P=', 'missing group name', 4)
@@ -583,7 +576,7 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.match(r'^(?:(a)|c)(\1)?$', 'c').groups(),
                          (None, None))
 
-        # self.checkPatternError(r'(abc\1)', 'cannot refer to an open group', 4)
+        self.checkPatternError(r'(abc\1)', 'cannot refer to an open group', 4)
 
     def test_groupdict(self):
         self.assertEqual(re.match('(?P<first>first) (?P<second>second)',
@@ -630,9 +623,9 @@ class ReTests(unittest.TestCase):
         self.assertTrue(re.match(r"^x{1,4}?$", "xxx"))
         self.assertTrue(re.match(r"^x{3,4}?$", "xxx"))
 
-        # javascript unicode mode won't compile these using \{ would work so no problem not supporting this
-        # self.assertIsNone(re.match(r"^x{}$", "xxx"))
-        # self.assertTrue(re.match(r"^x{}$", "x{}"))
+        # {} without digits is treated as literal braces
+        self.assertIsNone(re.match(r"^x{}$", "xxx"))
+        self.assertTrue(re.match(r"^x{}$", "x{}"))
 
         self.checkPatternError(r'x{2,1}',
                                'min repeat greater than max repeat', 2)
@@ -1557,8 +1550,8 @@ class ReTests(unittest.TestCase):
         for flags in (0, re.UNICODE):
             pat = re.compile('\xc0', flags | re.IGNORECASE)
             self.assertTrue(pat.match('\xe0'))
-            # pat = re.compile(r'\w', flags) # in javascript \w does not change in unicode mode
-            # self.assertTrue(pat.match('\xe0'))
+            pat = re.compile(r'\w', flags)
+            self.assertTrue(pat.match('\xe0'))
         # pat = re.compile('\xc0', re.ASCII | re.IGNORECASE)
         # self.assertIsNone(pat.match('\xe0'))
         # pat = re.compile('(?a)\xc0', re.IGNORECASE)

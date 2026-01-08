@@ -122,14 +122,22 @@ class TestRegexFromArrow(unittest.TestCase):
                 datetime(1990, 11, 25),
                 "[It happened on the month] MM [on the day] D [a long time ago]",
             ),
-            "It happened on the 11 on the day 25 a long time ago",
+            "It happened on the month 11 on the day 25 a long time ago",
         )
 
-        tz_zz_re = re.compile(r"([\+\-])(\d{2})(?:(\d{2}))?|Z")
+        # _TZ_Z_RE - no colon separator
+        tz_z_re = re.compile(r"([\+\-])(\d{2})(?:(\d{2}))?|Z")
+        self.assertEqual(tz_z_re.findall("-0700"), [("-", "07", "00")])
+        self.assertEqual(tz_z_re.findall("+07"), [("+", "07", "")])
+        self.assertIsNotNone(tz_z_re.search("15/01/2019T04:05:06.789120Z"))
+        self.assertIsNone(tz_z_re.search("15/01/2019T04:05:06.789120"))
+
+        # _TZ_ZZ_RE - with colon separator
+        tz_zz_re = re.compile(r"([\+\-])(\d{2})(?:\:(\d{2}))?|Z")
         self.assertEqual(tz_zz_re.findall("-07:00"), [("-", "07", "00")])
         self.assertEqual(tz_zz_re.findall("+07"), [("+", "07", "")])
         self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120Z"))
-        self.assertIsNotNone(tz_zz_re.search("15/01/2019T04:05:06.789120"))
+        self.assertIsNone(tz_zz_re.search("15/01/2019T04:05:06.789120"))
 
 
         time_re = re.compile(r"^(\d{2})(?:\:?(\d{2}))?(?:\:?(\d{2}))?(?:([\.\,])(\d+))?$")
@@ -148,3 +156,59 @@ class TestRegexFromArrow(unittest.TestCase):
 
         # shouldn't fail
         re.compile("(?=[\,\.\;\:\?\!\"\'\`\[\]\{\}\(\)\<\>]?(?!\S))")
+
+
+class TestUnicodeWordBoundaries(unittest.TestCase):
+    """
+    Tests for Unicode word boundary handling.
+
+    Regression tests for: https://anvil.works/forum/t/regex-is-stripping-out-word-final-and-word-initial-accented-characters-as-though-they-are-non-word/20197
+
+    The issue was that \W incorrectly treated accented characters (ú, ó, ñ, etc.)
+    as non-word characters, causing them to be stripped from word boundaries.
+    """
+
+    def test_word_class_matches_accented_characters(self):
+        # \w should match Unicode word characters including accented letters
+        self.assertTrue(re.match(r'\w', 'ú'))
+        self.assertTrue(re.match(r'\w', 'ñ'))
+        self.assertTrue(re.match(r'\w', 'ó'))
+        self.assertTrue(re.match(r'\w', 'à'))
+        self.assertTrue(re.match(r'\w', 'é'))
+        self.assertTrue(re.match(r'\w', 'ç'))
+        self.assertTrue(re.match(r'\w', 'ü'))
+        self.assertTrue(re.match(r'\w', 'ø'))
+
+    def test_non_word_class_does_not_match_accented_characters(self):
+        # \W should NOT match Unicode word characters
+        self.assertIsNone(re.match(r'\W', 'ú'))
+        self.assertIsNone(re.match(r'\W', 'ñ'))
+        self.assertIsNone(re.match(r'\W', 'ó'))
+        self.assertIsNone(re.match(r'\W', 'à'))
+
+    def test_strip_non_word_preserves_accented_characters(self):
+        # Stripping non-word characters from boundaries should preserve accented letters
+        # This was the original bug: "últimas" became "ltimas"
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', 'últimas'), 'últimas')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', 'vivió'), 'vivió')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', 'niño'), 'niño')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', 'café'), 'café')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', 'naïve'), 'naïve')
+
+    def test_strip_non_word_still_removes_punctuation(self):
+        # Should still strip actual non-word characters
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', '...hello...'), 'hello')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', '¡hola!'), 'hola')
+        self.assertEqual(re.sub(r'^\W+|\W+$', '', '"quoted"'), 'quoted')
+
+    def test_findall_word_characters_with_accents(self):
+        # \w+ should capture full words including accented characters
+        # Note: \b word boundary doesn't work with Unicode in JavaScript,
+        # so we use space-based splitting instead
+        self.assertEqual(re.findall(r'\w+', 'café latte'), ['café', 'latte'])
+        self.assertEqual(re.findall(r'\w+', 'niño pequeño'), ['niño', 'pequeño'])
+        self.assertEqual(re.findall(r'\w+', 'últimas palabras'), ['últimas', 'palabras'])
+
+
+if __name__ == "__main__":
+    unittest.main()

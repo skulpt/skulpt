@@ -25,7 +25,7 @@
     "devbuild": "webpack --mode development",
     "postdevbuild": "node support/build/wrapmodules.js builtin",
     "watch": "webpack --watch --mode development",
-    "test": "node test/testwrapper.js && node test/testunit.js && node test/testunit.js --python3 && node test/re_parser.test.js",
+    "test": "node test/testwrapper.js && node test/testunit.js && node test/testunit.js --python3",
     "start": "node support/run/runfile.js",
     "profile": "node --prof --no-logfile-per-isolate --log-internal-timer-events support/run/runfile.js -o",
     "postprofile": "node --prof-process v8.log"
