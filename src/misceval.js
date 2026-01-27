@@ -1324,10 +1324,11 @@ function _isIE() {
  */
 Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     const _name = new Sk.builtin.str(name);
-    const _bases = update_bases(bases); // todo this function should go through the bases and check for __mro_entries__
-
     kws = kws || [];
     bases = bases || [];
+    const _bases = update_bases(bases);
+    // Use the updated bases (with __mro_entries__ resolved) for metaclass calculation
+    bases = _bases.v;
     let meta;
     let is_class = true;
     const meta_idx = kws.indexOf("metaclass");
@@ -1408,8 +1409,28 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 
 function update_bases(bases) {
-    /** @todo this function should go through the bases and check for __mro_entries__ */
-    return new Sk.builtin.tuple(bases);
+    // Check for __mro_entries__ on each base and replace if found (PEP 560)
+    let updated = false;
+    const new_bases = [];
+    for (let i = 0; i < bases.length; i++) {
+        const base = bases[i];
+        if (Sk.builtin.checkClass(base)) {
+            new_bases.push(base);
+            continue;
+        }
+        const mro_entries = Sk.abstr.lookupSpecial(base, Sk.builtin.str.$mro_entries);
+        if (mro_entries !== undefined) {
+            const entries = Sk.misceval.callsimArray(mro_entries, [new Sk.builtin.tuple(bases)]);
+            if (!(entries instanceof Sk.builtin.tuple)) {
+                throw new Sk.builtin.TypeError("__mro_entries__ must return a tuple");
+            }
+            new_bases.push(...entries.v);
+            updated = true;
+        } else {
+            new_bases.push(base);
+        }
+    }
+    return new Sk.builtin.tuple(new_bases);
 }
 
 function calculate_meta(meta, bases) {
