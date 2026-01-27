@@ -1124,6 +1124,109 @@ function collections_mod(collections) {
     const comma = /,/g;
     const spaces = /\s+/;
 
+    // Internal helper to build a namedtuple class - used by collections.namedtuple and typing.NamedTuple
+    function _make_namedtuple_class(js_name, field_names, flds, dflts, module, annotations) {
+        const _field_names = new Sk.builtin.tuple(field_names);
+
+        // create array of default values for _field_defaults
+        const dflts_dict = [];
+        if (dflts && dflts.length > 0) {
+            for (let j = 0, i = field_names.length - dflts.length; i < field_names.length; j++, i++) {
+                dflts_dict.push(field_names[i]);
+                dflts_dict.push(dflts[j]);
+            }
+        }
+        const _field_defaults = new Sk.builtin.dict(dflts_dict);
+
+        // _make
+        function _make(_cls, iterable) {
+            return _cls.prototype.tp$new(Sk.misceval.arrayFromIterable(iterable));
+        }
+        _make.co_varnames = ["_cls", "iterable"];
+
+        // _asdict
+        function _asdict(self) {
+            const asdict = [];
+            for (let i = 0; i < self._fields.v.length; i++) {
+                asdict.push(self._fields.v[i]);
+                asdict.push(self.v[i]);
+            }
+            return new Sk.builtin.dict(asdict);
+        }
+        _asdict.co_varnames = ["self"];
+
+        // _replace
+        function _replace(kwargs, _self) {
+            kwargs = new Sk.builtin.dict(kwargs);
+            const pop = kwargs.tp$getattr(new Sk.builtin.str("pop"));
+            const _make = Sk.abstr.gattr(_self, new Sk.builtin.str("_make"));
+            const call = Sk.misceval.callsimArray;
+            const res = call(_make, [call(Sk.builtin.map_, [pop, _field_names, _self])]);
+            if (kwargs.sq$length()) {
+                const keys = kwargs.sk$asarray();
+                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + keys.map((x) => "'" + x.$jsstr() + "'") + "]");
+            }
+            return res;
+        }
+        _replace.co_kwargs = 1;
+        _replace.co_varnames = ["_self"];
+
+        // create property getters for each field
+        const getters = {};
+        for (let i = 0; i < flds.length; i++) {
+            getters[field_names[i].$mangled] = new Sk.builtin.property(
+                new collections._itemgetter([new Sk.builtin.int_(i)]),
+                undefined,
+                undefined,
+                new Sk.builtin.str("Alias for field number " + i)
+            );
+        }
+
+        // build namedtuple class
+        const proto = Object.assign(
+            {
+                __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
+                __slots__: new Sk.builtin.tuple(),
+                _fields: _field_names,
+                _field_defaults: _field_defaults,
+                _make: new Sk.builtin.classmethod(new Sk.builtin.func(_make)),
+                _asdict: new Sk.builtin.func(_asdict),
+                _replace: new Sk.builtin.func(_replace),
+            },
+            getters
+        );
+
+        // Add __annotations__ if provided
+        if (annotations) {
+            proto.__annotations__ = annotations;
+        }
+
+        return Sk.abstr.buildNativeClass(js_name, {
+            constructor: function NamedTuple() {},
+            base: Sk.builtin.tuple,
+            slots: {
+                tp$doc: js_name + "(" + flds.join(", ") + ")",
+                tp$new(args, kwargs) {
+                    args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
+                    const named_tuple_instance = new this.constructor();
+                    Sk.builtin.tuple.call(named_tuple_instance, args);
+                    return named_tuple_instance;
+                },
+                $r() {
+                    const bits = this.v.map((x, i) => flds[i] + "=" + Sk.misceval.objectRepr(x));
+                    return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + bits.join(", ") + ")");
+                },
+            },
+            flags: {
+                sk$klass: true, // tell skulpt we can be treated like a regular klass for tp$setatttr
+            },
+            proto: proto,
+        });
+    }
+
+    // Export for use by typing module
+    collections._make_namedtuple_class = _make_namedtuple_class;
+
     function namedtuple(name, fields, rename, defaults, module) {
         name = name.tp$str();
         if (Sk.misceval.isTrue(Sk.misceval.callsimArray(collections._iskeyword, [name]))) {
@@ -1183,105 +1286,17 @@ function collections_mod(collections) {
                 seen.add(flds[i]);
             }
         }
-        const _field_names = new Sk.builtin.tuple(field_names);
-
-        // create array of default values
-        const dflts_dict = [];
+        // Process defaults
         let dflts = [];
         if (!Sk.builtin.checkNone(defaults)) {
             dflts = Sk.misceval.arrayFromIterable(defaults);
             if (dflts.length > flds.length) {
                 throw new Sk.builtin.TypeError("Got more default values than field names");
             }
-            for (let j = 0, i = field_names.length - dflts.length; i < field_names.length; j++, i++) {
-                dflts_dict.push(field_names[i]);
-                dflts_dict.push(dflts[j]);
-            }
-        }
-        // _field_defaults
-        const _field_defaults = new Sk.builtin.dict(dflts_dict);
-
-        // _make
-        function _make(_cls, iterable) {
-            return _cls.prototype.tp$new(Sk.misceval.arrayFromIterable(iterable));
-        }
-        _make.co_varnames = ["_cls", "iterable"];
-
-        // _asdict
-        function _asdict(self) {
-            const asdict = [];
-            for (let i = 0; i < self._fields.v.length; i++) {
-                asdict.push(self._fields.v[i]);
-                asdict.push(self.v[i]);
-            }
-            return new Sk.builtin.dict(asdict);
-        }
-        _asdict.co_varnames = ["self"];
-
-        // _replace
-        function _replace(kwargs, _self) {
-            // this is the call signature from skulpt kwargs is a list of pyObjects
-            kwargs = new Sk.builtin.dict(kwargs);
-            // this is the way Cpython does it.
-            const pop = kwargs.tp$getattr(new Sk.builtin.str("pop"));
-            // in the unlikely event that someone calls _replace with _self that isn't a named tuple
-            // throw an error if _make doesn't exist
-            const _make = Sk.abstr.gattr(_self, new Sk.builtin.str("_make"));
-            const call = Sk.misceval.callsimArray;
-            const res = call(_make, [call(Sk.builtin.map_, [pop, _field_names, _self])]);
-            if (kwargs.sq$length()) {
-                const keys = kwargs.sk$asarray();
-                throw new Sk.builtin.ValueError("Got unexpectd field names: [" + keys.map((x) => "'" + x.$jsstr() + "'") + "]");
-            }
-            return res;
-        }
-        _replace.co_kwargs = 1;
-        _replace.co_varnames = ["_self"];
-
-        // create property getters for each field
-        const getters = {};
-        for (let i = 0; i < flds.length; i++) {
-            getters[field_names[i].$mangled] = new Sk.builtin.property(
-                new collections._itemgetter([new Sk.builtin.int_(i)]),
-                undefined,
-                undefined,
-                new Sk.builtin.str("Alias for field number " + i)
-            );
         }
 
-        // build namedtuple class
-        return Sk.abstr.buildNativeClass(js_name, {
-            constructor: function NamedTuple() {},
-            base: Sk.builtin.tuple,
-            slots: {
-                tp$doc: js_name + "(" + flds.join(", ") + ")",
-                tp$new(args, kwargs) {
-                    args = Sk.abstr.copyKeywordsToNamedArgs("__new__", flds, args, kwargs, dflts);
-                    const named_tuple_instance = new this.constructor();
-                    Sk.builtin.tuple.call(named_tuple_instance, args);
-                    return named_tuple_instance;
-                },
-                $r() {
-                    const bits = this.v.map((x, i) => flds[i] + "=" + Sk.misceval.objectRepr(x));
-                    return new Sk.builtin.str(Sk.abstr.typeName(this) + "(" + bits.join(", ") + ")");
-                },
-            },
-            flags: {
-                sk$klass: true, // tell skulpt we can be treated like a regular klass for tp$setatttr
-            },
-            proto: Object.assign(
-                {
-                    __module__: Sk.builtin.checkNone(module) ? Sk.globals["__name__"] : module,
-                    __slots__: new Sk.builtin.tuple(),
-                    _fields: _field_names,
-                    _field_defaults: _field_defaults,
-                    _make: new Sk.builtin.classmethod(new Sk.builtin.func(_make)),
-                    _asdict: new Sk.builtin.func(_asdict),
-                    _replace: new Sk.builtin.func(_replace),
-                },
-                getters
-            ),
-        });
+        // Use the shared helper function
+        return _make_namedtuple_class(js_name, field_names, flds, dflts, module);
     }
 
     namedtuple.co_argcount = 2;
