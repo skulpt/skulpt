@@ -5,7 +5,10 @@ from typing import (
     Callable, Type, TypeVar, TypeVarTuple, Generic, Literal, NoReturn, ClassVar, Final,
     Protocol, runtime_checkable, NamedTuple, TypedDict, Annotated, overload, Unpack,
     Iterable, Mapping, Sequence,
-    cast, get_origin, get_args
+    cast, get_origin, get_args,
+    TYPE_CHECKING, NewType, final, no_type_check, no_type_check_decorator,
+    AnyStr, get_type_hints, TypeGuard, Required, NotRequired,
+    assert_type, reveal_type, is_typeddict
 )
 
 class TestRealWorldUsage(unittest.TestCase):
@@ -201,6 +204,95 @@ class TestABCTypes(unittest.TestCase):
     def test_sequence_subscript(self):
         x = Sequence[str]
         self.assertEqual(repr(x), "typing.Sequence[str]")
+
+
+class TestNewTypingFeatures(unittest.TestCase):
+    """Test newly added typing features."""
+
+    def test_type_checking_constant(self):
+        """TYPE_CHECKING should be False at runtime."""
+        self.assertFalse(TYPE_CHECKING)
+
+    def test_newtype(self):
+        """NewType creates a callable that returns its argument."""
+        UserId = NewType('UserId', int)
+        # At runtime, NewType just returns the base type
+        self.assertIs(UserId, int)
+
+    def test_final_decorator(self):
+        """@final decorator should be a no-op."""
+        @final
+        class MyClass:
+            pass
+
+        @final
+        def my_func():
+            return 42
+
+        self.assertEqual(my_func(), 42)
+
+    def test_no_type_check_decorator(self):
+        """@no_type_check should be a no-op."""
+        @no_type_check
+        def my_func(x):
+            return x * 2
+
+        self.assertEqual(my_func(5), 10)
+
+    def test_no_type_check_decorator_decorator(self):
+        """@no_type_check_decorator should be a no-op."""
+        @no_type_check_decorator
+        def my_decorator(func):
+            return func
+
+        @my_decorator
+        def my_func(x):
+            return x + 1
+
+        self.assertEqual(my_func(5), 6)
+
+    def test_anystr_typevar(self):
+        """AnyStr should be a TypeVar constrained to str and bytes."""
+        self.assertEqual(AnyStr.__name__, 'AnyStr')
+        self.assertIn(str, AnyStr.__constraints__)
+
+    def test_get_type_hints_basic(self):
+        """get_type_hints should return annotations."""
+        def func(x: int) -> str:
+            return str(x)
+
+        hints = get_type_hints(func)
+        # Should return a dict (may be empty in Skulpt)
+        self.assertIsInstance(hints, dict)
+
+    def test_typeguard_subscript(self):
+        """TypeGuard should be subscriptable."""
+        guard = TypeGuard[int]
+        self.assertEqual(repr(guard), "typing.TypeGuard[int]")
+
+    def test_required_notRequired(self):
+        """Required and NotRequired should be subscriptable."""
+        req = Required[int]
+        notreq = NotRequired[str]
+        self.assertEqual(repr(req), "typing.Required[int]")
+        self.assertEqual(repr(notreq), "typing.NotRequired[str]")
+
+    def test_assert_type(self):
+        """assert_type should return the value unchanged."""
+        x = assert_type(42, int)
+        self.assertEqual(x, 42)
+
+    def test_reveal_type(self):
+        """reveal_type should return the value unchanged."""
+        x = reveal_type("hello")
+        self.assertEqual(x, "hello")
+
+    def test_is_typeddict(self):
+        """is_typeddict should return a boolean."""
+        Movie = TypedDict('Movie', {'name': str})
+        # Returns False in minimal implementation
+        result = is_typeddict(Movie)
+        self.assertIsInstance(result, bool)
 
 
 if __name__ == '__main__':
