@@ -858,6 +858,33 @@ function $builtinmodule() {
     typing.Mapping = makeABC("Mapping");
     typing.MutableMapping = makeABC("MutableMapping");
 
+    // ==================== TYPE_CHECKING constant ====================
+    // Always False at runtime - only True during static type checking
+    typing.TYPE_CHECKING = pyFalse;
+
+    // ==================== AnyStr TypeVar ====================
+    // TypeVar constrained to str and bytes
+    typing.AnyStr = new TypeVar("AnyStr", new pyTuple([pyStr, Sk.builtin.bytes]), pyNone, false, false);
+
+    // ==================== TypeGuard ====================
+    typing.TypeGuard = new _SpecialForm(
+        "TypeGuard",
+        "Special form for type narrowing.",
+        (item) => new _GenericAlias(typing.TypeGuard, item)
+    );
+
+    // ==================== Required / NotRequired ====================
+    typing.Required = new _SpecialForm(
+        "Required",
+        "Mark TypedDict key as required.",
+        (item) => new _GenericAlias(typing.Required, item)
+    );
+    typing.NotRequired = new _SpecialForm(
+        "NotRequired",
+        "Mark TypedDict key as not required.",
+        (item) => new _GenericAlias(typing.NotRequired, item)
+    );
+
     // ==================== Helper Functions ====================
 
     setUpModuleMethods("typing", typing, {
@@ -940,6 +967,80 @@ function $builtinmodule() {
             $flags: { OneArg: true },
             $doc: "Decorator to indicate that a method is intended to override a method in a base class.",
         },
+        NewType: {
+            $meth(name, tp) {
+                // Returns the type unchanged at runtime
+                return tp;
+            },
+            $flags: { MinArgs: 2, MaxArgs: 2 },
+            $doc: "Create a new type. At runtime, returns the second argument unchanged.",
+        },
+        final_$rw$: {
+            $meth(func) {
+                // No-op decorator
+                return func;
+            },
+            $flags: { OneArg: true },
+            $doc: "Decorator to indicate final methods and final classes.",
+        },
+        no_type_check: {
+            $meth(func) {
+                // No-op decorator
+                return func;
+            },
+            $flags: { OneArg: true },
+            $doc: "Decorator to indicate that annotations are not type hints.",
+        },
+        no_type_check_decorator: {
+            $meth(func) {
+                // No-op decorator
+                return func;
+            },
+            $flags: { OneArg: true },
+            $doc: "Decorator to give another decorator the @no_type_check effect.",
+        },
+        get_type_hints: {
+            $meth(obj, globalns, localns) {
+                const annotations = lookupSpecial(obj, new pyStr("__annotations__"));
+                if (annotations !== undefined) {
+                    return annotations;
+                }
+                return new pyDict();
+            },
+            $flags: { MinArgs: 1, MaxArgs: 3 },
+            $doc: "Return type hints for an object.",
+        },
+        assert_never: {
+            $meth(arg) {
+                throw new pyTypeError("Expected code to be unreachable");
+            },
+            $flags: { OneArg: true },
+            $doc: "Statically assert that a line of code is unreachable.",
+        },
+        assert_type: {
+            $meth(val, typ) {
+                // Returns the value unchanged at runtime
+                return val;
+            },
+            $flags: { MinArgs: 2, MaxArgs: 2 },
+            $doc: "Assert (to the type checker) that the value is of the given type.",
+        },
+        reveal_type: {
+            $meth(obj) {
+                // Just return the object at runtime
+                return obj;
+            },
+            $flags: { OneArg: true },
+            $doc: "Reveal the inferred type of a value.",
+        },
+        is_typeddict: {
+            $meth(tp) {
+                // Minimal check - real implementation would be more thorough
+                return pyFalse;
+            },
+            $flags: { OneArg: true },
+            $doc: "Check if a class is a TypedDict.",
+        },
     });
 
     // ==================== Module metadata ====================
@@ -993,6 +1094,20 @@ function $builtinmodule() {
             "cast",
             "get_origin",
             "get_args",
+            "TYPE_CHECKING",
+            "NewType",
+            "final",
+            "no_type_check",
+            "no_type_check_decorator",
+            "AnyStr",
+            "get_type_hints",
+            "TypeGuard",
+            "Required",
+            "NotRequired",
+            "assert_never",
+            "assert_type",
+            "reveal_type",
+            "is_typeddict",
         ].map((x) => new pyStr(x)),
     );
 
