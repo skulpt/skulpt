@@ -48,6 +48,9 @@ class InitVar:
     def __repr__(self):
         return "dataclasses.InitVar[%r]" % (self.type,)
 
+    def __class_getitem__(cls, typ):
+        return cls(typ)
+
 
 def _unsupported(feature):
     raise NotImplementedError(feature + " is not supported in skulpt.dataclasses")
@@ -63,6 +66,16 @@ def _is_classvar(typ):
     if typ_name == "ClassVar":
         return True
     return "ClassVar" in repr(typ)
+
+
+def _is_initvar(typ):
+    if typ is InitVar:
+        return True
+    if isinstance(typ, InitVar):
+        return True
+    if isinstance(typ, str):
+        return "InitVar" in typ
+    return False
 
 
 class _DataclassParams:
@@ -196,6 +209,7 @@ def field(
 
 _FIELDS = "__dataclass_fields__"
 _PARAMS = "__dataclass_params__"
+_INITVARS = "__dataclass_initvars__"
 
 
 def _is_dataclass_instance(obj):
@@ -212,6 +226,16 @@ def _field_is_kw_only(f, default_kw_only):
     return bool(f.kw_only)
 
 
+def _value_from_default(default, default_factory, name, kwonly):
+    if default is not MISSING:
+        return default
+    if default_factory is not MISSING:
+        return default_factory()
+    if kwonly:
+        raise TypeError("missing required keyword-only argument: '%s'" % (name,))
+    raise TypeError("missing required argument: '%s'" % (name,))
+
+
 def _iter_fields(cls):
     all_fields = {}
     for base in reversed(cls.__mro__[1:]):
@@ -222,82 +246,151 @@ def _iter_fields(cls):
     return all_fields
 
 
-def _process_own_fields(cls, all_fields):
+def _process_own_fields(cls, all_fields, default_kw_only):
     annotations = getattr(cls, "__annotations__", {})
     class_dict = cls.__dict__
+    initvars = []
+    own_pos_entries = []
+    own_kw_entries = []
+    own_field_names = set()
+    seen_kw_only = False
     for name, typ in annotations.items():
         if typ is KW_ONLY or typ == "KW_ONLY":
-            _unsupported("KW_ONLY sentinel")
-        if typ is InitVar or isinstance(typ, InitVar):
-            _unsupported("InitVar")
+            if seen_kw_only:
+                raise TypeError("KW_ONLY can only be used once per class")
+            seen_kw_only = True
+            default_kw_only = True
+            continue
+        if _is_initvar(typ):
+            candidate = class_dict.get(name, MISSING)
+            if isinstance(candidate, Field):
+                if not candidate.init:
+                    _unsupported("InitVar with init=False")
+                initvars.append(
+                    {
+                        "name": name,
+                        "default": candidate.default,
+                        "default_factory": candidate.default_factory,
+                        "kw_only": _field_is_kw_only(candidate, default_kw_only),
+                    }
+                )
+                if initvars[-1]["kw_only"]:
+                    own_kw_entries.append(("initvar", initvars[-1]))
+                else:
+                    own_pos_entries.append(("initvar", initvars[-1]))
+                if candidate.default is not MISSING:
+                    setattr(cls, name, candidate.default)
+                elif name in class_dict:
+                    delattr(cls, name)
+            else:
+                initvars.append(
+                    {
+                        "name": name,
+                        "default": candidate,
+                        "default_factory": MISSING,
+                        "kw_only": default_kw_only,
+                    }
+                )
+                if initvars[-1]["kw_only"]:
+                    own_kw_entries.append(("initvar", initvars[-1]))
+                else:
+                    own_pos_entries.append(("initvar", initvars[-1]))
+            continue
         if _is_classvar(typ):
             continue
-        if isinstance(typ, str):
-            if "InitVar" in typ:
-                _unsupported("InitVar")
 
         candidate = class_dict.get(name, MISSING)
         if isinstance(candidate, Field):
             f = candidate
             f.name = name
             f.type = typ
+            if f.kw_only is MISSING:
+                f.kw_only = default_kw_only
             if f.default is not MISSING:
                 setattr(cls, name, f.default)
             elif name in class_dict:
                 delattr(cls, name)
         else:
-            default = candidate
-            f = Field(default=default, name=name, type=typ)
+            f = Field(default=candidate, name=name, type=typ, kw_only=default_kw_only)
         all_fields[name] = f
+        own_field_names.add(name)
+        if f.init:
+            if _field_is_kw_only(f, default_kw_only):
+                own_kw_entries.append(("field", name))
+            else:
+                own_pos_entries.append(("field", name))
+    return initvars, own_pos_entries, own_kw_entries, own_field_names
 
 
-def _build_init(cls, pos_fields_in_init, kwonly_fields_in_init, frozen):
+def _build_init(cls, pos_entries, kwonly_entries, frozen):
     def __init__(self, *args, **kwargs):
-        if len(args) > len(pos_fields_in_init):
+        if len(args) > len(pos_entries):
             raise TypeError(
                 "__init__() takes at most %d positional arguments (%d given)"
-                % (len(pos_fields_in_init), len(args))
+                % (len(pos_entries), len(args))
             )
 
         seen = {}
+        initvar_seen = {}
 
         for idx, value in enumerate(args):
-            fname = pos_fields_in_init[idx].name
-            seen[fname] = value
-
-        for f in pos_fields_in_init[len(args):]:
-            if f.name in kwargs:
-                seen[f.name] = kwargs.pop(f.name)
-            elif f.default is not MISSING:
-                seen[f.name] = f.default
-            elif f.default_factory is not MISSING:
-                seen[f.name] = f.default_factory()
+            kind, item = pos_entries[idx]
+            if kind == "field":
+                seen[item.name] = value
             else:
-                raise TypeError("missing required argument: '%s'" % (f.name,))
+                initvar_seen[item["name"]] = value
 
-        for f in kwonly_fields_in_init:
-            if f.name in kwargs:
-                seen[f.name] = kwargs.pop(f.name)
-            elif f.default is not MISSING:
-                seen[f.name] = f.default
-            elif f.default_factory is not MISSING:
-                seen[f.name] = f.default_factory()
+        for kind, item in pos_entries[len(args):]:
+            if kind == "field":
+                if item.name in kwargs:
+                    seen[item.name] = kwargs.pop(item.name)
+                else:
+                    seen[item.name] = _value_from_default(
+                        item.default, item.default_factory, item.name, False
+                    )
             else:
-                raise TypeError("missing required keyword-only argument: '%s'" % (f.name,))
+                if item["name"] in kwargs:
+                    initvar_seen[item["name"]] = kwargs.pop(item["name"])
+                else:
+                    initvar_seen[item["name"]] = _value_from_default(
+                        item["default"], item["default_factory"], item["name"], False
+                    )
+
+        for kind, item in kwonly_entries:
+            if kind == "field":
+                if item.name in kwargs:
+                    seen[item.name] = kwargs.pop(item.name)
+                else:
+                    seen[item.name] = _value_from_default(
+                        item.default, item.default_factory, item.name, True
+                    )
+            else:
+                if item["name"] in kwargs:
+                    initvar_seen[item["name"]] = kwargs.pop(item["name"])
+                else:
+                    initvar_seen[item["name"]] = _value_from_default(
+                        item["default"], item["default_factory"], item["name"], True
+                    )
 
         if kwargs:
             keys = ", ".join(sorted(kwargs.keys()))
             raise TypeError("got unexpected keyword argument(s): %s" % (keys,))
 
-        for f in pos_fields_in_init + kwonly_fields_in_init:
+        for kind, item in pos_entries + kwonly_entries:
+            if kind != "field":
+                continue
             if frozen:
-                object.__setattr__(self, f.name, seen[f.name])
+                object.__setattr__(self, item.name, seen[item.name])
             else:
-                setattr(self, f.name, seen[f.name])
+                setattr(self, item.name, seen[item.name])
 
         post_init = getattr(self, "__post_init__", None)
         if post_init is not None:
-            post_init()
+            ordered_initvars = [item for kind, item in (pos_entries + kwonly_entries) if kind == "initvar"]
+            if ordered_initvars:
+                post_init(*(initvar_seen[iv["name"]] for iv in ordered_initvars))
+            else:
+                post_init()
 
     return __init__
 
@@ -372,24 +465,43 @@ def _apply_dataclass(
         raise ValueError("eq must be true if order is true")
 
     all_fields = _iter_fields(cls)
-    _process_own_fields(cls, all_fields)
+    initvars, own_pos_entries, own_kw_entries, own_field_names = _process_own_fields(
+        cls, all_fields, kw_only
+    )
 
     init_fields = [f for f in all_fields.values() if f.init]
     pos_init_fields = [f for f in init_fields if not _field_is_kw_only(f, kw_only)]
     kwonly_init_fields = [f for f in init_fields if _field_is_kw_only(f, kw_only)]
+    inherited_pos_entries = [("field", f) for f in pos_init_fields if f.name not in own_field_names]
+    inherited_kw_entries = [("field", f) for f in kwonly_init_fields if f.name not in own_field_names]
+    field_map = {f.name: f for f in init_fields}
+    pos_entries = inherited_pos_entries + [
+        ("field", field_map[item]) if kind == "field" else ("initvar", item)
+        for kind, item in own_pos_entries
+    ]
+    kwonly_entries = inherited_kw_entries + [
+        ("field", field_map[item]) if kind == "field" else ("initvar", item)
+        for kind, item in own_kw_entries
+    ]
     seen_default = None
-    for f in pos_init_fields:
-        if _has_default(f):
+    for kind, item in pos_entries:
+        if kind == "field":
+            has_default = _has_default(item)
+            name = item.name
+        else:
+            has_default = item["default"] is not MISSING or item["default_factory"] is not MISSING
+            name = item["name"]
+        if has_default:
             if seen_default is None:
-                seen_default = f.name
+                seen_default = name
         elif seen_default is not None:
             raise TypeError(
                 "non-default argument '%s' follows default argument '%s'"
-                % (f.name, seen_default)
+                % (name, seen_default)
             )
 
     if init and "__init__" not in cls.__dict__:
-        cls.__init__ = _build_init(cls, pos_init_fields, kwonly_init_fields, frozen)
+        cls.__init__ = _build_init(cls, pos_entries, kwonly_entries, frozen)
 
     if repr_ and "__repr__" not in cls.__dict__:
         cls.__repr__ = _build_repr([f for f in all_fields.values() if f.repr])
@@ -428,8 +540,11 @@ def _apply_dataclass(
         cls.__setattr__ = _frozen_setattr
         cls.__delattr__ = _frozen_delattr
 
-    cls.__match_args__ = tuple(f.name for f in pos_init_fields) if match_args else ()
+    initvar_entries = [item for kind, item in (pos_entries + kwonly_entries) if kind == "initvar"]
+
+    cls.__match_args__ = tuple(item.name for kind, item in pos_entries if kind == "field") if match_args else ()
     setattr(cls, _FIELDS, all_fields)
+    setattr(cls, _INITVARS, tuple(initvar_entries))
     setattr(
         cls,
         _PARAMS,
@@ -497,52 +612,109 @@ def is_dataclass(obj):
     return _is_dataclass_instance(obj)
 
 
-def _convert_asdict(obj, dict_factory):
+def _convert_asdict(obj, dict_factory, active):
     if _is_dataclass_instance(obj):
-        items = []
-        for f in fields(obj):
-            items.append((f.name, _convert_asdict(getattr(obj, f.name), dict_factory)))
-        return dict_factory(items)
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            items = []
+            for f in fields(obj):
+                items.append((f.name, _convert_asdict(getattr(obj, f.name), dict_factory, active)))
+            return dict_factory(items)
+        finally:
+            active.remove(oid)
     if isinstance(obj, list):
-        return [_convert_asdict(x, dict_factory) for x in obj]
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return [_convert_asdict(x, dict_factory, active) for x in obj]
+        finally:
+            active.remove(oid)
     if isinstance(obj, tuple):
-        return tuple(_convert_asdict(x, dict_factory) for x in obj)
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return tuple(_convert_asdict(x, dict_factory, active) for x in obj)
+        finally:
+            active.remove(oid)
     if isinstance(obj, dict):
-        return type(obj)(
-            (_convert_asdict(k, dict_factory), _convert_asdict(v, dict_factory))
-            for k, v in obj.items()
-        )
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return type(obj)(
+                (_convert_asdict(k, dict_factory, active), _convert_asdict(v, dict_factory, active))
+                for k, v in obj.items()
+            )
+        finally:
+            active.remove(oid)
     return obj
 
 
 def asdict(obj, *, dict_factory=dict):
     if not _is_dataclass_instance(obj):
         raise TypeError("asdict() should be called on dataclass instances")
-    return _convert_asdict(obj, dict_factory)
+    return _convert_asdict(obj, dict_factory, set())
 
 
-def _convert_astuple(obj, tuple_factory):
+def _convert_astuple(obj, tuple_factory, active):
     if _is_dataclass_instance(obj):
-        return tuple_factory([_convert_astuple(getattr(obj, f.name), tuple_factory) for f in fields(obj)])
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return tuple_factory([_convert_astuple(getattr(obj, f.name), tuple_factory, active) for f in fields(obj)])
+        finally:
+            active.remove(oid)
     if isinstance(obj, list):
-        return [_convert_astuple(x, tuple_factory) for x in obj]
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return [_convert_astuple(x, tuple_factory, active) for x in obj]
+        finally:
+            active.remove(oid)
     if isinstance(obj, tuple):
-        return tuple_factory([_convert_astuple(x, tuple_factory) for x in obj])
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return tuple_factory([_convert_astuple(x, tuple_factory, active) for x in obj])
+        finally:
+            active.remove(oid)
     if isinstance(obj, dict):
-        return type(obj)((_convert_astuple(k, tuple_factory), _convert_astuple(v, tuple_factory)) for k, v in obj.items())
+        oid = id(obj)
+        if oid in active:
+            raise RecursionError("cannot convert recursive dataclass structure")
+        active.add(oid)
+        try:
+            return type(obj)((_convert_astuple(k, tuple_factory, active), _convert_astuple(v, tuple_factory, active)) for k, v in obj.items())
+        finally:
+            active.remove(oid)
     return obj
 
 
 def astuple(obj, *, tuple_factory=tuple):
     if not _is_dataclass_instance(obj):
         raise TypeError("astuple() should be called on dataclass instances")
-    return _convert_astuple(obj, tuple_factory)
+    return _convert_astuple(obj, tuple_factory, set())
 
 
 def replace(obj, **changes):
     if not _is_dataclass_instance(obj):
         raise TypeError("replace() should be called on dataclass instances")
     kwargs = {}
+    initvars = getattr(type(obj), _INITVARS, ())
     for f in fields(obj):
         if not f.init:
             if f.name in changes:
@@ -555,6 +727,11 @@ def replace(obj, **changes):
             kwargs[f.name] = changes.pop(f.name)
         else:
             kwargs[f.name] = getattr(obj, f.name)
+    for iv in initvars:
+        if iv["name"] in changes:
+            kwargs[iv["name"]] = changes.pop(iv["name"])
+        elif iv["default"] is MISSING and iv["default_factory"] is MISSING:
+            raise TypeError("InitVar %r must be specified with replace()" % (iv["name"],))
     if changes:
         bad = ", ".join(sorted(changes.keys()))
         raise TypeError("got unexpected field name(s): %s" % (bad,))
