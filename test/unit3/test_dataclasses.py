@@ -201,6 +201,19 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual(asdict(p), {"x": 3, "y": {"z": 7}})
         self.assertEqual(astuple(p), (3, (7,)))
 
+    def test_asdict_astuple_recursive_raises(self):
+        @dataclass
+        class Node:
+            x: int
+            nxt: object = None
+
+        n = Node(1)
+        n.nxt = n
+        with self.assertRaises(RecursionError):
+            asdict(n)
+        with self.assertRaises(RecursionError):
+            astuple(n)
+
     def test_replace(self):
         @dataclass
         class C:
@@ -210,6 +223,36 @@ class TestDataclasses(unittest.TestCase):
         o = C(1, 2)
         o2 = replace(o, x=9)
         self.assertEqual((o2.x, o2.y), (9, 2))
+
+    def test_replace_requires_initvar(self):
+        @dataclass
+        class C:
+            x: int
+            y: InitVar[int]
+            z: int = 0
+
+            def __post_init__(self, y):
+                self.z = y
+
+        o = C(1, 2)
+        with self.assertRaisesRegex(TypeError, "InitVar 'y' must be specified with replace\\(\\)"):
+            replace(o, x=9)
+        o2 = replace(o, x=9, y=7)
+        self.assertEqual((o2.x, o2.z), (9, 7))
+
+    def test_replace_initvar_with_default_not_required(self):
+        @dataclass
+        class C:
+            x: int
+            y: InitVar[int] = 4
+            z: int = 0
+
+            def __post_init__(self, y):
+                self.z = y
+
+        o = C(1, 6)
+        o2 = replace(o, x=9)
+        self.assertEqual((o2.x, o2.z), (9, 4))
 
     def test_replace_with_init_false_rejected(self):
         @dataclass
@@ -309,10 +352,33 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual((c.x, c.y), (0, 3))
 
     def test_guard_initvar(self):
-        with self.assertRaisesRegex(NotImplementedError, "InitVar"):
-            @dataclass
-            class C:
-                x: InitVar(int)
+        @dataclass
+        class C:
+            x: int
+            y: InitVar(int)
+            z: int = 0
+
+            def __post_init__(self, y):
+                self.z = self.x + y
+
+        c = C(2, 3)
+        self.assertEqual((c.x, c.z), (2, 5))
+        self.assertFalse(hasattr(c, "y"))
+
+    def test_initvar_kw_only_and_default(self):
+        @dataclass
+        class C:
+            x: int
+            y: InitVar(int) = field(default=4, kw_only=True)
+            z: int = 0
+
+            def __post_init__(self, y):
+                self.z = y
+
+        c = C(2, y=7)
+        self.assertEqual((c.x, c.z), (2, 7))
+        c2 = C(2)
+        self.assertEqual((c2.x, c2.z), (2, 4))
 
     def test_classvar_ignored(self):
         @dataclass
@@ -326,14 +392,28 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual([f.name for f in fields(C)], ["y"])
 
     def test_guard_kw_only_sentinel(self):
-        with self.assertRaisesRegex(NotImplementedError, "KW_ONLY"):
+        @dataclass
+        class C:
+            x: int
+            _: KW_ONLY
+            y: int
+
+        c = C(1, y=2)
+        self.assertEqual((c.x, c.y), (1, 2))
+        with self.assertRaises(TypeError):
+            C(1, 2)
+        self.assertEqual(C.__match_args__, ("x",))
+
+    def test_kw_only_sentinel_once(self):
+        with self.assertRaisesRegex(TypeError, "KW_ONLY can only be used once"):
             @dataclass
             class C:
                 _: KW_ONLY
+                __: KW_ONLY
                 x: int
 
     # Intentionally omitted/skipped for minimal implementation:
-    # - full InitVar/KW_ONLY semantics (guarded with explicit errors)
+    # - full InitVar/KW_ONLY parity with CPython
     # - slots / weakref_slot implementation (guarded with explicit errors)
     # - recursive protection / deepcopy semantics in asdict/astuple
     # - metadata mappingproxy details
