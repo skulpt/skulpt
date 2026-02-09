@@ -53,6 +53,18 @@ def _unsupported(feature):
     raise NotImplementedError(feature + " is not supported in skulpt.dataclasses")
 
 
+def _is_classvar(typ):
+    if isinstance(typ, str):
+        return "ClassVar" in typ
+    origin = getattr(typ, "__origin__", None)
+    if origin is not None and getattr(origin, "__name__", "") == "ClassVar":
+        return True
+    typ_name = getattr(typ, "__name__", "")
+    if typ_name == "ClassVar":
+        return True
+    return "ClassVar" in repr(typ)
+
+
 class _DataclassParams:
     def __init__(
         self,
@@ -170,8 +182,6 @@ def field(
 ):
     if default is not MISSING and default_factory is not MISSING:
         raise ValueError("cannot specify both default and default_factory")
-    if kw_only is not MISSING:
-        _unsupported("field(kw_only=...)")
     return Field(
         default=default,
         default_factory=default_factory,
@@ -196,6 +206,12 @@ def _has_default(f):
     return f.default is not MISSING or f.default_factory is not MISSING
 
 
+def _field_is_kw_only(f, default_kw_only):
+    if f.kw_only is MISSING:
+        return default_kw_only
+    return bool(f.kw_only)
+
+
 def _iter_fields(cls):
     all_fields = {}
     for base in reversed(cls.__mro__[1:]):
@@ -214,15 +230,11 @@ def _process_own_fields(cls, all_fields):
             _unsupported("KW_ONLY sentinel")
         if typ is InitVar or isinstance(typ, InitVar):
             _unsupported("InitVar")
+        if _is_classvar(typ):
+            continue
         if isinstance(typ, str):
-            if "ClassVar" in typ:
-                _unsupported("ClassVar")
             if "InitVar" in typ:
                 _unsupported("InitVar")
-        else:
-            typ_name = getattr(typ, "__name__", "")
-            if typ_name == "ClassVar" or "ClassVar" in repr(typ):
-                _unsupported("ClassVar")
 
         candidate = class_dict.get(name, MISSING)
         if isinstance(candidate, Field):
@@ -239,21 +251,21 @@ def _process_own_fields(cls, all_fields):
         all_fields[name] = f
 
 
-def _build_init(cls, fields_in_init, frozen):
+def _build_init(cls, pos_fields_in_init, kwonly_fields_in_init, frozen):
     def __init__(self, *args, **kwargs):
-        if len(args) > len(fields_in_init):
+        if len(args) > len(pos_fields_in_init):
             raise TypeError(
                 "__init__() takes at most %d positional arguments (%d given)"
-                % (len(fields_in_init), len(args))
+                % (len(pos_fields_in_init), len(args))
             )
 
         seen = {}
 
         for idx, value in enumerate(args):
-            fname = fields_in_init[idx].name
+            fname = pos_fields_in_init[idx].name
             seen[fname] = value
 
-        for f in fields_in_init[len(args):]:
+        for f in pos_fields_in_init[len(args):]:
             if f.name in kwargs:
                 seen[f.name] = kwargs.pop(f.name)
             elif f.default is not MISSING:
@@ -263,11 +275,21 @@ def _build_init(cls, fields_in_init, frozen):
             else:
                 raise TypeError("missing required argument: '%s'" % (f.name,))
 
+        for f in kwonly_fields_in_init:
+            if f.name in kwargs:
+                seen[f.name] = kwargs.pop(f.name)
+            elif f.default is not MISSING:
+                seen[f.name] = f.default
+            elif f.default_factory is not MISSING:
+                seen[f.name] = f.default_factory()
+            else:
+                raise TypeError("missing required keyword-only argument: '%s'" % (f.name,))
+
         if kwargs:
             keys = ", ".join(sorted(kwargs.keys()))
             raise TypeError("got unexpected keyword argument(s): %s" % (keys,))
 
-        for f in fields_in_init:
+        for f in pos_fields_in_init + kwonly_fields_in_init:
             if frozen:
                 object.__setattr__(self, f.name, seen[f.name])
             else:
@@ -341,8 +363,6 @@ def _apply_dataclass(
     slots,
     weakref_slot,
 ):
-    if kw_only:
-        _unsupported("dataclass(kw_only=True)")
     if slots:
         _unsupported("dataclass(slots=True)")
     if weakref_slot:
@@ -355,8 +375,10 @@ def _apply_dataclass(
     _process_own_fields(cls, all_fields)
 
     init_fields = [f for f in all_fields.values() if f.init]
+    pos_init_fields = [f for f in init_fields if not _field_is_kw_only(f, kw_only)]
+    kwonly_init_fields = [f for f in init_fields if _field_is_kw_only(f, kw_only)]
     seen_default = None
-    for f in init_fields:
+    for f in pos_init_fields:
         if _has_default(f):
             if seen_default is None:
                 seen_default = f.name
@@ -367,7 +389,7 @@ def _apply_dataclass(
             )
 
     if init and "__init__" not in cls.__dict__:
-        cls.__init__ = _build_init(cls, init_fields, frozen)
+        cls.__init__ = _build_init(cls, pos_init_fields, kwonly_init_fields, frozen)
 
     if repr_ and "__repr__" not in cls.__dict__:
         cls.__repr__ = _build_repr([f for f in all_fields.values() if f.repr])
@@ -406,7 +428,7 @@ def _apply_dataclass(
         cls.__setattr__ = _frozen_setattr
         cls.__delattr__ = _frozen_delattr
 
-    cls.__match_args__ = tuple(f.name for f in init_fields) if match_args else ()
+    cls.__match_args__ = tuple(f.name for f in pos_init_fields) if match_args else ()
     setattr(cls, _FIELDS, all_fields)
     setattr(
         cls,
