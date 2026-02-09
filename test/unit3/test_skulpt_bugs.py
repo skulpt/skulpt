@@ -233,5 +233,28 @@ class TestClassCell(unittest.TestCase):
         self.assertEqual(calls, ['Middle', 'Leaf'])
 
 
+class TestCompilerRegressions(unittest.TestCase):
+    def test_kwonly_default_builtin_name_resolution(self):
+        """kw-only defaults should resolve names without compiler assertion failures."""
+        def f(*, x=dict):
+            return x
+
+        self.assertIs(f(), dict)
+
+    def test_nested_class_annotation_resolves_outer_name(self):
+        """Class annotations in nested scopes should resolve closure names correctly."""
+        def outer():
+            class Child:
+                pass
+
+            class Parent:
+                y: Child
+
+            return Parent, Child
+
+        Parent, Child = outer()
+        self.assertIs(Parent.__annotations__["y"], Child)
+
+
 if __name__ == "__main__":
     unittest.main()
