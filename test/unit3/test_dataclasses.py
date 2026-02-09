@@ -263,11 +263,17 @@ class TestDataclasses(unittest.TestCase):
         c = C(10)
         self.assertEqual((c.x, c.y), (10, 11))
 
-    def test_guard_kw_only_decorator(self):
-        with self.assertRaisesRegex(NotImplementedError, "kw_only"):
-            @dataclass(kw_only=True)
-            class C:
-                x: int
+    def test_kw_only_decorator(self):
+        @dataclass(kw_only=True)
+        class C:
+            x: int
+            y: int = 0
+
+        c = C(x=10)
+        self.assertEqual((c.x, c.y), (10, 0))
+        with self.assertRaises(TypeError):
+            C(10)
+        self.assertEqual(C.__match_args__, ())
 
     def test_guard_slots(self):
         with self.assertRaisesRegex(NotImplementedError, "slots"):
@@ -281,11 +287,26 @@ class TestDataclasses(unittest.TestCase):
             class C:
                 x: int
 
-    def test_guard_field_kw_only(self):
-        with self.assertRaisesRegex(NotImplementedError, "field\\(kw_only"):
-            @dataclass
-            class C:
-                x: int = field(default=1, kw_only=True)
+    def test_field_kw_only(self):
+        @dataclass
+        class C:
+            x: int
+            y: int = field(default=1, kw_only=True)
+
+        c = C(7, y=9)
+        self.assertEqual((c.x, c.y), (7, 9))
+        with self.assertRaises(TypeError):
+            C(7, 9)
+        self.assertEqual(C.__match_args__, ("x",))
+
+    def test_kw_only_does_not_trigger_default_order_error(self):
+        @dataclass
+        class C:
+            x: int = 0
+            y: int = field(kw_only=True)
+
+        c = C(y=3)
+        self.assertEqual((c.x, c.y), (0, 3))
 
     def test_guard_initvar(self):
         with self.assertRaisesRegex(NotImplementedError, "InitVar"):
@@ -293,11 +314,16 @@ class TestDataclasses(unittest.TestCase):
             class C:
                 x: InitVar(int)
 
-    def test_guard_classvar(self):
-        with self.assertRaisesRegex(NotImplementedError, "ClassVar"):
-            @dataclass
-            class C:
-                x: "ClassVar[int]" = 1
+    def test_classvar_ignored(self):
+        @dataclass
+        class C:
+            x: "ClassVar[int]" = 1
+            y: int
+
+        o = C(5)
+        self.assertEqual(o.y, 5)
+        self.assertEqual(C.x, 1)
+        self.assertEqual([f.name for f in fields(C)], ["y"])
 
     def test_guard_kw_only_sentinel(self):
         with self.assertRaisesRegex(NotImplementedError, "KW_ONLY"):
@@ -307,9 +333,8 @@ class TestDataclasses(unittest.TestCase):
                 x: int
 
     # Intentionally omitted/skipped for minimal implementation:
-    # - full ClassVar/InitVar/KW_ONLY semantics (guarded with explicit errors)
+    # - full InitVar/KW_ONLY semantics (guarded with explicit errors)
     # - slots / weakref_slot implementation (guarded with explicit errors)
-    # - kw_only implementation (guarded with explicit errors)
     # - recursive protection / deepcopy semantics in asdict/astuple
     # - metadata mappingproxy details
     # - full error text parity with CPython
