@@ -73,6 +73,28 @@ class ContextManagerTestCase(unittest.TestCase):
             RuntimeError, ctx.__exit__, TypeError, TypeError("foo"), None
         )
 
+    def test_contextmanager_trap_no_yield(self):
+        @contextmanager
+        def whoo():
+            if False:
+                yield
+        ctx = whoo()
+        with self.assertRaises(RuntimeError):
+            ctx.__enter__()
+
+    def test_contextmanager_non_normalised(self):
+        @contextmanager
+        def whoo():
+            try:
+                yield
+            except RuntimeError:
+                raise SyntaxError
+
+        ctx = whoo()
+        ctx.__enter__()
+        with self.assertRaises(SyntaxError):
+            ctx.__exit__(RuntimeError, None, None)
+
     def test_contextmanager_except(self):
         state = []
         @contextmanager
@@ -140,7 +162,7 @@ def woohoo():
         except Exception as ex:
             self.assertIs(type(ex), RuntimeError)
             self.assertEqual(ex.args[0], 'issue29692:Chained')
-            # self.assertIsInstance(ex.__cause__, ZeroDivisionError)
+            self.assertIsInstance(ex.__cause__, ZeroDivisionError)
 
         try:
             with test_issue29692():
@@ -148,7 +170,40 @@ def woohoo():
         except Exception as ex:
             self.assertIs(type(ex), StopIteration)
             self.assertEqual(ex.args[0], 'issue29692:Unchained')
-            # self.assertIsNone(ex.__cause__)
+            self.assertIsNone(ex.__cause__)
+
+    def test_contextmanager_wrap_runtimeerror(self):
+        @contextmanager
+        def woohoo():
+            try:
+                yield
+            except Exception as exc:
+                raise RuntimeError('caught {}'.format(exc)) from exc
+
+        with self.assertRaises(RuntimeError):
+            with woohoo():
+                1 / 0
+
+        with self.assertRaises(StopIteration):
+            with woohoo():
+                raise StopIteration
+
+    def test_contextmanager_trap_second_yield_closes(self):
+        state = []
+
+        @contextmanager
+        def woohoo():
+            try:
+                yield
+                yield
+            finally:
+                state.append('cleanup')
+
+        ctx = woohoo()
+        ctx.__enter__()
+        with self.assertRaises(RuntimeError):
+            ctx.__exit__(None, None, None)
+        self.assertEqual(state, ['cleanup'])
 
     def _create_contextmanager_attribs(self):
         def attribs(**kw):

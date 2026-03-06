@@ -54,6 +54,8 @@ function contextlib_mod(dependencies) {
             // "aclosing",
         ]),
     };
+    const closeStr = new pyStr("close");
+    const throwStr = new pyStr("throw");
 
     function buildNativeContextManager(name, options) {
         const { __enter__, __exit__, __init__, constructor } = options;
@@ -72,6 +74,11 @@ function contextlib_mod(dependencies) {
             $flags: { MinArgs: 3, MaxArgs: 3 },
         };
         return buildNativeClass(name, options);
+    }
+
+    function closeGenerator(gen, onClose) {
+        const close = objectGetAttr(gen, closeStr);
+        return chain(pyCallOrSuspend(close), onClose);
     }
 
     // internal only so only called like new _GeneratorContextManager(func, args, kwds)
@@ -131,7 +138,9 @@ function contextlib_mod(dependencies) {
             if (checkNone(type)) {
                 return chain(iternext(this.$gen, true), (nxt) => {
                     if (nxt !== undefined) {
-                        throw new RuntimeError("generator didn't stop");
+                        return closeGenerator(this.$gen, () => {
+                            throw new RuntimeError("generator didn't stop");
+                        });
                     }
                     return pyFalse;
                 });
@@ -142,16 +151,21 @@ function contextlib_mod(dependencies) {
                 return tryCatch(
                     () =>
                         chain(
-                            pyCallOrSuspend(this.$gen.tp$getattr(new pyStr("throw")), [type, value, traceback]),
+                            pyCallOrSuspend(this.$gen.tp$getattr(throwStr), [type, value, traceback]),
                             () => {
-                                throw new RuntimeError("generator didn't stop after throw()");
+                                return closeGenerator(this.$gen, () => {
+                                    throw new RuntimeError("generator didn't stop after throw()");
+                                });
                             }
                         ),
                     (e) => {
                         if (e instanceof StopIteration) {
                             return new pyBool(e !== value);
-                        } else if (e instanceof RuntimeError && type === StopIteration) {
-                            // should only do this if StopIteration was the cause
+                        } else if (
+                            e instanceof RuntimeError &&
+                            value instanceof StopIteration &&
+                            e.$cause === value
+                        ) {
                             return pyFalse;
                         }
                         if (e === value) {
@@ -209,7 +223,7 @@ function contextlib_mod(dependencies) {
             return this.$gen;
         },
         __exit__(type, value, tb) {
-            const _close = objectGetAttr(this.$gen, new pyStr("close"));
+            const _close = objectGetAttr(this.$gen, closeStr);
             return chain(pyCallOrSuspend(_close), () => pyNone);
         },
     });

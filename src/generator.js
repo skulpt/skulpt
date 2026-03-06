@@ -101,7 +101,9 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 this.gi$closed = true;
                 this.gi$yieldfrom = null;
                 if (e instanceof Sk.builtin.StopIteration) {
-                    throw new Sk.builtin.RuntimeError("generator raised StopIteration");
+                    const runtimeError = new Sk.builtin.RuntimeError("generator raised StopIteration");
+                    runtimeError.$cause = e;
+                    throw runtimeError;
                 }
                 throw e;
             },
