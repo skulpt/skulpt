@@ -583,8 +583,7 @@ Compiler.prototype.cyield = function(e) {
     }
     nextBlock = this.newBlock("after yield");
     out(`$blk=${nextBlock};`);
-    out(`var $susp = $saveSuspension($gen.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
-    out(`return [$susp, ${val}];`);
+    out(`return $gen.gi$yield((susp) => $saveSuspension(susp, '${this.filename}', $currLineNo, $currColNo), ${val});`);
 
     this.setBlock(nextBlock);
     return "$ret"; // $ret will be set in the resume call to $gen.gi$data.send;
@@ -598,40 +597,17 @@ Compiler.prototype.cyieldfrom = function (e) {
     var afterBlock = this.newBlock("after yield from");
     // get the iterator we are yielding from and store it
     var iterable = this.vexpr(e.value);
-    out("$gen.gi$yieldfrom = Sk.abstr.iter(", iterable, ");");
+    out("$gen.gi$startYieldFrom(", iterable, ");");
     this._jump(afterIter);
     this.setBlock(afterIter);
-    // fast path -> we're sending None (not sending a value) 
-    // or we use gen.tp$iternext(true, val) (see generator.js) which is the equivalent of gen.send(val)
-    out("if ($gen.gi$data.send === Sk.builtin.none.none$ || $gen.gi$yieldfrom.constructor === Sk.builtin.generator) {");
-    out(    "$ret=$gen.gi$yieldfrom.tp$iternext(true, $gen.gi$data.send);");
-    out("} else {");
-    var send = this.makeConstant("new Sk.builtin.str('send');");
-    // slow path -> get the send method of the non-generator iterator and call it
-    // throw anything other than a StopIteration
-    out(    "$ret=Sk.misceval.tryCatch(");
-    out(        "function(){");
-    out(            "return Sk.misceval.callsimOrSuspendArray(Sk.abstr.gattr($gen.gi$yieldfrom,", send, "), [$gen.gi$data.send]);},");
-    out(        "function (e) { ");
-    out(            "if (e instanceof Sk.builtin.StopIteration) { ");
-    out(                    "$gen.gi$yieldfrom.gi$ret = e.$value;");
-                            // store the return value on the iterator
-                            // otherwise we lose it beause iterator code in skulpt relies on returning undefined;
-                            // one day maybe we can use the js .next protocol {value: ret, done: true} ;-)
-    out(                    "return undefined;"); 
-    out(            "} else { throw e; }");
-    out(        "}");
-    out(    ");");
-    out("}");
+    out("$ret = $gen.gi$stepYieldFrom();");
     this._checkSuspension(e);
-    // if the iterator is done (undefined) and we still have an unused sent value, it will be in `[iterable].gi$ret`, so we grab it from there and move on to the `yield from` ("afterBlock")
     out("if($ret===undefined) {");
-    out(    "$ret = $gen.gi$data.send=$gen.gi$yieldfrom.gi$ret || Sk.builtin.none.none$;");
-    out(    "$blk=", afterBlock, ";$gen.gi$yieldfrom=null;continue;");
+    out(    "$ret = $gen.gi$finishYieldFrom();");
+    out(    "$blk=", afterBlock, ";continue;");
     out("}");
     out(`$blk = ${afterIter};`);
-    out(`var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);`);
-    out("return [/*resume*/ $susp,/*ret*/ $ret];");
+    out(`return $gen.gi$yield((susp) => $saveSuspension(susp, '${this.filename}', $currLineNo, $currColNo), $ret);`);
     this.setBlock(afterBlock);
     return "$ret"; // will either be none if none sent, or the value from gen.send(value)
 };
@@ -2095,8 +2071,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     // call new generator and then save the suspension
     if (isGenerator) {
         this.u.varDeclsCode += `$gen = new Sk.builtin.generator(${scopename}, this.$name, this.$qualname);
-        var $susp = $saveSuspension($gen.gi$susp, '${this.filename}', $currLineNo, $currColNo);
-        $gen.curr$susp = $susp;
+        $gen.gi$setInitialSuspension((susp) => $saveSuspension(susp, '${this.filename}', $currLineNo, $currColNo));
         return $gen;`
     }
 
@@ -2418,10 +2393,8 @@ Compiler.prototype.cgenexpgen = function (generators, genIndex, elt) {
         this.annotateSource(elt);
 
         velt = this.vexpr(elt);
-        out(`$blk=${skip};`)
-        out(`var $susp = $saveSuspension($gen.gi$susp,'${this.filename}', $currLineNo, $currColNo);`);
-        // out(`debugger;`);
-        out(`return [$susp, ${velt}];`);
+        out(`$blk=${skip};`);
+        out(`return $gen.gi$yield((susp) => $saveSuspension(susp, '${this.filename}', $currLineNo, $currColNo), ${velt});`);
         // out("return [", skip, "/*resume*/,", velt, "/*ret*/];");
         this.setBlock(skip);
     }

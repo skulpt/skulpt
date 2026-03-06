@@ -230,6 +230,47 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             },
         },
     },
+    proto: {
+        gi$makeSuspension(wrapSuspension) {
+            return wrapSuspension(this.gi$susp);
+        },
+        gi$setInitialSuspension(wrapSuspension) {
+            this.curr$susp = this.gi$makeSuspension(wrapSuspension);
+            return this;
+        },
+        gi$yield(wrapSuspension, value) {
+            return [this.gi$makeSuspension(wrapSuspension), value];
+        },
+        gi$startYieldFrom(iterable) {
+            this.gi$yieldfrom = Sk.abstr.iter(iterable);
+        },
+        gi$stepYieldFrom() {
+            if (this.gi$data.send === Sk.builtin.none.none$ || this.gi$yieldfrom.constructor === Sk.builtin.generator) {
+                return this.gi$yieldfrom.tp$iternext(true, this.gi$data.send);
+            }
+            return Sk.misceval.tryCatch(
+                () =>
+                    Sk.misceval.callsimOrSuspendArray(
+                        Sk.abstr.gattr(this.gi$yieldfrom, new Sk.builtin.str("send")),
+                        [this.gi$data.send]
+                    ),
+                (e) => {
+                    if (e instanceof Sk.builtin.StopIteration) {
+                        this.gi$yieldfrom.gi$ret = e.$value;
+                        return undefined;
+                    }
+                    throw e;
+                }
+            );
+        },
+        gi$finishYieldFrom() {
+            const yieldfrom = this.gi$yieldfrom;
+            const ret = yieldfrom ? yieldfrom.gi$ret : undefined;
+            this.gi$yieldfrom = null;
+            this.gi$data.send = ret == null ? Sk.builtin.none.none$ : ret;
+            return this.gi$data.send;
+        },
+    },
 });
 Sk.exportSymbol("Sk.builtin.generator", Sk.builtin.generator);
 
