@@ -2042,7 +2042,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.varDeclsCode += ";\n";
     }
 
-    this.u.varDeclsCode += ";\n";
 
     //
     // copy all parameters that are also cells into the cells dict. this is so
