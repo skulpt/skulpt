@@ -63,19 +63,19 @@ class ScopeTests(unittest.TestCase):
     #     global_x = 10
     #     self.assertEqual(adder(-2), 8)
 
-    # def testNestingThroughClass(self):
-    #
-    #     def make_adder5(x):
-    #         class Adder:
-    #             def __call__(self, y):
-    #                 return x + y
-    #         return Adder()
-    #
-    #     inc = make_adder5(1)
-    #     plus10 = make_adder5(10)
-    #
-    #     self.assertEqual(inc(1), 2)
-    #     self.assertEqual(plus10(-2), 8)
+    def testNestingThroughClass(self):
+
+        def make_adder5(x):
+            class Adder:
+                def __call__(self, y):
+                    return x + y
+            return Adder()
+
+        inc = make_adder5(1)
+        plus10 = make_adder5(10)
+
+        self.assertEqual(inc(1), 2)
+        self.assertEqual(plus10(-2), 8)
 
     def testNestingPlusFreeRefToGlobal(self):
 
@@ -306,18 +306,18 @@ class ScopeTests(unittest.TestCase):
     #
     #     self.assertEqual(x, 12) # Used to raise UnboundLocalError
 
-    # def testBoundAndFree(self):
-    #     # var is bound and free in class
-    #
-    #     def f(x):
-    #         class C:
-    #             def m(self):
-    #                 return x
-    #             a = x
-    #         return C
-    #
-    #     inst = f(3)()
-    #     self.assertEqual(inst.a, inst.m())
+    def testBoundAndFree(self):
+        # var is bound and free in class
+
+        def f(x):
+            class C:
+                def m(self):
+                    return x
+                a = x
+            return C
+
+        inst = f(3)()
+        self.assertEqual(inst.a, inst.m())
 
     # def testEvalExecFreeVars(self):
     #

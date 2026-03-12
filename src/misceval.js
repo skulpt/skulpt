@@ -1394,6 +1394,12 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     // pass the locals to the code object which populates the namespace of the class
     func(globals, locals, l_cell);
 
+    // Check if there's a __classcell__ that needs to be populated
+    // This is created when methods use super() or reference __class__
+    // We grab it BEFORE copying to ns, and don't copy it to ns (it's an implementation detail)
+    let classcell = locals.__classcell__;
+    delete locals.__classcell__;
+
     if (!localsIsProxy) {
         // put locals object inside the ns dict
         Object.keys(locals).forEach((key) => {
@@ -1403,7 +1409,18 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
 
     const klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, ns], kws);
 
-    return klass;
+    // After class creation, populate the __classcell__ with the class
+    // This allows methods to access __class__ through their closure
+    return Sk.misceval.chain(klass, (resolvedKlass) => {
+        if (classcell !== undefined) {
+            classcell.__class__ = resolvedKlass;
+            // Remove __classcell__ from the class dict - it's an implementation detail
+            if (resolvedKlass.prototype && resolvedKlass.prototype.hasOwnProperty("__classcell__")) {
+                delete resolvedKlass.prototype.__classcell__;
+            }
+        }
+        return resolvedKlass;
+    });
 };
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 

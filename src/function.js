@@ -40,10 +40,10 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         this.$qualname = code.co_qualname || this.$name;
 
         if (closure2 !== undefined) {
-            // todo; confirm that modification here can't cause problems
-            for (let k in closure2) {
-                closure[k] = closure2[k];
-            }
+            // Use prototype chain to delegate to closure2 for properties not in closure.
+            // This allows late-bound cell variables (like the class being defined) to be
+            // visible to methods even though they weren't set when the method was created.
+            Object.setPrototypeOf(closure, closure2);
         }
         this.func_closure = closure;
         this.func_annotations = null;
