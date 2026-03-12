@@ -123,6 +123,17 @@ class TestBugs(unittest.TestCase):
             self.assertEqual(x, "a")
             self.assertEqual(y, "b")
 
+    def test_object_ne_on_tuple_subclass_uses_object_slot(self):
+        class C(tuple):
+            __ne__ = object.__ne__
+
+            def __eq__(self, other):
+                return False
+
+        a = C()
+        self.assertFalse(a == a)
+        self.assertTrue(a != a)
+
 
 if __name__ == "__main__":
     unittest.main()
