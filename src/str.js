@@ -1576,3 +1576,6 @@ EMPTY_STRING = new Sk.builtin.str("");
 for (let i = 0; i < 256; i++) {
     INTERNED_ASCII_CHARS[i] = new Sk.builtin.str(String.fromCharCode(i));
 }
+
+// Expose Unicode character classes for internal use (e.g., re module)
+Sk.builtin.str._unicode = Unicode;
