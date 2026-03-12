@@ -1105,9 +1105,18 @@ const op2shortcut = {
 const op2shortcutEntries = Object.entries(op2shortcut);
 
 function _set_up_richcompare_wrappers(slots) {
+    const richcompare = slots.tp$richcompare;
     op2shortcutEntries.forEach(([op, shortcut]) => {
         slots[shortcut] = function (other) {
-            return this.tp$richcompare(other, op);
+            // Keep this bound to the defining type's tp$richcompare.
+            // See test_object_ne_on_tuple_subclass_uses_object_slot in test/unit3/test_skulpt_bugs.py
+            // for the regression this avoids.
+            // Previous code used `this.tp$richcompare(other, op)`.
+            // That walks the prototype chain to resolve the instance's current tp$richcompare slot
+            // which breaks in the test case above:
+            // - a tuple subclass sets __ne__ to object.__ne__
+            // - instance.ob$ne -> object.prototype.ob$ne -> this.tp$richcompare -> tuple.prototype.tp$richcompare
+            return richcompare.call(this, other, op);
         };
     });
 }
