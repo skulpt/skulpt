@@ -511,5 +511,6 @@ function _tokenize(filename, readline, encoding, yield_) {
 Sk._tokenize = _tokenize;
 // we use this in ast
 Sk._tokenize.Floatnumber = Floatnumber;
+Sk._tokenize.Unicode = Unicode;
 
 Sk.exportSymbol("Sk._tokenize", Sk._tokenize);
