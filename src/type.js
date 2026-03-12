@@ -231,9 +231,7 @@ function tp$new(args, kwargs) {
     klass.$allocateSlots();
 
     set_names(klass);
-    init_subclass(klass, kwargs);
-
-    return klass;
+    return Sk.misceval.chain(init_subclass(klass, kwargs), () => klass);
 }
 
 
@@ -773,6 +771,27 @@ Sk.builtin.type.tp$classmethods = {
     },
 };
 
+// PEP 604: Union type syntax - add nb$or and nb$ror to type objects
+// This enables: int | str -> UnionType
+Sk.builtin.type.prototype.tp$as_number = true;
+
+Sk.builtin.type.prototype.nb$or = function (other) {
+    // type | type -> UnionType
+    // type | UnionType -> UnionType
+    if (other.sk$type || other instanceof Sk.builtin.UnionType) {
+        return Sk.builtin.UnionType.$make([this, other]);
+    }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
+Sk.builtin.type.prototype.nb$ror = function (other) {
+    // For cases where other doesn't have __or__ that handles this
+    if (other.sk$type || other instanceof Sk.builtin.UnionType) {
+        return Sk.builtin.UnionType.$make([other, this]);
+    }
+    return Sk.builtin.NotImplemented.NotImplemented$;
+};
+
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
     $get() {
@@ -821,7 +840,7 @@ function check_special_type_attr(type, value, pyName) {
 function init_subclass(type, kws) {
     const super_ = new Sk.builtin.super_(type, type);
     const func = super_.tp$getattr(Sk.builtin.str.$initsubclass);
-    Sk.misceval.callsimArray(func, [], kws);
+    return Sk.misceval.callsimOrSuspendArray(func, [], kws);
 }
 
 function set_names(type) {
