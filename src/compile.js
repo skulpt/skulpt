@@ -693,7 +693,9 @@ Compiler.prototype.ccall = function (e) {
         // TODO: feel free to ignore the above
         this.u.tempsToSave.push("$sup");
         out("if (typeof $sup === \"undefined\") { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
-        positionalArgs = "[$gbl.__class__,$sup]";
+        // __class__ comes from the closure ($free) which was set up by the enclosing class
+        out("if ($free === undefined || $free.__class__ === undefined) { throw new Sk.builtin.RuntimeError(\"super(): __class__ cell not found\") };");
+        positionalArgs = "[$free.__class__,$sup]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
@@ -1252,7 +1254,11 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var localsToSave = unit.localnames.concat(unit.tempsToSave);
     var seenTemps = {};
     var hasCell = unit.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
-    var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
+    // Filter out $free from locals to declare - it's already declared in varDeclsCode for fastcall functions
+    var localsToDeclare = localsToSave.filter(function (name) {
+        return name !== "$free";
+    });
+    var output = (localsToDeclare.length > 0 ? ("var " + localsToDeclare.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
@@ -2143,10 +2149,8 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "}";
 
-    // inject __class__ cell when running python3
-    if (Sk.__future__.super_args && class_for_super) {
-        this.u.varDeclsCode += "$gbl.__class__=$gbl." + class_for_super.v + ";";
-    }
+    // __class__ is now handled through proper cell variables in the class closure
+    // (see needsClassClosure mechanism in symtable.js and class compilation)
 
     // finally, set up the block switch that the jump code expects
     //
@@ -2246,11 +2250,30 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     frees = "";
     if (hasFree) {
-        frees = ",$cell";
-        // if the scope we're in where we're defining this one has free
-        // vars, they may also be cell vars, so we pass those to the
-        // closure too.
-        containingHasFree = this.u.ste.hasFree;
+        // Check if we're inside a class that needs __class__ closure
+        // In that case, use $classcell for methods to get __class__
+        // Note: After exitScope(), this.u is the class (not the method we just compiled)
+        const inClassWithClassClosure = this.u.needsClassClosure;
+
+        // Check if the containing scope has cell variables (locals accessed by nested functions)
+        const containingHasCells = this.u.ste.hasCells;
+
+        if (inClassWithClassClosure) {
+            // Use $classcell for __class__ access
+            frees = ",$classcell";
+        } else if (containingHasCells) {
+            // Current scope has cell variables, pass $cell
+            frees = ",$cell";
+        }
+        // If the containing scope has free variables from its parent, pass them through.
+        // This handles nested nonlocal where intermediate scopes don't define cells
+        // but need to pass through free vars (e.g., grandparent -> parent -> child)
+        // For classes, $free is defined if hasFree || childHasFree (see cclass).
+        if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock) {
+            containingHasFree = this.u.ste.hasFree || this.u.ste.childHasFree;
+        } else {
+            containingHasFree = this.u.ste.hasFree;
+        }
         if (containingHasFree) {
             frees += ",$free";
         }
@@ -2515,7 +2538,20 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=$globals;";
+    // Check if this class needs a __class__ cell (for super() or __class__ references in methods)
+    const needsClassClosure = this.u.ste.needsClassClosure;
+
+    // If the class has free variables (methods accessing variables from enclosing function),
+    // or if any child (method) has free variables, we need to make $cell available as $free
+    // for methods to access those variables. childHasFree is important because the class
+    // body itself might not reference free vars, but its methods might.
+    const classHasFree = this.u.ste.hasFree || this.u.ste.childHasFree;
+
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=" + (classHasFree ? "$cell" : "$globals") + ";";
+    // Create $classcell for methods to access __class__ - this is different from $cell (parent's cell)
+    if (needsClassClosure) {
+        this.u.prefixCode += "var $classcell={};";
+    }
     this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
@@ -2533,8 +2569,14 @@ Compiler.prototype.cclass = function (s) {
     this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
+    // Store needsClassClosure on the compiler unit so cbody and method compilation can access it
+    this.u.needsClassClosure = needsClassClosure;
 
     this.cbody(s.body, s.name);
+    // If we need __class__ cell, store it in __classcell__ for type.__new__ to populate
+    if (needsClassClosure) {
+        out("$loc.__classcell__=$classcell;");
+    }
     out("return;");
 
     // build class
@@ -2668,6 +2710,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
         case Sk.astnodes.ImportFrom:
             return this.cfromimport(s);
         case Sk.astnodes.Global:
+        case Sk.astnodes.Nonlocal:
             break;
         case Sk.astnodes.Expr:
             this.vexpr(s.value);
@@ -2742,7 +2785,13 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
     dict = null;
     switch (scope) {
         case Sk.SYMTAB_CONSTS.FREE:
-            dict = "$free";
+            // In class scopes, FREE variables come from the parent function's cell closure
+            // Classes receive $cell from their enclosing function, so use $cell instead of $free
+            if (this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock) {
+                dict = "$cell";
+            } else {
+                dict = "$free";
+            }
             optype = OP_DEREF;
             break;
         case Sk.SYMTAB_CONSTS.CELL:
