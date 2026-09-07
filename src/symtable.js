@@ -520,6 +520,9 @@ SymbolTable.prototype.visitStmt = function (s) {
             if (s.args.defaults) {
                 this.SEQExpr(s.args.defaults);
             }
+            if (s.args.kw_defaults) {
+                this.SEQExpr(s.args.kw_defaults);
+            }
             if (s.decorator_list) {
                 this.SEQExpr(s.decorator_list);
             }
@@ -751,6 +754,9 @@ SymbolTable.prototype.visitExpr = function (e) {
             this.addDef(new Sk.builtin.str("lambda"), DEF_LOCAL, e.lineno);
             if (e.args.defaults) {
                 this.SEQExpr(e.args.defaults);
+            }
+            if (e.args.kw_defaults) {
+                this.SEQExpr(e.args.kw_defaults);
             }
             this.enterBlock("lambda", FunctionBlock, e, e.lineno);
             this.visitArguments(e.args, e.lineno);
