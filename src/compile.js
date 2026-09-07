@@ -2515,7 +2515,7 @@ Compiler.prototype.cclass = function (s) {
     scopename = this.enterScope(s.name, s, s.lineno);
     entryBlock = this.newBlock("class entry");
 
-    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=$globals;";
+    this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=$cell;";
     this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
@@ -2541,7 +2541,11 @@ Compiler.prototype.cclass = function (s) {
 
     this.exitScope();
 
-    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, ");");
+    // If the enclosing scope has free variables of its own, they are held in
+    // $free (not $cell) and must be threaded into the class so its body and
+    // methods can close over names bound more than one level out.
+    const enclosingFree = this.u.ste.hasFree ? ", $free" : "";
+    out("$ret = Sk.misceval.buildClass($gbl,", scopename, ",", s.name["$r"]().v, ",[", bases, "], $cell, ", keywordArgs, enclosingFree, ");");
     this._checkSuspension();
 
     // apply decorators
@@ -2832,6 +2836,22 @@ Compiler.prototype.nameop = function (name, ctx, dataToStore) {
         case OP_DEREF:
             switch (ctx) {
                 case Sk.astnodes.Load:
+                    // The cell may exist but hold no value yet (e.g. a free variable
+                    // read before the enclosing binding has executed). A bound Python
+                    // value is never JS undefined (None is Sk.builtin.none.none$), so
+                    // an undefined slot means the name is unbound. Match CPython: a free
+                    // variable raises NameError, a local cell raises UnboundLocalError.
+                    out("if (", dict, ".", mangledNoPre, "===undefined) {");
+                    if (scope === Sk.SYMTAB_CONSTS.FREE) {
+                        out("throw new Sk.builtin.NameError(\"cannot access free variable '",
+                            mangledNoPre,
+                            "' where it is not associated with a value in enclosing scope\");");
+                    } else {
+                        out("throw new Sk.builtin.UnboundLocalError(\"cannot access local variable '",
+                            mangledNoPre,
+                            "' where it is not associated with a value\");");
+                    }
+                    out("}\n");
                     return dict + "." + mangledNoPre;
                 case Sk.astnodes.Store:
                     out(dict, ".", mangledNoPre, "=", dataToStore, ";");

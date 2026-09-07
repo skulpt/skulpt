@@ -39,6 +39,65 @@ class TestSuper(unittest.TestCase):
 
 
 class TestRegressions(unittest.TestCase):
+    def test_function_preserves_shadowed_closure_cell(self):
+        def outer():
+            x = 1
+            y = 2
+
+            def capture():  # Keep outer x in the closure passed to inner.
+                return x
+
+            def inner():
+                x = 3
+                y  # Give inner a free variable as well as its own cell.
+
+                def get():
+                    return x
+
+                return x, get()
+
+            return inner()
+
+        self.assertEqual(outer(), (3, 3))
+
+    def test_function_observes_rebound_outer_cell(self):
+        def outer():
+            x = 1
+
+            def middle():
+                def get():
+                    return x
+                return get
+
+            get = middle()
+            before = get()
+            x = 2
+            return before, get()
+
+        self.assertEqual(outer(), (1, 2))
+
+    def test_class_preserves_shadowed_closure_cell(self):
+        def outer():
+            x = 1
+            y = 2
+
+            def capture():  # Keep outer x in the closure passed to inner.
+                return x
+
+            def inner():
+                def get():
+                    return x
+
+                x = 3
+                y  # Give inner a free variable as well as its own cell.
+                class C:
+                    pass
+                return get()
+
+            return inner()
+
+        self.assertEqual(outer(), 3)
+
     def test_bug_1470(self):
         global i
         i = 0

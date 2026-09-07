@@ -1322,7 +1322,7 @@ function _isIE() {
  * should return a newly constructed class object.
  *
  */
-Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
+Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closure2) {
     const _name = new Sk.builtin.str(name);
     const _bases = update_bases(bases); // todo this function should go through the bases and check for __mro_entries__
 
@@ -1391,6 +1391,13 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws) {
     // @todo add qualname here to pass to the code object
 
     const l_cell = cell === undefined ? {} : cell;
+
+    // Look up enclosing free variables without overwriting local cells or
+    // copying their current values. Nested classes can share both dictionaries.
+    if (closure2 !== undefined && closure2 !== l_cell) {
+        Object.setPrototypeOf(l_cell, closure2);
+    }
+
     // pass the locals to the code object which populates the namespace of the class
     func(globals, locals, l_cell);
 
