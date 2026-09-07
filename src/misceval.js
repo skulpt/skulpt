@@ -1392,15 +1392,10 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closur
 
     const l_cell = cell === undefined ? {} : cell;
 
-    // The class's enclosing scope's free variables (names bound further out and
-    // merely relayed through the class's enclosing scope) live in closure2
-    // rather than in cell.  The class body and its methods may close over them
-    // too, so merge them in alongside the cells, mirroring the closure handling
-    // in the function ctor.
-    if (closure2 !== undefined) {
-        for (let k in closure2) {
-            l_cell[k] = closure2[k];
-        }
+    // Look up enclosing free variables without overwriting local cells or
+    // copying their current values. Nested classes can share both dictionaries.
+    if (closure2 !== undefined && closure2 !== l_cell) {
+        Object.setPrototypeOf(l_cell, closure2);
     }
 
     // pass the locals to the code object which populates the namespace of the class

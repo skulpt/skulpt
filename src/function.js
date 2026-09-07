@@ -14,7 +14,7 @@
  * that ok?)
  * @param {Object=} closure dict of free variables
  * @param {Object=} closure2 another dict of free variables that will be
- * merged into 'closure'. there's 2 to simplify generated code (one is $free,
+ * used as the prototype of 'closure'. there's 2 to simplify generated code (one is $free,
  * the other is $cell)
  *
  * closure is the cell variables from the parent scope that we need to close
@@ -39,11 +39,10 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         this.$module = (Sk.globals && Sk.globals["__name__"]) || Sk.builtin.none.none$;
         this.$qualname = code.co_qualname || this.$name;
 
-        if (closure2 !== undefined) {
-            // todo; confirm that modification here can't cause problems
-            for (let k in closure2) {
-                closure[k] = closure2[k];
-            }
+        // Preserve local cells and observe later assignments in enclosing scopes.
+        // Class bodies can pass the same dictionary for both closures.
+        if (closure2 !== undefined && closure2 !== closure) {
+            Object.setPrototypeOf(closure, closure2);
         }
         this.func_closure = closure;
         this.func_annotations = null;
