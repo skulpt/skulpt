@@ -200,7 +200,7 @@ function tp$new(args, kwargs) {
 
 
     dict.$items().forEach(([key, val]) => {
-        if (!Sk.builtin.checkString(key)) {
+        if (!Sk.builtin.checkString(key) || key.v === "__classcell__") {
             return;
         }
         if (slotSet && slotSet.has(key.v)) {
@@ -229,6 +229,14 @@ function tp$new(args, kwargs) {
     overrideImplied(proto, "__class_getitem__", "classmethod");
 
     klass.$allocateSlots();
+
+    const classcell = dict.quick$lookup(new Sk.builtin.str("__classcell__"));
+    if (classcell !== undefined) {
+        if (!(classcell instanceof Sk.builtin.cell)) {
+            throw new Sk.builtin.TypeError("__classcell__ must be a nonlocal cell, not " + Sk.abstr.typeName(classcell));
+        }
+        classcell.$closure.__class__ = klass;
+    }
 
     set_names(klass);
     init_subclass(klass, kwargs);
