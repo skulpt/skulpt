@@ -2,13 +2,10 @@ import types
 import unittest
 
 
-# argh bug #1178 is very annoying for these tests!!
-# when #1178 is fixed can remove all the global 
 
 
 class Test(unittest.TestCase):
     def test_init_subclass(self):
-        global A,B
         class A:
             initialized = False
 
@@ -22,7 +19,6 @@ class Test(unittest.TestCase):
         self.assertTrue(B.initialized)
 
     def test_init_subclass_dict(self):
-        global A,B
         class A(dict):
             initialized = False
 
@@ -36,7 +32,6 @@ class Test(unittest.TestCase):
         self.assertTrue(B.initialized)
 
     def test_init_subclass_kwargs(self):
-        global A,B
         class A:
             def __init_subclass__(cls, **kwargs):
                 cls.kwargs = kwargs
@@ -47,7 +42,6 @@ class Test(unittest.TestCase):
         self.assertEqual(B.kwargs, dict(x=3))
 
     def test_init_subclass_error(self):
-        global A,B
         class A:
             def __init_subclass__(cls):
                 raise RuntimeError
@@ -57,7 +51,6 @@ class Test(unittest.TestCase):
                 pass
 
     def test_init_subclass_wrong(self):
-        global A,B
         class A:
             def __init_subclass__(cls, whatever):
                 pass
@@ -67,7 +60,6 @@ class Test(unittest.TestCase):
                 pass
 
     def test_init_subclass_skipped(self):
-        global BaseWithInit, BaseWithoutInit, A
         class BaseWithInit:
             def __init_subclass__(cls, **kwargs):
                 super().__init_subclass__(**kwargs)
@@ -83,7 +75,6 @@ class Test(unittest.TestCase):
         self.assertIs(BaseWithoutInit.initialized, BaseWithoutInit)
 
     def test_init_subclass_diamond(self):
-        global Base, Left, Middle, Right, A
         class Base:
             def __init_subclass__(cls, **kwargs):
                 super().__init_subclass__(**kwargs)
@@ -110,7 +101,6 @@ class Test(unittest.TestCase):
         self.assertEqual(Right.calls, [])
 
     def test_set_name(self):
-        global Descriptor
         class Descriptor:
             def __set_name__(self, owner, name):
                 self.owner = owner
@@ -123,7 +113,6 @@ class Test(unittest.TestCase):
         self.assertIs(A.d.owner, A)
 
     def test_set_name_metaclass(self):
-        global Meta, Descriptor
         class Meta(type):
             def __new__(cls, name, bases, ns):
                 ret = super().__new__(cls, name, bases, ns)
@@ -141,7 +130,6 @@ class Test(unittest.TestCase):
         self.assertEqual(A, 0)
 
     def test_set_name_error(self):
-        global Descriptor, NotGoingToWork
         class Descriptor:
             def __set_name__(self, owner, name):
                 1/0
@@ -157,7 +145,6 @@ class Test(unittest.TestCase):
         self.assertIsInstance(exc.__cause__, ZeroDivisionError)
 
     def test_set_name_wrong(self):
-        global Descriptor, NotGoingToWork
         class Descriptor:
             def __set_name__(self):
                 pass
@@ -173,7 +160,6 @@ class Test(unittest.TestCase):
         self.assertIsInstance(exc.__cause__, TypeError)
 
     def test_set_name_lookup(self):
-        global resolved, NonDescriptor, A
         resolved = []
         class NonDescriptor:
             def __getattr__(self, name):
@@ -186,7 +172,6 @@ class Test(unittest.TestCase):
                          '__set_name__ is looked up in instance dict')
 
     def test_set_name_init_subclass(self):
-        global Descriptor, Meta, A
         class Descriptor:
             def __set_name__(self, owner, name):
                 self.owner = owner
@@ -213,7 +198,6 @@ class Test(unittest.TestCase):
         self.assertEqual(B.name, 'd')
 
     def test_set_name_modifying_dict(self):
-        global notified, Descriptor
         notified = []
         class Descriptor:
             def __set_name__(self, owner, name):
@@ -230,7 +214,6 @@ class Test(unittest.TestCase):
         self.assertEqual(notified, ['a', 'b', 'c', 'd', 'e'])
 
     def test_errors(self):
-        global MyMeta, MyClass
         class MyMeta(type):
             pass
 
@@ -266,7 +249,6 @@ class Test(unittest.TestCase):
         self.assertEqual(MyClass.otherarg, 1)
 
     def test_errors_changed_pep487(self):
-        global MyMeta, MyClass
         # These tests failed before Python 3.6, PEP 487
         class MyMeta(type):
             def __new__(cls, name, bases, namespace):

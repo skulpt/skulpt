@@ -7,9 +7,6 @@ import unittest
 import sys
 ModuleType = type(sys)
 
-class Descr:
-    def __get__(self, o, t):
-        raise RuntimeError
 class FullLoader:
     @classmethod
     def module_repr(cls, m):
@@ -284,10 +281,9 @@ class ModuleTests(unittest.TestCase):
     #         b"shutil.rmtree = rmtree"})
 
     def test_descriptor_errors_propagate(self):
-        # moved to global scope skulpt issue #1178
-        # class Descr:
-        #     def __get__(self, o, t):
-        #         raise RuntimeError
+        class Descr:
+            def __get__(self, o, t):
+                raise RuntimeError
         class M(ModuleType):
             melon = Descr()
         self.assertRaises(RuntimeError, getattr, M("mymod"), "melon")
