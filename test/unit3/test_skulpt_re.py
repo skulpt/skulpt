@@ -1,6 +1,7 @@
 # This file adds some additional tests for the re module outside of Cpython tests
 import unittest
 import re
+import sys
 from datetime import datetime
 
 
@@ -203,11 +204,96 @@ class TestUnicodeWordBoundaries(unittest.TestCase):
 
     def test_findall_word_characters_with_accents(self):
         # \w+ should capture full words including accented characters
-        # Note: \b word boundary doesn't work with Unicode in JavaScript,
-        # so we use space-based splitting instead
-        self.assertEqual(re.findall(r'\w+', 'café latte'), ['café', 'latte'])
-        self.assertEqual(re.findall(r'\w+', 'niño pequeño'), ['niño', 'pequeño'])
-        self.assertEqual(re.findall(r'\w+', 'últimas palabras'), ['últimas', 'palabras'])
+        self.assertEqual(re.findall(r'\b\w+\b', 'café latte'), ['café', 'latte'])
+        self.assertEqual(re.findall(r'\b\w+\b', 'niño pequeño'), ['niño', 'pequeño'])
+        self.assertEqual(re.findall(r'\b\w+\b', 'últimas palabras'), ['últimas', 'palabras'])
+
+
+class TestParserRegressions(unittest.TestCase):
+    def test_scoped_flags_are_explicitly_unsupported(self):
+        if "Skulpt" not in sys.version:
+            self.skipTest("Skulpt-specific unsupported feature")
+        for pattern in [r'(?i:a)', r'(?-i:a)', r'(?s:.)', r'(?a:\w)', r'(?x: a)']:
+            with self.assertRaises(re.error) as cm:
+                re.compile(pattern)
+            self.assertIn('scoped flags are not supported', str(cm.exception))
+
+    def test_inline_flags_respect_pattern_syntax(self):
+        # Flag-looking text in a character class or after an escaped '(' is literal.
+        self.assertIsNone(re.match(r'[(?i)]a', 'iA'))
+        self.assertTrue(re.fullmatch(r'\(?i\)', 'i)'))
+        self.assertFalse(re.compile(r'[(?i)]').flags & re.I)
+        self.assertTrue(re.compile(r'a(?i)').flags & re.I)  # Python 3.7 permits this.
+        self.assertTrue(re.fullmatch(r'a(?i)', 'A'))
+        self.assertTrue(re.fullmatch(r'a(?i)*', 'AAA'))
+        self.assertTrue(re.fullmatch(r'a(?#comment)*', 'aaa'))
+        with self.assertRaises(re.error):
+            re.compile(r'(?i)*')
+        with self.assertRaises(re.error):
+            re.compile(r'(?x)a* ?')
+        self.assertTrue(re.fullmatch('a # (?i)\nb', 'ab', re.X))
+        self.assertIsNone(re.fullmatch('a # (?i)\nb', 'AB', re.X))
+
+    def test_tokenizer_preserves_escaped_delimiters(self):
+        self.assertTrue(re.fullmatch(r'(?#comment\)continues)a', 'a'))
+        self.assertTrue(re.fullmatch(r'[]-a]', '^'))
+        self.assertIsNone(re.fullmatch(r'[]-a]', '-'))
+        # The decoded digit must not become part of the backreference.
+        self.assertTrue(re.fullmatch(r'(a)\1\x32', 'aa2'))
+
+    def test_lookbehind_requires_fixed_width(self):
+        for pattern in [r'(?<=a+)b', r'(?<=a|bc)d', r'(a+)(?<=\1)b']:
+            with self.assertRaises(re.error):
+                re.compile(pattern)
+        self.assertTrue(re.search(r'(?<=ab|cd)e', 'abe'))
+        self.assertTrue(re.search(r'(ab)(?<=\1)c', 'abc'))
+        self.assertTrue(re.search(r'(?<=a{0})b', 'b'))
+
+    def test_error_positions_count_codepoints(self):
+        with self.assertRaises(re.error) as cm:
+            re.compile('😀[')
+        err = cm.exception
+        self.assertEqual(err.pattern, '😀[')
+        self.assertEqual(err.msg, 'unterminated character set')
+        self.assertEqual((err.pos, err.lineno, err.colno), (1, 1, 2))
+        err = re.error('problem', '[', 0)
+        self.assertEqual(err.pos, 0)
+        self.assertEqual(err.args, ('problem at position 0',))
+        self.assertIsNone(re.error('problem').lineno)
+
+    def test_escaped_range_endpoints(self):
+        for pattern in [r'[\x5d-\x61]', r'[\x5c-\x61]', r'[\x5e-\x61]']:
+            self.assertTrue(re.fullmatch(pattern, '^'))
+            self.assertTrue(re.fullmatch(pattern, 'a'))
+            self.assertIsNone(re.fullmatch(pattern, 'b'))
+
+    def test_incomplete_quantifiers_are_literals(self):
+        for pattern in ['{', '{1', '{1,2', 'a{}', 'a{1,', 'a{,2']:
+            self.assertTrue(re.fullmatch(pattern, pattern))
+
+    def test_unicode_categories_and_complements(self):
+        cases = [
+            ('w', '²', True), ('w', '\u2163', True), ('w', '\u203f', False),
+            ('w', 'é', True), ('w', '_', True), ('d', '²', False),
+            ('d', '\u0660', True), ('s', '\u2028', True), ('s', '\u2029', True),
+            ('s', '\x1c', True), ('s', '\ufeff', False),
+        ]
+        for category, char, expected in cases:
+            for pattern in ['\\' + category, '[\\' + category + ']']:
+                self.assertEqual(bool(re.fullmatch(pattern, char)), expected)
+            for pattern in ['\\' + category.upper(), '[\\' + category.upper() + ']']:
+                self.assertEqual(bool(re.fullmatch(pattern, char)), not expected)
+            self.assertEqual(bool(re.fullmatch('[^\\' + category.upper() + ']', char)), expected)
+        self.assertTrue(re.fullmatch(r'[\W_]+', '!?_'))
+        self.assertIsNone(re.fullmatch(r'[\W_]+', 'é'))
+        self.assertTrue(re.fullmatch(r'[^\W_]+', 'é'))
+        self.assertIsNone(re.fullmatch(r'[^\W_]+', '_'))
+        self.assertIsNone(re.fullmatch(r'\s', '\u00a0', re.A))
+        self.assertTrue(re.fullmatch(r'\s', ' ', re.A))
+
+    def test_replacement_punctuation_keeps_backslash(self):
+        for replacement in [r'\&', r'\!', r'\_', r'\é']:
+            self.assertEqual(re.sub('a', replacement, 'a'), replacement)
 
 
 if __name__ == "__main__":
