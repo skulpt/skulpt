@@ -72,9 +72,8 @@ function CompilerUnit () {
     this.breakBlocks = [];
     // stack of where to go on a continue
     this.continueBlocks = [];
-    this.exceptBlocks = [];
-    // state of where to go on a return
-    this.finallyBlocks = [];
+    // stack of exception handlers to resolve when returning/breaking/continuing
+    this.exceptionHandlerBlocks = [];
 }
 
 CompilerUnit.prototype.activateScope = function () {
@@ -1147,6 +1146,7 @@ Compiler.prototype.newBlock = function (name) {
     this.u.blocks[ret]._next = null;
     return ret;
 };
+
 Compiler.prototype.setBlock = function (n) {
     Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
     this.u.curblock = n;
@@ -1168,33 +1168,69 @@ Compiler.prototype.popContinueBlock = function () {
     this.u.continueBlocks.pop();
 };
 
-Compiler.prototype.pushExceptBlock = function (n) {
-    Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
-    this.u.exceptBlocks.push(n);
-};
-Compiler.prototype.popExceptBlock = function () {
-    this.u.exceptBlocks.pop();
+// This compiler-time stack describes lexical nesting. Generated $exc entries are
+// runtime exception targets; return/break/continue can pop them without changing
+// the compiler stack needed to compile the remaining statements in the scope.
+Compiler.prototype.pushExceptionHandlerBlock = function (blk, isFinally) {
+    Sk.asserts.assert(blk >= 0 && blk < this.u.blocknum);
+    Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
+    const excBlock = { blk, isFinally, breakDepth: this.u.breakBlocks.length };
+    this.u.exceptionHandlerBlocks.push(excBlock);
 };
 
-Compiler.prototype.pushFinallyBlock = function (n) {
-    Sk.asserts.assert(n >= 0 && n < this.u.blocknum);
-    Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
-    this.u.finallyBlocks.push({blk: n, breakDepth: this.u.breakBlocks.length});
+Compiler.prototype.popExceptionHandlerBlock = function () {
+    this.u.exceptionHandlerBlocks.pop();
 };
-Compiler.prototype.popFinallyBlock = function () {
-    this.u.finallyBlocks.pop();
+
+Compiler.prototype.closeOutExceptionHandlersAndMaybeJumpToFinally = function(continuingOrBreaking, valueOfPostFinally) {
+    // Emit runtime unwinding without changing the compiler's lexical stack.
+    // Return leaves every handler; break/continue leave only handlers inside
+    // their loop. Pop each handler before running cleanup so cleanup exceptions
+    // reach an enclosing handler instead of re-entering the same cleanup.
+
+    const myBreakDepth = continuingOrBreaking ? this.u.breakBlocks.length : 0;
+    const excBlocks = this.u.exceptionHandlerBlocks;
+
+    for (let excBlkIdx = excBlocks.length - 1; excBlkIdx >= 0 && excBlocks[excBlkIdx].breakDepth >= myBreakDepth; excBlkIdx--) {
+        const excBlock = excBlocks[excBlkIdx];
+        out("$exc.pop();");
+        if (excBlock.isFinally) {
+            if (valueOfPostFinally !== undefined) {
+                out("$postfinally=", valueOfPostFinally, ";");
+            }
+            // jump to the body of the finally block
+            out("$blk=",excBlock.blk,";continue;");
+            // outputFinallyCascade resumes unwinding after this cleanup body.
+            // Its handler has left the compiler stack by then.
+            return false;
+        }
+    }
+    // True means execution falls through: the caller must emit the final
+    // jump/return. False means we emitted a jump to cleanup instead.
+    return true;
 };
-Compiler.prototype.peekFinallyBlock = function() {
-    return (this.u.finallyBlocks.length > 0) ? this.u.finallyBlocks[this.u.finallyBlocks.length-1] : undefined;
-};
+
 
 Compiler.prototype.setupExcept = function (eb) {
     out("$exc.push(", eb, ");");
-    //this.pushExceptBlock(eb);
+    this.pushExceptionHandlerBlock(eb, false);
 };
 
 Compiler.prototype.endExcept = function () {
     out("$exc.pop();");
+    this.popExceptionHandlerBlock();
+};
+
+Compiler.prototype.setupFinally = function (finallyBody, excHandler) {
+    // try/finally uses a separate exception entry to save the error for re-raising.
+    // Return/break/continue enter finallyBody directly with $postfinally set.
+    out("$exc.push(", excHandler , ");");
+    this.pushExceptionHandlerBlock(finallyBody, true);
+};
+
+Compiler.prototype.endFinally = function () {
+    out("$exc.pop();");
+    this.popExceptionHandlerBlock();
 };
 
 Compiler.prototype.outputLocals = function (unit) {
@@ -1528,50 +1564,34 @@ Compiler.prototype.craise = function (s) {
     }
 };
 
-Compiler.prototype.outputFinallyCascade = function (thisFinally) {
-    var nextFinally;
+Compiler.prototype.outputFinallyCascade = function () {
 
     // What do we do when we're done executing a 'finally' block?
     // Normally you just fall off the end. If we're 'return'ing,
     // 'continue'ing or 'break'ing, $postfinally tells us what to do.
     //
-    // But we might be in a nested pair of 'finally' blocks. If so, we need
-    // to work out whether to jump to the outer finally block.
+    // But we might still be inside one or more nested try: blocks, so we
+    // need to clear the exception stack and/or jump to an outer finally block.
+    // We use the same logic as continue/break/return here, although we have
+    // to generate both cases because we don't know until runtime whether this
+    // is a break/continue or a return.
     //
     // (NB we do NOT deal with re-raising exceptions here. That's handled
     // elsewhere, because 'with' does special things with exceptions.)
 
-    if (this.u.finallyBlocks.length == 0) {
-        // No nested 'finally' block. Easy.
-        out("if($postfinally!==undefined) { if ($postfinally.returning) { return $postfinally.returning; } else { $blk=$postfinally.gotoBlock; $postfinally=undefined; continue; } }");
-    } else {
+    out("if($postfinally!==undefined) {",
+          "if($postfinally.returning) {");
 
-        // OK, we're nested. Do we jump straight to the outer 'finally' block?
-        // Depends on how we got here here.
-
-        // Normal execution ($postfinally===undefined)? No, we're done here.
-
-        // Returning ($postfinally.returning)? Yes, we want to execute all the
-        // 'finally' blocks on the way out.
-
-        // Breaking ($postfinally.isBreak)? It depends. Is the outer 'finally'
-        // block inside or outside the loop we're breaking out of? We compare
-        // its breakDepth to ours to find out. If we're at the same breakDepth,
-        // we're both inside the innermost loop, so we both need to execute.
-        // ('continue' is the same thing as 'break' for us)
-
-        nextFinally = this.peekFinallyBlock();
-
-        out("if($postfinally!==undefined) {",
-            "if ($postfinally.returning",
-            (nextFinally.breakDepth == thisFinally.breakDepth) ? "|| $postfinally.isBreak" : "", ") {",
-
-            "$blk=",nextFinally.blk,";continue;",
-            "} else {",
-            "$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;",
-            "}",
-            "}");
+    if(this.closeOutExceptionHandlersAndMaybeJumpToFinally(false)) {
+        out("return $postfinally.returning;");
     }
+
+    out(  "} else {");
+    if (this.closeOutExceptionHandlersAndMaybeJumpToFinally(true)) {
+        out("$blk=$postfinally.gotoBlock;$postfinally=undefined;continue;");
+    }
+    out(  "}",
+        "}");
 };
 
 Compiler.prototype.ctry = function (s) {
@@ -1586,7 +1606,6 @@ Compiler.prototype.ctry = function (s) {
     var n = s.handlers.length;
 
     var finalBody, finalExceptionHandler, finalExceptionToReRaise;
-    var thisFinally;
 
     if (s.finalbody) {
         finalBody = this.newBlock("finalbody");
@@ -1594,9 +1613,7 @@ Compiler.prototype.ctry = function (s) {
         finalExceptionToReRaise = this._gr("finally_reraise", "undefined");
 
         this.u.tempsToSave.push(finalExceptionToReRaise);
-        this.pushFinallyBlock(finalBody);
-        thisFinally = this.peekFinallyBlock();
-        this.setupExcept(finalExceptionHandler);
+        this.setupFinally(finalBody, finalExceptionHandler);
     }
 
     // Create a block for each except clause
@@ -1657,7 +1674,7 @@ Compiler.prototype.ctry = function (s) {
     this.setBlock(end);
     // End of the try/catch/else segment
     if (s.finalbody) {
-        this.endExcept();
+        this.endFinally();
 
         this._jump(finalBody);
 
@@ -1668,13 +1685,12 @@ Compiler.prototype.ctry = function (s) {
         this._jump(finalBody);
 
         this.setBlock(finalBody);
-        this.popFinallyBlock();
         this.vseqstmt(s.finalbody);
         // If finalbody executes normally, AND we have an exception
         // to re-raise, we raise it.
         out("if(",finalExceptionToReRaise,"!==undefined) { throw ",finalExceptionToReRaise,";}");
 
-        this.outputFinallyCascade(thisFinally);
+        this.outputFinallyCascade();
         // Else, we continue from here.
     }
 };
@@ -1683,7 +1699,6 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     var mgr, exit, value, exception;
     var exceptionHandler = this.newBlock("withexh"), tidyUp = this.newBlock("withtidyup");
     var carryOn = this.newBlock("withcarryon");
-    var thisFinallyBlock;
 
     // NB this does not *quite* match the semantics in PEP 343, which
     // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
@@ -1708,8 +1723,7 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     value = this._gr("value", "$ret");
 
     // try:
-    this.pushFinallyBlock(tidyUp);
-    thisFinallyBlock = this.u.finallyBlocks[this.u.finallyBlocks.length-1];
+    this.setupFinally(tidyUp, tidyUp);
     this.setupExcept(exceptionHandler);
 
     //    VAR = value
@@ -1727,11 +1741,17 @@ Compiler.prototype.cwith = function (s, itemIdx) {
         this.vseqstmt(s.body);
     }
 
+    // Leave both compiler scopes before compiling __exit__: neither handler
+    // covers cleanup. These calls also emit the pops for normal fallthrough.
     this.endExcept();
+    this.endFinally();
     this._jump(tidyUp);
 
     // except:
     this.setBlock(exceptionHandler);
+    // Exception dispatch already popped the except target. Remove only the
+    // runtime finally target here; both compiler entries were removed above.
+    out("$exc.pop();");
 
     //   if not exit(*sys.exc_info()):
     //     raise
@@ -1743,14 +1763,13 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     // finally: (kinda. NB that this is a "finally" that doesn't run in the
     //           exception case!)
     this.setBlock(tidyUp);
-    this.popFinallyBlock();
 
     //   exit(None, None, None)
     out("$ret = Sk.misceval.callsimOrSuspendArray(",exit,",[Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$]);");
     this._checkSuspension(s);
     // Ignore $ret.
 
-    this.outputFinallyCascade(thisFinallyBlock);
+    this.outputFinallyCascade();
 
     this._jump(carryOn);
 
@@ -2485,32 +2504,22 @@ Compiler.prototype.cclass = function (s) {
 };
 
 Compiler.prototype.ccontinue = function (s) {
-    var nextFinally = this.peekFinallyBlock(), gotoBlock;
     if (this.u.continueBlocks.length == 0) {
         throw new Sk.builtin.SyntaxError("'continue' outside loop", this.filename, s.lineno);
     }
-    // todo; continue out of exception blocks
-    gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
+    const gotoBlock = this.u.continueBlocks[this.u.continueBlocks.length - 1];
     Sk.asserts.assert(this.u.breakBlocks.length === this.u.continueBlocks.length);
-    if (nextFinally && nextFinally.breakDepth == this.u.continueBlocks.length) {
-        out("$postfinally={isBreak:true,gotoBlock:",gotoBlock,"};");
-    } else {
-        this._jump(gotoBlock);
-    }
+    this.closeOutExceptionHandlersAndMaybeJumpToFinally(true, "{isBreak:true,gotoBlock:"+gotoBlock+"}");
+    this._jump(gotoBlock);
 };
 
-Compiler.prototype.cbreak = function (s) {
-    var nextFinally = this.peekFinallyBlock(), gotoBlock;
-
+Compiler.prototype.cbreak = function(s) {
     if (this.u.breakBlocks.length === 0) {
         throw new Sk.builtin.SyntaxError("'break' outside loop", this.filename, s.lineno);
     }
-    gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
-    if (nextFinally && nextFinally.breakDepth == this.u.breakBlocks.length) {
-        out("$postfinally={isBreak:true,gotoBlock:",gotoBlock,"};");
-    } else {
-        this._jump(gotoBlock);
-    }
+    const gotoBlock = this.u.breakBlocks[this.u.breakBlocks.length - 1];
+    this.closeOutExceptionHandlersAndMaybeJumpToFinally(true, "{isBreak:true,gotoBlock:"+gotoBlock+"}");
+    this._jump(gotoBlock);
 };
 
 /**
@@ -2554,12 +2563,8 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
                 throw new Sk.builtin.SyntaxError("'return' outside function", this.filename, s.lineno);
             }
             val = s.value ? this.vexpr(s.value) : "Sk.builtin.none.none$";
-            if (this.u.finallyBlocks.length == 0) {
-                out("return ", val, ";");
-            } else {
-                out("$postfinally={returning:",val,"};");
-                this._jump(this.peekFinallyBlock().blk);
-            }
+            this.closeOutExceptionHandlersAndMaybeJumpToFinally(false, "{returning:"+val+"}");
+            out("return ", val, ";");
             break;
         case Sk.astnodes.Delete:
             this.vseqexpr(s.targets);

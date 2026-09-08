@@ -456,5 +456,122 @@ class TestGeneratorCells(unittest.TestCase):
             value
 
 
+class TestFinallyControlFlow(unittest.TestCase):
+    def test_finally_reraises(self):
+        error = ValueError("original")
+
+        def run():
+            try:
+                raise error
+            finally:
+                pass
+        with self.assertRaises(ValueError) as caught:
+            run()
+        self.assertIs(caught.exception, error)
+
+    def test_return_finally_raises_once(self):
+        calls = []
+
+        def run():
+            try:
+                return
+            finally:
+                calls.append("finally")
+                raise ValueError("cleanup")
+        self.assertRaises(ValueError, run)
+        self.assertEqual(calls, ["finally"])
+
+    def test_break_finally_removes_except_handler(self):
+        calls = []
+
+        def run():
+            for _ in range(2):
+                try:
+                    try:
+                        pass
+                    finally:
+                        break
+                except ValueError:
+                    calls.append("stale handler")
+            calls.append("after loop")
+            raise ValueError("after loop")
+        self.assertRaises(ValueError, run)
+        self.assertEqual(calls, ["after loop"])
+
+    def test_with_exit_raises_once_on_return(self):
+        calls = []
+
+        class Manager:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                calls.append("exit")
+                raise ValueError("exit")
+
+        def run():
+            with Manager():
+                return
+        self.assertRaises(ValueError, run)
+        self.assertEqual(calls, ["exit"])
+
+    def test_with_preserves_enclosing_finally(self):
+        # Extend CPython test_with.NonLocalFlowControlTestCase.testWithReturn
+        # to check cleanup outside the context manager as well.
+        calls = []
+
+        class Manager:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                calls.append("exit")
+
+        def run():
+            try:
+                with Manager():
+                    pass
+                return 42
+            finally:
+                calls.append("finally")
+        self.assertEqual(run(), 42)
+        self.assertEqual(calls, ["exit", "finally"])
+
+    def test_continue_preserves_handler_outside_loop(self):
+        calls = []
+        try:
+            for i in range(2):
+                try:
+                    try:
+                        continue
+                    finally:
+                        calls.append(i)
+                except ValueError:
+                    calls.append("stale handler")
+            raise ValueError("after loop")
+        except ValueError:
+            calls.append("outer handler")
+        self.assertEqual(calls, [0, 1, "outer handler"])
+
+    def test_nested_with_return_cleanup_order(self):
+        calls = []
+
+        class Manager:
+            def __init__(self, name):
+                self.name = name
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                calls.append(self.name)
+
+        def run():
+            try:
+                with Manager("outer"), Manager("inner"):
+                    return 42
+            finally:
+                calls.append("finally")
+
+        self.assertEqual(run(), 42)
+        self.assertEqual(calls, ["inner", "outer", "finally"])
+
+
 if __name__ == "__main__":
     unittest.main()
