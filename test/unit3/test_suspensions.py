@@ -1,4 +1,5 @@
 import unittest
+from contextlib import closing, contextmanager
 from time import sleep
 
 def sleeping_gen(x):
@@ -121,6 +122,119 @@ class Test_Suspensions(unittest.TestCase):
         self.assertEqual(obj.foo, "foo")
         self.assertEqual(SleepingObjectGetatttr._foo.__get__(obj, None), "foo")
 
+
+
+class ContextlibSuspensionTests(unittest.TestCase):
+    # sleep(0) forces a real host suspension in Skulpt. CPython-derived
+    # contextlib tests are kept separately in test_contextlib.py.
+    def test_decorator_entry_body_and_exit(self):
+        events = []
+        @contextmanager
+        def manager():
+            sleep(0)
+            events.append("enter")
+            yield
+            sleep(0)
+            events.append("exit")
+        @manager()
+        def answer():
+            sleep(0)
+            events.append("body")
+            return 42
+        self.assertEqual(answer(), 42)
+        with manager():
+            sleep(0)
+            events.append("body")
+        self.assertEqual(events, ["enter", "body", "exit"] * 2)
+
+    def test_failed_entry_preserves_error(self):
+        error = ValueError("entry")
+        @contextmanager
+        def manager():
+            sleep(0)
+            raise error
+            yield
+        @manager()
+        def answer():
+            self.fail("body must not run")
+        with self.assertRaises(ValueError) as caught:
+            answer()
+        self.assertIs(caught.exception, error)
+
+    def test_decorated_exception_suppression_and_exit_failure(self):
+        @contextmanager
+        def suppress_value_error():
+            try:
+                yield
+            except ValueError:
+                sleep(0)
+        @suppress_value_error()
+        def fail():
+            sleep(0)
+            raise ValueError
+        self.assertIsNone(fail())
+
+        error = RuntimeError("exit")
+        @contextmanager
+        def bad_exit():
+            yield
+            sleep(0)
+            raise error
+        @bad_exit()
+        def answer():
+            return 42
+        with self.assertRaises(RuntimeError) as caught:
+            answer()
+        self.assertIs(caught.exception, error)
+
+    def test_closing_lookup_and_call(self):
+        events = []
+        class Resource:
+            @property
+            def close(self):
+                sleep(0)
+                events.append("lookup")
+                return self.finish
+            def finish(self):
+                sleep(0)
+                events.append("closed")
+        with closing(Resource()):
+            pass
+        self.assertEqual(events, ["lookup", "closed"])
+
+    def test_exception_constructor(self):
+        class ExitError(Exception):
+            def __init__(self):
+                sleep(0)
+
+        @contextmanager
+        def manager():
+            try:
+                yield
+            except ExitError:
+                pass
+
+        ctx = manager()
+        ctx.__enter__()
+        self.assertTrue(ctx.__exit__(ExitError, None, None))
+
+    def test_generator_factory(self):
+        calls = []
+        def raw_manager():
+            yield 42
+        def factory():
+            sleep(0)
+            calls.append("factory")
+            return raw_manager()
+
+        wrapped = contextmanager(factory)
+        with wrapped() as value:
+            self.assertEqual(value, 42)
+        @wrapped()
+        def answer():
+            return 99
+        self.assertEqual(answer(), 99)
+        self.assertEqual(calls, ["factory"] * 3)
 
 
 if __name__ == '__main__':
