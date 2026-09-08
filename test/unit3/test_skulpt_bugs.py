@@ -206,6 +206,41 @@ class TestBugs(unittest.TestCase):
         self.assertTrue(a != a)
 
 
+class TestExceptionProtocols(unittest.TestCase):
+    def test_explicit_cause(self):
+        for cause in (BaseException, ValueError, ValueError("cause"), None):
+            try:
+                raise RuntimeError("outer") from cause
+            except RuntimeError as error:
+                if cause in (BaseException, ValueError):
+                    self.assertIsInstance(error.__cause__, cause)
+                else:
+                    self.assertIs(error.__cause__, cause)
+        with self.assertRaises(TypeError):
+            raise RuntimeError from 42
+
+    def test_missing_context_methods(self):
+        entered = []
+        class EnterOnly:
+            def __enter__(self):
+                entered.append(True)
+        class ExitOnly:
+            def __exit__(self, *args):
+                pass
+        for manager in (EnterOnly(), ExitOnly()):
+            with self.assertRaises(AttributeError):
+                with manager:
+                    self.fail("body must not run")
+        self.assertEqual(entered, [])
+
+    def test_exception_values(self):
+        self.assertIsNone(StopIteration().value)
+        self.assertIsNone(StopIteration(None).value)
+        self.assertEqual(StopIteration(42).value, 42)
+        self.assertTrue(issubclass(GeneratorExit, BaseException))
+        self.assertFalse(issubclass(GeneratorExit, Exception))
+
+
 class TestClassCell(unittest.TestCase):
     """Tests for __class__ cell and super() handling - Issues #1171, #1340"""
 
