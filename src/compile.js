@@ -1508,6 +1508,7 @@ Compiler.prototype.cfor = function (s) {
 Compiler.prototype.craise = function (s) {
     if (s.exc) {
         var exc = this._gr("exc", this.vexpr(s.exc));
+        var cause;
         // This is tricky - we're supporting both the weird-ass semantics
         // of the Python 2 "raise (exc), (inst), (tback)" version,
         // plus the sensible Python "raise (exc) from (cause)".
@@ -1536,8 +1537,20 @@ Compiler.prototype.craise = function (s) {
 
         this.setBlock(instantiatedException);
 
-        // TODO TODO TODO set cause appropriately
-        // (and perhaps traceback for py2 if we care before it gets fully deprecated)
+        if (s.cause) {
+            cause = this._gr("cause", this.vexpr(s.cause));
+            out("if (", cause, ".prototype instanceof Sk.builtin.BaseException) {");
+            out(    "$ret = Sk.misceval.callsimOrSuspend(", cause, ");");
+            out("} else {");
+            out(    "$ret = ", cause, ";");
+            out("}");
+            this._checkSuspension(s);
+            out(cause, "=$ret;");
+            out("if (", cause, " !== Sk.builtin.none.none$ && !(", cause, " instanceof Sk.builtin.BaseException)) {");
+            out(    "throw new Sk.builtin.TypeError('exception causes must derive from BaseException');");
+            out("}");
+            out(exc, ".$cause = ", cause, ";");
+        }
 
         out("if (", exc, " instanceof Sk.builtin.BaseException) {throw ",exc,";} else {throw new Sk.builtin.TypeError('exceptions must derive from BaseException');};");
     } else {
@@ -1710,14 +1723,17 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
-    this._checkSuspension(s);
-    exit = this._gr("exit", "$ret");
+    exit = this._gr("exit", "Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
-    this._checkSuspension(s);
+    
+    // check we actually have a context manager and throw nicely
+    out("if ($ret === undefined) {throw new Sk.builtin.AttributeError('__enter__');} ");
+    out(`else if (${exit} === undefined) {throw new Sk.builtin.AttributeError('__exit__');}`);
+    
+    // lookupspecial can't suspend
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
     value = this._gr("value", "$ret");
