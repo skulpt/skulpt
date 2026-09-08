@@ -1087,10 +1087,27 @@ Sk.exportSymbol("Sk.misceval.chain", Sk.misceval.chain);
  *       console.log(err);
  *     });
  *
- * Because exceptions are returned asynchronously aswell you can't catch them
- * with a try/catch. That's what this function is for.
+ * Optional cleanUp runs once after tryFn or catchFn finishes, including all
+ * suspensions. Cleanup may suspend; its exception replaces any pending result
+ * or exception, as with a Python finally clause.
  */
-Sk.misceval.tryCatch = function (tryFn, catchFn) {
+Sk.misceval.tryCatch = function (tryFn, catchFn, cleanUp) {
+    if (cleanUp !== undefined) {
+        var failed = false;
+        var error;
+        var result = Sk.misceval.tryCatch(
+            function () { return Sk.misceval.tryCatch(tryFn, catchFn); },
+            function (e) { failed = true; error = e; }
+        );
+        return Sk.misceval.chain(result, function (value) {
+            return Sk.misceval.chain(cleanUp(), function () {
+                if (failed) {
+                    throw error;
+                }
+                return value;
+            });
+        });
+    }
     var r;
 
     try {

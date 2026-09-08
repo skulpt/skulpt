@@ -7,4 +7,5 @@ if (skulpt === null) {
 }
 
 // Run tests
+require('./suspension_cleanup.js');
 require('./test.js');
