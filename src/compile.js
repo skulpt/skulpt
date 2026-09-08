@@ -1539,7 +1539,7 @@ Compiler.prototype.craise = function (s) {
 
         if (s.cause) {
             cause = this._gr("cause", this.vexpr(s.cause));
-            out("if (", cause, ".prototype instanceof Sk.builtin.BaseException) {");
+            out("if (", cause, " === Sk.builtin.BaseException || ", cause, ".prototype instanceof Sk.builtin.BaseException) {");
             out(    "$ret = Sk.misceval.callsimOrSuspend(", cause, ");");
             out("} else {");
             out(    "$ret = ", cause, ";");
@@ -1728,11 +1728,11 @@ Compiler.prototype.cwith = function (s, itemIdx) {
 
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
-    
+
     // check we actually have a context manager and throw nicely
     out("if ($ret === undefined) {throw new Sk.builtin.AttributeError('__enter__');} ");
     out(`else if (${exit} === undefined) {throw new Sk.builtin.AttributeError('__exit__');}`);
-    
+
     // lookupspecial can't suspend
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);

@@ -208,12 +208,12 @@ class TestBugs(unittest.TestCase):
 
 class TestExceptionProtocols(unittest.TestCase):
     def test_explicit_cause(self):
-        for cause in (ValueError, ValueError("cause"), None):
+        for cause in (BaseException, ValueError, ValueError("cause"), None):
             try:
                 raise RuntimeError("outer") from cause
             except RuntimeError as error:
-                if cause is ValueError:
-                    self.assertIsInstance(error.__cause__, ValueError)
+                if cause in (BaseException, ValueError):
+                    self.assertIsInstance(error.__cause__, cause)
                 else:
                     self.assertIs(error.__cause__, cause)
         with self.assertRaises(TypeError):
