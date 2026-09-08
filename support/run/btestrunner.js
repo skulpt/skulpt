@@ -61,7 +61,7 @@ function rununits(myDiv, pyver) {
     function runtest (tests, passed, failed) {
         if (tests.length == 0) {
             outf("Summary");
-            outf("Passed: " + passed + " Failed: " + failed);
+            outf("Passed: " + passed + ", Failed: " + failed);
             return;
         }
 

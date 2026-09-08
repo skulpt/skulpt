@@ -305,7 +305,7 @@ class TestCase(object):
     def showSummary(self):
         # don't divde by zero
         # pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        print("Ran %d tests, passed: %d failed: %d\n" % (self.numPassed+self.numFailed,
+        print("Ran %d tests, passed: %d, failed: %d\n" % (self.numPassed+self.numFailed,
                                                self.numPassed, self.numFailed))
 
 

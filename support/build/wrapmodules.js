@@ -63,7 +63,7 @@ async function processDirectories(dirs, recursive, exts, ret, minifyjs, excludes
 };
 
 
-async function buildJsonFile(name, dirs, exts, outfile, options) {
+async function buildJsonFile(name, dirs, exts, outfile, minfile, options) {
     options = options || {};
     let recursive = options.recursive || false;
     let minifyjs = options.minifyjs || false;
@@ -75,13 +75,19 @@ async function buildJsonFile(name, dirs, exts, outfile, options) {
 
     await processDirectories(dirs, recursive, exts, ret, minifyjs, excludes);
 
-    let contents = "Sk." + name + "=" + JSON.stringify(ret);
+    // with stringify we get a line per file. 
+    // It is 1Kb but it allows users to better see and potentially remove unneeded libraries.
+    let contents = "Sk." + name + "=" + JSON.stringify(ret, undefined, "\t");
     fs.writeFileSync(outfile, contents, 'utf8');
-    console.log("Updated " + outfile + ".");
+    let minContents = "Sk." + name + "=" + JSON.stringify(ret);
+    fs.writeFileSync(minfile, minContents, 'utf8');
+
+    console.log("Updated " + outfile + " and " + minfile + ".");
 }
 
 async function main() {
     if (process.argv.includes("internal")) {
+        // no need to use internalPy anymore since classmethod etc are pure js
         // await buildJsonFile("internalPy", ["src"], [".py"], "src/internalpython.js");
     } else if (process.argv.includes("builtin")) {
         let excludes = [];
@@ -99,30 +105,33 @@ async function main() {
             ["src/builtin", "src/lib"],
             [".js", ".py"],
             "dist/skulpt-stdlib.js",
+            "dist/skulpt-stdlib.min.js",
             opts
         );
-    } else if (process.argv.includes("unit2")) {
-        if (!fs.existsSync("support/tmp")) {
-            fs.mkdirSync("support/tmp");
-        }
-        await buildJsonFile(
-            "unit2",
-            ["test/unit"],
-            [".py"],
-            "support/tmp/unit2.js",
-            { recursive: true }
-        );
-    } else if (process.argv.includes("unit3")) {
-        if (!fs.existsSync("support/tmp")) {
-            fs.mkdirSync("support/tmp");
-        }
-        await buildJsonFile(
-            "unit3",
-            ["test/unit3"],
-            [".py"],
-            "support/tmp/unit3.js"
-        );
     }
+
+    //  else if (process.argv.includes("unit2")) {
+    //     if (!fs.existsSync("support/tmp")) {
+    //         fs.mkdirSync("support/tmp");
+    //     }
+    //     await buildJsonFile(
+    //         "unit2",
+    //         ["test/unit"],
+    //         [".py"],
+    //         "support/tmp/unit2.js",
+    //         { recursive: true }
+    //     );
+    // } else if (process.argv.includes("unit3")) {
+    //     if (!fs.existsSync("support/tmp")) {
+    //         fs.mkdirSync("support/tmp");
+    //     }
+    //     await buildJsonFile(
+    //         "unit3",
+    //         ["test/unit3"],
+    //         [".py"],
+    //         "support/tmp/unit3.js"
+    //     );
+    // }
 }
 
 main().then(() => {
