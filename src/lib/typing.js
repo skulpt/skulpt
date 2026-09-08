@@ -39,6 +39,19 @@ function $builtinmodule() {
         objectHash,
     } = Sk.abstr;
 
+    function unionOr(other) {
+        const valid = (arg) => arg.sk$type || arg === pyNone || arg instanceof GenericAlias ||
+            arg instanceof pyUnionType || arg instanceof _GenericAlias || arg instanceof _SpecialForm || arg instanceof TypeVar;
+        if (!valid(this) || !valid(other)) {
+            return pyNotImplemented;
+        }
+        return typing.Union.mp$subscript(new pyTuple([this, other]));
+    }
+
+    function unionRor(other) {
+        return unionOr.call(other, this);
+    }
+
     // ==================== _SpecialForm ====================
     // Base class for typing constructs like Any, Union, Optional, etc.
 
@@ -49,6 +62,9 @@ function $builtinmodule() {
             this.$getitem = getitem; // null means not subscriptable
         },
         slots: {
+            tp$as_number: true,
+            nb$or: unionOr,
+            nb$reflected_or: unionRor,
             tp$new() {
                 throw new pyTypeError("Cannot instantiate " + this.$name);
             },
@@ -88,6 +104,9 @@ function $builtinmodule() {
             this.$name = name || null; // optional display name override
         },
         slots: {
+            tp$as_number: true,
+            nb$or: unionOr,
+            nb$reflected_or: unionRor,
             tp$new(args, kwargs) {
                 checkNoKwargs("_GenericAlias", kwargs);
                 checkArgsLen("_GenericAlias", args, 2, 3);
@@ -185,16 +204,6 @@ function $builtinmodule() {
         methods: {
             __mro_entries__: {
                 $meth(bases) {
-                    // bases argument is required in CPython but Skulpt doesn't use it yet
-                    // For Generic[T] as a base, return (Generic,)
-                    if (this.$origin === typing.Generic || this.$name === "Generic") {
-                        return new pyTuple([typing.Generic]);
-                    }
-                    // For Protocol[T], return (Protocol,)
-                    if (this.$origin === typing.Protocol || this.$name === "Protocol") {
-                        return new pyTuple([typing.Protocol]);
-                    }
-                    // For other generic aliases, return the origin
                     if (this.$origin && this.$origin.sk$type) {
                         return new pyTuple([this.$origin]);
                     }
@@ -265,7 +274,19 @@ function $builtinmodule() {
         if (!(item instanceof pyTuple)) {
             item = new pyTuple([item]);
         }
-        return new _GenericAlias(typing.Union, item);
+        const args = [];
+        for (let arg of item.v) {
+            if (arg === pyNone) {
+                arg = pyNone.ob$type;
+            }
+            const nested = arg instanceof pyUnionType || (arg instanceof _GenericAlias && arg.$origin === typing.Union);
+            for (const member of nested ? arg.$args.v : [arg]) {
+                if (!args.some((existing) => richCompareBool(existing, member, "Eq"))) {
+                    args.push(member);
+                }
+            }
+        }
+        return args.length === 1 ? args[0] : new _GenericAlias(typing.Union, new pyTuple(args));
     });
 
     // Optional - Optional[X] is equivalent to Union[X, None]
@@ -275,7 +296,7 @@ function $builtinmodule() {
         (item) => {
             const noneType = pyNone.ob$type;
             const args = new pyTuple([item, noneType]);
-            return new _GenericAlias(typing.Union, args);
+            return typing.Union.mp$subscript(args);
         },
     );
 
@@ -408,6 +429,9 @@ function $builtinmodule() {
             this.$contravariant = contravariant || false;
         },
         slots: {
+            tp$as_number: true,
+            nb$or: unionOr,
+            nb$reflected_or: unionRor,
             tp$new(args, kwargs) {
                 const [name, ...constraints_arr] = args;
                 if (!name) {
@@ -477,7 +501,7 @@ function $builtinmodule() {
                     if (!(item instanceof pyTuple)) {
                         item = new pyTuple([item]);
                     }
-                    return new _GenericAlias(this, item, "Generic");
+                    return new _GenericAlias(this, item);
                 },
                 $flags: { OneArg: true },
             },
@@ -552,6 +576,8 @@ function $builtinmodule() {
                     const val = ns.mp$lookup(fname);
                     if (val !== undefined) {
                         defaults.push(val);
+                    } else if (defaults.length) {
+                        throw new pyTypeError("Non-default namedtuple field " + fname.toString() + " cannot follow default fields");
                     }
                 }
 
@@ -562,9 +588,23 @@ function $builtinmodule() {
                 return chainOrSuspend(
                     Sk.importModule("collections", false, true),
                     (collections) => {
-                        return collections.$d._make_namedtuple_class(
+                        const klass = collections.$d._make_namedtuple_class(
                             typename, field_names, flds, defaults, module, annotations
                         );
+                        const prohibited = new Set([
+                            "__new__", "__init__", "__slots__", "__getnewargs__",
+                            "_fields", "_field_defaults", "_make", "_replace", "_asdict", "_source",
+                        ]);
+                        for (let iter = pyIter(ns), key = iter.tp$iternext(); key !== undefined; key = iter.tp$iternext()) {
+                            const name = key.toString();
+                            if (prohibited.has(name)) {
+                                throw new Sk.builtin.AttributeError("Cannot overwrite NamedTuple attribute " + name);
+                            }
+                            if (!flds.includes(name) && name !== "__module__" && name !== "__annotations__" && name !== "__name__") {
+                                klass.tp$setattr(key, ns.mp$subscript(key));
+                            }
+                        }
+                        return klass;
                     }
                 );
             },
@@ -969,11 +1009,16 @@ function $builtinmodule() {
         },
         NewType: {
             $meth(name, tp) {
-                // Returns the type unchanged at runtime
-                return tp;
+                if (!(name instanceof pyStr)) {
+                    throw new pyTypeError("NewType() argument 1 must be a string");
+                }
+                return new Sk.builtin.func(function (value) {
+                    checkArgsLen(name.toString(), arguments, 1, 1);
+                    return value;
+                });
             },
             $flags: { MinArgs: 2, MaxArgs: 2 },
-            $doc: "Create a new type. At runtime, returns the second argument unchanged.",
+            $doc: "Create a callable that returns its argument unchanged.",
         },
         final_$rw$: {
             $meth(func) {

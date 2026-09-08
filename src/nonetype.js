@@ -22,12 +22,11 @@ Sk.builtin.none = Sk.abstr.buildNativeClass("NoneType", {
         nb$bool() {
             return false;
         },
-        // PEP 604: Union type syntax - enable None | int
         nb$or(other) {
-            if (other.sk$type || other instanceof Sk.builtin.UnionType) {
-                return Sk.builtin.UnionType.$make([this.ob$type, other]);
-            }
-            return Sk.builtin.NotImplemented.NotImplemented$;
+            return Sk.builtin.UnionType.$or.call(this, other);
+        },
+        nb$reflected_or(other) {
+            return Sk.builtin.UnionType.$or.call(other, this);
         },
     },
     proto: {

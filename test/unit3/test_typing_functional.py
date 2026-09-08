@@ -14,6 +14,68 @@ from typing import (
 class TestRealWorldUsage(unittest.TestCase):
     """Test patterns commonly used in real Python code."""
 
+    def test_specialized_base_preserves_inheritance(self):
+        T = TypeVar('T')
+        class Base(Generic[T]):
+            def value(self):
+                return 42
+        class Child(Base[int]):
+            pass
+        self.assertTrue(issubclass(Child, Base))
+        self.assertEqual(Child().value(), 42)
+
+    def test_namedtuple_preserves_class_body(self):
+        class Point(NamedTuple):
+            """A point with a computed total."""
+            x: int
+            y: int = 0
+            label = 'point'
+
+            def total(self):
+                return self.x + self.y
+
+            @property
+            def doubled(self):
+                return self.total() * 2
+
+        point = Point(3)
+        self.assertEqual(point.total(), 3)
+        self.assertEqual(point.doubled, 6)
+        self.assertEqual(point.label, 'point')
+        self.assertEqual(Point.__doc__, 'A point with a computed total.')
+        self.assertEqual(Point._field_defaults, {'y': 0})
+
+    def test_namedtuple_rejects_nontrailing_defaults(self):
+        with self.assertRaises(TypeError):
+            class Point(NamedTuple):
+                x: int = 1
+                y: int
+
+    def test_mixed_union_annotations(self):
+        T = TypeVar('T')
+        cases = [
+            (List[int] | None, (List[int], type(None))),
+            (None | List[int], (type(None), List[int])),
+            (list[int] | str, (list[int], str)),
+            (str | list[int], (str, list[int])),
+            (Union[int, str] | None, (int, str, type(None))),
+            (None | Union[int, str], (type(None), int, str)),
+            ((int | str) | List[int], (int, str, List[int])),
+            (Optional[int] | str, (int, type(None), str)),
+            (T | None, (T, type(None))),
+            (int | None, (int, type(None))),
+        ]
+        for annotation, args in cases:
+            self.assertEqual(get_args(annotation), args)
+        self.assertEqual(list[int] | str, str | list[int])
+        self.assertEqual(hash(list[int] | str), hash(str | list[int]))
+        self.assertEqual(get_args(list[int] | str | list[int]), (list[int], str))
+        self.assertEqual(get_args(Union[int, str] | int), (int, str))
+        with self.assertRaises(TypeError):
+            list[int] | 3
+        with self.assertRaises(TypeError):
+            3 | list[int]
+
     def test_function_with_type_hints(self):
         """Functions with type hints should work normally."""
         def greet(name):
@@ -216,8 +278,9 @@ class TestNewTypingFeatures(unittest.TestCase):
     def test_newtype(self):
         """NewType creates a callable that returns its argument."""
         UserId = NewType('UserId', int)
-        # At runtime, NewType just returns the base type
-        self.assertIs(UserId, int)
+        value = '007'
+        self.assertIs(UserId(value), value)
+        self.assertIsNot(UserId, int)
 
     def test_final_decorator(self):
         """@final decorator should be a no-op."""

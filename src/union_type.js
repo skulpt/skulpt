@@ -35,36 +35,16 @@ Sk.builtin.UnionType = Sk.abstr.buildNativeClass("types.UnionType", {
             if (op !== "Eq" && op !== "NotEq") {
                 return Sk.builtin.NotImplemented.NotImplemented$;
             }
-            // Compare as sets (order-independent)
-            const thisArgs = this.$args.v;
-            const otherArgs = other.$args.v;
-            if (thisArgs.length !== otherArgs.length) {
-                return op === "Eq" ? false : true;
-            }
-            const thisSet = new Set(thisArgs);
-            let eq = true;
-            for (let i = 0; i < otherArgs.length; i++) {
-                if (!thisSet.has(otherArgs[i])) {
-                    eq = false;
-                    break;
-                }
-            }
-            return op === "Eq" ? eq : !eq;
+            const left = new Sk.builtin.frozenset(this.$args.v);
+            const right = new Sk.builtin.frozenset(other.$args.v);
+            return Sk.misceval.richCompareBool(left, right, op);
         },
         tp$as_number: true,
         nb$or(other) {
-            // UnionType | X -> new UnionType
-            if (other.sk$type || other instanceof Sk.builtin.UnionType) {
-                return Sk.builtin.UnionType.$make([...this.$args.v, other]);
-            }
-            return Sk.builtin.NotImplemented.NotImplemented$;
+            return Sk.builtin.UnionType.$or.call(this, other);
         },
-        nb$ror(other) {
-            // X | UnionType -> new UnionType
-            if (other.sk$type || other instanceof Sk.builtin.UnionType) {
-                return Sk.builtin.UnionType.$make([other, ...this.$args.v]);
-            }
-            return Sk.builtin.NotImplemented.NotImplemented$;
+        nb$reflected_or(other) {
+            return Sk.builtin.UnionType.$or.call(other, this);
         },
     },
     methods: {
@@ -115,7 +95,7 @@ Sk.builtin.UnionType.$make = function (args) {
     // Flatten any nested UnionTypes and deduplicate
     const flattened = [];
     for (let i = 0; i < args.length; i++) {
-        const arg = args[i];
+        const arg = args[i] === Sk.builtin.none.none$ ? Sk.builtin.none : args[i];
         if (arg instanceof Sk.builtin.UnionType) {
             // Flatten nested unions
             const nested = arg.$args.v;
@@ -126,13 +106,11 @@ Sk.builtin.UnionType.$make = function (args) {
             flattened.push(arg);
         }
     }
-    // Deduplicate by identity
-    const seen = new Set();
+    // Generic aliases compare structurally, even when created separately.
     const unique = [];
     for (let i = 0; i < flattened.length; i++) {
         const arg = flattened[i];
-        if (!seen.has(arg)) {
-            seen.add(arg);
+        if (!unique.some((existing) => Sk.misceval.richCompareBool(existing, arg, "Eq"))) {
             unique.push(arg);
         }
     }
@@ -141,4 +119,15 @@ Sk.builtin.UnionType.$make = function (args) {
         return unique[0];
     }
     return new Sk.builtin.UnionType(unique);
+};
+
+// Shared by type, GenericAlias and UnionType; typing objects handle reflected dispatch.
+Sk.builtin.UnionType.$or = function (other) {
+    const args = [this, other];
+    if ((this === Sk.builtin.none.none$ && other === Sk.builtin.none.none$) ||
+        !args.every((arg) => arg.sk$type || arg === Sk.builtin.none.none$ ||
+        arg instanceof Sk.builtin.GenericAlias || arg instanceof Sk.builtin.UnionType)) {
+        return Sk.builtin.NotImplemented.NotImplemented$;
+    }
+    return Sk.builtin.UnionType.$make(args);
 };
