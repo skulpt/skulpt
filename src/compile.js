@@ -1965,10 +1965,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     if (vararg) {
         funcArgs.push(this.nameop(args.vararg.arg, Sk.astnodes.Param));
     }
-    // Are we using the new fast-call mechanism, where the
-    // function we define implements the tp$call interface?
     // Generators share normal function argument binding.
-    let fastCall = true;
 
     if (hasFree) {
         this.u.tempsToSave.push("$free");
@@ -1988,9 +1985,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.prefixCode += "\n// has cell\n";
     }
 
-    if (fastCall) {
-        this.u.prefixCode += "\n// fast call\n";
-    }
+    this.u.prefixCode += "\n// fast call\n";
 
     //
     // set up standard dicts/variables
@@ -2013,24 +2008,23 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "var $waking=false; if ("+scopename+".$wakingSuspension!==undefined) { $wakeFromSuspension(); $waking=true; } else {";
 
-    if (fastCall) {
-        // Resolve our arguments from $posargs+$kwargs.
-        // If we're posargs-only, we can handle the fast path
-        // without even calling out
-        if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
-            this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
-        } else {
-            this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
-        }
-        for (let i = 0; i < funcArgs.length; i++) {
-            this.u.varDeclsCode += "," + funcArgs[i] + "=$args[" + i + "]";
-        }
-        const instanceForSuper = funcArgs[kwarg ? 1 : 0];
-        if (instanceForSuper) {
-            this.u.varDeclsCode += `,$sup=${instanceForSuper}`;
-        }
-        this.u.varDeclsCode += ";\n";
+    // Resolve our arguments from $posargs+$kwargs.
+    // If we're posargs-only, we can handle the fast path
+    // without even calling out
+    if (!kwarg && !vararg && (!args || !args.kwonlyargs || args.kwonlyargs.length === 0)) {
+        this.u.varDeclsCode += "var $args = ((!$kwargs || $kwargs.length===0) && $posargs.length===" + funcArgs.length + ") ? $posargs : this.$resolveArgs($posargs,$kwargs)";
+    } else {
+        this.u.varDeclsCode += "\nvar $args = this.$resolveArgs($posargs,$kwargs)\n";
     }
+    for (let i = 0; i < funcArgs.length; i++) {
+        this.u.varDeclsCode += "," + funcArgs[i] + "=$args[" + i + "]";
+    }
+    const instanceForSuper = funcArgs[kwarg ? 1 : 0];
+    if (instanceForSuper) {
+        this.u.varDeclsCode += `,$sup=${instanceForSuper}`;
+    }
+    this.u.varDeclsCode += ";\n";
+
 
 
     //

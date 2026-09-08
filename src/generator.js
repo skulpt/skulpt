@@ -199,7 +199,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             );
         },
         gi$throw(error, throwArgs) {
-            if (this.gi$closed || !this.gi$started) {
+            if (this.gi$closed) {
                 this.gi$closed = true;
                 this.curr$susp = null;
                 throw error;

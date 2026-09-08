@@ -213,24 +213,6 @@ class TestPEP479(unittest.TestCase):
         self.assertEqual(str(e.exception), "generator raised StopIteration")
 
 
-    def test_stopiteration_wrapping_context(self):
-        def f():
-            raise StopIteration
-        def g():
-            yield f()
-
-        try:
-            next(g())
-        except RuntimeError as exc:
-            # self.assertIs(type(exc.__cause__), StopIteration)
-            # self.assertIs(type(exc.__context__), StopIteration)
-            # self.assertTrue(exc.__suppress_context__)
-            pass
-        else:
-            self.fail('__cause__, __context__, or __suppress_context__ '
-                      'were not properly set')
-
-
 class GeneratorProtocolTest(unittest.TestCase):
     def test_start_exhaustion_and_throw_arguments(self):
         entered = []
@@ -311,6 +293,18 @@ class GeneratorProtocolTest(unittest.TestCase):
         self.assertEqual(g.throw(ValueError("yield")), 42)
         self.assertEqual(g.throw(ValueError("return")), 99)
         self.assertIsNone(g.gi_yieldfrom)
+
+    def test_throw_stopiteration_before_start_and_after_close(self):
+        def gen():
+            yield 1
+        error = StopIteration("injected")
+        g = gen()
+        with self.assertRaises(RuntimeError) as caught:
+            g.throw(error)
+        self.assertIs(caught.exception.__cause__, error)
+        with self.assertRaises(StopIteration) as caught:
+            g.throw(error)
+        self.assertIs(caught.exception, error)
 
     def test_expression_temporaries_across_yields(self):
         def gen():
