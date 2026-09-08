@@ -40,6 +40,7 @@ Sk.builtins = {
     "AttributeError"     : Sk.builtin.AttributeError,
     "ArithmeticError"    : Sk.builtin.ArithmeticError,
     "ValueError"         : Sk.builtin.ValueError,
+    "GeneratorExit"      : Sk.builtin.GeneratorExit,
     "Exception"          : Sk.builtin.Exception,
     "ZeroDivisionError"  : Sk.builtin.ZeroDivisionError,
     "AssertionError"     : Sk.builtin.AssertionError,

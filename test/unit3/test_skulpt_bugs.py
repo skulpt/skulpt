@@ -394,6 +394,10 @@ class TestExceptionProtocols(unittest.TestCase):
         with self.assertRaises(TypeError):
             raise RuntimeError from CauseError
 
+    def test_generator_exit_hierarchy(self):
+        self.assertTrue(issubclass(GeneratorExit, BaseException))
+        self.assertFalse(issubclass(GeneratorExit, Exception))
+
 
 class TestClassCell(unittest.TestCase):
     """Tests for __class__ cell and super() handling - Issues #1171, #1340"""
