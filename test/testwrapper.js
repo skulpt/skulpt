@@ -1,4 +1,4 @@
-const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
+const reqskulpt = require("../support/run/require-skulpt").requireSkulpt;
 
 // Import Skulpt
 var skulpt = reqskulpt(false);
@@ -7,4 +7,4 @@ if (skulpt === null) {
 }
 
 // Run tests
-require('./test.js');
+require("./test.js");
