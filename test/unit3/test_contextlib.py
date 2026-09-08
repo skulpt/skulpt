@@ -345,15 +345,31 @@ class ClosingTestCase(unittest.TestCase):
 
 
 class ContextManagerProtocolTests(unittest.TestCase):
-    def test_decorator_returns_and_recreation(self):
-        events = []
+    # CPython v3.7.9 Lib/test/test_contextlib.py, issue #11647.
+    def test_contextmanager_as_decorator(self):
+        @contextmanager
+        def woohoo(y):
+            state.append(y)
+            yield
+            state.append(999)
+
+        state = []
+        @woohoo(1)
+        def test(x):
+            self.assertEqual(state, [1])
+            state.append(x)
+        test('something')
+        self.assertEqual(state, [1, 'something', 999])
+
+        # Issue #11647: Ensure the decorated function is 'reusable'
+        state = []
+        test('something else')
+        self.assertEqual(state, [1, 'something else', 999])
+
+    def test_decorator_returns_and_metadata(self):
         @contextmanager
         def manager():
-            events.append("enter")
-            try:
-                yield
-            finally:
-                events.append("exit")
+            yield
         @manager()
         def answer(value=42):
             """Wrapped documentation."""
@@ -362,7 +378,6 @@ class ContextManagerProtocolTests(unittest.TestCase):
         self.assertEqual(answer(value=7), 7)
         self.assertEqual(answer.__name__, "answer")
         self.assertEqual(answer.__doc__, "Wrapped documentation.")
-        self.assertEqual(events, ["enter", "exit", "enter", "exit"])
 
     def test_failed_entry_preserves_error(self):
         error = ValueError("entry")
