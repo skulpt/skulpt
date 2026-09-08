@@ -331,5 +331,121 @@ class GeneratorProtocolTest(unittest.TestCase):
         self.assertEqual(list(g), [])
 
 
+
+
+class CPythonCoroutineTests(unittest.TestCase):
+    # CPython v3.7.9 Lib/test/test_generators.py: YieldFromTests and
+    # coroutine_tests. Doctests use unittest assertions here. gi_running and
+    # __name__ replace unsupported inspect state and gi_code introspection.
+    def test_generator_gi_yieldfrom(self):
+        def a():
+            self.assertTrue(gen_b.gi_running)
+            self.assertIsNone(gen_b.gi_yieldfrom)
+            yield
+            self.assertTrue(gen_b.gi_running)
+            self.assertIsNone(gen_b.gi_yieldfrom)
+
+        def b():
+            self.assertIsNone(gen_b.gi_yieldfrom)
+            yield from a()
+            self.assertIsNone(gen_b.gi_yieldfrom)
+            yield
+            self.assertIsNone(gen_b.gi_yieldfrom)
+
+        gen_b = b()
+        self.assertFalse(gen_b.gi_running)
+        self.assertIsNone(gen_b.gi_yieldfrom)
+
+        gen_b.send(None)
+        self.assertFalse(gen_b.gi_running)
+        self.assertEqual(gen_b.gi_yieldfrom.__name__, 'a')
+
+        gen_b.send(None)
+        self.assertFalse(gen_b.gi_running)
+        self.assertIsNone(gen_b.gi_yieldfrom)
+
+        [] = gen_b  # Exhaust generator
+        self.assertFalse(gen_b.gi_running)
+        self.assertIsNone(gen_b.gi_yieldfrom)
+
+
+    def test_augmented_assignment_yield(self):
+        def coroutine(seq):
+            count = 0
+            while count < 200:
+                count += yield
+                seq.append(count)
+        seq = []
+        c = coroutine(seq)
+        next(c)
+        for expected in ([10], [10, 20], [10, 20, 30]):
+            c.send(10)
+            self.assertEqual(seq, expected)
+        c.close()
+
+
+    def test_assignment_target_yields(self):
+        def f(d):
+            d[(yield "a")] = d[(yield "b")] = 27
+        data = [1, 2]
+        g = f(data)
+        self.assertEqual(g.send(None), "a")
+        self.assertEqual(data, [1, 2])
+        self.assertEqual(g.send(0), "b")
+        self.assertEqual(data, [27, 2])
+        with self.assertRaises(StopIteration):
+            g.send(1)
+        self.assertEqual(data, [27, 27])
+
+
+    def test_throw_normalization(self):
+        def f():
+            while True:
+                try:
+                    yield
+                except ValueError as v:
+                    yield v
+        cases = [(ValueError,), (ValueError("xyz"),),
+                 (ValueError, ValueError(1)), (ValueError, TypeError(1)),
+                 (ValueError, ValueError(1), None)]
+        for args in cases:
+            g = f()
+            next(g)
+            result = g.throw(*args)
+            self.assertIsInstance(result, ValueError)
+            if len(args) > 1:
+                if isinstance(args[1], ValueError):
+                    self.assertIs(result, args[1])
+                else:
+                    self.assertIs(result.args[0], args[1])
+            g.close()
+
+
+    def test_close_ignored_generatorexit(self):
+        def f():
+            try:
+                yield
+            except GeneratorExit:
+                yield "foo!"
+        g = f()
+        next(g)
+        with self.assertRaises(RuntimeError):
+            g.close()
+        g.close()
+
+
+    def test_error_during_close(self):
+        def f():
+            try:
+                yield
+            except GeneratorExit:
+                raise TypeError("fie!")
+        g = f()
+        next(g)
+        with self.assertRaises(TypeError) as caught:
+            g.close()
+        self.assertEqual(str(caught.exception), "fie!")
+
+
 if __name__ == "__main__":
     unittest.main()

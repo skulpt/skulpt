@@ -951,6 +951,7 @@ class TestPEP380Operation(unittest.TestCase):
                 return 42
             def close(self_):
                 self.assertTrue(g1.gi_running)
+                self.assertIs(g1.gi_yieldfrom, self_)
                 self.assertRaises(ValueError, next, g1)
         def one():
             yield from MyIt()

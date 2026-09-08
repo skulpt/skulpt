@@ -149,7 +149,9 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
         },
         gi_yieldfrom: {
             $get() {
-                return this.gi$yieldfrom || Sk.builtin.none.none$;
+                // The delegate is visible while the frame is suspended at
+                // yield from, including during delegated throw/close calls.
+                return this.curr$susp && this.gi$yieldfrom || Sk.builtin.none.none$;
             },
         },
     },
@@ -170,8 +172,10 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 return undefined;
             }
             this.gi$started = true;
+            const frame = this.curr$susp;
+            this.curr$susp = null;
             return Sk.misceval.tryCatch(
-                () => Sk.misceval.chain(this.curr$susp.resume(), (ret) => {
+                () => Sk.misceval.chain(frame.resume(), (ret) => {
                     if (Array.isArray(ret)) {
                         this.curr$susp = ret[0];
                         return ret[1];
