@@ -1,6 +1,6 @@
 """Tests for Lib/fractions.py."""
 
-# from decimal import Decimal
+from decimal import Decimal
 # from test.support import requires_IEEE_754
 import math
 # import numbers
@@ -164,7 +164,6 @@ class FractionTest(unittest.TestCase):
         self.assertRaises(OverflowError, F, float('inf'))
         self.assertRaises(OverflowError, F, float('-inf'))
 
-    @skip_skulpt
     def testInitFromDecimal(self):
         self.assertEqual((11, 10),
                          _components(F(Decimal('1.1'))))
@@ -275,8 +274,15 @@ class FractionTest(unittest.TestCase):
             ValueError, "cannot convert NaN to integer ratio",
             F.from_float, nan)
 
-    @skip_skulpt
     def testFromDecimal(self):
+        self.assertRaises(TypeError, F.from_decimal, 0.5)
+        class RatioOnly:
+            def as_integer_ratio(self):
+                return (1, 2)
+        self.assertRaises(TypeError, F.from_decimal, RatioOnly())
+        class DecimalSubclass(Decimal):
+            pass
+        self.assertEqual(F.from_decimal(DecimalSubclass('0.5')), F(1, 2))
         self.assertRaises(TypeError, F.from_decimal, 3+4j)
         self.assertEqual(F(10, 1), F.from_decimal(10))
         self.assertEqual(F(0), F.from_decimal(Decimal("-0")))
@@ -523,7 +529,6 @@ class FractionTest(unittest.TestCase):
         self.assertRaises(ZeroDivisionError, operator.pow,
                           F(0, 1), -2)
 
-    @skip_skulpt
     def testMixingWithDecimal(self):
         # Decimal refuses mixed arithmetic (but not mixed comparisons)
         self.assertRaises(TypeError, operator.add,

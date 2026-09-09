@@ -489,6 +489,13 @@ class MathTests(unittest.TestCase):
 
 
     def testFabs(self):
+        from decimal import Decimal
+        from fractions import Fraction
+        class Floatable:
+            def __float__(self):
+                return -2.0
+        for value in (Decimal('-2'), Fraction(-2), Floatable()):
+            self.assertEqual(math.fabs(value), 2.0)
         self.assertEqual(math.fabs(-1), 1.0)
         self.assertEqual(math.fabs(0), 0.0)
         self.assertRaises(TypeError, math.fabs)
