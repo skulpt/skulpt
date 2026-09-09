@@ -275,6 +275,14 @@ class FractionTest(unittest.TestCase):
             F.from_float, nan)
 
     def testFromDecimal(self):
+        self.assertRaises(TypeError, F.from_decimal, 0.5)
+        class RatioOnly:
+            def as_integer_ratio(self):
+                return (1, 2)
+        self.assertRaises(TypeError, F.from_decimal, RatioOnly())
+        class DecimalSubclass(Decimal):
+            pass
+        self.assertEqual(F.from_decimal(DecimalSubclass('0.5')), F(1, 2))
         self.assertRaises(TypeError, F.from_decimal, 3+4j)
         self.assertEqual(F(10, 1), F.from_decimal(10))
         self.assertEqual(F(0), F.from_decimal(Decimal("-0")))

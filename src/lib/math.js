@@ -97,10 +97,7 @@ const $builtinmodule = function (name) {
 
     function fabs(x) {
         Sk.builtin.pyCheckType("x", "number", Sk.builtin.checkRealNumber(x));
-        let _x = x.v;
-        if (JSBI.__isBigInt(_x)) {
-            _x = x.nb$float().v; //should raise OverflowError for large ints to floats
-        }
+        let _x = Sk.misceval.callsimArray(pyFloat, [x]).v;
         _x = Math.abs(_x);
 
         return new Sk.builtin.float_(_x);

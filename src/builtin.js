@@ -1030,16 +1030,15 @@ Sk.builtin.pow = function pow(v, w, z) {
     if (z === undefined || Sk.builtin.checkNone(z)) {
         return Sk.abstr.numberBinOp(v, w, "Pow");
     }
-    // only support a third argument if they're all the integers.
-    if (!(Sk.builtin.checkInt(v) && Sk.builtin.checkInt(w) && Sk.builtin.checkInt(z))) {
-        if (Sk.builtin.checkFloat(v) || Sk.builtin.checkComplex(v)) {
-            return v.nb$power(w, z); // these slots for float and complex throw the correct errors
+    if (v.nb$power !== undefined) {
+        const result = v.nb$power(w, z);
+        if (result !== Sk.builtin.NotImplemented.NotImplemented$) {
+            return result;
         }
-        throw new Sk.builtin.TypeError(
-            "unsupported operand type(s) for ** or pow(): '" + Sk.abstr.typeName(v) + "', '" + Sk.abstr.typeName(w) + "', '" + Sk.abstr.typeName(z) + "'"
-        );
     }
-    return v.nb$power(w, z);
+    throw new Sk.builtin.TypeError(
+        "unsupported operand type(s) for ** or pow(): '" + Sk.abstr.typeName(v) + "', '" + Sk.abstr.typeName(w) + "', '" + Sk.abstr.typeName(z) + "'"
+    );
 };
 
 Sk.builtin.quit = function quit(msg) {

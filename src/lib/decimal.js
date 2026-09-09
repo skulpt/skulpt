@@ -6,11 +6,13 @@ function $builtinmodule(name) {
     } = Sk;
 
     return chainOrSuspend(importModule("math", false, true), (math) => {
-        return decimalImpl({ math });
+        return chainOrSuspend(importModule("sys", false, true), (sys) =>
+            chainOrSuspend(importModule("collections", false, true), (collections) => decimalImpl({ math, sys, collections }))
+        );
     });
 }
 
-function decimalImpl({ math }) {
+function decimalImpl({ math, sys, collections }) {
     const {
         builtin: {
             bool: pyBool,
@@ -28,6 +30,7 @@ function decimalImpl({ math }) {
             pow: pyPow,
             dict: pyDict,
             ArithmeticError,
+            AttributeError,
             ZeroDivisionError,
             NotImplementedError,
             TypeError,
@@ -298,16 +301,7 @@ function decimalImpl({ math }) {
             return other;
         }
         if (other instanceof pyInt) {
-            // Convert Python int to Decimal
-            const val = other.v;
-            if (typeof val === "bigint") {
-                const sign = val < 0n ? 1 : 0;
-                const absVal = val < 0n ? -val : val;
-                return _decFromTriple(sign, absVal.toString(), 0);
-            } else {
-                const sign = val < 0 ? 1 : 0;
-                return _decFromTriple(sign, Math.abs(val).toString(), 0);
-            }
+            return _decFromTriple(other.nb$isnegative() ? 1 : 0, other.nb$abs().toString(), 0);
         }
         if (raiseit) {
             throw new TypeError("Unable to convert " + objectRepr(other).toString() + " to Decimal");
@@ -460,6 +454,9 @@ function decimalImpl({ math }) {
      * @type {any}
      *
      */
+    const DecimalTuple = pyCall(collections.$d.namedtuple,
+        [new pyStr("DecimalTuple"), new pyStr("sign digits exponent")], ["module", new pyStr("decimal")]);
+
     const Decimal = buildNativeClass("decimal.Decimal", {
         constructor: function Decimal(int = "0", sign = 0, exp = 0, is_special = false) {
             this._int = int;
@@ -476,13 +473,7 @@ function decimalImpl({ math }) {
                     const strValue = value.toString().trim().replace(/_/g, "");
                     const m = _parser(strValue);
                     if (m === null) {
-                        // Return NaN for invalid literal (matches CPython behavior when traps disabled)
-                        // TODO: Proper trap handling - check context.traps[InvalidOperation]
-                        self._sign = 0;
-                        self._int = "";
-                        self._exp = "n";
-                        self._is_special = true;
-                        return self;
+                        return (context === pyNone ? getContext() : context).$raiseError(ConversionSyntax, "invalid decimal literal");
                     }
                     self._sign = m.groups.sign === "-" ? 1 : 0;
                     const intpart = m.groups.int;
@@ -598,9 +589,7 @@ function decimalImpl({ math }) {
                 }
 
                 if (checkFloat(value)) {
-                    if (context === pyNone) {
-                        /** @todo context */
-                    }
+                    (context === pyNone ? getContext() : context).$raiseError(FloatOperation, "float conversion");
                     value = fromFloat(value);
                     self._exp = value._exp;
                     self._sign = value._sign;
@@ -698,19 +687,11 @@ function decimalImpl({ math }) {
                 }
                 // Handle NaN comparisons specially (use self, not this, as it may be scaled)
                 if (self.$isNan() || (other instanceof Decimal && other.$isNan())) {
-                    // For equality/inequality: NaN == x is False, NaN != x is True
-                    // For ordering comparisons: signal InvalidOperation (set flag) and return False
-                    // Note: Rich comparisons don't raise - they just signal
-                    if (op === "Eq") {
-                        return pyFalse;
+                    const equality = op === "Eq" || op === "NotEq";
+                    if (!equality || self.$isSnan() || other.$isSnan()) {
+                        getContext().$raiseError(InvalidOperation, "NaN comparison");
                     }
-                    if (op === "NotEq") {
-                        return pyTrue;
-                    }
-                    // Ordering comparison with NaN - signal InvalidOperation (set flag)
-                    const context = getContext();
-                    context.$flags[InvalidOperation] = 1;
-                    return pyFalse;
+                    return op === "NotEq" ? pyTrue : pyFalse;
                 }
                 return self.$cmp(other, op);
             },
@@ -732,43 +713,45 @@ function decimalImpl({ math }) {
                     }
                     if (this.$isInf()) {
                         if (this._sign !== other._sign && other.$isInf()) {
-                            throw new InvalidOperation("-INF + INF");
+                            return context.$raiseError(InvalidOperation, "-INF + INF");
                         }
-                        return _decFromTriple(this._sign, "0", "F", true);
+                        return _decFromTriple(this._sign, "0", "F", true).$fix(context);
                     }
                     if (other.$isInf()) {
-                        return _decFromTriple(other._sign, "0", "F", true);
+                        return _decFromTriple(other._sign, "0", "F", true).$fix(context);
                     }
                 }
 
-                // Handle zeros
-                if (!this.nb$bool()) {
-                    if (!other.nb$bool()) {
-                        const sign = Math.min(this._sign, other._sign);
-                        return _decFromTriple(sign, "0", Math.min(this._exp, other._exp));
-                    }
-                    return pyCall(Decimal, [other]);
+                const idealExponent = Math.min(this._exp, other._exp);
+                const negativeZero = eq(context.$rounding, ROUND_FLOOR) && this._sign !== other._sign ? 1 : 0;
+                if (!this.nb$bool() && !other.nb$bool()) {
+                    return _decFromTriple(negativeZero || Math.min(this._sign, other._sign), "0", idealExponent).$fix(context);
                 }
-                if (!other.nb$bool()) {
-                    return pyCall(Decimal, [this]);
+                if (!this.nb$bool() || !other.nb$bool()) {
+                    const value = this.nb$bool() ? this : other;
+                    const exponent = Math.max(idealExponent, value._exp - context.$prec - 1);
+                    return value.$rescale(exponent, context.$rounding).$fix(context);
                 }
-
-                // General case - use BigInt arithmetic
-                const exp = Math.min(this._exp, other._exp);
-                const selfAdj = BigInt(this._int) * 10n ** BigInt(this._exp - exp);
-                const otherAdj = BigInt(other._int) * 10n ** BigInt(other._exp - exp);
-
-                let result;
-                if (this._sign === other._sign) {
-                    result = selfAdj + otherAdj;
-                    return _decFromTriple(this._sign, result.toString(), exp);
-                } else {
-                    const selfVal = this._sign ? -selfAdj : selfAdj;
-                    const otherVal = other._sign ? -otherAdj : otherAdj;
-                    result = selfVal + otherVal;
-                    const sign = result < 0n ? 1 : 0;
-                    return _decFromTriple(sign, (result < 0n ? -result : result).toString(), exp);
+                // CPython _normalize: replace a sufficiently small operand with
+                // a sticky digit, avoiding an allocation proportional to the exponent gap.
+                let larger = this._exp >= other._exp ? this : other;
+                let smaller = larger === this ? other : this;
+                const threshold = larger._exp + Math.min(-1, larger._int.length - context.$prec - 2);
+                if (smaller.$adjusted() < threshold) {
+                    smaller = _decFromTriple(smaller._sign, "1", threshold);
                 }
+                const exp = Math.min(larger._exp, smaller._exp);
+                let left = new pyInt(larger._int).nb$multiply(_10.nb$power(new pyInt(larger._exp - exp)));
+                let right = new pyInt(smaller._int).nb$multiply(_10.nb$power(new pyInt(smaller._exp - exp)));
+                if (larger._sign) {
+                    left = left.nb$negative();
+                }
+                if (smaller._sign) {
+                    right = right.nb$negative();
+                }
+                const result = left.nb$add(right);
+                const sign = !result.nb$bool() ? negativeZero : result.nb$isnegative() ? 1 : 0;
+                return _decFromTriple(sign, result.nb$abs().toString(), !result.nb$bool() ? idealExponent : exp).$fix(context);
             },
             nb$reflected_add(other, context) {
                 return this.nb$add(other, context);
@@ -778,7 +761,12 @@ function decimalImpl({ math }) {
                 if (other === pyNotImplemented) {
                     return other;
                 }
-                // Negate other and add
+                context = context === undefined ? getContext() : context;
+                const nan = this.$checkNans(other, context);
+                if (nan) {
+                    return nan;
+                }
+                // Negate only after checking NaNs, whose sign must be preserved.
                 const negOther = _decFromTriple(other._sign ? 0 : 1, other._int, other._exp, other._is_special);
                 return this.nb$add(negOther, context);
             },
@@ -787,8 +775,7 @@ function decimalImpl({ math }) {
                 if (other === pyNotImplemented) {
                     return other;
                 }
-                const negSelf = _decFromTriple(this._sign ? 0 : 1, this._int, this._exp, this._is_special);
-                return other.nb$add(negSelf, context);
+                return other.nb$subtract(this, context);
             },
             nb$multiply(other, context) {
                 other = convertOther(other);
@@ -809,20 +796,20 @@ function decimalImpl({ math }) {
                     }
                     if (this.$isInf() || other.$isInf()) {
                         if (!this.nb$bool() || !other.nb$bool()) {
-                            throw new InvalidOperation("INF * 0");
+                            return context.$raiseError(InvalidOperation, "INF * 0", resultSign);
                         }
-                        return _decFromTriple(resultSign, "0", "F", true);
+                        return _decFromTriple(resultSign, "0", "F", true).$fix(context);
                     }
                 }
 
                 // Handle zeros
                 if (!this.nb$bool() || !other.nb$bool()) {
-                    return _decFromTriple(resultSign, "0", this._exp + other._exp);
+                    return _decFromTriple(resultSign, "0", this._exp + other._exp).$fix(context);
                 }
 
                 // General case
-                const result = BigInt(this._int) * BigInt(other._int);
-                return _decFromTriple(resultSign, result.toString(), this._exp + other._exp);
+                const result = new pyInt(this._int).nb$multiply(new pyInt(other._int));
+                return _decFromTriple(resultSign, result.toString(), this._exp + other._exp).$fix(context);
             },
             nb$reflected_multiply(other, context) {
                 return this.nb$multiply(other, context);
@@ -846,35 +833,52 @@ function decimalImpl({ math }) {
                     }
                     if (this.$isInf()) {
                         if (other.$isInf()) {
-                            throw new InvalidOperation("INF / INF");
+                            return context.$raiseError(InvalidOperation, "INF / INF", resultSign);
                         }
                         return _decFromTriple(resultSign, "0", "F", true);
                     }
                     if (other.$isInf()) {
-                        return _decFromTriple(resultSign, "0", 0);
+                        context.$raiseError(Clamped, "division by infinity");
+                        return _decFromTriple(resultSign, "0", context.$Emin - context.$prec + 1);
                     }
                 }
 
                 // Handle zeros
                 if (!other.nb$bool()) {
                     if (!this.nb$bool()) {
-                        throw new DivisionUndefined("0 / 0");
+                        return context.$raiseError(DivisionUndefined, "0 / 0", resultSign);
                     }
-                    throw new DivisionByZero("Division by zero");
+                    return context.$raiseError(DivisionByZero, "Division by zero", resultSign);
                 }
                 if (!this.nb$bool()) {
-                    return _decFromTriple(resultSign, "0", this._exp - other._exp);
+                    return _decFromTriple(resultSign, "0", this._exp - other._exp).$fix(context);
                 }
 
-                // General case - scale to get enough precision
-                const prec = context.$prec;
-                const shift = prec + other._int.length - this._int.length + 1;
-                const dividend = BigInt(this._int) * 10n ** BigInt(Math.max(0, shift));
-                const divisor = BigInt(other._int);
-                const quotient = dividend / divisor;
-                const expAdj = this._exp - other._exp - Math.max(0, shift);
-
-                return _decFromTriple(resultSign, quotient.toString(), expAdj);
+                // CPython keeps a guard digit and preserves a nonzero remainder
+                // so ties are rounded correctly in every rounding mode.
+                const shift = context.$prec + other._int.length - this._int.length + 1;
+                let exponent = this._exp - other._exp - shift;
+                let numerator = new pyInt(this._int);
+                let denominator = new pyInt(other._int);
+                if (shift >= 0) {
+                    numerator = numerator.nb$multiply(_10.nb$power(new pyInt(shift)));
+                } else {
+                    denominator = denominator.nb$multiply(_10.nb$power(new pyInt(-shift)));
+                }
+                let coefficient = numerator.nb$floor_divide(denominator);
+                const remainder = numerator.nb$remainder(denominator);
+                if (remainder.nb$bool()) {
+                    if (!coefficient.nb$remainder(_5).nb$bool()) {
+                        coefficient = coefficient.nb$add(_1);
+                    }
+                } else {
+                    const idealExponent = this._exp - other._exp;
+                    while (exponent < idealExponent && !coefficient.nb$remainder(_10).nb$bool()) {
+                        coefficient = coefficient.nb$floor_divide(_10);
+                        exponent++;
+                    }
+                }
+                return _decFromTriple(resultSign, coefficient.toString(), exponent).$fix(context);
             },
             nb$reflected_divide(other, context) {
                 other = convertOther(other);
@@ -888,12 +892,15 @@ function decimalImpl({ math }) {
                 if (other === pyNotImplemented) {
                     return other;
                 }
-                // a % b = a - (a // b) * b
-                const q = this.nb$floor_divide(other, context);
-                if (q === pyNotImplemented) {
-                    return q;
+                context = context === undefined ? getContext() : context;
+                const nan = this.$checkNans(other, context);
+                if (nan) {
+                    return nan;
                 }
-                return this.nb$subtract(q.nb$multiply(other, context), context);
+                if (this.$isInf() || !other.nb$bool()) {
+                    return context.$raiseError(InvalidOperation, "invalid remainder");
+                }
+                return this.$divide(other, context)[1].$fix(context);
             },
             nb$reflected_remainder(other, context) {
                 other = convertOther(other);
@@ -918,71 +925,73 @@ function decimalImpl({ math }) {
                 }
                 return other.nb$divmod(this, context);
             },
-            nb$power(other, context) {
+            nb$power(other, modulo = pyNone, context = getContext()) {
                 other = convertOther(other);
                 if (other === pyNotImplemented) {
                     return other;
                 }
-                if (context === undefined) {
-                    context = getContext();
+                context = context === undefined ? getContext() : context;
+                const nan = this.$checkNans(other, context);
+                if (nan) {
+                    return nan;
                 }
-
-                // Handle special cases
-                if (this._is_special || other._is_special) {
-                    const ans = this.$checkNans(other, context);
-                    if (ans) {
-                        return ans;
+                if (modulo !== pyNone) {
+                    modulo = convertOther(modulo, true);
+                    const modNan = this.$checkNans(modulo, context);
+                    if (modNan) {
+                        return modNan;
                     }
-                }
-
-                // Simple integer power for now
-                if (other._exp >= 0 && !other._is_special) {
-                    const exp = Number(BigInt(other._int) * 10n ** BigInt(other._exp));
-                    if (Number.isInteger(exp) && Math.abs(exp) < 1000) {
-                        let result = pyCall(Decimal, [new pyStr("1")]);
-                        let base = pyCall(Decimal, [this]);
-                        let n = Math.abs(exp);
-
-                        while (n > 0) {
-                            if (n % 2 === 1) {
-                                result = result.nb$multiply(base, context);
-                            }
-                            base = base.nb$multiply(base, context);
-                            n = Math.floor(n / 2);
-                        }
-
-                        if (exp < 0) {
-                            result = pyCall(Decimal, [new pyStr("1")]).nb$divide(result, context);
-                        }
-
-                        if (other._sign) {
-                            result = pyCall(Decimal, [new pyStr("1")]).nb$divide(result, context);
-                        }
-
-                        return result;
+                    if (!this.$isInteger() || !other.$isInteger() || !modulo.$isInteger() ||
+                        (other._sign && other.nb$bool()) || !modulo.nb$bool() ||
+                        (!this.nb$bool() && !other.nb$bool()) || modulo.$adjusted() >= context.$prec) {
+                        return context.$raiseError(InvalidOperation, "invalid modular power");
                     }
+                    const exponent = other.nb$int();
+                    const modulus = modulo.nb$int().nb$abs();
+                    const result = this.nb$int().nb$abs().nb$power(exponent, modulus);
+                    const sign = this._sign && exponent.nb$remainder(new pyInt(2)).nb$bool() ? 1 : 0;
+                    return _decFromTriple(sign, result.toString(), 0);
                 }
-
-                // Fall back to float for complex cases
-                const base = Number(this.nb$float().valueOf());
-                const power = Number(other.nb$float().valueOf());
-                return pyCall(Decimal, [new pyFloat(Math.pow(base, power))]);
+                if (!other.nb$bool()) {
+                    return this.nb$bool() ? _One : context.$raiseError(InvalidOperation, "0 ** 0");
+                }
+                if (!other.$isInteger()) {
+                    if (this._sign && this.nb$bool()) {
+                        return context.$raiseError(InvalidOperation, "negative base with nonintegral exponent");
+                    }
+                    throw new NotImplementedError("Decimal power with a nonintegral exponent is not yet implemented in Skulpt");
+                }
+                // Keep the original small-integer scope, but compute the coefficient
+                // exactly and round once. Larger powers need a bounded-precision algorithm.
+                if (other.$adjusted() >= 3) {
+                    throw new NotImplementedError("Decimal power with exponent magnitude >= 1000 is not yet implemented in Skulpt");
+                }
+                const exponent = other.nb$int().nb$abs();
+                const n = exponent.valueOf();
+                const sign = this._sign && n % 2 ? 1 : 0;
+                if (!this.nb$bool() || this.$isInf()) {
+                    const infinite = !!this.$isInf() !== !!other._sign;
+                    return _decFromTriple(sign, "0", infinite ? "F" : 0, infinite);
+                }
+                const coefficient = new pyInt(this._int).nb$power(exponent).toString();
+                const result = _decFromTriple(sign, coefficient, this._exp * n);
+                return other._sign ? _One.nb$divide(result, context) : result.$fix(context);
             },
-            nb$reflected_power(other, context) {
+            nb$reflected_power(other, modulo = pyNone) {
                 other = convertOther(other);
                 if (other === pyNotImplemented) {
                     return other;
                 }
-                return other.nb$power(this, context);
+                return other.nb$power(this, modulo);
             },
-            nb$negative() {
-                return _decFromTriple(this._sign ? 0 : 1, this._int, this._exp, this._is_special);
+            nb$negative(context = getContext()) {
+                return this.$unary(this._sign ? 0 : 1, context);
             },
-            nb$positive() {
-                return _decFromTriple(this._sign, this._int, this._exp, this._is_special);
+            nb$positive(context = getContext()) {
+                return this.$unary(this._sign, context);
             },
-            nb$abs() {
-                return _decFromTriple(0, this._int, this._exp, this._is_special);
+            nb$abs(context = getContext()) {
+                return this.$unary(0, context);
             },
             nb$floor_divide(other, context) {
                 other = convertOther(other);
@@ -1003,7 +1012,7 @@ function decimalImpl({ math }) {
                     }
                     if (this.$isInf()) {
                         if (other.$isInf()) {
-                            throw new InvalidOperation("INF // INF");
+                            return context.$raiseError(InvalidOperation, "INF // INF", resultSign);
                         }
                         return _decFromTriple(resultSign, "0", "F", true);
                     }
@@ -1015,26 +1024,15 @@ function decimalImpl({ math }) {
                 // Handle zeros
                 if (!other.nb$bool()) {
                     if (!this.nb$bool()) {
-                        throw new DivisionUndefined("0 // 0");
+                        return context.$raiseError(DivisionUndefined, "0 // 0", resultSign);
                     }
-                    throw new DivisionByZero("Division by zero");
+                    return context.$raiseError(DivisionByZero, "Division by zero", resultSign);
                 }
                 if (!this.nb$bool()) {
                     return _decFromTriple(resultSign, "0", 0);
                 }
 
-                // General case
-                const div = this.nb$divide(other, context);
-                const intPart = div.nb$int();
-                // Floor toward negative infinity
-                if (resultSign && div._exp < 0) {
-                    // Check if there's a fractional part
-                    const intDecimal = pyCall(Decimal, [intPart]);
-                    if (!richCompareBool(div, intDecimal, "Eq")) {
-                        return pyCall(Decimal, [intPart.nb$subtract(_1)]);
-                    }
-                }
-                return pyCall(Decimal, [intPart]);
+                return this.$divide(other, context)[0];
             },
             nb$reflected_floor_divide(other, context) {
                 other = convertOther(other);
@@ -1118,8 +1116,8 @@ function decimalImpl({ math }) {
                 $doc: "Return the smallest number representable in the given context (or in the\ncurrent default context if no context is given) that is larger than the\ngiven operand.\n\n",
             },
             normalize: {
-                $meth() {
-                    notImplementedYet();
+                $meth(context) {
+                    return this.$normalize(context);
                 },
                 $flags: { NamedArgs: ["context"], Defaults: [pyNone] },
                 $textsig: "($self, /, context=None)",
@@ -1127,26 +1125,7 @@ function decimalImpl({ math }) {
             },
             to_integral: {
                 $meth(rounding, context) {
-                    // Alias for to_integral_value - duplicated implementation
-                    let roundingMode = ROUND_HALF_EVEN;
-                    if (rounding && rounding !== pyNone) {
-                        roundingMode = rounding;
-                    } else if (context && context !== pyNone) {
-                        const ctxRounding = context.tp$getattr(new pyStr("rounding"));
-                        if (ctxRounding && ctxRounding !== pyNone) {
-                            roundingMode = ctxRounding;
-                        }
-                    }
-                    if (this._is_special) {
-                        if (this.$isNan()) {
-                            return _decFromTriple(this._sign, this._int, this._exp, true);
-                        }
-                        return _decFromTriple(this._sign, this._int, this._exp, true);
-                    }
-                    if (this._exp >= 0) {
-                        return _decFromTriple(this._sign, this._int, this._exp);
-                    }
-                    return this.$rescale(0, roundingMode);
+                    return this.$toIntegral(rounding, context);
                 },
                 $flags: { NamedArgs: ["rounding", "context"], Defaults: [pyNone, pyNone] },
                 $textsig: "($self, /, rounding=None, context=None)",
@@ -1162,30 +1141,7 @@ function decimalImpl({ math }) {
             },
             to_integral_value: {
                 $meth(rounding, context) {
-                    // Determine rounding mode
-                    let roundingMode = ROUND_HALF_EVEN;
-                    if (rounding && rounding !== pyNone) {
-                        roundingMode = rounding;
-                    } else if (context && context !== pyNone) {
-                        const ctxRounding = context.tp$getattr(new pyStr("rounding"));
-                        if (ctxRounding && ctxRounding !== pyNone) {
-                            roundingMode = ctxRounding;
-                        }
-                    }
-                    // Handle special values
-                    if (this._is_special) {
-                        if (this.$isNan()) {
-                            return _decFromTriple(this._sign, this._int, this._exp, true);
-                        }
-                        // Infinity returns itself
-                        return _decFromTriple(this._sign, this._int, this._exp, true);
-                    }
-                    // Already an integer
-                    if (this._exp >= 0) {
-                        return _decFromTriple(this._sign, this._int, this._exp);
-                    }
-                    // Round to integer
-                    return this.$rescale(0, roundingMode);
+                    return this.$toIntegral(rounding, context);
                 },
                 $flags: { NamedArgs: ["rounding", "context"], Defaults: [pyNone, pyNone] },
                 $textsig: "($self, /, rounding=None, context=None)",
@@ -1268,10 +1224,10 @@ function decimalImpl({ math }) {
                 $doc: "If the two operands are unequal, return the number closest to the first\noperand in the direction of the second operand.  If both operands are\nnumerically equal, return a copy of the first operand with the sign set\nto be the same as the sign of the second operand.\n\n",
             },
             quantize: {
-                $meth() {
-                    notImplementedYet();
+                $meth(exp, rounding, context) {
+                    return this.$quantize(exp, rounding, context);
                 },
-                $flags: { NamedArgs: [null, "rounding", "context"], Defaults: [pyNone, pyNone] },
+                $flags: { NamedArgs: ["exp", "rounding", "context"], Defaults: [pyNone, pyNone] },
                 $textsig: "($self, /, exp, rounding=None, context=None)",
                 $doc: "Return a value equal to the first operand after rounding and having the\nexponent of the second operand.\n\n    >>> Decimal('1.41421356').quantize(Decimal('1.000'))\n    Decimal('1.414')\n\nUnlike other operations, if the length of the coefficient after the quantize\noperation would be greater than precision, then an InvalidOperation is signaled.\nThis guarantees that, unless there is an error condition, the quantized exponent\nis always equal to that of the right-hand operand.\n\nAlso unlike other operations, quantize never signals Underflow, even if the\nresult is subnormal and inexact.\n\nIf the exponent of the second operand is larger than that of the first, then\nrounding may be necessary. In this case, the rounding mode is determined by the\nrounding argument if given, else by the given context argument; if neither\nargument is given, the rounding mode of the current thread's context is used.\n\n",
             },
@@ -1545,7 +1501,7 @@ function decimalImpl({ math }) {
                     const digitTuple = new pyTuple(digits);
                     // For special values, _exp is a string like 'n' (NaN) or 'F' (Infinity)
                     const exp = typeof this._exp === "string" ? new pyStr(this._exp) : new pyInt(this._exp);
-                    return new pyTuple([new pyInt(this._sign), digitTuple, exp]);
+                    return pyCall(DecimalTuple, [new pyInt(this._sign), digitTuple, exp]);
                 },
                 $flags: { NoArgs: true },
                 $textsig: "($self, /)",
@@ -2005,15 +1961,12 @@ function decimalImpl({ math }) {
                     // This avoids precision loss from division
                     // Compare: self vs num/den  =>  self * den vs num
                     if (!this._is_special) {
-                        const scaledSelf = this.nb$multiply(pyCall(Decimal, [denominator]));
+                        const scaledSelf = _decFromTriple(this._sign, new pyInt(this._int).nb$multiply(denominator).toString(), this._exp);
                         const otherNum = pyCall(Decimal, [numerator]);
                         return [scaledSelf, otherNum];
                     }
-                    // For special values (inf, nan), convert other to Decimal
-                    const numDec = pyCall(Decimal, [numerator]);
-                    const denDec = pyCall(Decimal, [denominator]);
-                    const otherDec = numDec.nb$divide(denDec);
-                    return [this, otherDec];
+                    // Every Fraction is finite; only its sign matters against specials.
+                    return [this, pyCall(Decimal, [numerator])];
                 }
 
                 if (equalityOp && other instanceof pyComplex && other.imag === 0) {
@@ -2021,7 +1974,11 @@ function decimalImpl({ math }) {
                 }
                 if (checkFloat(other)) {
                     const context = getContext();
-                    /** @todo context */
+                    if (equalityOp) {
+                        context.$flags[FloatOperation] = 1;
+                    } else {
+                        context.$raiseError(FloatOperation, "float comparison");
+                    }
                     return [this, fromFloat(other)];
                 }
                 return [pyNotImplemented, pyNotImplemented];
@@ -2034,6 +1991,62 @@ function decimalImpl({ math }) {
                     }
                     throw new OverflowError(`cannot ${msgAction} Infinity${msgSuffix}`);
                 }
+            },
+            $extreme(other, context, maximum, magnitude) {
+                const sn = this.$isNan();
+                const on = other.$isNan();
+                if (sn || on) {
+                    if (sn === 1 && !on) {
+                        return other.$fix(context);
+                    }
+                    if (on === 1 && !sn) {
+                        return this.$fix(context);
+                    }
+                    return this.$checkNans(other, context);
+                }
+                const left = magnitude ? _decFromTriple(0, this._int, this._exp, this._is_special) : this;
+                const right = magnitude ? _decFromTriple(0, other._int, other._exp, other._is_special) : other;
+                let comparison = left.$cmp(right, "Lt") === pyTrue ? -1 : left.$cmp(right, "Gt") === pyTrue ? 1 : 0;
+                if (!comparison) {
+                    // Equal values use compare_total's sign/exponent ordering.
+                    if (this._sign !== other._sign) {
+                        comparison = this._sign ? -1 : 1;
+                    } else if (this._exp !== other._exp) {
+                        comparison = this._exp < other._exp ? -1 : 1;
+                        if (this._sign) {
+                            comparison = -comparison;
+                        }
+                    }
+                }
+                const result = maximum ? (comparison < 0 ? other : this) : (comparison < 0 ? this : other);
+                return result.$fix(context);
+            },
+            $toIntegral(rounding, context) {
+                context = context === pyNone ? getContext() : context;
+                if (!(context instanceof Context)) {
+                    throw new TypeError("context must be a Context");
+                }
+                rounding = rounding === pyNone ? context.$rounding : rounding;
+                const nan = this.$checkNans(null, context);
+                if (nan) {
+                    return nan;
+                }
+                return this._is_special || this._exp >= 0
+                    ? _decFromTriple(this._sign, this._int, this._exp, this._is_special)
+                    : this.$rescale(0, rounding);
+            },
+            $unary(sign, context) {
+                const nan = this.$checkNans(null, context);
+                if (nan) {
+                    return nan;
+                }
+                if (!this.nb$bool() && !eq(context.$rounding, ROUND_FLOOR)) {
+                    sign = 0;
+                }
+                return _decFromTriple(sign, this._int, this._exp, this._is_special).$fix(context);
+            },
+            $isInteger() {
+                return !this._is_special && (this._exp >= 0 || /^0*$/.test(this._int.slice(this._exp)));
             },
             $adjusted() {
                 if (typeof this._exp === "number") {
@@ -2078,10 +2091,10 @@ function decimalImpl({ math }) {
                         context = getContext();
                     }
                     if (selfIsNan === 2) {
-                        //return context._raise_error(InvalidOperation, 'sNaN', this);
+                        return context.$raiseError(InvalidOperation, "sNaN", this._sign, this);
                     }
                     if (otherIsNan === 2) {
-                        // return context._raise_error(InvalidOperation, 'sNaN', other);
+                        return context.$raiseError(InvalidOperation, "sNaN", other._sign, other);
                     }
 
                     if (selfIsNan) {
@@ -2092,8 +2105,9 @@ function decimalImpl({ math }) {
                 return 0;
             },
             $fixNan(context) {
-                // Return a copy of self with the NaN diagnostic preserved
-                return _decFromTriple(this._sign, this._int, this._exp, true);
+                const length = context.$prec - context.$clamp;
+                const payload = length ? this._int.slice(-length).replace(/^0+/, "") : "";
+                return _decFromTriple(this._sign, payload, this._exp, true);
             },
             $cmp(other, op) {
                 // Compare two Decimals
@@ -2281,6 +2295,161 @@ function decimalImpl({ math }) {
                         throw new ValueError(`Unknown rounding mode: ${roundingStr}`);
                 }
             },
+            $divide(other, context) {
+                // CPython Decimal._divide: compute quotient and remainder exactly
+                // before applying context rounding to the remainder.
+                const sign = this._sign ^ other._sign;
+                const exponent = other.$isInf() ? this._exp : Math.min(this._exp, other._exp);
+                const difference = this.$adjusted() - other.$adjusted();
+                if (!this.nb$bool() || other.$isInf() || difference <= -2) {
+                    return [_decFromTriple(sign, "0", 0), this.$rescale(exponent, context.$rounding)];
+                }
+                if (difference <= context.$prec) {
+                    const numerator = new pyInt(this._int).nb$multiply(_10.nb$power(new pyInt(this._exp - exponent)));
+                    const denominator = new pyInt(other._int).nb$multiply(_10.nb$power(new pyInt(other._exp - exponent)));
+                    const quotient = numerator.nb$floor_divide(denominator).toString();
+                    if (quotient.length <= context.$prec) {
+                        const remainder = numerator.nb$remainder(denominator).toString();
+                        return [_decFromTriple(sign, quotient, 0), _decFromTriple(this._sign, remainder, exponent)];
+                    }
+                }
+                const nan = context.$raiseError(DivisionImpossible, "quotient too large");
+                return [nan, nan];
+            },
+            $fix(context) {
+                // Port of CPython _pydecimal.Decimal._fix. Signal order matters:
+                // callers may trap any of overflow, underflow, inexact or rounded.
+                if (this._is_special) {
+                    return this.$isNan() ? this.$fixNan(context) : this;
+                }
+                const etiny = context.$Emin - context.$prec + 1;
+                const etop = context.$Emax - context.$prec + 1;
+                if (!this.nb$bool()) {
+                    const exponent = Math.min(Math.max(this._exp, etiny), context.$clamp ? etop : context.$Emax);
+                    if (exponent !== this._exp) {
+                        context.$raiseError(Clamped);
+                    }
+                    return _decFromTriple(this._sign, "0", exponent);
+                }
+                let exponent = this._int.length + this._exp - context.$prec;
+                if (exponent > etop) {
+                    const result = context.$raiseError(Overflow, "above Emax", this._sign);
+                    context.$raiseError(Inexact);
+                    context.$raiseError(Rounded);
+                    return result;
+                }
+                const subnormal = exponent < etiny;
+                exponent = Math.max(exponent, etiny);
+                if (this._exp < exponent) {
+                    let digits = this._int.length + this._exp - exponent;
+                    let operand = this;
+                    if (digits < 0) {
+                        operand = _decFromTriple(this._sign, "1", exponent - 1);
+                        digits = 0;
+                    }
+                    const changed = operand.$pickRoundingFunction(context.$rounding)(digits);
+                    let result = operand.$rescale(exponent, context.$rounding);
+                    if (result._int.length > context.$prec) {
+                        result = _decFromTriple(result._sign, result._int.slice(0, -1), ++exponent);
+                    }
+                    if (exponent > etop) {
+                        result = context.$raiseError(Overflow, "above Emax", this._sign);
+                    }
+                    if (changed && subnormal) {
+                        context.$raiseError(Underflow);
+                    }
+                    if (subnormal) {
+                        context.$raiseError(Subnormal);
+                    }
+                    if (changed) {
+                        context.$raiseError(Inexact);
+                    }
+                    context.$raiseError(Rounded);
+                    if (!result.nb$bool()) {
+                        context.$raiseError(Clamped);
+                    }
+                    return result;
+                }
+                if (subnormal) {
+                    context.$raiseError(Subnormal);
+                }
+                if (context.$clamp && this._exp > etop) {
+                    context.$raiseError(Clamped);
+                    return _decFromTriple(this._sign, this._int + "0".repeat(this._exp - etop), etop);
+                }
+                return _decFromTriple(this._sign, this._int, this._exp);
+            },
+            $normalize(context) {
+                context = context === pyNone ? getContext() : context;
+                if (!(context instanceof Context)) {
+                    throw new TypeError("context must be a Context");
+                }
+                const nan = this.$checkNans(null, context);
+                if (nan) {
+                    return nan;
+                }
+                const result = this.$fix(context);
+                if (result.$isInf()) {
+                    return _decFromTriple(result._sign, result._int, result._exp, true);
+                }
+                if (!result.nb$bool()) {
+                    return _decFromTriple(result._sign, "0", 0);
+                }
+                const maxExponent = context.$clamp ? context.$Emax - context.$prec + 1 : context.$Emax;
+                let end = result._int.length;
+                let exponent = result._exp;
+                while (result._int[end - 1] === "0" && exponent < maxExponent) {
+                    end--;
+                    exponent++;
+                }
+                return _decFromTriple(result._sign, result._int.slice(0, end), exponent);
+            },
+            $quantize(exp, rounding, context) {
+                // CPython Decimal.quantize: enforce the target exponent before
+                // rounding, and never signal Underflow for an inexact subnormal.
+                exp = convertOther(exp, true);
+                context = context === pyNone ? getContext() : context;
+                if (!(context instanceof Context)) {
+                    throw new TypeError("context must be a Context");
+                }
+                rounding = rounding === pyNone ? context.$rounding : rounding;
+                if (!_rounding_modes.some((mode) => eq(mode, rounding))) {
+                    throw new TypeError("invalid rounding mode");
+                }
+                const nan = this.$checkNans(exp, context);
+                if (nan) {
+                    return nan;
+                }
+                if (this.$isInf() || exp.$isInf()) {
+                    return this.$isInf() && exp.$isInf()
+                        ? _decFromTriple(this._sign, this._int, this._exp, true)
+                        : context.$raiseError(InvalidOperation, "quantize with one infinity");
+                }
+                const etiny = context.$Emin - context.$prec + 1;
+                if (exp._exp < etiny || exp._exp > context.$Emax) {
+                    return context.$raiseError(InvalidOperation, "target exponent out of bounds in quantize");
+                }
+                if (!this.nb$bool()) {
+                    return _decFromTriple(this._sign, "0", exp._exp).$fix(context);
+                }
+                if (this.$adjusted() > context.$Emax || this.$adjusted() - exp._exp + 1 > context.$prec) {
+                    return context.$raiseError(InvalidOperation, "quantize result exceeds context limits");
+                }
+                const result = this.$rescale(exp._exp, rounding);
+                if (result.$adjusted() > context.$Emax || result._int.length > context.$prec) {
+                    return context.$raiseError(InvalidOperation, "quantize result exceeds context limits");
+                }
+                if (result.nb$bool() && result.$adjusted() < context.$Emin) {
+                    context.$raiseError(Subnormal);
+                }
+                if (result._exp > this._exp) {
+                    if (result.$cmp(this, "Eq") !== pyTrue) {
+                        context.$raiseError(Inexact);
+                    }
+                    context.$raiseError(Rounded);
+                }
+                return result.$fix(context);
+            },
             $rescale(exp, rounding) {
                 // Rescale self so that the exponent is exp, using the given rounding mode.
                 // Specials are returned without change.
@@ -2309,7 +2478,7 @@ function decimalImpl({ math }) {
                 const changed = roundFunc(digits);
                 let coeff = self._int.slice(0, digits) || "0";
                 if (changed === 1) {
-                    coeff = (BigInt(coeff) + 1n).toString();
+                    coeff = new pyInt(coeff).nb$add(_1).toString();
                 }
                 return _decFromTriple(this._sign, coeff, exp);
             },
@@ -2342,6 +2511,25 @@ function decimalImpl({ math }) {
         "_ContextManager",
         []
     );
+
+    function parseSignals(value, allowList = false) {
+        if (allowList && value instanceof pyList) {
+            const signals = value.valueOf();
+            for (const signal of signals) {
+                if (!_signals.includes(signal)) {
+                    throw new KeyError("invalid signal");
+                }
+            }
+            return Object.fromEntries(_signals.map((signal) => [signal, signals.includes(signal) ? 1 : 0]));
+        }
+        if (!(value instanceof pyDict) && !(value instanceof _SignalDict)) {
+            throw new TypeError("signal configuration must be a dict");
+        }
+        if (value.sq$length() !== _signals.length) {
+            throw new KeyError("invalid signal dictionary");
+        }
+        return Object.fromEntries(_signals.map((signal) => [signal, isTrue(value.mp$subscript(signal)) ? 1 : 0]));
+    }
 
     const Context = buildNativeClass("decimal.Context", {
         constructor: function Context(
@@ -2394,73 +2582,23 @@ function decimalImpl({ math }) {
                     new Array(8).fill(pyNone)
                 );
 
-                // Set defaults from DefaultContext if it exists, otherwise use sensible defaults
-                const dc = _currentContext || {
-                    $prec: 28,
-                    $rounding: ROUND_HALF_EVEN,
-                    $Emin: -999999,
-                    $Emax: 999999,
-                    $capitals: 1,
-                    $clamp: 0,
-                };
-
-                this.$prec = prec !== pyNone ? (checkInt(prec) ? prec.valueOf() : prec) : dc.$prec;
-                this.$rounding = rounding !== pyNone ? rounding : dc.$rounding;
-                this.$Emin = emin !== pyNone ? (checkInt(emin) ? emin.valueOf() : emin) : dc.$Emin;
-                this.$Emax = emax !== pyNone ? (checkInt(emax) ? emax.valueOf() : emax) : dc.$Emax;
-                this.$capitals =
-                    capitals !== pyNone ? (checkInt(capitals) ? capitals.valueOf() : capitals) : dc.$capitals;
-                this.$clamp = clamp !== pyNone ? (checkInt(clamp) ? clamp.valueOf() : clamp) : dc.$clamp;
-
-                // Initialize flags
-                if (flags === pyNone || flags === null) {
-                    this.$flags = Object.fromEntries(_signals.map((s) => [s, 0]));
-                } else if (flags instanceof pyList || flags instanceof pyTuple) {
-                    this.$flags = Object.fromEntries(_signals.map((s) => [s, flags.valueOf().includes(s) ? 1 : 0]));
-                } else {
-                    // Assume it's a dict-like object
-                    this.$flags = Object.fromEntries(_signals.map((s) => [s, 0]));
-                    for (const sig of _signals) {
-                        if (flags.mp$subscript) {
-                            try {
-                                this.$flags[sig] = isTrue(flags.mp$subscript(sig)) ? 1 : 0;
-                            } catch (e) {
-                                // Key not found, leave as 0
-                            }
-                        }
-                    }
+                const dc = DefaultContext;
+                const values = [prec, rounding, emin, emax, capitals, clamp];
+                for (let i = 0; i < values.length; i++) {
+                    const key = kwList[i];
+                    const value = values[i] === pyNone ? (key === "rounding" ? dc.$rounding : new pyInt(dc["$" + key])) : values[i];
+                    this.tp$setattr(new pyStr(key), value);
                 }
 
-                // Initialize traps
-                if (traps === pyNone || traps === null) {
-                    this.$traps = Object.fromEntries(
-                        _signals.map((s) => [
-                            s,
-                            s === DivisionByZero || s === Overflow || s === InvalidOperation ? 1 : 0,
-                        ])
-                    );
-                } else if (traps instanceof pyList || traps instanceof pyTuple) {
-                    this.$traps = Object.fromEntries(_signals.map((s) => [s, traps.valueOf().includes(s) ? 1 : 0]));
-                } else {
-                    // Assume it's a dict-like object
-                    this.$traps = Object.fromEntries(_signals.map((s) => [s, 0]));
-                    for (const sig of _signals) {
-                        if (traps.mp$subscript) {
-                            try {
-                                this.$traps[sig] = isTrue(traps.mp$subscript(sig)) ? 1 : 0;
-                            } catch (e) {
-                                // Key not found, leave as 0
-                            }
-                        }
-                    }
-                }
+                this.$flags = flags === pyNone ? Object.fromEntries(_signals.map((signal) => [signal, 0])) : parseSignals(flags, true);
+                this.$traps = traps === pyNone ? { ...DefaultContext.$traps } : parseSignals(traps, true);
             },
         },
         methods: {
             abs: {
                 $meth(x) {
                     x = convertOther(x, true);
-                    return _decFromTriple(0, x._int, x._exp, x._is_special);
+                    return x.nb$abs(this);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, x, /)",
@@ -2493,7 +2631,7 @@ function decimalImpl({ math }) {
             minus: {
                 $meth(x) {
                     x = convertOther(x, true);
-                    return _decFromTriple(x._sign ? 0 : 1, x._int, x._exp, x._is_special);
+                    return x.nb$negative(this);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, x, /)",
@@ -2516,8 +2654,8 @@ function decimalImpl({ math }) {
                 $doc: "Return the smallest representable number larger than x.\n\n",
             },
             normalize: {
-                $meth() {
-                    notImplementedYet();
+                $meth(x) {
+                    return convertOther(x, true).$normalize(this);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, x, /)",
@@ -2526,7 +2664,7 @@ function decimalImpl({ math }) {
             plus: {
                 $meth(x) {
                     x = convertOther(x, true);
-                    return _decFromTriple(x._sign, x._int, x._exp, x._is_special);
+                    return x.nb$positive(this);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, x, /)",
@@ -2578,9 +2716,9 @@ function decimalImpl({ math }) {
                 $meth(x, y) {
                     x = convertOther(x, true);
                     y = convertOther(y, true);
-                    // Handle NaN - returns NaN
-                    if (x.$isNan() || y.$isNan()) {
-                        return _decFromTriple(0, "NaN", 0, true);
+                    const nan = x.$checkNans(y, this);
+                    if (nan) {
+                        return nan;
                     }
                     // Compare: returns Decimal(-1), Decimal(0), or Decimal(1)
                     if (x.tp$richcompare(y, "Lt") === pyTrue) {
@@ -2637,17 +2775,7 @@ function decimalImpl({ math }) {
                 $meth(x, y) {
                     x = convertOther(x, true);
                     y = convertOther(y, true);
-                    // Handle NaN
-                    if (x.$isNan() || y.$isNan()) {
-                        if (x.$isNan() && y.$isNan()) {
-                            return _decFromTriple(0, "NaN", 0, true);
-                        }
-                        const result = x.$isNan() ? y : x;
-                        return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
-                    }
-                    // Return the larger one (reconstruct to ensure Decimal type, not subclass)
-                    const result = x.tp$richcompare(y, "Lt") === pyTrue ? y : x;
-                    return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
+                    return x.$extreme(y, this, true, false);
                 },
                 $flags: { MinArgs: 2, MaxArgs: 2 },
                 $textsig: "($self, x, y, /)",
@@ -2657,19 +2785,7 @@ function decimalImpl({ math }) {
                 $meth(x, y) {
                     x = convertOther(x, true);
                     y = convertOther(y, true);
-                    // Handle NaN
-                    if (x.$isNan() || y.$isNan()) {
-                        if (x.$isNan() && y.$isNan()) {
-                            return _decFromTriple(0, "NaN", 0, true);
-                        }
-                        const result = x.$isNan() ? y : x;
-                        return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
-                    }
-                    // Compare absolute values
-                    const xAbs = _decFromTriple(0, x._int, x._exp, x._is_special);
-                    const yAbs = _decFromTriple(0, y._int, y._exp, y._is_special);
-                    const result = xAbs.tp$richcompare(yAbs, "Lt") === pyTrue ? y : x;
-                    return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
+                    return x.$extreme(y, this, true, true);
                 },
                 $flags: { MinArgs: 2, MaxArgs: 2 },
                 $textsig: "($self, x, y, /)",
@@ -2679,17 +2795,7 @@ function decimalImpl({ math }) {
                 $meth(x, y) {
                     x = convertOther(x, true);
                     y = convertOther(y, true);
-                    // Handle NaN
-                    if (x.$isNan() || y.$isNan()) {
-                        if (x.$isNan() && y.$isNan()) {
-                            return _decFromTriple(0, "NaN", 0, true);
-                        }
-                        const result = x.$isNan() ? y : x;
-                        return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
-                    }
-                    // Return the smaller one (reconstruct to ensure Decimal type, not subclass)
-                    const result = x.tp$richcompare(y, "Lt") === pyTrue ? x : y;
-                    return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
+                    return x.$extreme(y, this, false, false);
                 },
                 $flags: { MinArgs: 2, MaxArgs: 2 },
                 $textsig: "($self, x, y, /)",
@@ -2699,19 +2805,7 @@ function decimalImpl({ math }) {
                 $meth(x, y) {
                     x = convertOther(x, true);
                     y = convertOther(y, true);
-                    // Handle NaN
-                    if (x.$isNan() || y.$isNan()) {
-                        if (x.$isNan() && y.$isNan()) {
-                            return _decFromTriple(0, "NaN", 0, true);
-                        }
-                        const result = x.$isNan() ? y : x;
-                        return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
-                    }
-                    // Compare absolute values, return one with smaller magnitude (reconstruct to ensure Decimal type)
-                    const xAbs = _decFromTriple(0, x._int, x._exp, x._is_special);
-                    const yAbs = _decFromTriple(0, y._int, y._exp, y._is_special);
-                    const result = xAbs.tp$richcompare(yAbs, "Lt") === pyTrue ? x : y;
-                    return _decFromTriple(result._sign, result._int, result._exp, result._is_special);
+                    return x.$extreme(y, this, false, true);
                 },
                 $flags: { MinArgs: 2, MaxArgs: 2 },
                 $textsig: "($self, x, y, /)",
@@ -2736,8 +2830,8 @@ function decimalImpl({ math }) {
                 $doc: "Return the number closest to x, in the direction towards y.\n\n",
             },
             quantize: {
-                $meth() {
-                    notImplementedYet();
+                $meth(x, y) {
+                    return convertOther(x, true).$quantize(y, pyNone, this);
                 },
                 $flags: { MinArgs: 2, MaxArgs: 2 },
                 $textsig: "($self, x, y, /)",
@@ -2778,7 +2872,7 @@ function decimalImpl({ math }) {
                     if (modulo !== pyNone) {
                         modulo = convertOther(modulo, true);
                     }
-                    return a.nb$power(b, this, modulo);
+                    return a.nb$power(b, modulo, this);
                 },
                 $flags: { NamedArgs: ["a", "b", "modulo"], Defaults: [pyNone] },
                 $textsig: "($self, /, a, b, modulo=None)",
@@ -3148,11 +3242,14 @@ function decimalImpl({ math }) {
                     if (num === undefined) {
                         num = STR["0"];
                     }
-                    // Create a Decimal using this context
-                    if (num instanceof Decimal) {
-                        return pyCall(Decimal, [num]);
+                    if (checkString(num) && (num.toString().trim() !== num.toString() || num.toString().includes("_"))) {
+                        return this.$raiseError(ConversionSyntax, "invalid decimal literal");
                     }
-                    return pyCall(Decimal, [num, this]);
+                    const result = pyCall(Decimal, [num, this]);
+                    if (result.$isNan() && result._int.length > this.$prec - this.$clamp) {
+                        return this.$raiseError(ConversionSyntax, "NaN payload too long");
+                    }
+                    return result.$fix(this);
                 },
                 $flags: { MinArgs: 0, MaxArgs: 1 },
                 $textsig: '($self, num="0", /)',
@@ -3162,7 +3259,7 @@ function decimalImpl({ math }) {
                 $meth(f) {
                     // Create a Decimal from a float using this context
                     // Use from_float to create the Decimal
-                    return fromFloat(f);
+                    return fromFloat(f).$fix(this);
                 },
                 $flags: { OneArg: true },
                 $textsig: "($self, f, /)",
@@ -3176,6 +3273,9 @@ function decimalImpl({ math }) {
                     return new pyInt(this.$prec);
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete prec");
+                    }
                     if (!checkInt(value)) {
                         throw new TypeError("prec must be an integer");
                     }
@@ -3192,8 +3292,14 @@ function decimalImpl({ math }) {
                     return new pyInt(this.$Emax);
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete Emax");
+                    }
                     if (!checkInt(value)) {
                         throw new TypeError("Emax must be an integer");
+                    }
+                    if (richCompareBool(value, _0, "Lt")) {
+                        throw new ValueError("Emax must be >= 0");
                     }
                     this.$Emax = value.valueOf();
                 },
@@ -3204,8 +3310,14 @@ function decimalImpl({ math }) {
                     return new pyInt(this.$Emin);
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete Emin");
+                    }
                     if (!checkInt(value)) {
                         throw new TypeError("Emin must be an integer");
+                    }
+                    if (richCompareBool(value, _0, "Gt")) {
+                        throw new ValueError("Emin must be <= 0");
                     }
                     this.$Emin = value.valueOf();
                 },
@@ -3216,6 +3328,9 @@ function decimalImpl({ math }) {
                     return this.$rounding;
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete rounding");
+                    }
                     if (!_rounding_modes.some((m) => eq(m, value))) {
                         throw new TypeError("invalid rounding mode");
                     }
@@ -3228,6 +3343,9 @@ function decimalImpl({ math }) {
                     return new pyInt(this.$capitals);
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete capitals");
+                    }
                     if (!checkInt(value)) {
                         throw new TypeError("capitals must be an integer");
                     }
@@ -3244,6 +3362,9 @@ function decimalImpl({ math }) {
                     return new pyInt(this.$clamp);
                 },
                 $set(value) {
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete clamp");
+                    }
                     if (!checkInt(value)) {
                         throw new TypeError("clamp must be an integer");
                     }
@@ -3260,20 +3381,10 @@ function decimalImpl({ math }) {
                     return new _SignalDict(this, "flags");
                 },
                 $set(value) {
-                    // Accept a dict-like or list-like object
-                    if (value instanceof pyList || value instanceof pyTuple) {
-                        this.$flags = Object.fromEntries(_signals.map((s) => [s, value.valueOf().includes(s) ? 1 : 0]));
-                    } else {
-                        for (const sig of _signals) {
-                            if (value.mp$subscript) {
-                                try {
-                                    this.$flags[sig] = isTrue(value.mp$subscript(sig)) ? 1 : 0;
-                                } catch (e) {
-                                    // Key not found
-                                }
-                            }
-                        }
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete flags");
                     }
+                    this.$flags = parseSignals(value);
                 },
                 $doc: null,
             },
@@ -3282,25 +3393,37 @@ function decimalImpl({ math }) {
                     return new _SignalDict(this, "traps");
                 },
                 $set(value) {
-                    // Accept a dict-like or list-like object
-                    if (value instanceof pyList || value instanceof pyTuple) {
-                        this.$traps = Object.fromEntries(_signals.map((s) => [s, value.valueOf().includes(s) ? 1 : 0]));
-                    } else {
-                        for (const sig of _signals) {
-                            if (value.mp$subscript) {
-                                try {
-                                    this.$traps[sig] = isTrue(value.mp$subscript(sig)) ? 1 : 0;
-                                } catch (e) {
-                                    // Key not found
-                                }
-                            }
-                        }
+                    if (value === undefined) {
+                        throw new AttributeError("cannot delete traps");
                     }
+                    this.$traps = parseSignals(value);
                 },
                 $doc: null,
             },
         },
         proto: {
+            $raiseError(condition, message = "", sign = 0, operand = null) {
+                const signal = _condition_map.get(condition) || condition;
+                this.$flags[signal] = 1;
+                if (this.$traps[signal]) {
+                    throw pyCall(signal, [new pyStr(message)]);
+                }
+                if (signal === InvalidOperation) {
+                    return operand ? _decFromTriple(operand._sign, operand._int, "n", true).$fixNan(this) : _NaN;
+                }
+                if (signal === Overflow) {
+                    const mode = this.$rounding.toString();
+                    if (mode === "ROUND_DOWN" || mode === "ROUND_05UP" ||
+                        (mode === "ROUND_CEILING" && sign) || (mode === "ROUND_FLOOR" && !sign)) {
+                        return _decFromTriple(sign, "9".repeat(this.$prec), this.$Emax - this.$prec + 1);
+                    }
+                    return _decFromTriple(sign, "0", "F", true);
+                }
+                if (signal === DivisionByZero) {
+                    return _decFromTriple(sign, "0", "F", true);
+                }
+                return pyNone;
+            },
             $copy() {
                 const nc = new Context(
                     this.$prec,
@@ -3573,17 +3696,17 @@ function decimalImpl({ math }) {
     // ##### Useful Constants (internal use only) ################################
     const _Infinity = new Decimal("0", 0, "F", true);
     const _NegativeInfinity = new Decimal("0", 1, "F", true);
-    const _NaN = Decimal("", 0, "n", true);
-    const _Zero = Decimal("0", 0, 0, false);
-    const _One = Decimal("1", 0, 0, false);
-    const _NegativeOne = Decimal("1", 1, 0, false);
+    const _NaN = new Decimal("", 0, "n", true);
+    const _Zero = new Decimal("0", 0, 0, false);
+    const _One = new Decimal("1", 0, 0, false);
+    const _NegativeOne = new Decimal("1", 1, 0, false);
 
     const _SignedInfinity = new pyTuple([_Infinity, _NegativeInfinity]);
 
     // these should all be part of sys.hash_info
-    const _PyHASH_MODULUS = new pyInt("2305843009213693951");
-    // # _PyHASH_10INV is the inverse of 10 modulo the prime _PyHASH_MODULUS
-    const _PyHASH_10INV = new pyInt("2075258708292324556");
+    const _PyHASH_MODULUS = sys.$d.hash_info.tp$getattr(new pyStr("modulus"));
+    // Inverse of 10 modulo Skulpt's hash modulus (2**29 - 1).
+    const _PyHASH_10INV = new pyInt(483183820);
     const _PyHASH_NaN = new pyFloat(Number.NaN).tp$hash();
     const _PyHASH_INF_NEG = new pyFloat(Number.NEGATIVE_INFINITY).tp$hash();
     const _PyHASH_INF_POS = new pyFloat(Number.POSITIVE_INFINITY).tp$hash();
@@ -3593,7 +3716,7 @@ function decimalImpl({ math }) {
         Context,
 
         // # Named tuple representation
-        // DecimalTuple,
+        DecimalTuple,
 
         // # Contexts
         DefaultContext,

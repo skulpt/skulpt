@@ -609,43 +609,26 @@ class ExplicitConstructionTest(unittest.TestCase):
                 self.assertEqual(str(Decimal(lead + '9.311E+28' + trail)),
                                  '9.311E+28')
 
-        # Skulpt: context trap handling not fully implemented - skip trap tests
-        # with localcontext() as c:
-        #     c.traps[InvalidOperation] = True
-        #     # Invalid string
-        #     self.assertRaises(InvalidOperation, Decimal, "xyz")
-        #     # Two arguments max
-        #     self.assertRaises(TypeError, Decimal, "1234", "x", "y")
-        #
-        #     # space within the numeric part
-        #     self.assertRaises(InvalidOperation, Decimal, "1\u00a02\u00a03")
-        #     self.assertRaises(InvalidOperation, Decimal, "\u00a01\u00a02\u00a0")
-        #
-        #     # unicode whitespace
-        #     self.assertRaises(InvalidOperation, Decimal, "\u00a0")
-        #     self.assertRaises(InvalidOperation, Decimal, "\u00a0\u00a0")
-        #
-        #     # embedded NUL
-        #     self.assertRaises(InvalidOperation, Decimal, "12\u00003")
-        #
-        #     # underscores don't prevent errors
-        #     self.assertRaises(InvalidOperation, Decimal, "1_2_\u00003")
-        # Keep non-trap assertions
-        self.assertRaises(TypeError, Decimal, "1234", "x", "y")
+        with localcontext() as c:
+            c.traps[InvalidOperation] = True
+            # Invalid string
+            self.assertRaises(InvalidOperation, Decimal, "xyz")
+            # Two arguments max
+            self.assertRaises(TypeError, Decimal, "1234", "x", "y")
 
             # space within the numeric part
-            # self.assertRaises(InvalidOperation, Decimal, "1\u00a02\u00a03")
-            # self.assertRaises(InvalidOperation, Decimal, "\u00a01\u00a02\u00a0")
+            self.assertRaises(InvalidOperation, Decimal, "1\u00a02\u00a03")
+            self.assertRaises(InvalidOperation, Decimal, "\u00a01\u00a02\u00a0")
 
-            # # unicode whitespace
-            # self.assertRaises(InvalidOperation, Decimal, "\u00a0")
-            # self.assertRaises(InvalidOperation, Decimal, "\u00a0\u00a0")
+            # unicode whitespace
+            self.assertRaises(InvalidOperation, Decimal, "\u00a0")
+            self.assertRaises(InvalidOperation, Decimal, "\u00a0\u00a0")
 
-            # # embedded NUL
-            # self.assertRaises(InvalidOperation, Decimal, "12\u00003")
+            # embedded NUL
+            self.assertRaises(InvalidOperation, Decimal, "12\u00003")
 
-            # # underscores don't prevent errors
-            # self.assertRaises(InvalidOperation, Decimal, "1_2_\u00003")
+            # underscores don't prevent errors
+            self.assertRaises(InvalidOperation, Decimal, "1_2_\u00003")
 
     @cpython_only
     def test_from_legacy_strings(self):
@@ -770,121 +753,119 @@ class ExplicitConstructionTest(unittest.TestCase):
             x = random.expovariate(0.01) * (random.random() * 2.0 - 1.0)
             self.assertEqual(x, float(Decimal(x))) # roundtrip
 
-    # Skulpt: context.create_decimal with precision rounding and trap handling
-    # is an advanced feature - skip for now
-    # def test_explicit_context_create_decimal(self):
-    #     Decimal = self.decimal.Decimal
-    #     InvalidOperation = self.decimal.InvalidOperation
-    #     Rounded = self.decimal.Rounded
-    #
-    #     nc = copy.copy(self.decimal.getcontext())
-    #     nc.prec = 3
-    #
-    #     # empty
-    #     d = Decimal()
-    #     self.assertEqual(str(d), '0')
-    #     d = nc.create_decimal()
-    #     self.assertEqual(str(d), '0')
-    #
-    #     # from None
-    #     self.assertRaises(TypeError, nc.create_decimal, None)
-    #
-    #     # from int
-    #     d = nc.create_decimal(456)
-    #     self.assertIsInstance(d, Decimal)
-    #     self.assertEqual(nc.create_decimal(45678),
-    #                      nc.create_decimal('457E+2'))
-    #
-    #     # from string
-    #     d = Decimal('456789')
-    #     self.assertEqual(str(d), '456789')
-    #     d = nc.create_decimal('456789')
-    #     self.assertEqual(str(d), '4.57E+5')
-    #     # leading and trailing whitespace should result in a NaN;
-    #     # spaces are already checked in Cowlishaw's test-suite, so
-    #     # here we just check that a trailing newline results in a NaN
-    #     self.assertEqual(str(nc.create_decimal('3.14\n')), 'NaN')
-    #
-    #     # from tuples
-    #     d = Decimal( (1, (4, 3, 4, 9, 1, 3, 5, 3, 4), -25) )
-    #     self.assertEqual(str(d), '-4.34913534E-17')
-    #     d = nc.create_decimal( (1, (4, 3, 4, 9, 1, 3, 5, 3, 4), -25) )
-    #     self.assertEqual(str(d), '-4.35E-17')
-    #
-    #     # from Decimal
-    #     prevdec = Decimal(500000123)
-    #     d = Decimal(prevdec)
-    #     self.assertEqual(str(d), '500000123')
-    #     d = nc.create_decimal(prevdec)
-    #     self.assertEqual(str(d), '5.00E+8')
-    #
-    #     # more integers
-    #     nc.prec = 28
-    #     nc.traps[InvalidOperation] = True
-    #
-    #     for v in [-2**63-1, -2**63, -2**31-1, -2**31, 0,
-    #                2**31-1, 2**31, 2**63-1, 2**63]:
-    #         d = nc.create_decimal(v)
-    #         self.assertTrue(isinstance(d, Decimal))
-    #         self.assertEqual(int(d), v)
-    #
-    #     nc.prec = 3
-    #     nc.traps[Rounded] = True
-    #     self.assertRaises(Rounded, nc.create_decimal, 1234)
-    #
-    #     # from string
-    #     nc.prec = 28
-    #     self.assertEqual(str(nc.create_decimal('0E-017')), '0E-17')
-    #     self.assertEqual(str(nc.create_decimal('45')), '45')
-    #     self.assertEqual(str(nc.create_decimal('-Inf')), '-Infinity')
-    #     self.assertEqual(str(nc.create_decimal('NaN123')), 'NaN123')
-    #
-    #     # invalid arguments
-    #     self.assertRaises(InvalidOperation, nc.create_decimal, "xyz")
-    #     self.assertRaises(ValueError, nc.create_decimal, (1, "xyz", -25))
-    #     self.assertRaises(TypeError, nc.create_decimal, "1234", "5678")
-    #     # no whitespace and underscore stripping is done with this method
-    #     self.assertRaises(InvalidOperation, nc.create_decimal, " 1234")
-    #     self.assertRaises(InvalidOperation, nc.create_decimal, "12_34")
-    #
-    #     # too many NaN payload digits
-    #     nc.prec = 3
-    #     self.assertRaises(InvalidOperation, nc.create_decimal, 'NaN12345')
-    #     self.assertRaises(InvalidOperation, nc.create_decimal,
-    #                       Decimal('NaN12345'))
-    #
-    #     nc.traps[InvalidOperation] = False
-    #     self.assertEqual(str(nc.create_decimal('NaN12345')), 'NaN')
-    #     self.assertTrue(nc.flags[InvalidOperation])
-    #
-    #     nc.flags[InvalidOperation] = False
-    #     self.assertEqual(str(nc.create_decimal(Decimal('NaN12345'))), 'NaN')
-    #     self.assertTrue(nc.flags[InvalidOperation])
+    def test_explicit_context_create_decimal(self):
+        Decimal = self.decimal.Decimal
+        InvalidOperation = self.decimal.InvalidOperation
+        Rounded = self.decimal.Rounded
 
-    # Skulpt: context.create_decimal with precision and context features - skip
-    # def test_explicit_context_create_from_float(self):
-    #
-    #     Decimal = self.decimal.Decimal
-    #
-    #     nc = self.decimal.Context()
-    #     r = nc.create_decimal(0.1)
-    #     self.assertEqual(type(r), Decimal)
-    #     self.assertEqual(str(r), '0.1000000000000000055511151231')
-    #     self.assertTrue(nc.create_decimal(float('nan')).is_qnan())
-    #     self.assertTrue(nc.create_decimal(float('inf')).is_infinite())
-    #     self.assertTrue(nc.create_decimal(float('-inf')).is_infinite())
-    #     self.assertEqual(str(nc.create_decimal(float('nan'))),
-    #                      str(nc.create_decimal('NaN')))
-    #     self.assertEqual(str(nc.create_decimal(float('inf'))),
-    #                      str(nc.create_decimal('Infinity')))
-    #     self.assertEqual(str(nc.create_decimal(float('-inf'))),
-    #                      str(nc.create_decimal('-Infinity')))
-    #     self.assertEqual(str(nc.create_decimal(float('-0.0'))),
-    #                      str(nc.create_decimal('-0')))
-    #     nc.prec = 100
-    #     for i in range(200):
-    #         x = random.expovariate(0.01) * (random.random() * 2.0 - 1.0)
-    #         self.assertEqual(x, float(nc.create_decimal(x))) # roundtrip
+        nc = copy.copy(self.decimal.getcontext())
+        nc.prec = 3
+
+        # empty
+        d = Decimal()
+        self.assertEqual(str(d), '0')
+        d = nc.create_decimal()
+        self.assertEqual(str(d), '0')
+
+        # from None
+        self.assertRaises(TypeError, nc.create_decimal, None)
+
+        # from int
+        d = nc.create_decimal(456)
+        self.assertIsInstance(d, Decimal)
+        self.assertEqual(nc.create_decimal(45678),
+                         nc.create_decimal('457E+2'))
+
+        # from string
+        d = Decimal('456789')
+        self.assertEqual(str(d), '456789')
+        d = nc.create_decimal('456789')
+        self.assertEqual(str(d), '4.57E+5')
+        # leading and trailing whitespace should result in a NaN;
+        # spaces are already checked in Cowlishaw's test-suite, so
+        # here we just check that a trailing newline results in a NaN
+        self.assertEqual(str(nc.create_decimal('3.14\n')), 'NaN')
+
+        # from tuples
+        d = Decimal( (1, (4, 3, 4, 9, 1, 3, 5, 3, 4), -25) )
+        self.assertEqual(str(d), '-4.34913534E-17')
+        d = nc.create_decimal( (1, (4, 3, 4, 9, 1, 3, 5, 3, 4), -25) )
+        self.assertEqual(str(d), '-4.35E-17')
+
+        # from Decimal
+        prevdec = Decimal(500000123)
+        d = Decimal(prevdec)
+        self.assertEqual(str(d), '500000123')
+        d = nc.create_decimal(prevdec)
+        self.assertEqual(str(d), '5.00E+8')
+
+        # more integers
+        nc.prec = 28
+        nc.traps[InvalidOperation] = True
+
+        for v in [-2**63-1, -2**63, -2**31-1, -2**31, 0,
+                   2**31-1, 2**31, 2**63-1, 2**63]:
+            d = nc.create_decimal(v)
+            self.assertTrue(isinstance(d, Decimal))
+            self.assertEqual(int(d), v)
+
+        nc.prec = 3
+        nc.traps[Rounded] = True
+        self.assertRaises(Rounded, nc.create_decimal, 1234)
+
+        # from string
+        nc.prec = 28
+        self.assertEqual(str(nc.create_decimal('0E-017')), '0E-17')
+        self.assertEqual(str(nc.create_decimal('45')), '45')
+        self.assertEqual(str(nc.create_decimal('-Inf')), '-Infinity')
+        self.assertEqual(str(nc.create_decimal('NaN123')), 'NaN123')
+
+        # invalid arguments
+        self.assertRaises(InvalidOperation, nc.create_decimal, "xyz")
+        self.assertRaises(ValueError, nc.create_decimal, (1, "xyz", -25))
+        self.assertRaises(TypeError, nc.create_decimal, "1234", "5678")
+        # no whitespace and underscore stripping is done with this method
+        self.assertRaises(InvalidOperation, nc.create_decimal, " 1234")
+        self.assertRaises(InvalidOperation, nc.create_decimal, "12_34")
+
+        # too many NaN payload digits
+        nc.prec = 3
+        self.assertRaises(InvalidOperation, nc.create_decimal, 'NaN12345')
+        self.assertRaises(InvalidOperation, nc.create_decimal,
+                          Decimal('NaN12345'))
+
+        nc.traps[InvalidOperation] = False
+        self.assertEqual(str(nc.create_decimal('NaN12345')), 'NaN')
+        self.assertTrue(nc.flags[InvalidOperation])
+
+        nc.flags[InvalidOperation] = False
+        self.assertEqual(str(nc.create_decimal(Decimal('NaN12345'))), 'NaN')
+        self.assertTrue(nc.flags[InvalidOperation])
+
+    def test_explicit_context_create_from_float(self):
+
+        Decimal = self.decimal.Decimal
+
+        nc = self.decimal.Context()
+        r = nc.create_decimal(0.1)
+        self.assertEqual(type(r), Decimal)
+        self.assertEqual(str(r), '0.1000000000000000055511151231')
+        self.assertTrue(nc.create_decimal(float('nan')).is_qnan())
+        self.assertTrue(nc.create_decimal(float('inf')).is_infinite())
+        self.assertTrue(nc.create_decimal(float('-inf')).is_infinite())
+        self.assertEqual(str(nc.create_decimal(float('nan'))),
+                         str(nc.create_decimal('NaN')))
+        self.assertEqual(str(nc.create_decimal(float('inf'))),
+                         str(nc.create_decimal('Infinity')))
+        self.assertEqual(str(nc.create_decimal(float('-inf'))),
+                         str(nc.create_decimal('-Infinity')))
+        self.assertEqual(str(nc.create_decimal(float('-0.0'))),
+                         str(nc.create_decimal('-0')))
+        nc.prec = 100
+        for i in range(200):
+            x = random.expovariate(0.01) * (random.random() * 2.0 - 1.0)
+            self.assertEqual(x, float(nc.create_decimal(x))) # roundtrip
+
 
     # Skulpt: Unicode digit parsing not implemented, skip
     # def test_unicode_digits(self):
@@ -1470,29 +1451,28 @@ class ArithmeticOperatorsTest(unittest.TestCase):
                               "got {4!r}".format(
                         expected, op.__name__, x, y, got))
 
-        # Skulpt: trap handling for InvalidOperation not fully implemented - skip
-        # # repeat the above, but this time trap the InvalidOperation
-        # with localcontext() as ctx:
-        #     ctx.traps[InvalidOperation] = 1
-        #
-        #     for x, y in qnan_pairs:
-        #         for op in equality_ops:
-        #             got = op(x, y)
-        #             expected = True if op is operator.ne else False
-        #             self.assertIs(expected, got,
-        #                           "expected {0!r} for "
-        #                           "operator.{1}({2!r}, {3!r}); "
-        #                           "got {4!r}".format(
-        #                     expected, op.__name__, x, y, got))
-        #
-        #     for x, y in snan_pairs:
-        #         for op in equality_ops:
-        #             self.assertRaises(InvalidOperation, operator.eq, x, y)
-        #             self.assertRaises(InvalidOperation, operator.ne, x, y)
-        #
-        #     for x, y in qnan_pairs + snan_pairs:
-        #         for op in order_ops:
-        #             self.assertRaises(InvalidOperation, op, x, y)
+        # repeat the above, but this time trap the InvalidOperation
+        with localcontext() as ctx:
+            ctx.traps[InvalidOperation] = 1
+
+            for x, y in qnan_pairs:
+                for op in equality_ops:
+                    got = op(x, y)
+                    expected = True if op is operator.ne else False
+                    self.assertIs(expected, got,
+                                  "expected {0!r} for "
+                                  "operator.{1}({2!r}, {3!r}); "
+                                  "got {4!r}".format(
+                            expected, op.__name__, x, y, got))
+
+            for x, y in snan_pairs:
+                for op in equality_ops:
+                    self.assertRaises(InvalidOperation, operator.eq, x, y)
+                    self.assertRaises(InvalidOperation, operator.ne, x, y)
+
+            for x, y in qnan_pairs + snan_pairs:
+                for op in order_ops:
+                    self.assertRaises(InvalidOperation, op, x, y)
 
     def test_copy_sign(self):
         Decimal = self.decimal.Decimal
@@ -1760,8 +1740,7 @@ class UsabilityTest(unittest.TestCase):
             self.assertLess(D('-inf'), F(99999999999,123))
             self.assertLess(D('-inf'), F(-99999999999,123))
 
-            # Skulpt: NaN comparison doesn't raise InvalidOperation (trap handling not fully implemented)
-            # self.assertRaises(InvalidOperation, D('nan').__gt__, F(-9,123))
+            self.assertRaises(InvalidOperation, D('nan').__gt__, F(-9,123))
             self.assertIs(NotImplemented, F(-9,123).__lt__(D('nan')))
             self.assertNotEqual(D('nan'), F(-9,123))
             self.assertNotEqual(F(-9,123), D('nan'))
@@ -1775,9 +1754,83 @@ class UsabilityTest(unittest.TestCase):
         dc = copy.deepcopy(d)
         self.assertEqual(id(dc), id(d))
 
-    @unittest.skip("Skulpt: hash method implementation differs from CPython for large numbers")
     def test_hash_method(self):
-        pass
+
+        Decimal = self.decimal.Decimal
+        localcontext = self.decimal.localcontext
+
+        def hashit(d):
+            a = hash(d)
+            b = d.__hash__()
+            self.assertEqual(a, b)
+            return a
+
+        #just that it's hashable
+        hashit(Decimal(23))
+        hashit(Decimal('Infinity'))
+        hashit(Decimal('-Infinity'))
+        hashit(Decimal('nan123'))
+        hashit(Decimal('-NaN'))
+
+        test_values = [Decimal(sign*(2**m + n))
+                       for m in [0, 14, 15, 16, 17, 30, 31,
+                                 32, 33, 61, 62, 63, 64, 65, 66]
+                       for n in range(-10, 10)
+                       for sign in [-1, 1]]
+        test_values.extend([
+                Decimal("-1"), # ==> -2
+                Decimal("-0"), # zeros
+                Decimal("0.00"),
+                Decimal("-0.000"),
+                Decimal("0E10"),
+                Decimal("-0E12"),
+                Decimal("10.0"), # negative exponent
+                Decimal("-23.00000"),
+                Decimal("1230E100"), # positive exponent
+                Decimal("-4.5678E50"),
+                # a value for which hash(n) != hash(n % (2**64-1))
+                # in Python pre-2.6
+                Decimal(2**64 + 2**32 - 1),
+                # selection of values which fail with the old (before
+                # version 2.6) long.__hash__
+                Decimal("1.634E100"),
+                Decimal("90.697E100"),
+                Decimal("188.83E100"),
+                Decimal("1652.9E100"),
+                Decimal("56531E100"),
+                ])
+
+        # check that hash(d) == hash(int(d)) for integral values
+        for value in test_values:
+            self.assertEqual(hashit(value), hash(int(value)))
+
+        # check that the hashes of a Decimal float match when they
+        # represent exactly the same values
+        test_strings = ['inf', '-Inf', '0.0', '-.0e1',
+                        '34.0', '2.5', '112390.625', '-0.515625']
+        for s in test_strings:
+            f = float(s)
+            d = Decimal(s)
+            self.assertEqual(hashit(d), hash(f))
+
+        with localcontext() as c:
+            # check that the value of the hash doesn't depend on the
+            # current context (issue #1757)
+            x = Decimal("123456789.1")
+
+            c.prec = 6
+            h1 = hashit(x)
+            c.prec = 10
+            h2 = hashit(x)
+            c.prec = 16
+            h3 = hashit(x)
+
+            self.assertEqual(h1, h2)
+            self.assertEqual(h1, h3)
+
+            c.prec = 10000
+            x = 1100 ** 1248
+            self.assertEqual(hashit(Decimal(x)), hashit(x))
 
     def test_min_and_max_methods(self):
         Decimal = self.decimal.Decimal
@@ -2512,7 +2565,6 @@ class PythonAPItests(unittest.TestCase):
             x = random.expovariate(0.01) * (random.random() * 2.0 - 1.0)
             self.assertEqual(x, float(MyDecimal.from_float(x))) # roundtrip
 
-    @unittest.skip("Skulpt: context precision rounding not fully implemented")
     def test_create_decimal_from_float(self):
         Decimal = self.decimal.Decimal
         Context = self.decimal.Context
@@ -2541,7 +2593,6 @@ class PythonAPItests(unittest.TestCase):
         self.assertEqual(repr(context.create_decimal_from_float(10)),
                          "Decimal('10')")
 
-    @unittest.skip("Skulpt: quantize method not implemented")
     def test_quantize(self):
         Decimal = self.decimal.Decimal
         Context = self.decimal.Context
@@ -2745,7 +2796,6 @@ class PyPythonAPItests(PythonAPItests):
 class ContextAPItests(unittest.TestCase):
     decimal = P  # Default to Python implementation
 
-    @unittest.skip("Skulpt: Context() inherits from current context instead of using fixed defaults (prec=28)")
     def test_none_args(self):
         Context = self.decimal.Context
         InvalidOperation = self.decimal.InvalidOperation
@@ -3321,7 +3371,6 @@ class ContextAPItests(unittest.TestCase):
         self.assertRaises(TypeError, c.next_toward, '1', 2)
         self.assertRaises(TypeError, c.next_toward, 1, '2')
 
-    @unittest.skip("Skulpt: normalize not implemented")
     def test_normalize(self):
         Decimal = self.decimal.Decimal
         Context = self.decimal.Context
@@ -3350,7 +3399,6 @@ class ContextAPItests(unittest.TestCase):
         self.assertEqual(c.plus(10), d)
         self.assertRaises(TypeError, c.plus, '10')
 
-    @unittest.skip("Skulpt: Context.power modulo parameter not implemented")
     def test_power(self):
         Decimal = self.decimal.Decimal
         Context = self.decimal.Context
@@ -3365,7 +3413,6 @@ class ContextAPItests(unittest.TestCase):
         self.assertRaises(TypeError, c.power, 1, '4')
         self.assertEqual(c.power(modulo=5, b=8, a=2), 1)
 
-    @unittest.skip("Skulpt: quantize not implemented")
     def test_quantize(self):
         Decimal = self.decimal.Decimal
         Context = self.decimal.Context
@@ -4032,13 +4079,8 @@ class SpecialContexts(unittest.TestCase):
 class PySpecialContexts(SpecialContexts):
     decimal = P
 
-# Skulpt: Skip context input validation tests
-@unittest.skip("Skulpt: Context input validation not fully implemented")
 class ContextInputValidation(unittest.TestCase):
     decimal = P  # Default to Python implementation
-
-    def setUp(self):
-        self.skipTest("Skulpt: Context input validation not fully implemented")
 
     def test_invalid_context(self):
         Context = self.decimal.Context
@@ -4102,8 +4144,6 @@ class ContextInputValidation(unittest.TestCase):
 
 # class CContextInputValidation(ContextInputValidation):
 #     decimal = C
-# Skulpt: Skip - parent class is skipped
-@unittest.skip("Skulpt: Context input validation not fully implemented")
 class PyContextInputValidation(ContextInputValidation):
     decimal = P
 
@@ -4453,7 +4493,6 @@ class Coverage(unittest.TestCase):
             # self.assertTrue(c.flags[Overflow])
             pass  # All assertions commented out for now
 
-    @unittest.skip("Skulpt: quantize causes stack overflow")
     def test_quantize(self):
         Decimal = self.decimal.Decimal
         localcontext = self.decimal.localcontext
