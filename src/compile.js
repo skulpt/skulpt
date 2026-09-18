@@ -279,7 +279,10 @@ Compiler.prototype._checkSuspension = function(e) {
         out ("if ($ret && $ret.$isSuspension) { return $saveSuspension($ret,'"+this.filename+"',"+e.lineno+","+e.col_offset+"); }");
 
         this.u.doesSuspend = true;
-        this.u.tempsToSave = this.u.tempsToSave.concat(this.u.localtemps);
+        // Append in place: copying the accumulated list at every check is costly.
+        for (var i = 0; i < this.u.localtemps.length; i++) {
+            this.u.tempsToSave.push(this.u.localtemps[i]);
+        }
 
     } else {
         out ("if ($ret && $ret.$isSuspension) { $ret = Sk.misceval.retryOptionalSuspensionOrThrow($ret); }");
