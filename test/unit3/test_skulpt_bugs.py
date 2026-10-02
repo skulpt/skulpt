@@ -194,5 +194,36 @@ class TestBugs(unittest.TestCase):
         self.assertTrue(a != a)
 
 
+class TestImports(unittest.TestCase):
+    def test_missing_import_name(self):
+        import sys
+
+        with self.assertRaises(ImportError) as caught:
+            from sys import _skulpt_missing_name
+        self.assertIn("_skulpt_missing_name", str(caught.exception))
+
+        with self.assertRaises(AttributeError):
+            sys._skulpt_missing_name
+
+        with self.assertRaises(ImportError):
+            from t221_sub import _skulpt_missing_name as missing
+
+    def test_module_getattr_error(self):
+        import sys
+
+        module = type(sys)("_skulpt_import_getattr")
+
+        def getattr_error(name):
+            raise RuntimeError("module lookup failed")
+
+        module.__getattr__ = getattr_error
+        sys.modules[module.__name__] = module
+        try:
+            with self.assertRaises(RuntimeError):
+                from _skulpt_import_getattr import missing
+        finally:
+            del sys.modules[module.__name__]
+
+
 if __name__ == "__main__":
     unittest.main()

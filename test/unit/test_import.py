@@ -9,6 +9,11 @@ class ImportDottedNamesTest(unittest.TestCase):
 
 class ImportFromModulesTest(unittest.TestCase):
 
+    def test_from_import_message_for_existing_module(self):
+        # From CPython Lib/test/test_import/__init__.py, ImportTests.
+        with self.assertRaisesRegex(ImportError, "^cannot import name 'bogus'"):
+            from re import bogus
+
     def test_from_submodule(self):
         # Try to delete the module from the internal module list
         # sys.modules is a reference on Sk.sysmodules 
