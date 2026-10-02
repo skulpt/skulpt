@@ -14,6 +14,32 @@ var $builtinmodule = function (name) {
     if (Sk.__future__.python3) {
         sys.version = new Sk.builtin.str("3.7(ish) [Skulpt]");
         sys.version_info = new Sk.builtin.tuple([new Sk.builtin.int_(3), new Sk.builtin.int_(7)]);
+
+        const VersionInfo = Sk.builtin.make_structseq("sys", "version_info", {
+            major: "Major release number",
+            minor: "Minor release number",
+            micro: "Patch release number",
+            releaselevel: "Release level",
+            serial: "Release serial number",
+        });
+        // The Skulpt release version, distinct from the Python language version.
+        const [major, minor, micro] = Sk.build["version"].split(".").map(Number);
+        const version = new VersionInfo([
+            new Sk.builtin.int_(major), new Sk.builtin.int_(minor), new Sk.builtin.int_(micro),
+            new Sk.builtin.str("final"), new Sk.builtin.int_(0),
+        ]);
+        const Implementation = Sk.abstr.buildNativeClass("sys.implementation", {
+            constructor: function Implementation() {
+                this.$d = new Sk.builtin.dict([
+                    new Sk.builtin.str("name"), new Sk.builtin.str("skulpt"),
+                    new Sk.builtin.str("version"), version,
+                    new Sk.builtin.str("hexversion"), new Sk.builtin.int_((major << 24) | (minor << 16) | (micro << 8) | 0xf0),
+                    new Sk.builtin.str("cache_tag"), Sk.builtin.none.none$,
+                ]);
+            },
+            getsets: { __dict__: Sk.generic.getSetDict },
+        });
+        sys.implementation = new Implementation();
     } else {
         sys.version = new Sk.builtin.str("2.7(ish) [Skulpt]");
         sys.version_info = new Sk.builtin.tuple([new Sk.builtin.int_(2), new Sk.builtin.int_(7)]);
