@@ -61,9 +61,7 @@ class CircularImportTests(unittest.TestCase):
         self.assertIn('circular import', errmsg)
 
     def test_circular_from_import(self):
-        # in python this is an import error
-        # with self.assertRaises(ImportError) as cm:
-        with self.assertRaises(AttributeError) as cm:
+        with self.assertRaises(ImportError) as cm:
             from .data.circular_imports import from_cycle1
         self.assertIn(
             "partially initialized module ",

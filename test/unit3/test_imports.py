@@ -6,6 +6,11 @@ import t221_sub
 #from pkga.pkgb.modc import things as mythings
 
 class ImportsTests(unittest.TestCase):
+    def test_from_import_message_for_existing_module(self):
+        # From CPython Lib/test/test_import/__init__.py, ImportTests.
+        with self.assertRaisesRegex(ImportError, "^cannot import name 'bogus'"):
+            from re import bogus
+
     def test_basic(self):
         self.assertEqual(t221_sub.x, 444)
         self.assertEqual(t221_sub.f("wee"), "OK: wee, 444")
