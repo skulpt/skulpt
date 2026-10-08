@@ -86,6 +86,24 @@ class PercentFormatTests(unittest.TestCase):
         self.check_common('%u', -1234, '-1234')
         self.check_common('%u', 12.5, '12')
 
+    def test_float_sign_and_padding(self):
+        self.check_common('%010.2f', -1234.5, '-001234.50')
+        self.check_common('%+10.2f', 1234.5, '  +1234.50')
+        self.check_common('% 10.2f', 1234.5, '   1234.50')
+        self.check_common('%-+10.2f', 1234.5, '+1234.50  ')
+        self.check_common('%010.2f', -0.0, '-000000.00')
+
+    def test_general_float_precision(self):
+        # CPython general-format cases, adapted to test presentation without ties.
+        self.check_common('%.3g', 1500.0, '1.5e+03')
+        self.check_common('%#.3g', 1500.0, '1.50e+03')
+        self.check_common('%.12g', 1.5, '1.5')
+        self.check_common('%.2G', 1.0, '1')
+        self.check_common('%g', 1234567.0, '1.23457e+06')
+        self.check_common('%.8f', 0.00000001, '0.00000001')
+        self.check_common('%.3g', -0.000012, '-1.2e-05')
+        self.check_common('%#.3g', 0.000012, '1.20e-05')
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1133,7 +1133,6 @@ function strBytesRemainder(rhs) {
     var replFunc;
     var index;
     var regex;
-    var val;
     const strBytesConstructor = this.sk$builtinBase;
     // distinguish between bytes and str
 
@@ -1362,7 +1361,7 @@ function strBytesRemainder(rhs) {
                 precision = 1;
             }
             if (precision === undefined || precision === "") {
-                if (conversionType === "e" || conversionType === "E") {
+                if ("eEgG".indexOf(conversionType) !== -1) {
                     precision = 6;
                 } else if (conversionType === "f" || conversionType === "F") {
                     if (Sk.__future__.python3) {
@@ -1380,17 +1379,32 @@ function strBytesRemainder(rhs) {
                     result = "-" + result; // add sign for zero
                 }
             }
-            if (Sk.__future__.python3) {
-                if (result.length >= 7 && result.slice(0, 6) == "0.0000") {
-                    val = parseFloat(result);
-                    result = val.toExponential();
+            if ("gG".indexOf(conversionType) !== -1) {
+                // Python uses scientific notation below exponent -4, including
+                // negative values. JavaScript toPrecision switches below -6.
+                const rounded = parseFloat(result);
+                if (rounded !== 0 && Math.abs(rounded) < 0.0001) {
+                    result = rounded.toExponential(precision - 1);
+                }
+                if (!alternateForm) {
+                    // General format drops fractional zeros; # retains them.
+                    result = result.replace(/(\.[0-9]*?)0+(?=e|$)/, "$1").replace(/\.(?=e|$)/, "");
                 }
             }
             result = result.replace(/(e[+-])(\d)$/, "$10$2");
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }
-            return handleWidth(["", result]);
+            let prefix = "";
+            if (result.charAt(0) === "-") {
+                prefix = "-";
+                result = result.slice(1);
+            } else if (precedeWithSign) {
+                prefix = "+";
+            } else if (blankBeforePositive) {
+                prefix = " ";
+            }
+            return handleWidth([prefix, result]);
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return String.fromCharCode(value);
