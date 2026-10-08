@@ -447,15 +447,18 @@ class BrowserLocaleTests(unittest.TestCase):
         self.assertEqual(locale.atoi(formatted), value)
 
     def test_currency_layout_and_sign(self):
+        # Swiss grouping separators vary between host ICU versions.
         for name, expected in (('en_US', '$1,234.50'),
                                ('de_DE', '1.234,50 €'),
-                               ('de_CH', "CHF 1'234.50"),
-                               ('fr_CH', "1'234.50 CHF")):
+                               ('de_CH', 'CHF 1{group}234.50'),
+                               ('fr_CH', '1{group}234.50 CHF')):
             locale.setlocale(locale.LC_MONETARY, name)
+            expected = expected.replace('{group}', locale.localeconv()['mon_thousands_sep'])
             self.assertEqual(locale.currency(1234.5, grouping=True), expected)
         locale.setlocale(locale.LC_MONETARY, 'de_CH')
-        self.assertEqual(locale.currency(-1234.5, grouping=True), "CHF-1'234.50")
-        self.assertEqual(locale.currency(-1234.5, symbol=False, grouping=True), "-1'234.50")
+        separator = locale.localeconv()['mon_thousands_sep']
+        self.assertEqual(locale.currency(-1234.5, grouping=True), 'CHF-1%s234.50' % separator)
+        self.assertEqual(locale.currency(-1234.5, symbol=False, grouping=True), '-1%s234.50' % separator)
         locale.setlocale(locale.LC_MONETARY, 'en_US')
         self.assertEqual(locale.currency(-1234.5, grouping=True), '-$1,234.50')
         self.assertEqual(locale.currency(1234.5, international=True, grouping=True), 'USD 1,234.50')
