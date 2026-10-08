@@ -56,6 +56,36 @@ class PercentFormatTests(unittest.TestCase):
             self.assertRaises(OverflowError, lambda: fmt % values)
             self.assertRaises(OverflowError, lambda: fmt.encode('ascii') % values)
 
+    def test_string_precision_and_padding(self):
+        # CPython common formatting rules: truncate before applying field width.
+        self.assertEqual('%.*s' % (0, 'abc'), '')
+        self.assertEqual('%.s' % 'abc', '')
+        self.assertEqual('%5.*s' % (2, 'abc'), '   ab')
+        self.assertEqual('%*.*s' % (-8, 3, 'abcdef'), 'abc     ')
+        self.assertEqual(b'%.*s' % (0, b'abc'), b'')
+        self.assertEqual(b'%.s' % b'abc', b'')
+        self.assertEqual(b'%5.*s' % (2, b'abc'), b'   ab')
+        self.assertEqual(b'%*.*s' % (-8, 3, b'abcdef'), b'abc     ')
+        self.check_common('%.*r', (0, 'abc'), '')
+        self.check_common('%8.3r', 'abcdef', "     'ab")
+
+    def test_exponent_padding(self):
+        self.check_common('%.1g', 1000000, '1e+06')
+        self.check_common('%.1G', 1000000, '1E+06')
+        self.check_common('%.1e', 1000000, '1.0e+06')
+        self.check_common('%.1e', 0.000001, '1.0e-06')
+
+    def test_mapping_key_names(self):
+        self.assertEqual('%(total_price).2f' % {'total_price': 1234.5}, '1234.50')
+        self.assertEqual('%(total price)d' % {'total price': 42}, '42')
+        self.assertEqual(b'%(total_price).2f' % {b'total_price': 1234.5}, b'1234.50')
+
+    def test_unsigned_decimal_conversion(self):
+        # CPython %u is an obsolete alias of decimal integer conversion.
+        self.check_common('%u', 1234, '1234')
+        self.check_common('%u', -1234, '-1234')
+        self.check_common('%u', 12.5, '12')
+
 
 if __name__ == '__main__':
     unittest.main()
