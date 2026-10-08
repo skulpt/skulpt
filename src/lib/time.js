@@ -8,6 +8,12 @@
  */
 
 var $builtinmodule = function (name) {
+    return Sk.misceval.chain(Sk.importModule("_locale", false, true), function (locale) {
+        return timeModule(locale.$d);
+    });
+};
+
+function timeModule(locale) {
     var mod = {};
 
     mod.__package__ = new Sk.builtin.str("");
@@ -309,7 +315,7 @@ var $builtinmodule = function (name) {
 
         jsFormat = Sk.ffi.remapToJs(format);
 
-        return Sk.ffi.remapToPy(Sk.global.strftime(jsFormat, new Date(mktime_f(t).v*1000)));
+        return Sk.ffi.remapToPy(locale.$strftime(jsFormat, new Date(mktime_f(t).v*1000)));
     }
 
     mod.strftime = new Sk.builtin.func(strftime_f);
@@ -338,4 +344,4 @@ var $builtinmodule = function (name) {
     mod.strptime = new Sk.builtin.func(strptime_f);
 
     return mod;
-};
+}
