@@ -27,10 +27,11 @@ function $builtinmodule() {
     function checkCategory(category) {
         const n = Sk.misceval.asIndexOrThrow(category);
         if (n < 0 || n >= categories.length) {
-            throw new Error("invalid locale category");
+            throw new Error("unknown locale category: " + n);
         }
         if (![LC_NUMERIC, LC_TIME, LC_MONETARY].includes(n)) {
-            throw new NotImplementedError("locale only supports LC_TIME, LC_NUMERIC and LC_MONETARY in Skulpt");
+            throw new NotImplementedError("The " + categories[n] + " locale category is not supported. " +
+                "Supported categories are LC_TIME (dates and times), LC_NUMERIC (numbers) and LC_MONETARY (currency).");
         }
         return n;
     }
@@ -56,10 +57,13 @@ function $builtinmodule() {
     function createLocale(tag) {
         const options = { timeZone: "UTC", calendar: "gregory", numberingSystem: "latn" };
         const formatter = (fields) => new Intl.DateTimeFormat(tag, Object.assign({}, options, fields));
+        // Chrome before 71 used the lower-case spelling for this part.
+        const dateParts = (fmt, date) => fmt.formatToParts(date).map((part) =>
+            part.type === "dayperiod" ? { type: "dayPeriod", value: part.value } : part);
         const sample = new Date(Date.UTC(1999, 2, 17, 22, 44, 55));
         const names = (field, width, dates) => {
             const fmt = formatter({ [field]: width });
-            return dates.map((date) => fmt.formatToParts(date).find((part) => part.type === field).value);
+            return dates.map((date) => dateParts(fmt, date).find((part) => part.type === field).value);
         };
         const months = Array.from({ length: 12 }, (_, i) => new Date(Date.UTC(2001, i, 1)));
         // January 7, 2001 was a Sunday; strftime's arrays start on Sunday.
@@ -67,7 +71,7 @@ function $builtinmodule() {
         const ampm = [];
         const periodFormatter = formatter({ hour: "numeric", hour12: true });
         [1, 22].forEach((hour) => {
-            const parts = periodFormatter.formatToParts(new Date(Date.UTC(2001, 0, 1, hour)));
+            const parts = dateParts(periodFormatter, new Date(Date.UTC(2001, 0, 1, hour)));
             ampm.push(parts.find((part) => part.type === "dayPeriod").value);
         });
 
@@ -81,7 +85,7 @@ function $builtinmodule() {
                 year: "%Y", month: "%m", day: "%d", minute: "%M", second: "%S", dayPeriod: "%p",
                 hour: fmt.resolvedOptions().hour12 ? "%I" : "%H",
             };
-            return fmt.formatToParts(sample).map((part) => {
+            return dateParts(fmt, sample).map((part) => {
                 return part.type === "literal" ? part.value.replace(/%/g, "%%") : directives[part.type];
             }).join("");
         }
@@ -153,17 +157,28 @@ function $builtinmodule() {
         "ZA": "ZAR", "ZM": "ZMW", "ZW": "ZWG",
     };
 
+    function browserSupportError(category) {
+        const feature = category === LC_TIME ? "date and time" : category === LC_NUMERIC ? "number" : "currency";
+        const advice = category === LC_MONETARY ? "Try a newer browser." : "Try a newer browser, or use the 'C' locale.";
+        return new NotImplementedError("Your browser does not support " + feature + " localisation. " +
+            advice);
+    }
+
     function resolveLocale(value, category = LC_TIME) {
         let name = localeName(value);
         if (name === "C" || name === "POSIX") {
             return cLocale;
         }
         if (name.includes("@")) {
-            throw new Error("POSIX locale modifiers are not supported: " + name);
+            throw new Error("The locale '" + name + "' uses an unsupported '@' modifier.");
         }
-        if (typeof Intl === "undefined" || !Intl.DateTimeFormat ||
-            (category !== LC_TIME && !Intl.NumberFormat)) {
-            throw new NotImplementedError("locale requires Intl for non-C locales");
+        const supportsParts = (ctor) => typeof ctor === "function" &&
+            typeof ctor.supportedLocalesOf === "function" && typeof ctor.prototype.formatToParts === "function";
+        if (typeof Intl === "undefined" || !supportsParts(Intl.DateTimeFormat)) {
+            throw browserSupportError(category);
+        }
+        if (category !== LC_TIME && !supportsParts(Intl.NumberFormat)) {
+            throw browserSupportError(category);
         }
         if (name === "") {
             name = new Intl.DateTimeFormat().resolvedOptions().locale;
@@ -175,12 +190,12 @@ function $builtinmodule() {
             const Constructor = category === LC_TIME ? Intl.DateTimeFormat : Intl.NumberFormat;
             const supported = Constructor.supportedLocalesOf([tag]);
             if (!supported.length) {
-                throw new Error("unsupported locale setting: " + name);
+                throw new Error("The locale '" + name + "' is not available in this browser.");
             }
             canonical = supported[0];
         } catch (err) {
             if (err instanceof RangeError) {
-                throw new Error("unsupported locale setting: " + name);
+                throw new Error("The locale '" + name + "' is not available in this browser.");
             }
             throw err;
         }
@@ -226,8 +241,8 @@ function $builtinmodule() {
             };
             return selected.monetary;
         }
-        if (!Intl.Locale) {
-            throw new NotImplementedError("LC_MONETARY requires Intl.Locale");
+        if (typeof Intl.Locale !== "function" || typeof Intl.Locale.prototype.maximize !== "function") {
+            throw browserSupportError(LC_MONETARY);
         }
         const region = new Intl.Locale(selected.tag).maximize().region;
         const currency = regionCurrencies[region];
@@ -336,7 +351,9 @@ function $builtinmodule() {
                     } else if (n === LC_MONETARY) {
                         monetaryConventions(selected);
                     }
-                    current[n] = selected;
+                    // A new selection has its own identity, including when
+                    // selecting C again, so consumers can discard locale overrides.
+                    current[n] = n === LC_TIME ? Object.assign({}, selected) : selected;
                 }
                 return new pyStr(current[n].name);
             },
@@ -360,9 +377,10 @@ function $builtinmodule() {
         },
         nl_langinfo: {
             $meth(item) {
-                const getter = langinfo.get(Sk.misceval.asIndexOrThrow(item));
+                const id = Sk.misceval.asIndexOrThrow(item);
+                const getter = langinfo.get(id);
                 if (!getter) {
-                    throw new Sk.builtin.ValueError("unsupported nl_langinfo constant");
+                    throw new Sk.builtin.ValueError("unknown locale information item: " + id);
                 }
                 return new pyStr(getter());
             },
