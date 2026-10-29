@@ -2,6 +2,7 @@
 var Sk = {}; // jshint ignore:line
 
 Sk.build = {
+    "version": SKULPT_VERSION,
     githash: GITHASH,
     date: BUILDDATE
 };
