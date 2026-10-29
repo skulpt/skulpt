@@ -1133,7 +1133,6 @@ function strBytesRemainder(rhs) {
     var replFunc;
     var index;
     var regex;
-    var val;
     const strBytesConstructor = this.sk$builtinBase;
     // distinguish between bytes and str
 
@@ -1144,8 +1143,21 @@ function strBytesRemainder(rhs) {
     // do an re.sub with a function as replacement to make the subs.
 
     //           1 2222222222222222   33333333   444444444   5555555555555  66666  777777777777777777
-    regex = /%(\([a-zA-Z0-9]+\))?([#0 +\-]+)?(\*|[0-9]+)?(\.(\*|[0-9]+))?[hlL]?([diouxXeEfFgGcrsb%])/g;
+    regex = /%(\([^()]*\))?([#0 +\-]+)?(\*|[0-9]+)?(\.(\*|[0-9]*))?[hlL]?([diouxXeEfFgGcrsb%])/g;
     index = 0;
+    const nextArgument = function () {
+        if (rhs.constructor !== Sk.builtin.tuple || index >= rhs.v.length) {
+            throw new Sk.builtin.TypeError("not enough arguments for format string");
+        }
+        return rhs.v[index++];
+    };
+    const starArgument = function () {
+        const argument = nextArgument();
+        if (!Sk.builtin.checkInt(argument)) {
+            throw new Sk.builtin.TypeError("* wants int");
+        }
+        return Sk.misceval.asIndexSized(argument, Sk.builtin.OverflowError);
+    };
     replFunc = function (substring, mappingKey, conversionFlags, fieldWidth, precision, precbody, conversionType) {
         var result;
         var convName;
@@ -1161,14 +1173,8 @@ function strBytesRemainder(rhs) {
         var blankBeforePositive;
         var leftAdjust;
         var zeroPad;
-        var i;
-
         fieldWidth = Sk.builtin.asnum$(fieldWidth);
         precision = Sk.builtin.asnum$(precision);
-
-        if ((mappingKey === undefined || mappingKey === "") && conversionType != "%") {
-            i = index++;
-        } // ff passes '' not undef for some reason
 
         if (precision === "") {
             // ff passes '' here aswell causing problems with G,g, etc.
@@ -1196,8 +1202,18 @@ function strBytesRemainder(rhs) {
             alternateForm = conversionFlags.indexOf("#") !== -1;
         }
 
-        if (precision) {
-            precision = parseInt(precision.substr(1), 10);
+        if (fieldWidth === "*") {
+            fieldWidth = starArgument();
+            if (fieldWidth < 0) {
+                fieldWidth = -fieldWidth;
+                leftAdjust = true;
+                zeroPad = false;
+            }
+        }
+        if (precbody === "*") {
+            precision = Math.max(0, starArgument());
+        } else if (precision) {
+            precision = parseInt(precbody || "0", 10);
         }
 
         formatNumber = function (n, base) {
@@ -1280,10 +1296,6 @@ function strBytesRemainder(rhs) {
                     for (j = totLen; j < fieldWidth; ++j) {
                         r = r + " ";
                     }
-                    if (Sk.__future__.python3) {
-                        r += prefix;
-                        prefix = "";
-                    }
                 } else {
                     for (j = totLen; j < fieldWidth; ++j) {
                         prefix = " " + prefix;
@@ -1294,7 +1306,10 @@ function strBytesRemainder(rhs) {
         };
         //print("Rhs:",rhs, "ctor", rhs.constructor);
         if (rhs.constructor === Sk.builtin.tuple) {
-            value = rhs.v[i];
+            if (mappingKey) {
+                throw new Sk.builtin.TypeError("format requires a mapping");
+            }
+            value = conversionType === "%" ? undefined : nextArgument();
         } else if (rhs.mp$subscript !== undefined && mappingKey !== undefined) {
             mk = mappingKey.substring(1, mappingKey.length - 1);
             //print("mk",mk);
@@ -1306,7 +1321,7 @@ function strBytesRemainder(rhs) {
             throw new Sk.builtin.AttributeError(rhs.tp$name + " instance has no attribute 'mp$subscript'");
         }
         base = 10;
-        if (conversionType === "d" || conversionType === "i") {
+        if (conversionType === "d" || conversionType === "i" || conversionType === "u") {
             let tmpData = formatNumber(value, base);
             if (tmpData[1] === undefined) {
                 throw new Sk.builtin.TypeError("%" + conversionType + " format: a number is required, not " + Sk.abstr.typeName(value));
@@ -1342,8 +1357,11 @@ function strBytesRemainder(rhs) {
                 return "nan";
             }
             convName = ["toExponential", "toFixed", "toPrecision"]["efg".indexOf(conversionType.toLowerCase())];
+            if ((conversionType === "g" || conversionType === "G") && precision === 0) {
+                precision = 1;
+            }
             if (precision === undefined || precision === "") {
-                if (conversionType === "e" || conversionType === "E") {
+                if ("eEgG".indexOf(conversionType) !== -1) {
                     precision = 6;
                 } else if (conversionType === "f" || conversionType === "F") {
                     if (Sk.__future__.python3) {
@@ -1361,19 +1379,32 @@ function strBytesRemainder(rhs) {
                     result = "-" + result; // add sign for zero
                 }
             }
-            if (Sk.__future__.python3) {
-                if (result.length >= 7 && result.slice(0, 6) == "0.0000") {
-                    val = parseFloat(result);
-                    result = val.toExponential();
+            if ("gG".indexOf(conversionType) !== -1) {
+                // Python uses scientific notation below exponent -4, including
+                // negative values. JavaScript toPrecision switches below -6.
+                const rounded = parseFloat(result);
+                if (rounded !== 0 && Math.abs(rounded) < 0.0001) {
+                    result = rounded.toExponential(precision - 1);
                 }
-                if (result.charAt(result.length - 2) == "-") {
-                    result = result.slice(0, result.length - 1) + "0" + result.charAt(result.length - 1);
+                if (!alternateForm) {
+                    // General format drops fractional zeros; # retains them.
+                    result = result.replace(/(\.[0-9]*?)0+(?=e|$)/, "$1").replace(/\.(?=e|$)/, "");
                 }
             }
+            result = result.replace(/(e[+-])(\d)$/, "$10$2");
             if ("EFG".indexOf(conversionType) !== -1) {
                 result = result.toUpperCase();
             }
-            return handleWidth(["", result]);
+            let prefix = "";
+            if (result.charAt(0) === "-") {
+                prefix = "-";
+                result = result.slice(1);
+            } else if (precedeWithSign) {
+                prefix = "+";
+            } else if (blankBeforePositive) {
+                prefix = " ";
+            }
+            return handleWidth([prefix, result]);
         } else if (conversionType === "c") {
             if (typeof value === "number") {
                 return String.fromCharCode(value);
@@ -1389,21 +1420,18 @@ function strBytesRemainder(rhs) {
                 throw new Sk.builtin.TypeError("an integer is required");
             }
         } else if (conversionType === "r") {
-            r = Sk.builtin.repr(value);
-            if (precision) {
-                return r.v.substr(0, precision);
+            r = Sk.builtin.repr(value).v;
+            if (precision !== undefined) {
+                r = r.substr(0, precision);
             }
-            return r.v;
+            return handleWidth(["", r]);
         } else if (conversionType === "s" && strBytesConstructor === Sk.builtin.str) {
             r = new Sk.builtin.str(value);
             r = r.$jsstr();
-            if (precision) {
-                return r.substr(0, precision);
+            if (precision !== undefined) {
+                r = r.substr(0, precision);
             }
-            if (fieldWidth) {
-                r = handleWidth([" ", r]);
-            }
-            return r;
+            return handleWidth(["", r]);
         } else if (conversionType === "b" || conversionType === "s") {
             if (strBytesConstructor === Sk.builtin.str) {
                 throw new Sk.builtin.ValueError("unsupported format character 'b'");
@@ -1417,13 +1445,10 @@ function strBytesRemainder(rhs) {
                 // raises the appropriate error message if __bytes__ does not return bytes
             }
             r = value.$jsstr();
-            if (precision) {
-                return r.substr(0, precision);
+            if (precision !== undefined) {
+                r = r.substr(0, precision);
             }
-            if (fieldWidth) {
-                r = handleWidth([" ", r]);
-            }
-            return r;
+            return handleWidth(["", r]);
         } else if (conversionType === "%") {
             return "%";
         }
