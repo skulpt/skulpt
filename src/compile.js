@@ -1870,9 +1870,8 @@ Compiler.prototype.cfromimport = function (s) {
             return;
         }
 
-        //out("print(\"getting Sk.abstr.gattr(", mod, ",", alias.name["$r"]().v, ")\");");
-        got = this._gr("item", "Sk.abstr.gattr(", mod, ", new Sk.builtin.str(", aliasOut, "), undefined)");
-        //out("print('got');");
+        got = this._gr("item", mod, ".tp$getattr(new Sk.builtin.str(", aliasOut, "))");
+        out("if (", got, " === undefined) { throw new Sk.builtin.ImportError(\"cannot import name '\" + ", aliasOut, " + \"' from \" + ", mod, ".sk$attrError()); }");
         storeName = alias.name;
         if (alias.asname) {
             storeName = alias.asname;
