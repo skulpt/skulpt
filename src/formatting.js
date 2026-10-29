@@ -253,6 +253,9 @@ function formatString(format_spec) {
         throw new Sk.builtin.TypeError("format() argument 2 must be str, not " + Sk.abstr.typeName(format_spec));
     }
     let m = format_spec.$jsstr().match(FORMAT_SPEC_REGEX);
+    if (!m) {
+        throw new Sk.builtin.ValueError("Invalid format specifier");
+    }
     if (m[FMT.CONVERSION_TYPE] && m[FMT.CONVERSION_TYPE] !== "s") {
         throw new Sk.builtin.ValueError("Unknown format code '" + m[FMT.CONVERSION_TYPE] + "' for object of type 'str'");
     }
@@ -281,29 +284,14 @@ function formatString(format_spec) {
 // str.format() implementation
 const isDigit = /^\d+$/;
 
-const regex = /{(((?:\d+)|(?:\w+))?((?:\.(\w+))|(?:\[((?:\d+)|(?:\w+))\])?))?(?:\!(.))?(?:\:([^}]*))?}/g;
-
 function format(args, kwargs) {
-    // following PEP 3101
     kwargs = kwargs || [];
     const arg_dict = {};
-    // ex: {o.name!r:*^+#030,.9b}
-    // Field 1, Field_name, o.name
-    // Field 2, arg_name, o
-    // Field 3, attribute_name/Element_index , .name
-    // Field 4, Attribute name, name
-    // Field 5, element_index, [0]
-    // Field 6, conversion, r
-    // Field 7, format_spec,*^+#030,.9b
-
-    // Detect empty/int/complex name
-    // retrive field value
-    // hand off format spec
-    // return resulting spec to function
     for (let i = 0; i < kwargs.length; i += 2) {
         arg_dict[kwargs[i]] = kwargs[i + 1];
     }
     let currentMode;
+    let index = 0;
     const manual = "manual field specification";
     const auto = "automatic field numbering";
     const checkMode = (newMode) => {
@@ -315,12 +303,13 @@ function format(args, kwargs) {
     };
     const getArg = (key) => {
         let rv;
-        if (typeof key === "number") {
-            checkMode(manual);
+        if (key === "") {
+            checkMode(auto);
+            key = index++;
             rv = args[key];
         } else if (isDigit.test(key)) {
-            checkMode(auto);
-            rv = args[key];
+            checkMode(manual);
+            rv = args[parseInt(key, 10)];
         } else {
             rv = arg_dict[key];
             if (rv === undefined) {
@@ -333,48 +322,124 @@ function format(args, kwargs) {
         return rv;
     };
 
-    let index = 0;
-    function replFunc (substring, field_name, arg_name, attr_name, attribute_name, element_index, conversion, format_spec, offset, str_whole) {
-        let value;
-
-        if (element_index !== undefined && element_index !== "") {
-            let container = getArg(arg_name);
-            if (container.constructor === Array) {
-                value = container[element_index];
-            } else if (isDigit.test(element_index)) {
-                value = Sk.abstr.objectGetItem(container, new Sk.builtin.int_(parseInt(element_index, 10)), false);
+    function getField(fieldName) {
+        let pos = fieldName.search(/[.\[]/);
+        if (pos === -1) {
+            return getArg(fieldName);
+        }
+        let value = getArg(fieldName.slice(0, pos));
+        while (pos < fieldName.length) {
+            const isAttribute = fieldName[pos++] === ".";
+            const start = pos;
+            if (isAttribute) {
+                while (pos < fieldName.length && fieldName[pos] !== "." && fieldName[pos] !== "[") {
+                    pos++;
+                }
             } else {
-                value = Sk.abstr.objectGetItem(container, new Sk.builtin.str(element_index), false);
+                pos = fieldName.indexOf("]", pos);
             }
-            index++;
-        } else if (attribute_name !== undefined && attribute_name !== "") {
-            const arg = getArg(arg_name || index++);
-            value = Sk.abstr.gattr(arg, new Sk.builtin.str(attribute_name));
-        } else if (arg_name !== undefined && arg_name !== "") {
-            value = getArg(arg_name);
-        } else if (field_name === undefined || field_name === "") {
-            value = getArg(index);
-            index++;
-        } else if (isDigit.test(field_name)) {
-            value = getArg(field_name);
-            index++;
+            if (pos === -1 || pos === start) {
+                throw new Sk.builtin.ValueError("Empty attribute or missing ']' in format string");
+            }
+            const key = fieldName.slice(start, pos);
+            if (isAttribute) {
+                value = Sk.abstr.gattr(value, new Sk.builtin.str(key));
+            } else {
+                const item = isDigit.test(key) ? new Sk.builtin.int_(parseInt(key, 10)) : new Sk.builtin.str(key);
+                value = Sk.abstr.objectGetItem(value, item, false);
+                pos++;
+                if (pos < fieldName.length && fieldName[pos] !== "." && fieldName[pos] !== "[") {
+                    throw new Sk.builtin.ValueError("Only '.' or '[' may follow ']' in format field specifier");
+                }
+            }
         }
+        return value;
+    }
 
-        if (conversion === "s") {
-            value = new Sk.builtin.str(value);
-        } else if (conversion === "r") {
-            value = Sk.builtin.repr(value);
-        } else if (conversion === "a") {
-            value = Sk.builtin.ascii(value);
-        } else if (conversion !== "" && conversion !== undefined) {
-            throw new Sk.builtin.ValueError("Unknown conversion specifier " + conversion);
+    function buildString(template, depth) {
+        if (depth === 0) {
+            throw new Sk.builtin.ValueError("Max string recursion exceeded");
         }
+        const output = [];
+        let literalStart = 0;
+        let pos = 0;
+        while (pos < template.length) {
+            const c = template[pos++];
+            if (c !== "{" && c !== "}") {
+                continue;
+            }
+            output.push(template.slice(literalStart, pos - 1));
+            if (template[pos] === c) {
+                output.push(c);
+                literalStart = ++pos;
+                continue;
+            }
+            if (c === "}") {
+                throw new Sk.builtin.ValueError("Single '}' encountered in format string");
+            }
+            const fieldStart = pos;
+            while (pos < template.length && "!:}".indexOf(template[pos]) === -1) {
+                if (template[pos] === "{") {
+                    throw new Sk.builtin.ValueError("unexpected '{' in field name");
+                }
+                if (template[pos] === "[") {
+                    pos = template.indexOf("]", pos + 1);
+                    if (pos === -1) {
+                        throw new Sk.builtin.ValueError("Missing ']' in format string");
+                    }
+                }
+                pos++;
+            }
+            const fieldName = template.slice(fieldStart, pos);
+            let conversion;
+            if (template[pos] === "!") {
+                conversion = template[++pos];
+                pos++;
+                if (template[pos] !== ":" && template[pos] !== "}") {
+                    throw new Sk.builtin.ValueError("expected ':' after conversion specifier");
+                }
+            }
+            let formatSpec = "";
+            let needsExpanding = false;
+            if (template[pos] === ":") {
+                const specStart = ++pos;
+                let braces = 1;
+                for (; pos < template.length; pos++) {
+                    if (template[pos] === "{") {
+                        needsExpanding = true;
+                        braces++;
+                    } else if (template[pos] === "}" && --braces === 0) {
+                        break;
+                    }
+                }
+                formatSpec = template.slice(specStart, pos);
+            }
+            if (template[pos] !== "}") {
+                throw new Sk.builtin.ValueError("expected '}' before end of string");
+            }
+            pos++;
+            let value = getField(fieldName);
+            if (conversion === "s") {
+                value = new Sk.builtin.str(value);
+            } else if (conversion === "r") {
+                value = Sk.builtin.repr(value);
+            } else if (conversion === "a") {
+                value = Sk.builtin.ascii(value);
+            } else if (conversion !== undefined) {
+                throw new Sk.builtin.ValueError("Unknown conversion specifier " + conversion);
+            }
+            // Nested specs share argument numbering, but only one level is allowed.
+            if (needsExpanding) {
+                formatSpec = buildString(formatSpec, depth - 1);
+            }
+            output.push(Sk.abstr.objectFormat(value, new Sk.builtin.str(formatSpec)).$jsstr());
+            literalStart = pos;
+        }
+        output.push(template.slice(literalStart));
+        return output.join("");
+    }
 
-        return Sk.abstr.objectFormat(value, new Sk.builtin.str(format_spec)).$jsstr();
-    };
-
-    const ret = this.v.replace(regex, replFunc);
-    return new Sk.builtin.str(ret);
+    return new Sk.builtin.str(buildString(this.v, 2));
 };
 
 Sk.formatting.format = format;

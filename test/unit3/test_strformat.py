@@ -137,18 +137,71 @@ class string_format(unittest.TestCase):
                          'foo{}{}'.format('bar', 6))
         self.assertEqual(fmt.format('foo{1}{num}{1}', None, 'bar', num=6),
                          'foo{1}{num}{1}'.format(None, 'bar', num=6))
-        # self.assertEqual(fmt.format('{:^{}}', 'bar', 6),
-        #                  '{:^{}}'.format('bar', 6))
-        # self.assertEqual(fmt.format('{:^{}} {}', 'bar', 6, 'X'),
-        #                  '{:^{}} {}'.format('bar', 6, 'X'))
-        # self.assertEqual(fmt.format('{:^{pad}}{}', 'foo', 'bar', pad=6),
-        #                  '{:^{pad}}{}'.format('foo', 'bar', pad=6))
+        self.assertEqual(fmt.format('{:^{}}', 'bar', 6), ' bar  ')
+        self.assertEqual(fmt.format('{:^{}} {}', 'bar', 6, 'X'), ' bar   X')
+        self.assertEqual(fmt.format('{:^{pad}}{}', 'foo', 'bar', pad=6),
+                         ' foo  bar')
 
         with self.assertRaises(ValueError):
             fmt.format('foo{1}{}', 'bar', 6)
 
         with self.assertRaises(ValueError):
             fmt.format('foo{}{1}', 'bar', 6)
+
+    # Adapted from CPython Lib/test/test_str.py, test_format and
+    # test_format_auto_numbering.
+    def test_nested_format_specs(self):
+        self.assertEqual('{:^{}}'.format('hello', 10), '  hello   ')
+        self.assertEqual('{0:^{1}}'.format('hello', 10), '  hello   ')
+        self.assertEqual('{value:^{width}}'.format(value='hello', width=10),
+                         '  hello   ')
+        self.assertEqual('{:.{}f}'.format(1.23456, 2), '1.23')
+        self.assertEqual('{0:.{1}s}'.format('hello world', 5), 'hello')
+        self.assertEqual('{0:{width}.{precision}s}'.format(
+            'hello world', width=10, precision=5), 'hello     ')
+        self.assertEqual('0x{:0{:d}X}'.format(0, 16), '0x0000000000000000')
+        self.assertEqual('{:{f}}{g}{}'.format(1, 3, g='g', f=2), ' 1g3')
+        self.assertEqual('{f:{}}{}{g}'.format(2, 4, f=1, g='g'), ' 14g')
+        self.assertEqual('{!r:>{}}'.format('x', 5), "  'x'")
+        self.assertEqual('{:{[width]}} {}'.format('x', {'width': 3}, 'y'),
+                         'x   y')
+
+        class EchoSpec:
+            def __format__(self, spec):
+                return spec
+
+        self.assertEqual('{:{{}}}'.format(EchoSpec()), '{}')
+        self.assertEqual('{:{}}'.format(EchoSpec(), '{value}'), '{value}')
+
+    def test_format_field_lookup(self):
+        # Delimiters inside an item key belong to the key, not the field syntax.
+        for key in ('{}', '{', '}', '!', ':', 'foo-bar', 'foo bar'):
+            self.assertEqual(('{0[' + key + ']}').format({key: 'value'}),
+                             'value')
+        self.assertEqual('{0[1][0].real}'.format([None, [3]]), '3')
+        self.assertEqual('{0[0]} {0[1]}'.format(['a', 'b']), 'a b')
+        self.assertRaises(ValueError, '{0[0]x}'.format, [None])
+        self.assertRaises(ValueError, '{0..real}'.format, 3)
+
+    def test_escaped_braces(self):
+        self.assertEqual('{{}}'.format(), '{}')
+        self.assertEqual('{{}} {}'.format('x'), '{} x')
+        self.assertEqual('{{{0}}}'.format(123), '{123}')
+        self.assertEqual('{{{{0}}}}'.format(), '{{0}}')
+        self.assertEqual('}}x{{'.format(), '}x{')
+        self.assertEqual('one {{two: {}}} three'.format('xxx'),
+                         'one {two: xxx} three')
+
+    def test_nested_format_errors(self):
+        for template in ('{:{1}}', '{0:{}}', '{:{}}{0}', '{0:{1}}{}'):
+            self.assertRaises(ValueError, template.format, 'x', 2)
+        self.assertRaises(IndexError, '{:{}}'.format, 'x')
+        self.assertRaises(KeyError, '{:{width}}'.format, 'x')
+        self.assertRaises(ValueError, '{0:{1:{2}}}'.format, 'abc', 's', '')
+        self.assertRaises(ValueError, '{0:{1}}'.format, 'abc', 'invalid')
+        for template in ('{', '}', 'a{', 'a}', '{0', '{0:{1}', '{0}}',
+                         '{0!}', '{0!rs}', '{a{b}'):
+            self.assertRaises(ValueError, template.format, 'x', 2)
 
     def test_conversion_specifiers(self):
         fmt = str
