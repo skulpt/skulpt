@@ -282,6 +282,7 @@ function formatString(format_spec) {
 };
 
 // str.format() implementation
+// Parser reference: CPython Objects/stringlib/unicode_format.h.
 const isDigit = /^\d+$/;
 
 function format(args, kwargs) {
@@ -294,7 +295,8 @@ function format(args, kwargs) {
     for (let i = 0; i < kwargs.length; i += 2) {
         arg_dict[kwargs[i]] = kwargs[i + 1];
     }
-    // Outer fields and nested specs share numbering state for this format call.
+    // Like CPython's AutoNumber, outer fields and nested specs share numbering
+    // state for this format call.
     // Named arguments do not advance the automatic index or select a mode.
     let currentMode;
     let index = 0;
@@ -329,6 +331,7 @@ function format(args, kwargs) {
     };
 
     function getField(fieldName) {
+        // Corresponds to CPython's get_field_object / FieldNameIterator_next.
         // Resolve the argument first, then follow its .attribute and [item] parts.
         let pos = fieldName.search(/[.\[]/);
         if (pos === -1) {
@@ -364,8 +367,8 @@ function format(args, kwargs) {
     }
 
     function buildString(template, depth) {
-        // Like CPython's unicode_format.h, scan literals and escaped braces,
-        // then parse each field, recursing only into its format specification.
+        // Follows CPython's build_string / do_markup: MarkupIterator_next scans
+        // literals and escaped braces; parse_field finds the field boundaries.
         if (depth === 0) {
             throw new Sk.builtin.ValueError("Max string recursion exceeded");
         }
@@ -387,6 +390,7 @@ function format(args, kwargs) {
             if (c === "}") {
                 throw new Sk.builtin.ValueError("Single '}' encountered in format string");
             }
+            // parse_field: read the name, optional conversion and balanced spec.
             const fieldStart = pos;
             while (pos < template.length && "!:}".indexOf(template[pos]) === -1) {
                 if (template[pos] === "{") {
@@ -431,6 +435,8 @@ function format(args, kwargs) {
                 throw new Sk.builtin.ValueError("expected '}' before end of string");
             }
             pos++;
+            // output_markup resolves and converts before expanding the spec,
+            // then delegates to the value's __format__ method.
             let value = getField(fieldName);
             if (conversion === "s") {
                 value = new Sk.builtin.str(value);
@@ -452,6 +458,8 @@ function format(args, kwargs) {
         return output.join("");
     }
 
+    // CPython's do_string_format starts at depth 2: outer fields plus one
+    // nested spec. build_string rejects further recursion.
     return new Sk.builtin.str(buildString(this.v, 2));
 };
 
