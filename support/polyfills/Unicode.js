@@ -15,6 +15,7 @@
     without any warranty.
 */
 /*
+Adapted from: https://stackoverflow.com/questions/26133593/using-regex-to-match-international-unicode-alphanumeric-characters-in-javascript
 Actual values adapted from https://github.com/slevithan/xregexp/blob/master/tools/output/categories.js
 */
 const Unicode = {
