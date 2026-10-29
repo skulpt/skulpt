@@ -285,11 +285,17 @@ function formatString(format_spec) {
 const isDigit = /^\d+$/;
 
 function format(args, kwargs) {
+    // PEP 3101: a replacement field contains a name, optional !conversion,
+    // and optional :format_spec. For {o.name!r:>{width}}, these are
+    // "o.name", "r", and ">{width}". Resolve and convert the value, expand
+    // the nested spec, then delegate to the value's __format__ method.
     kwargs = kwargs || [];
     const arg_dict = {};
     for (let i = 0; i < kwargs.length; i += 2) {
         arg_dict[kwargs[i]] = kwargs[i + 1];
     }
+    // Outer fields and nested specs share numbering state for this format call.
+    // Named arguments do not advance the automatic index or select a mode.
     let currentMode;
     let index = 0;
     const manual = "manual field specification";
@@ -323,6 +329,7 @@ function format(args, kwargs) {
     };
 
     function getField(fieldName) {
+        // Resolve the argument first, then follow its .attribute and [item] parts.
         let pos = fieldName.search(/[.\[]/);
         if (pos === -1) {
             return getArg(fieldName);
@@ -357,6 +364,8 @@ function format(args, kwargs) {
     }
 
     function buildString(template, depth) {
+        // Like CPython's unicode_format.h, scan literals and escaped braces,
+        // then parse each field, recursing only into its format specification.
         if (depth === 0) {
             throw new Sk.builtin.ValueError("Max string recursion exceeded");
         }
@@ -369,6 +378,7 @@ function format(args, kwargs) {
                 continue;
             }
             output.push(template.slice(literalStart, pos - 1));
+            // Escaped braces are literal text and must not consume arguments.
             if (template[pos] === c) {
                 output.push(c);
                 literalStart = ++pos;
@@ -383,6 +393,7 @@ function format(args, kwargs) {
                     throw new Sk.builtin.ValueError("unexpected '{' in field name");
                 }
                 if (template[pos] === "[") {
+                    // Braces, ':' and '!' inside an item key are not delimiters.
                     pos = template.indexOf("]", pos + 1);
                     if (pos === -1) {
                         throw new Sk.builtin.ValueError("Missing ']' in format string");
@@ -403,6 +414,8 @@ function format(args, kwargs) {
             let needsExpanding = false;
             if (template[pos] === ":") {
                 const specStart = ++pos;
+                // Count all braces here, including escaped pairs. The recursive
+                // scan interprets escapes after we have found the complete spec.
                 let braces = 1;
                 for (; pos < template.length; pos++) {
                     if (template[pos] === "{") {
