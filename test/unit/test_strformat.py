@@ -45,6 +45,17 @@ class string_format(unittest.TestCase):
     def test_conversion(self):
         self.assertEqual("repr() shows quotes: 'test1'; str() doesn't: test2", "repr() shows quotes: {!r}; str() doesn't: {!s}".format('test1', 'test2'))
 
+    def test_nested_format_specs(self):
+        self.assertEqual('{:^{}} {}'.format('hello', 10, 'x'), '  hello    x')
+        self.assertEqual('{:.{}f}'.format(1.23456, 2), '1.23')
+        self.assertRaises(ValueError, '{0:{}}'.format, 'x', 2)
+        self.assertRaises(ValueError, '{0:{1:{2}}}'.format, 'x', 's', '')
+
+    def test_escaped_braces(self):
+        self.assertEqual('{{}}'.format(), '{}')
+        self.assertEqual('one {{two: {}}} three'.format('xxx'),
+                         'one {two: xxx} three')
+
     def test_expansion(self):
         self.assertEqual('left aligned                  ', '{:<30}'.format('left aligned'))
         self.assertEqual('                 right aligned', '{:>30}'.format('right aligned'))
