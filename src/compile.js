@@ -1249,8 +1249,17 @@ Compiler.prototype.outputLocals = function (unit) {
 Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var i, t;
     var localSaveCode = [];
-    var localsToSave = unit.localnames.concat(unit.tempsToSave);
-    var seenTemps = {};
+    var names = unit.localnames.concat(unit.tempsToSave);
+    var localsToSave = [];
+    var seenTemps = Object.create(null);
+    // Reuse unique names for declarations and both suspension helpers.
+    for (i = 0; i < names.length; i++) {
+        t = names[i];
+        if (seenTemps[t] === undefined) {
+            localsToSave.push(t);
+            seenTemps[t] = true;
+        }
+    }
     var hasCell = unit.ste.blockType === Sk.SYMTAB_CONSTS.FunctionBlock && unit.ste.childHasFree;
     var output = (localsToSave.length > 0 ? ("var " + localsToSave.join(",") + ";") : "") +
                  "var $wakeFromSuspension = function() {" +
@@ -1261,10 +1270,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
 
     for (i = 0; i < localsToSave.length; i++) {
         t = localsToSave[i];
-        if (seenTemps[t]===undefined) {
-            output += t + "=susp.$tmps." + t + ";";
-            seenTemps[t] = true;
-        }
+        output += t + "=susp.$tmps." + t + ";";
     }
 
     output +=  "try { $ret=susp.child.resume(); } catch(err) { if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
@@ -1278,13 +1284,9 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
                 "susp.optional=susp.child.optional;" +
                 (hasCell ? "susp.$cell=$cell;" : "");
 
-    seenTemps = {};
     for (i = 0; i < localsToSave.length; i++) {
         t = localsToSave[i];
-        if (seenTemps[t]===undefined) {
-            localSaveCode.push("\"" + t + "\":" + t);
-            seenTemps[t]=true;
-        }
+        localSaveCode.push("\"" + t + "\":" + t);
     }
     output +=   "susp.$tmps={" + localSaveCode.join(",") + "};" +
                 "return susp;" +
