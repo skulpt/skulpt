@@ -25,6 +25,7 @@ function $builtinmodule() {
 
     let time_mod = Sk.importModule("time", false, true);
     let dt_mod = Sk.importModule("datetime", false, true);
+    let locale_mod;
 
     const _set_up_dependencies = chainOrSuspend(
         dt_mod,
@@ -34,6 +35,10 @@ function $builtinmodule() {
         },
         (tm) => {
             time_mod = tm.$d;
+            return Sk.importModule("_locale", false, true);
+        },
+        (locale) => {
+            locale_mod = locale.$d;
         }
     );
 
@@ -84,8 +89,8 @@ function $builtinmodule() {
         }
 
         function _check_lang_consistency() {
-            // todo this will check if the locale lang has changed
-            return true;
+            const lang = _getlang();
+            return _TimeRE_cache.locale_time.lang.every((value, i) => value === lang[i]);
         }
 
         // start of the module
@@ -97,8 +102,8 @@ function $builtinmodule() {
         const datetime_timezone = dt_mod.timezone;
 
         function _getlang() {
-            // todo this should check the current locale info but locale not yet implemented
-            return [pyNone, pyNone];
+            const locale = locale_mod.$getLocale();
+            return [locale.language, locale.encoding];
         }
 
         class LocaleTime {
@@ -128,6 +133,13 @@ function $builtinmodule() {
                 this.am_pm = am_pm;
             }
             __calc_date_time() {
+                const formats = locale_mod.$getLocale().formats;
+                if (formats) {
+                    this.LC_date_time = formats.c;
+                    this.LC_date = formats.x;
+                    this.LC_time = formats.X;
+                    return;
+                }
                 // Use (1999,3,17,22,44,55,2,76,0) for magic date because
                 // the amount of overloaded numbers is minimized
                 const time_tuple = _struct_time([1999, 3, 17, 22, 44, 55, 2, 76, 0]);
@@ -240,7 +252,7 @@ function $builtinmodule() {
                 if (to_convert.every((value) => value === "")) {
                     return "";
                 }
-                let regex = to_convert.map((x) => x /*reescape x*/).join("|");
+                let regex = to_convert.map((x) => x.replace(_regex_chars, "\\$1")).join("|");
                 return `(?<${directive}>${regex})`;
             }
             pattern(format) {
@@ -595,7 +607,7 @@ function $builtinmodule() {
             },
             _getlang: {
                 $meth() {
-                    return remapToPy(_getlang());
+                    return new pyTuple(_getlang().map((value) => remapToPy(value)));
                 },
                 $flags: { NoArgs: true },
             },
@@ -608,6 +620,9 @@ function $builtinmodule() {
             },
             slots: {
                 tp$getattr(pyName, canSuspend) {
+                    if (pyName.toString() === "lang") {
+                        return new pyTuple(this.v.lang.map((value) => remapToPy(value)));
+                    }
                     if (this.v.hasOwnProperty(pyName.toString())) {
                         return remapToPy(this.v[pyName.toString()]);
                     }

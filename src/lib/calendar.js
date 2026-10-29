@@ -17,6 +17,10 @@ function $builtinmodule(name) {
         (itertools) => {
             requiredImports.iterRepeat = itertools.$d.repeat;
             requiredImports.iterChain = itertools.$d.chain;
+            return importOrSuspend("_locale");
+        },
+        (locale) => {
+            requiredImports.locale = locale.$d;
             return calendarModule(requiredImports);
         }
     );
@@ -54,8 +58,6 @@ function calendarModule(required) {
             objectRepr,
             callsimArray: pyCall,
         },
-        global: skGlobal,
-        global: { strftime: strftimeJs },
     } = Sk;
 
     const _0 = new pyInt(0);
@@ -780,19 +782,11 @@ function calendarModule(required) {
 
     /***** LocaleCalendars *****/
 
-    function withLocale(locale, fn) {
-        const s = strftimeJs.localizeByIdentifier(locale.toString());
-        skGlobal.strftime = s;
-        try {
-            return fn();
-        } finally {
-            skGlobal.strftime = strftimeJs;
-        }
-    }
+    const withLocale = required.locale.$withLocale;
 
     function localInit(self, locale) {
         if (!isTrue(locale)) {
-            locale = new pyStr("en_US");
+            locale = new pyStr("");
         }
         self.locale = locale;
     }

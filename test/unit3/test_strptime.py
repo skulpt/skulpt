@@ -2,7 +2,7 @@
 
 import unittest
 import time
-# import locale
+import locale
 # import re
 # import os
 # import sys
@@ -526,6 +526,125 @@ class CalculationTests(unittest.TestCase):
         check('2009 0 6', '%Y %W %w', 2009, 1, 3, 0, 0, 0, 5, 3)
         check('2009 1 7', '%G %V %u', 2009, 1, 4, 0, 0, 0, 6, 4)
 
+
+
+
+
+class LocalizedStrptimeTests(unittest.TestCase):
+    # Adapt CPython's run_with_locales tests to browser-supported locales.
+    # Gregorian dates and Latin digits are intentional even for ar/th locales.
+    locales = ('C', 'en_US', 'fr_FR', 'de_DE', 'ja_JP', 'ar_EG', 'th_TH')
+
+    def setUp(self):
+        self.oldlocale = locale.setlocale(locale.LC_TIME)
+        self.time_tuple = time.localtime()
+
+    def tearDown(self):
+        locale.setlocale(locale.LC_TIME, self.oldlocale)
+
+    def roundtrip(self, fmt, position, time_tuple=None):
+        """Helper fxn in testing."""
+        if time_tuple is None:
+            time_tuple = self.time_tuple
+        strf_output = time.strftime(fmt, time_tuple)
+        strp_output = _strptime._strptime_time(strf_output, fmt)
+        self.assertEqual(strp_output[position], time_tuple[position],
+                        "testing of %r format failed; %r -> %r != %r" %
+                         (fmt, strf_output, strp_output[position],
+                          time_tuple[position]))
+
+    def test_date_time_locale(self):
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            now = time.time()
+            self.roundtrip('%c', slice(0, 6), time.localtime(now))
+            # 1 hour 20 minutes 30 seconds ago
+            self.roundtrip('%c', slice(0, 6), time.localtime(now - 4830))
+            # 12 hours ago
+            self.roundtrip('%c', slice(0, 6), time.localtime(now - 12*3600))
+            # different days of the week
+            for i in range(1, 7):
+                self.roundtrip('%c', slice(0, 6), time.localtime(now - i*24*3600))
+            # different months
+            for i in range(1, 12):
+                self.roundtrip('%c', slice(0, 6), time.localtime(now - i*30*24*3600))
+            # different year
+            self.roundtrip('%c', slice(0, 6), time.localtime(now - 366*24*3600))
+
+    def test_date_locale(self):
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            now = time.time()
+            self.roundtrip('%x', slice(0, 3), time.localtime(now))
+            # different days of the week
+            for i in range(1, 7):
+                self.roundtrip('%x', slice(0, 3), time.localtime(now - i*24*3600))
+            # different months
+            for i in range(1, 12):
+                self.roundtrip('%x', slice(0, 3), time.localtime(now - i*30*24*3600))
+            # different year
+            self.roundtrip('%x', slice(0, 3), time.localtime(now - 366*24*3600))
+
+    def test_time_locale(self):
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            pos = slice(3, 6)
+            now = time.time()
+            self.roundtrip('%X', pos, time.localtime(now))
+            # 1 hour 20 minutes 30 seconds ago
+            self.roundtrip('%X', pos, time.localtime(now - 4830))
+            # 12 hours ago
+            self.roundtrip('%X', pos, time.localtime(now - 12*3600))
+
+    def test_date_time_locale2(self):
+        # CPython tests dates before 1969 separately; keep that coverage.
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            for year in (1800, 1900):
+                self.roundtrip('%c', slice(0, 6), (year, 1, 1, 0, 0, 0, 0, 1, 0))
+                if name != 'C':
+                    self.roundtrip('%x', slice(0, 3), (year, 1, 1, 0, 0, 0, 0, 1, 0))
+                # Existing C %x uses a two-digit year and cannot roundtrip 1800.
+
+    def test_getlang(self):
+        # CPython getlang_Tests.test_basic, also exercised after switching.
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            self.assertEqual(_strptime._getlang(), locale.getlocale(locale.LC_TIME))
+            self.assertEqual(_strptime.LocaleTime().lang, _strptime._getlang())
+
+    def test_locale_switch_recreates_parser(self):
+        # CPython CacheTests.test_TimeRE_recreation_locale, tested through the
+        # public API instead of inspecting Skulpt's internal JS cache objects.
+        value = datetime_date(2024, 3, 17)
+        for name, month in (('fr_FR', 'mars'), ('de_DE', 'März'),
+                            ('C', 'March'), ('fr_FR', 'mars')):
+            locale.setlocale(locale.LC_TIME, name)
+            formatted = value.strftime('%d %B %Y')
+            self.assertIn(month, formatted)
+            parsed = time.strptime(formatted, '%d %B %Y')
+            self.assertEqual(parsed[:3], (2024, 3, 17))
+
+    def test_localized_names_and_am_pm(self):
+        # CPython's month/weekday/AM-PM roundtrips, with locale changes.
+        for name in self.locales:
+            locale.setlocale(locale.LC_TIME, name)
+            for month in range(1, 13):
+                value = datetime_date(2024, month, 17)
+                for fmt in ('%d %B %Y', '%d %b %Y', '%Y-%m-%d %A', '%Y-%m-%d %a'):
+                    self.assertEqual(time.strptime(value.strftime(fmt), fmt)[:3],
+                                     (2024, month, 17))
+            for hour in (0, 1, 12, 22, 23):
+                self.roundtrip('%I %p', slice(3, 4),
+                               (2024, 3, 17, hour, 0, 0, 6, 77, 0))
+
+    def test_abbreviations_are_literal(self):
+        locale.setlocale(locale.LC_TIME, 'fr_FR')
+        value = datetime_date(2024, 3, 20)
+        fmt = '%Y-%m-%d %a'
+        formatted = value.strftime(fmt)
+        self.assertEqual(time.strptime(formatted, fmt)[6], 2)
+        self.assertRaises(ValueError, time.strptime, formatted.replace('.', 'X'), fmt)
 
 
 if __name__ == '__main__':
