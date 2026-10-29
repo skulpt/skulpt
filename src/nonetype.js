@@ -22,6 +22,12 @@ Sk.builtin.none = Sk.abstr.buildNativeClass("NoneType", {
         nb$bool() {
             return false;
         },
+        nb$or(other) {
+            return Sk.builtin.UnionType.$or.call(this, other);
+        },
+        nb$reflected_or(other) {
+            return Sk.builtin.UnionType.$or.call(other, this);
+        },
     },
     proto: {
         valueOf() {

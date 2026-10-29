@@ -49,6 +49,7 @@ Sk.builtin.str.$length_hint = new Sk.builtin.str("__length_hint__");
 Sk.builtin.str.$loader = new Sk.builtin.str("__loader__");
 Sk.builtin.str.$lt = new Sk.builtin.str("__lt__");
 Sk.builtin.str.$module = new Sk.builtin.str("__module__");
+Sk.builtin.str.$mro_entries = new Sk.builtin.str("__mro_entries__");
 Sk.builtin.str.$missing = new Sk.builtin.str("__missing__");
 Sk.builtin.str.$name = new Sk.builtin.str("__name__");
 Sk.builtin.str.$ne = new Sk.builtin.str("__ne__");

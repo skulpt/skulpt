@@ -231,9 +231,7 @@ function tp$new(args, kwargs) {
     klass.$allocateSlots();
 
     set_names(klass);
-    init_subclass(klass, kwargs);
-
-    return klass;
+    return Sk.misceval.chain(init_subclass(klass, kwargs), () => klass);
 }
 
 
@@ -773,6 +771,14 @@ Sk.builtin.type.tp$classmethods = {
     },
 };
 
+Sk.builtin.type.prototype.tp$as_number = true;
+Sk.builtin.type.prototype.nb$or = function (other) {
+    return Sk.builtin.UnionType.$or.call(this, other);
+};
+Sk.builtin.type.prototype.nb$reflected_or = function (other) {
+    return Sk.builtin.UnionType.$or.call(other, this);
+};
+
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
     $get() {
@@ -821,7 +827,7 @@ function check_special_type_attr(type, value, pyName) {
 function init_subclass(type, kws) {
     const super_ = new Sk.builtin.super_(type, type);
     const func = super_.tp$getattr(Sk.builtin.str.$initsubclass);
-    Sk.misceval.callsimArray(func, [], kws);
+    return Sk.misceval.callsimOrSuspendArray(func, [], kws);
 }
 
 function set_names(type) {
