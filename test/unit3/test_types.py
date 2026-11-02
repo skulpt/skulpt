@@ -328,8 +328,13 @@ class TypesTests(unittest.TestCase):
         test(-1234567, ',', '-1,234,567')
 
         # issue 5782, commas with no specifier type
-        # TODO: Include zero padding in digit grouping.
-        # test(1234, '010,', '00,001,234')
+        test(1234, '010,', '00,001,234')
+        test(1234, '08,', '0,001,234')
+        test(-1234, '010,', '-0,001,234')
+        test(0xabc, '#012_x', '0x0_0000_0abc')
+        test(1234, '0=10,', '00,001,234')
+        # Right alignment pads outside the grouped digits.
+        test(1234, '0>10,', '000001,234')
 
         # Unified type for integers
         test(10**100, 'd', '1' + '0' * 100)

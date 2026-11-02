@@ -21,10 +21,27 @@ let handleWidth = function (m, r, prefix, isNumber) {
     // print(prefix);
     Sk.asserts.assert(typeof(r) === "string");
 
-    if (m[FMT.FIELD_WIDTH]) {
-        let fieldWidth = parseInt(m[FMT.FIELD_WIDTH], 10);
-        let fillChar = m[FMT.FILL_CHAR] || (m[FMT.ZERO_PAD] ? "0" : " ");
-        let fillAlign = m[FMT.FILL_ALIGN] || (m[FMT.ZERO_PAD] ? "=" : isNumber ? ">" : "<");
+    const fieldWidth = parseInt(m[FMT.FIELD_WIDTH] || "0", 10);
+    const fillChar = m[FMT.FILL_CHAR] || (m[FMT.ZERO_PAD] ? "0" : " ");
+    const fillAlign = m[FMT.FILL_ALIGN] || (m[FMT.ZERO_PAD] ? "=" : isNumber ? ">" : "<");
+    if (isNumber && m[FMT.COMMA]) {
+        const groupSize = "boxX".indexOf(m[FMT.CONVERSION_TYPE]) === -1 ? 3 : 4;
+        const parts = r.match(groupSize === 3 ? /^(\d+)(.*)$/ : /^([\da-fA-F]+)(.*)$/);
+        if (parts) {
+            let digits = parts[1];
+            if (fillChar === "0" && fillAlign === "=") {
+                // Group the padding as digits, keeping signs, prefixes and the
+                // fractional/exponent suffix outside the grouped width.
+                // Width is a minimum: adding a group separator may overshoot it.
+                const minGroupedWidth = fieldWidth - prefix.length - parts[2].length;
+                const minDigits = minGroupedWidth - Math.floor((minGroupedWidth - 1) / (groupSize + 1));
+                digits = "0".repeat(Math.max(0, minDigits - digits.length)) + digits;
+            }
+            r = digits.replace(groupSize === 3 ? thousandSep : otherBaseSep, m[FMT.COMMA]) + parts[2];
+        }
+    }
+
+    if (fieldWidth) {
         let nFill = fieldWidth - (r.length + (prefix ? prefix.length : 0));
 
         if (nFill <= 0) {
@@ -96,14 +113,8 @@ let handleInteger = function(m, n, base){
             throw new Sk.builtin.ValueError(`Cannot specify '${m[FMT.COMMA]}' with 'n'`);
         }
         r = (+r).toLocaleString();
-    } else if (m[FMT.COMMA]){
-        const parts = r.split(".");
-        const sep = m[FMT.COMMA];
-        if (sep === "," && base !== 10) {
-            throw new Sk.builtin.ValueError(`Cannot specify ',' with '${conversionType}'`);
-        }
-        parts[0] = parts[0].replace(base === 10 ? thousandSep : otherBaseSep , sep);
-        r = parts.join(".");
+    } else if (m[FMT.COMMA] === "," && base !== 10) {
+        throw new Sk.builtin.ValueError(`Cannot specify ',' with '${conversionType}'`);
     }
 
     return handleWidth(m, r, prefix, true);
@@ -204,12 +215,6 @@ let formatNumber = function(num, formatSpec, isFractional) {
             if (conversionType.toLowerCase()==="e") {
                 result = result.replace(/^([-+]?[0-9]*\.?[0-9]+[eE][-+]?)([0-9])?$/, "$10$2");
             }
-            if (m[FMT.COMMA]){
-                var parts = result.toString().split(".");
-                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                result = parts.join(".");
-            }
-
             return handleWidth(m, result, signForNeg(m, neg), true);
         };
 

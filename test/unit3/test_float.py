@@ -240,5 +240,16 @@ class FormatTestCase(unittest.TestCase):
         self.assertEqual(format(-123.34, '00.10e'), '-1.2334000000e+02')
         self.assertEqual(format(-123.34, '00.10g'), '-123.34')
 
+    def test_grouped_zero_padding(self):
+        # CPython Lib/test/test_types.py, test_float__format__.
+        for value, spec, expected in (
+                (1234.0, '013,f', '01,234.000000'),
+                (-1234.0, '014,f', '-01,234.000000'),
+                (-123456.0, '016,f', '-0,123,456.000000'),
+                (-123456.0, '017,f', '-0,123,456.000000'),
+                (-123456.12341234, '013,.2f', '-0,123,456.12')):
+            self.assertEqual(format(value, spec), expected)
+            self.assertEqual(value.__format__(spec), expected)
+
 if __name__ == '__main__':
     unittest.main()
