@@ -176,6 +176,11 @@ let formatNumber = function(num, formatSpec, isFractional) {
             if (m[FMT.ALT_FORM]){
                 throw new Sk.builtin.ValueError("Alternate form (#) not allowed in float format specifier");
             }
+            if (isFractional && !m[FMT.CONVERSION_TYPE] && !m[FMT.PRECISION]) {
+                const result = num.str$(10, true);
+                const neg = result[0] === "-";
+                return handleWidth(m, neg ? result.slice(1) : result, signForNeg(m, neg), true);
+            }
             let convValue = Sk.builtin.asnum$(num);
             if (typeof convValue === "string") {
                 convValue = Number(convValue);

@@ -570,9 +570,6 @@ Sk.builtin.float_.prototype.round$ = function (ndigits) {
  * @return {string} The Javascript string representation of this instance.
  */
 Sk.builtin.float_.prototype.str$ = function (base, sign) {
-    var post;
-    var pre;
-    var idx;
     var tmp;
     var work;
 
@@ -598,21 +595,25 @@ Sk.builtin.float_.prototype.str$ = function (base, sign) {
 
     if (base === undefined || base === 10) {
         if (Sk.__future__.python3) {
-            tmp = work.toPrecision(16);
+            // Python 3 uses the shortest round-trip representation, with
+            // scientific notation below 1e-4 and from 1e16, except for zero.
+            const magnitude = Math.abs(work);
+            const useExponential = magnitude !== 0 && (magnitude < 1e-4 || magnitude >= 1e16);
+            tmp = useExponential ? work.toExponential() : work.toString();
         } else {
             tmp = work.toPrecision(12);
-        }
 
-        // transform fractions with 4 or more leading zeroes into exponents
-        idx = tmp.indexOf(".");
-        pre = work.toString().slice(0, idx);
-        post = work.toString().slice(idx);
+            // Transform fractions with 4 or more leading zeroes into exponents.
+            const idx = tmp.indexOf(".");
+            const pre = work.toString().slice(0, idx);
+            const post = work.toString().slice(idx);
 
-        if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
-            if (tmp.length < 12) {
-                tmp = work.toExponential();
-            } else {
-                tmp = work.toExponential(11);
+            if (pre.match(/^-?0$/) && post.slice(1).match(/^0{4,}/)) {
+                if (tmp.length < 12) {
+                    tmp = work.toExponential();
+                } else {
+                    tmp = work.toExponential(11);
+                }
             }
         }
 
