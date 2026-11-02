@@ -237,5 +237,15 @@ class TestImports(unittest.TestCase):
             del sys.modules[module.__name__]
 
 
+class TestSys(unittest.TestCase):
+    def test_implementation_metadata(self):
+        import sys
+        from sys import implementation
+
+        self.assertIs(implementation, sys.implementation)
+        self.assertEqual(implementation.name, "skulpt")
+        self.assertIsNone(implementation.cache_tag)
+
+
 if __name__ == "__main__":
     unittest.main()

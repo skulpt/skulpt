@@ -84,6 +84,7 @@ module.exports = (env, argv) => {
                 { from: 'debugger/debugger.js', to: 'debugger.js' }
             ]),
             new webpack.DefinePlugin({
+                SKULPT_VERSION: JSON.stringify(require('./package.json').version),
                 GITVERSION: JSON.stringify(git.version()),
                 GITHASH: JSON.stringify(git.commithash()),
                 GITBRANCH: JSON.stringify(git.branch()),
