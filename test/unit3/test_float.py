@@ -193,12 +193,11 @@ class FormatTestCase(unittest.TestCase):
                 self.assertRaises(ValueError, format, 1e-100, format_spec)
                 self.assertRaises(ValueError, format, -1e-100, format_spec)
 
-        # @TODO Skulpt doesn't capitalize
         # issue 3382
         self.assertEqual(format(NAN, 'f'), 'nan')
-        # self.assertEqual(format(NAN, 'F'), 'NAN')
+        self.assertEqual(format(NAN, 'F'), 'NAN')
         self.assertEqual(format(INF, 'f'), 'inf')
-        # self.assertEqual(format(INF, 'F'), 'INF')
+        self.assertEqual(format(INF, 'F'), 'INF')
 
     # @support.requires_IEEE_754
     # def test_format_testfile(self):
@@ -250,6 +249,23 @@ class FormatTestCase(unittest.TestCase):
                 (-123456.12341234, '013,.2f', '-0,123,456.12')):
             self.assertEqual(format(value, spec), expected)
             self.assertEqual(value.__format__(spec), expected)
+
+    def test_format_specials(self):
+        # CPython Lib/test/test_float.py, test_format_specials.
+        for code in ('e', 'E', 'f', 'F', 'g', 'G', '%'):
+            inf = 'INF' if code in 'EFG' else 'inf'
+            nan = 'NAN' if code in 'EFG' else 'nan'
+            if code == '%':
+                inf += '%'
+                nan += '%'
+            for value, expected in ((INF, inf), (-INF, '-' + inf),
+                                    (NAN, nan), (-NAN, nan)):
+                self.assertEqual(format(value, code), expected)
+                self.assertEqual(format(value, '+' + code),
+                                 expected if value < 0 else '+' + expected)
+                self.assertEqual(format(value, ' ' + code),
+                                 expected if value < 0 else ' ' + expected)
+        self.assertEqual(format(INF, '+08f'), '+0000inf')
 
 if __name__ == '__main__':
     unittest.main()

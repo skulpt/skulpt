@@ -181,13 +181,13 @@ let formatNumber = function(num, formatSpec, isFractional) {
                 convValue = Number(convValue);
             }
             if (convValue === Infinity) {
-                return handleWidth(m, "inf", "", true);
+                return handleWidth(m, "EFG".indexOf(conversionType) === -1 ? "inf" : "INF", signForNeg(m, false), true);
             }
             if (convValue === -Infinity) {
-                return handleWidth(m, "inf", "-", true);
+                return handleWidth(m, "EFG".indexOf(conversionType) === -1 ? "inf" : "INF", "-", true);
             }
             if (isNaN(convValue)) {
-                return handleWidth(m, "nan", "", true);
+                return handleWidth(m, "EFG".indexOf(conversionType) === -1 ? "nan" : "NAN", signForNeg(m, false), true);
             }
             let neg = false;
             if (convValue < 0) {
@@ -227,13 +227,13 @@ let formatNumber = function(num, formatSpec, isFractional) {
                 convValue = Number(convValue);
             }
             if (convValue === Infinity) {
-                return handleWidth(m, "inf%", "", true);
+                return handleWidth(m, "inf%", signForNeg(m, false), true);
             }
             if (convValue === -Infinity) {
                 return handleWidth(m, "inf%", "-", true);
             }
             if (isNaN(convValue)) {
-                return handleWidth(m, "nan%", "", true);
+                return handleWidth(m, "nan%", signForNeg(m, false), true);
             }
             let neg = false;
             if (convValue < 0) {
