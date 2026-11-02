@@ -31,9 +31,9 @@ var DEF_BOUND = (DEF_LOCAL | DEF_PARAM | DEF_IMPORT);
 
 /* GLOBAL_EXPLICIT and GLOBAL_IMPLICIT are used internally by the symbol
  table.  GLOBAL is returned from PyST_GetScope() for either of them.
- It is stored in ste_symbols at bits 12-14.
+ It is stored in ste_symbols at bits 13-15, above DEF_ANNOT at bit 12.
  */
-var SCOPE_OFF = 11;
+var SCOPE_OFF = 13;
 var SCOPE_MASK = 7;
 
 var LOCAL = 1;

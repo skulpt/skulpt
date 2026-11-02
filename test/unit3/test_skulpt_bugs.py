@@ -120,6 +120,18 @@ class An:
 
 
 class TestAnnotations(unittest.TestCase):
+    def test_annotated_variables_remain_local(self):
+        def first():
+            rows: list = []
+            second()
+            return rows
+
+        def second():
+            rows: list = []
+            rows.append(7)
+
+        self.assertEqual(first(), [])
+
     def test_bug_1428(self):
         annotations = An.__annotations__
         self.assertEqual(annotations, {"name": str, "_An__foo": int})
