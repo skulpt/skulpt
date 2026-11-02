@@ -306,18 +306,17 @@ class TypesTests(unittest.TestCase):
         test(123456, "#012x", '0x000001e240')
         test(-123456, "#012x", '-0x00001e240')
 
-        # TODO: Uppercase the alternate hexadecimal prefix.
-        # test(0, "#X", '0X0')
-        # test(0, "-#X", '0X0')
-        # test(1, "-#X", '0X1')
-        # test(-1, "-#X", '-0X1')
-        # test(-1, "-#5X", ' -0X1')
-        # test(1, "+#5X", ' +0X1')
-        # test(100, "+#X", '+0X64')
-        # test(100, "#012X", '0X0000000064')
-        # test(-100, "#012X", '-0X000000064')
-        # test(123456, "#012X", '0X000001E240')
-        # test(-123456, "#012X", '-0X00001E240')
+        test(0, "#X", '0X0')
+        test(0, "-#X", '0X0')
+        test(1, "-#X", '0X1')
+        test(-1, "-#X", '-0X1')
+        test(-1, "-#5X", ' -0X1')
+        test(1, "+#5X", ' +0X1')
+        test(100, "+#X", '+0X64')
+        test(100, "#012X", '0X0000000064')
+        test(-100, "#012X", '-0X000000064')
+        test(123456, "#012X", '0X000001E240')
+        test(-123456, "#012X", '-0X00001E240')
 
         test(123, ',', '123')
         test(-123, ',', '-123')
@@ -346,8 +345,8 @@ class TypesTests(unittest.TestCase):
         self.assertRaises(TypeError, 3 .__format__, None)
         self.assertRaises(TypeError, 3 .__format__, 0)
         # can't have ',' with 'n'
-        # TODO: Reject explicit grouping with locale presentation.
-        # self.assertRaises(ValueError, 3 .__format__, ",n")
+        for spec in (",n", "_n"):
+            self.assertRaises(ValueError, 3 .__format__, spec)
         # can't have ',' with 'c'
         self.assertRaises(ValueError, 3 .__format__, ",c")
         # can't have '#' with 'c'

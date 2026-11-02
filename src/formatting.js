@@ -88,9 +88,13 @@ let handleInteger = function(m, n, base){
     const conversionType = m[FMT.CONVERSION_TYPE];
     if (conversionType === "X") {
         r = r.toUpperCase(); // floats convert nan to NAN
+        prefix = prefix.toUpperCase();
     }
 
     if (m[FMT.CONVERSION_TYPE] === "n"){
+        if (m[FMT.COMMA]) {
+            throw new Sk.builtin.ValueError(`Cannot specify '${m[FMT.COMMA]}' with 'n'`);
+        }
         r = (+r).toLocaleString();
     } else if (m[FMT.COMMA]){
         const parts = r.split(".");
