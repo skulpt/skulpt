@@ -39,6 +39,85 @@ class TestSuper(unittest.TestCase):
 
 
 class TestRegressions(unittest.TestCase):
+    def test_nonlocal_write_through_intermediate_cells(self):
+        def outer():
+            x = 1
+            def middle():
+                y = 2
+                def inner():
+                    nonlocal x
+                    x += y
+                inner()
+            middle()
+            return x
+        self.assertEqual(outer(), 3)
+
+    def test_nonlocal_generator_write_through_intermediate_cells(self):
+        def outer():
+            x = 1
+            def middle():
+                y = 2
+                def inner():
+                    nonlocal x
+                    x += y
+                    yield x
+                    x += y
+                return inner()
+            gen = middle()
+            self.assertEqual(next(gen), 3)
+            self.assertEqual(x, 3)
+            self.assertRaises(StopIteration, next, gen)
+            return x
+        self.assertEqual(outer(), 5)
+
+    def test_nonlocal_write_before_enclosing_assignment(self):
+        def outer():
+            def middle():
+                y = 2
+                def inner():
+                    nonlocal x
+                    x = y
+                inner()
+            middle()
+            return x
+            x = 1
+        self.assertEqual(outer(), 2)
+
+    def test_nonlocal_delete_and_rebind_through_intermediate_cells(self):
+        def outer():
+            x = 1
+            def middle():
+                y = 2
+                def delete():
+                    nonlocal x
+                    y
+                    del x
+                def bind():
+                    nonlocal x
+                    x = y
+                return delete, bind
+            delete, bind = middle()
+            delete()
+            with self.assertRaises(UnboundLocalError):
+                x
+            self.assertRaises(NameError, delete)
+            bind()
+            return x
+        self.assertEqual(outer(), 2)
+
+    def test_unbound_cell_shadows_outer_binding(self):
+        x = 10
+        y = 20
+        def capture():  # Keep the outer x in the enclosing cells.
+            return x
+        def middle():
+            y  # Give middle both a free variable and its own empty cell.
+            def inner():
+                return x
+            inner()
+            x = 1
+        self.assertRaises(NameError, middle)
+
     def test_function_preserves_shadowed_closure_cell(self):
         def outer():
             x = 1
