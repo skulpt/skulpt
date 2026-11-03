@@ -376,6 +376,16 @@ class TestExceptionProtocols(unittest.TestCase):
             raise 42 from cause()
         self.assertEqual(events, ["expression"])
 
+    def test_missing_exit_does_not_enter(self):
+        entered = []
+        class EnterOnly:
+            def __enter__(self):
+                entered.append(True)
+        with self.assertRaises(TypeError):
+            with EnterOnly():
+                self.fail("body must not run")
+        self.assertEqual(entered, [])
+
     def test_cause_constructor_must_return_exception(self):
         class CauseError(Exception):
             def __new__(cls):

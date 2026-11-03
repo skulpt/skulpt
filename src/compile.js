@@ -1727,22 +1727,24 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     var exceptionHandler = this.newBlock("withexh"), tidyUp = this.newBlock("withtidyup");
     var carryOn = this.newBlock("withcarryon");
     var thisFinallyBlock;
-
-    // NB this does not *quite* match the semantics in PEP 343, which
-    // specifies "exit = type(mgr).__exit__" rather than getattr()ing,
-    // presumably for performance reasons.
+    var protocolError = Sk.__future__.python3 ? "TypeError" : "AttributeError";
 
     mgr = this._gr("mgr", this.vexpr(s.items[itemIdx].context_expr));
 
     // exit = mgr.__exit__
-    out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
-    this._checkSuspension(s);
-    exit = this._gr("exit", "$ret");
+    exit = this._gr("exit", "Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$exit);");
+    // Check __exit__ first, as in current CPython, before looking up __enter__.
+    out("if (", exit, " === undefined) {throw new Sk.builtin.", protocolError, "(\"'\" + Sk.abstr.typeName(",
+        mgr, ") + \"' object does not support the context manager protocol (missed __exit__ method)\");}");
     this.u.tempsToSave.push(exit);
 
     // value = mgr.__enter__()
     out("$ret = Sk.abstr.lookupSpecial(",mgr,",Sk.builtin.str.$enter);");
-    this._checkSuspension(s);
+
+    out("if ($ret === undefined) {throw new Sk.builtin.", protocolError, "(\"'\" + Sk.abstr.typeName(",
+        mgr, ") + \"' object does not support the context manager protocol (missed __enter__ method)\");}");
+
+    // Special-method lookup is synchronous; calling __enter__ may suspend.
     out("$ret = Sk.misceval.callsimOrSuspendArray($ret);");
     this._checkSuspension(s);
     value = this._gr("value", "$ret");
