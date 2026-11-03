@@ -1305,6 +1305,15 @@ function _isIE() {
     const ua = navigator.userAgent || "";
     return ua.indexOf("MSIE ") > -1 || ua.indexOf("Trident/") > -1;
 }
+/** Return the scope that owns a declared closure cell, including empty cells. */
+Sk.misceval.cellOwner = function (closure, name) {
+    while (!Object.prototype.hasOwnProperty.call(closure, name)) {
+        closure = Object.getPrototypeOf(closure);
+    }
+    return closure;
+};
+Sk.exportSymbol("Sk.misceval.cellOwner", Sk.misceval.cellOwner);
+
 /**
  * @function
  * @description

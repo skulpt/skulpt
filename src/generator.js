@@ -6,14 +6,13 @@
  * the generator to reenter)
  * @param {Object=} closure dict of free variables
  * @param {Object=} closure2 another dict of free variables that will be
- * merged into 'closure'. there's 2 to simplify generated code (one is $free,
+ * used as the prototype of 'closure'. there's 2 to simplify generated code (one is $free,
  * the other is $cell)
  *
  * co_varnames and co_name come from generated code, must access as dict.
  */
 Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
     constructor: function generator(code, globals, args, closure, closure2) {
-        var k;
         var i;
         if (!code) {
             return;
@@ -37,11 +36,11 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 this.gi$locals[code.co_varnames[i]] = args[i];
             }
         }
-        if (closure2 !== undefined) {
-            // todo; confirm that modification here can't cause problems
-            for (k in closure2) {
-                closure[k] = closure2[k];
-            }
+        for (const name of code["co_cellvars"] || []) {
+            this.gi$cells[name] = undefined;
+        }
+        if (closure2 !== undefined && closure2 !== closure) {
+            Object.setPrototypeOf(closure, closure2);
         }
         //print(JSON.stringify(closure));
         this.func_closure = closure;

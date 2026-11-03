@@ -63,19 +63,19 @@ class ScopeTests(unittest.TestCase):
     #     global_x = 10
     #     self.assertEqual(adder(-2), 8)
 
-    # def testNestingThroughClass(self):
-    #
-    #     def make_adder5(x):
-    #         class Adder:
-    #             def __call__(self, y):
-    #                 return x + y
-    #         return Adder()
-    #
-    #     inc = make_adder5(1)
-    #     plus10 = make_adder5(10)
-    #
-    #     self.assertEqual(inc(1), 2)
-    #     self.assertEqual(plus10(-2), 8)
+    def testNestingThroughClass(self):
+
+        def make_adder5(x):
+            class Adder:
+                def __call__(self, y):
+                    return x + y
+            return Adder()
+
+        inc = make_adder5(1)
+        plus10 = make_adder5(10)
+
+        self.assertEqual(inc(1), 2)
+        self.assertEqual(plus10(-2), 8)
 
     def testNestingPlusFreeRefToGlobal(self):
 
@@ -306,18 +306,18 @@ class ScopeTests(unittest.TestCase):
     #
     #     self.assertEqual(x, 12) # Used to raise UnboundLocalError
 
-    # def testBoundAndFree(self):
-    #     # var is bound and free in class
-    #
-    #     def f(x):
-    #         class C:
-    #             def m(self):
-    #                 return x
-    #             a = x
-    #         return C
-    #
-    #     inst = f(3)()
-    #     self.assertEqual(inst.a, inst.m())
+    def testBoundAndFree(self):
+        # var is bound and free in class
+
+        def f(x):
+            class C:
+                def m(self):
+                    return x
+                a = x
+            return C
+
+        inst = f(3)()
+        self.assertEqual(inst.a, inst.m())
 
     # def testEvalExecFreeVars(self):
     #
@@ -369,11 +369,44 @@ class ScopeTests(unittest.TestCase):
     #         def __del__(self):
     #             nestedcell_get()
     #
-    #     inc, dec = f(0)
-    #     self.assertEqual(inc(), 1)
-    #     self.assertEqual(inc(), 2)
-    #     self.assertEqual(dec(), 1)
-    #     self.assertEqual(dec(), 0)
+    def testNonLocalFunction(self):
+
+        def f(x):
+            def inc():
+                nonlocal x
+                x += 1
+                return x
+            def dec():
+                nonlocal x
+                x -= 1
+                return x
+            return inc, dec
+
+        inc, dec = f(0)
+        self.assertEqual(inc(), 1)
+        self.assertEqual(inc(), 2)
+        self.assertEqual(dec(), 1)
+        self.assertEqual(dec(), 0)
+
+
+    def testNonLocalMethod(self):
+        def f(x):
+            class c:
+                def inc(self):
+                    nonlocal x
+                    x += 1
+                    return x
+                def dec(self):
+                    nonlocal x
+                    x -= 1
+                    return x
+            return c()
+        c = f(0)
+        self.assertEqual(c.inc(), 1)
+        self.assertEqual(c.inc(), 2)
+        self.assertEqual(c.dec(), 1)
+        self.assertEqual(c.dec(), 0)
+
 
     # def testGlobalInParallelNestedFunctions(self):
     #     # A symbol table bug leaked the global statement from one
@@ -398,6 +431,53 @@ class ScopeTests(unittest.TestCase):
     #         """, local_ns, global_ns)
     #     self.assertEqual(2, global_ns["result2"])
     #     self.assertEqual(9, global_ns["result9"])
+
+    def testNonLocalClass(self):
+
+        def f(x):
+            class c:
+                nonlocal x
+                x += 1
+                def get(self):
+                    return x
+            return c()
+
+        c = f(0)
+        self.assertEqual(c.get(), 1)
+        self.assertNotIn("x", c.__class__.__dict__)
+
+
+    def testNonLocalGenerator(self):
+
+        def f(x):
+            def g(y):
+                nonlocal x
+                for i in range(y):
+                    x += 1
+                    yield x
+            return g
+
+        g = f(0)
+        self.assertEqual(list(g(5)), [1, 2, 3, 4, 5])
+
+
+    def testNestedNonLocal(self):
+
+        def f(x):
+            def g():
+                nonlocal x
+                x -= 2
+                def h():
+                    nonlocal x
+                    x += 4
+                    return x
+                return h
+            return g
+
+        g = f(1)
+        h = g()
+        self.assertEqual(h(), 3)
+
 
     # def testClassNamespaceOverridesClosure(self):
     #     # See #17853.
