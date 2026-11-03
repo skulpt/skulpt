@@ -39,6 +39,19 @@ class TestSuper(unittest.TestCase):
 
 
 class TestRegressions(unittest.TestCase):
+    def test_generator_local_deletion(self):
+        def gen():
+            value = 1
+            yield value
+            del value
+            with self.assertRaises(UnboundLocalError):
+                value
+            with self.assertRaises(UnboundLocalError):
+                del value
+            value = 2
+            yield value
+        self.assertEqual(list(gen()), [1, 2])
+
     def test_nonlocal_write_through_intermediate_cells(self):
         def outer():
             x = 1
@@ -513,6 +526,57 @@ class TestClassCell(unittest.TestCase):
             pass
 
         self.assertEqual(calls, ['Middle', 'Leaf'])
+
+
+class TestGeneratorCells(unittest.TestCase):
+    def test_cells_and_super_across_yields(self):
+        class Base:
+            def value(self):
+                return 10
+        class Child(Base):
+            def values(self):
+                count = 1
+                def update():
+                    nonlocal count
+                    count += 1
+                yield __class__, super().value(), count
+                update()
+                yield __class__, super().value(), count
+        self.assertEqual(list(Child().values()), [(Child, 10, 1), (Child, 10, 2)])
+
+    def test_unbound_cell_reservation(self):
+        value = 100
+        def gen():
+            def inner():
+                return value
+            yield inner
+            value = 2
+            yield inner
+        g = gen()
+        inner = next(g)
+        with self.assertRaises(NameError):
+            inner()
+        self.assertIs(next(g), inner)
+        self.assertEqual(inner(), 2)
+
+    def test_nonlocal_owner_across_generator_frames(self):
+        value = 1
+        def middle():
+            local = 5
+            def gen():
+                nonlocal value
+                yield local, value
+                value = 2
+                yield local, value
+                del value
+            return gen()
+        g = middle()
+        self.assertEqual(next(g), (5, 1))
+        self.assertEqual(next(g), (5, 2))
+        self.assertEqual(value, 2)
+        self.assertEqual(list(g), [])
+        with self.assertRaises(UnboundLocalError):
+            value
 
 
 if __name__ == "__main__":
