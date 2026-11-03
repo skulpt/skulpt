@@ -585,6 +585,53 @@ class TestGeneratorCells(unittest.TestCase):
 
 
 class TestFinallyControlFlow(unittest.TestCase):
+    def test_nested_cleanup_preserves_pending_return(self):
+        calls = []
+
+        def run():
+            try:
+                return 10
+            finally:
+                try:
+                    pass
+                finally:
+                    calls.append('inner')
+                calls.append('outer tail')
+        self.assertEqual(run(), 10)
+        self.assertEqual(calls, ['inner', 'outer tail'])
+
+    def test_caught_exit_failure_cancels_pending_return(self):
+        class Manager:
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                raise ValueError('exit')
+
+        def run():
+            try:
+                with Manager():
+                    return 1
+            except ValueError:
+                pass
+            try:
+                pass
+            finally:
+                pass
+            return 2
+        self.assertEqual(run(), 2)
+
+    def test_generator_preserves_pending_return_through_nested_cleanup(self):
+        def gen():
+            try:
+                return
+            finally:
+                try:
+                    yield 1
+                finally:
+                    pass
+                yield 2
+        self.assertEqual(list(gen()), [1, 2])
+
     def test_finally_reraises(self):
         error = ValueError("original")
 

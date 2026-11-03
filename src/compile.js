@@ -1713,11 +1713,17 @@ Compiler.prototype.ctry = function (s) {
         this._jump(finalBody);
 
         this.setBlock(finalBody);
+        // Nested cleanup must not consume this cleanup's pending transfer.
+        // Abrupt completion skips restoration and therefore replaces it.
+        const pendingAction = this._gr("pending_before_cleanup", "$postfinally");
+        this.u.tempsToSave.push(pendingAction);
+        out("$postfinally=undefined;");
         this.vseqstmt(s.finalbody);
         // If finalbody executes normally, AND we have an exception
         // to re-raise, we raise it.
         out("if(",finalExceptionToReRaise,"!==undefined) { throw ",finalExceptionToReRaise,";}");
 
+        out("$postfinally=", pendingAction, ";");
         this.outputFinallyCascade();
         // Else, we continue from here.
     }
@@ -1787,11 +1793,16 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     //           exception case!)
     this.setBlock(tidyUp);
 
+    // An exit failure cancels the pending transfer; a successful exit restores it.
+    const pendingAction = this._gr("pending_before_cleanup", "$postfinally");
+    this.u.tempsToSave.push(pendingAction);
+    out("$postfinally=undefined;");
     //   exit(None, None, None)
     out("$ret = Sk.misceval.callsimOrSuspendArray(",exit,",[Sk.builtin.none.none$,Sk.builtin.none.none$,Sk.builtin.none.none$]);");
     this._checkSuspension(s);
     // Ignore $ret.
 
+    out("$postfinally=", pendingAction, ";");
     this.outputFinallyCascade();
 
     this._jump(carryOn);
