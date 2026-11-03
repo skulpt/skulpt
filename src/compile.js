@@ -1506,7 +1506,7 @@ Compiler.prototype.craise = function (s) {
         }
 
         var instantiatedException = this.newBlock("exception now instantiated");
-        var isClass = this._gr("isclass", exc + ".prototype instanceof Sk.builtin.BaseException");
+        var isClass = this._gr("isclass", "Sk.builtin.checkExceptionClass(", exc, ")");
         this._jumpfalse(isClass, instantiatedException);
         //this._jumpfalse(instantiatedException, isClass);
 
@@ -1530,7 +1530,7 @@ Compiler.prototype.craise = function (s) {
         out("if (!(", exc, " instanceof Sk.builtin.BaseException)) {throw new Sk.builtin.TypeError('exceptions must derive from BaseException');}");
 
         if (s.cause) {
-            out("if (", cause, " === Sk.builtin.BaseException || ", cause, ".prototype instanceof Sk.builtin.BaseException) {");
+            out("if (Sk.builtin.checkExceptionClass(", cause, ")) {");
             out(    "$ret = Sk.misceval.callsimOrSuspend(", cause, ");");
             out("} else {");
             out(    "$ret = ", cause, ";");

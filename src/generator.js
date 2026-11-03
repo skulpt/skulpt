@@ -204,7 +204,7 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                         throw new Sk.builtin.TypeError("instance exception may not have a separate value");
                     }
                     exception = type;
-                } else if (type === Sk.builtin.BaseException || type.prototype instanceof Sk.builtin.BaseException) {
+                } else if (Sk.builtin.checkExceptionClass(type)) {
                     const args = value === undefined || value === Sk.builtin.none.none$ ? [] :
                         value instanceof Sk.builtin.tuple ? value.v : [value];
                     exception = Sk.misceval.tryCatch(

@@ -210,6 +210,15 @@ Sk.builtin.checkClass = function (arg) {
 Sk.exportSymbol("Sk.builtin.checkClass", Sk.builtin.checkClass);
 
 /**
+ * Is the Python object BaseException or one of its subclasses?
+ * Corresponds to CPython's PyExceptionClass_Check.
+ */
+Sk.builtin.checkExceptionClass = function (arg) {
+    return arg != null && (arg === Sk.builtin.BaseException || arg.prototype instanceof Sk.builtin.BaseException);
+};
+Sk.exportSymbol("Sk.builtin.checkExceptionClass", Sk.builtin.checkExceptionClass);
+
+/**
  * @description
  * Is the arg an instance of {@link Sk.builtin.bool}
  * @param {*} arg 

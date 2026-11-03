@@ -340,6 +340,11 @@ class TestSys(unittest.TestCase):
 
 
 class TestExceptionProtocols(unittest.TestCase):
+    def test_raise_base_exception_class(self):
+        with self.assertRaises(BaseException) as caught:
+            raise BaseException
+        self.assertIs(type(caught.exception), BaseException)
+
     def test_explicit_cause(self):
         for cause in (BaseException, None):
             try:
