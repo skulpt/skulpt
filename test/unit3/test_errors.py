@@ -1,6 +1,34 @@
 """ Unit test for error handling"""
 import unittest
 
+class ExceptionNotesTest(unittest.TestCase):
+    # Ported from CPython's test_exceptions.ExceptionTests.test_notes.
+    def test_notes(self):
+        for e in [BaseException(1), Exception(2), ValueError(3)]:
+            self.assertFalse(hasattr(e, '__notes__'))
+            e.add_note("My Note")
+            self.assertEqual(e.__notes__, ["My Note"])
+
+            with self.assertRaises(TypeError):
+                e.add_note(42)
+            self.assertEqual(e.__notes__, ["My Note"])
+
+            e.add_note("Your Note")
+            self.assertEqual(e.__notes__, ["My Note", "Your Note"])
+
+            del e.__notes__
+            self.assertFalse(hasattr(e, '__notes__'))
+
+            e.add_note("Our Note")
+            self.assertEqual(e.__notes__, ["Our Note"])
+
+            e.__notes__ = 42
+            self.assertEqual(e.__notes__, 42)
+
+            with self.assertRaises(TypeError):
+                e.add_note("will not work")
+            self.assertEqual(e.__notes__, 42)
+
 class TryExceptFinallyTest(unittest.TestCase):
     def test_try(self):
         a,b,c,d,e,f,g = False, False, False, False, False, False, False
