@@ -18,20 +18,26 @@ Sk.builtins.suspend_probe = new Sk.builtin.func(function (phase) {
 Sk.configure({ read: (file) => fs.readFileSync(file, "utf8"), __future__: Sk.python3 });
 const source = `
 def inner():
-    suspend_probe('body')
-    value = yield 1
-    suspend_probe('send')
-    yield value
+    try:
+        suspend_probe('body')
+        try:
+            yield 1
+        except ValueError:
+            suspend_probe('throw')
+            yield 2
+    finally:
+        suspend_probe('close')
 child = inner()
 def outer():
     yield from child
 g = outer()
 assert next(g) == 1
 assert not g.gi_running and not child.gi_running
-assert g.send(2) == 2
+assert g.throw(ValueError) == 2
+assert not g.gi_running and not child.gi_running
+g.close()
 assert not g.gi_running and not child.gi_running
 assert list(g) == []
-assert not g.gi_running and not child.gi_running
 `;
 let result = Sk.importMainWithBody("<generator suspension test>", false, source, true);
 while (result instanceof Sk.misceval.Suspension) {
@@ -39,7 +45,7 @@ while (result instanceof Sk.misceval.Suspension) {
     assert.throws(() => Sk.globals.g.tp$iternext(true), (e) => e instanceof Sk.builtin.ValueError);
     result = result.resume();
 }
-assert.deepStrictEqual(events, ["start body", "finish body", "start send", "finish send"]);
+assert.deepStrictEqual(events, ["start body", "finish body", "start throw", "finish throw", "start close", "finish close"]);
 
 // Yield itself needs a saved frame even in synchronous compiled code.
 Sk.importMainWithBody("<synchronous generator test>", false, "def gen():\n    yield 42\nassert list(gen()) == [42]\n", false);
