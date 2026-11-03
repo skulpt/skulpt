@@ -200,6 +200,28 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
     },
 });
 
+// Expose the class closure cell to Python metaclasses through __classcell__.
+Sk.builtin.cell = Sk.abstr.buildNativeClass("cell", {
+    constructor: function cell(closure) {
+        this.$closure = closure;
+    },
+    getsets: {
+        cell_contents: {
+            $get() {
+                const value = this.$closure.__class__;
+                if (value === undefined) {
+                    throw new Sk.builtin.ValueError("Cell is empty");
+                }
+                return value;
+            },
+            $set(value) {
+                this.$closure.__class__ = value;
+            },
+        },
+    },
+});
+Sk.exportSymbol("Sk.builtin.cell", Sk.builtin.cell);
+
 function $resolveArgs(posargs, kw) {
     // The rest of this function is a logical Javascript port of
     // _PyEval_EvalCodeWithName, and follows its logic,
@@ -346,4 +368,3 @@ function $resolveArgs(posargs, kw) {
 
     return args;
 };
-

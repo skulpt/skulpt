@@ -1407,8 +1407,9 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closur
         Object.setPrototypeOf(l_cell, closure2);
     }
 
-    // pass the locals to the code object which populates the namespace of the class
-    func(globals, locals, l_cell);
+    // Retain the body's original cell, as __build_class__ does in CPython;
+    // a custom namespace may discard or replace its __classcell__ entry.
+    const classcell = func(globals, locals, l_cell);
 
     if (!localsIsProxy) {
         // put locals object inside the ns dict
@@ -1419,7 +1420,19 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closur
 
     const klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, ns], kws);
 
-    return klass;
+    // type.__new__ must populate the cell, including when called by a metaclass.
+    return Sk.misceval.chain(klass, (resolvedKlass) => {
+        if (classcell instanceof Sk.builtin.cell && Sk.builtin.checkClass(resolvedKlass)) {
+            const value = classcell.$closure.__class__;
+            if (value === undefined) {
+                throw new Sk.builtin.RuntimeError("__class__ not set defining '" + name + "'. Was __classcell__ propagated to type.__new__?");
+            }
+            if (value !== resolvedKlass) {
+                throw new Sk.builtin.TypeError("__class__ set to a different class defining '" + name + "'");
+            }
+        }
+        return resolvedKlass;
+    });
 };
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 
