@@ -326,6 +326,65 @@ class TestSys(unittest.TestCase):
         self.assertIsNone(implementation.cache_tag)
 
 
+class TestExceptionProtocols(unittest.TestCase):
+    def test_explicit_cause(self):
+        for cause in (BaseException, None):
+            try:
+                raise RuntimeError("outer") from cause
+            except RuntimeError as error:
+                if cause is BaseException:
+                    self.assertIsInstance(error.__cause__, cause)
+                else:
+                    self.assertIs(error.__cause__, cause)
+
+    def test_cause_expression_precedes_exception_construction(self):
+        events = []
+
+        class OuterError(Exception):
+            def __init__(self):
+                events.append("exception")
+
+        def cause():
+            events.append("cause")
+            return ValueError()
+
+        with self.assertRaises(OuterError):
+            raise OuterError from cause()
+        self.assertEqual(events, ["cause", "exception"])
+
+        def failing_cause():
+            raise KeyError()
+
+        events.clear()
+        with self.assertRaises(KeyError):
+            raise OuterError from failing_cause()
+        self.assertEqual(events, [])
+
+    def test_primary_exception_validated_before_cause_construction(self):
+        events = []
+
+        class CauseError(Exception):
+            def __init__(self):
+                events.append("constructor")
+                raise RuntimeError()
+
+        def cause():
+            events.append("expression")
+            return CauseError
+
+        with self.assertRaises(TypeError):
+            raise 42 from cause()
+        self.assertEqual(events, ["expression"])
+
+    def test_cause_constructor_must_return_exception(self):
+        class CauseError(Exception):
+            def __new__(cls):
+                return None
+
+        with self.assertRaises(TypeError):
+            raise RuntimeError from CauseError
+
+
 class TestClassCell(unittest.TestCase):
     """Tests for __class__ cell and super() handling - Issues #1171, #1340"""
 
