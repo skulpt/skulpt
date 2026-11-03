@@ -697,7 +697,8 @@ Compiler.prototype.ccall = function (e) {
         // TODO: feel free to ignore the above
         this.u.tempsToSave.push("$sup");
         out("if (typeof $sup === \"undefined\") { throw new Sk.builtin.RuntimeError(\"super(): no arguments\") };");
-        positionalArgs = "[$gbl.__class__,$sup]";
+        out("if (typeof $free === 'undefined' || $free.__class__ === undefined) { throw new Sk.builtin.RuntimeError('super(): __class__ cell not found') };");
+        positionalArgs = "[$free.__class__,$sup]";
     }
     out ("$ret = (",func,".tp$call)?",func,".tp$call(",positionalArgs,",",keywordArgs,") : Sk.misceval.applyOrSuspend(",func,",undefined,undefined,",keywordArgs,",",positionalArgs,");");
 
@@ -1903,12 +1904,11 @@ Compiler.prototype.cfromimport = function (s) {
  * @param {Array} decorator_list ast of decorators if any
  * @param {Sk.astnodes.arguments_} args arguments to function, if any
  * @param {Function} callback called after setup to do actual work of function
- * @param {Sk.builtin.str=} class_for_super
  *
  * @returns the name of the newly created function or generator object.
  *
  */
-Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, callback, class_for_super) {
+Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, callback) {
     var containingHasFree;
     var frees;
     var argnamesarr = [];
@@ -2150,10 +2150,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.u.varDeclsCode += "}";
 
-    // inject __class__ cell when running python3
-    if (Sk.__future__.super_args && class_for_super) {
-        this.u.varDeclsCode += "$gbl.__class__=$gbl." + class_for_super.v + ";";
-    }
 
     // finally, set up the block switch that the jump code expects
     //
@@ -2259,9 +2255,12 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     // todo; possibly this should be outside?
     //
+    // hasFree belongs to the new function; this.u is back in its defining scope.
     frees = "";
     if (hasFree) {
-        if (this.u.ste.cellvars.length > 0) {
+        if (this.u.ste.needsClassClosure) {
+            frees = ",$classClosure";
+        } else if (this.u.ste.cellvars.length > 0) {
             frees = ",$cell";
         }
         containingHasFree = this.u.ste.hasFree || this.u.ste.blockType === Sk.SYMTAB_CONSTS.ClassBlock;
@@ -2388,13 +2387,13 @@ Compiler.prototype.cDocstringOfCode = function(node) {
     }
 }
 
-Compiler.prototype.cfunction = function (s, class_for_super) {
+Compiler.prototype.cfunction = function (s) {
     var funcorgen;
     Sk.asserts.assert(s instanceof Sk.astnodes.FunctionDef);
     funcorgen = this.buildcodeobj(s, s.name, s.decorator_list, s.args, function (scopename) {
         this.vseqstmt(s.body);
         out("return Sk.builtin.none.none$;"); // if we fall off the bottom, we want the ret to be None
-    }, class_for_super);
+    });
     this.nameop(s.name, Sk.astnodes.Store, funcorgen);
 };
 
@@ -2530,7 +2529,12 @@ Compiler.prototype.cclass = function (s) {
     entryBlock = this.newBlock("class entry");
 
     this.u.prefixCode = "var " + scopename + "=(function $" + s.name.v + "$class_outer($globals,$locals,$cell){var $gbl=$globals,$loc=$locals,$free=$cell;";
-    this.u.switchCode += "(function $" + s.name.v + "$_closure($cell){";
+    const needsClassClosure = this.u.ste.needsClassClosure;
+    if (needsClassClosure) {
+        // Methods share this storage; the Python cell exposed to metaclasses wraps it.
+        this.u.prefixCode += "var $classClosure={__class__:undefined};";
+    }
+    this.u.switchCode += "return (function $" + s.name.v + "$_closure($cell){";
     this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
 
     if (Sk.execLimit !== null) {
@@ -2548,8 +2552,12 @@ Compiler.prototype.cclass = function (s) {
 
     this.u.private_ = s.name;
 
-    this.cbody(s.body, s.name);
-    out("return;");
+    this.cbody(s.body);
+    if (needsClassClosure) {
+        out("$ret=new Sk.builtin.cell($classClosure);$loc.__classcell__=$ret;return $ret;");
+    } else {
+        out("return;");
+    }
 
     // build class
 
@@ -2605,9 +2613,8 @@ Compiler.prototype.cbreak = function (s) {
 /**
  * compiles a statement
  * @param {Object} s
- * @param {Sk.builtin.str=} class_for_super
  */
-Compiler.prototype.vstmt = function (s, class_for_super) {
+Compiler.prototype.vstmt = function (s) {
     var i;
     var val;
     var n;
@@ -2633,7 +2640,7 @@ Compiler.prototype.vstmt = function (s, class_for_super) {
 
     switch (s.constructor) {
         case Sk.astnodes.FunctionDef:
-            this.cfunction(s, class_for_super);
+            this.cfunction(s);
             break;
         case Sk.astnodes.ClassDef:
             this.cclass(s);
@@ -2956,9 +2963,8 @@ Compiler.prototype.exitScope = function () {
 
 /**
  * @param {Array} stmts
- * @param {Sk.builtin.str=} class_for_super
  */
-Compiler.prototype.cbody = function (stmts, class_for_super) {
+Compiler.prototype.cbody = function (stmts) {
     var i = 0;
 
     // If we have a docstring, then assign it to __doc__, and skip over
@@ -2972,7 +2978,7 @@ Compiler.prototype.cbody = function (stmts, class_for_super) {
     }
 
     for (; i < stmts.length; ++i) {
-        this.vstmt(stmts[i], class_for_super);
+        this.vstmt(stmts[i]);
     }
     /* Every annotated class and module should have __annotations__. */
     if (this.u.hasAnnotations) {
