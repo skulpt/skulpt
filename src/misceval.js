@@ -1112,6 +1112,25 @@ Sk.misceval.tryCatch = function (tryFn, catchFn) {
 Sk.exportSymbol("Sk.misceval.tryCatch", Sk.misceval.tryCatch);
 
 /**
+ * Run cleanUp once after tryFn completes, including any suspensions.
+ * Cleanup may suspend; its return value is ignored, and its exception replaces
+ * any pending result or exception.
+ */
+Sk.misceval.tryFinally = function (tryFn, cleanUp) {
+    return Sk.misceval.chain(
+        Sk.misceval.tryCatch(
+            tryFn,
+            // Rethrowing after cleanup skips the success continuation below.
+            (error) => Sk.misceval.chain(cleanUp(), () => {
+                throw error;
+            })
+        ),
+        (value) => Sk.misceval.chain(cleanUp(), () => value)
+    );
+};
+Sk.exportSymbol("Sk.misceval.tryFinally", Sk.misceval.tryFinally);
+
+/**
  * @function
  * @description
  * Perform a suspension-aware for-each on an iterator, without
