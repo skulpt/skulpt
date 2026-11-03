@@ -838,15 +838,16 @@ function set_names(type) {
     Object.keys(proto).forEach((key) => {
         const set_func = Sk.abstr.lookupSpecial(proto[key], Sk.builtin.str.$setname);
         if (set_func !== undefined) {
-            const name = Sk.unfixReserved(key);
+            const name = new Sk.builtin.str(Sk.unfixReserved(key));
             try {
-                Sk.misceval.callsimArray(set_func, [type, new Sk.builtin.str(name)]);
+                Sk.misceval.callsimArray(set_func, [type, name]);
             } catch (e) {
-                const runtime_err = new Sk.builtin.RuntimeError(
-                    "Error calling __set_name__ on '" + Sk.abstr.typeName(proto[key]) + "' instance '" + name + "' in '" + type.prototype.tp$name + "'"
-                );
-                runtime_err.$cause = e;
-                throw runtime_err;
+                // CPython's type_new_set_names preserves the error and adds context as a note.
+                e.$addNote(new Sk.builtin.str(
+                    "Error calling __set_name__ on '" + Sk.abstr.typeName(proto[key]) + "' instance " +
+                    Sk.misceval.objectRepr(name) + " in '" + type.prototype.tp$name + "'"
+                ));
+                throw e;
             }
         }
     });
