@@ -66,7 +66,17 @@ const BaseException = Sk.abstr.buildNativeClass("BaseException", {
         // __context__: {},
         // __cause__: {}
     },
+    methods: {
+        add_note: {
+            $meth: BaseExc_add_note,
+            $flags: { OneArg: true },
+            $textsig: "($self, note, /)",
+            $doc: "Add a note to the exception.",
+        },
+    },
     proto: /**@lends {BaseException}*/ {
+        // Internal callers use the native implementation, as CPython does.
+        $addNote: BaseExc_add_note,
         toString() {
             let ret = this.tp$name;
             ret += ": " + this.tp$str().v;
@@ -107,6 +117,22 @@ function BaseExc_str() {
         return new Sk.builtin.str(this.args.v[0]);
     }
     return this.args.$r();
+}
+
+function BaseExc_add_note(note) {
+    if (!Sk.builtin.checkString(note)) {
+        throw new Sk.builtin.TypeError("add_note() argument must be str, not " + Sk.abstr.typeName(note));
+    }
+    const name = new Sk.builtin.str("__notes__");
+    let notes = Sk.abstr.lookupAttr(this, name);
+    if (notes === undefined) {
+        notes = new Sk.builtin.list([]);
+        Sk.abstr.sattr(this, name, notes);
+    } else if (!(notes instanceof Sk.builtin.list)) {
+        throw new Sk.builtin.TypeError("Cannot add note: __notes__ is not a list");
+    }
+    notes.v.push(note);
+    return Sk.builtin.none.none$;
 }
 
 function complexExtends(base, name, doc, init, descriptors, str) {

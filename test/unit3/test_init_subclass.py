@@ -134,30 +134,53 @@ class Test(unittest.TestCase):
             def __set_name__(self, owner, name):
                 1/0
 
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(ZeroDivisionError) as cm:
             class NotGoingToWork:
                 attr = Descriptor()
 
-        exc = cm.exception
-        self.assertRegex(str(exc), r'\bNotGoingToWork\b')
-        self.assertRegex(str(exc), r'\battr\b')
-        self.assertRegex(str(exc), r'\bDescriptor\b')
-        self.assertIsInstance(exc.__cause__, ZeroDivisionError)
+        notes = cm.exception.__notes__
+        self.assertRegex(str(notes), r'\bNotGoingToWork\b')
+        self.assertRegex(str(notes), r'\battr\b')
+        self.assertRegex(str(notes), r'\bDescriptor\b')
 
     def test_set_name_wrong(self):
         class Descriptor:
             def __set_name__(self):
                 pass
 
-        with self.assertRaises(RuntimeError) as cm:
+        with self.assertRaises(TypeError) as cm:
             class NotGoingToWork:
                 attr = Descriptor()
 
-        exc = cm.exception
-        self.assertRegex(str(exc), r'\bNotGoingToWork\b')
-        self.assertRegex(str(exc), r'\battr\b')
-        self.assertRegex(str(exc), r'\bDescriptor\b')
-        self.assertIsInstance(exc.__cause__, TypeError)
+        notes = cm.exception.__notes__
+        self.assertRegex(str(notes), r'\bNotGoingToWork\b')
+        self.assertRegex(str(notes), r'\battr\b')
+        self.assertRegex(str(notes), r'\bDescriptor\b')
+
+    def test_set_name_preserves_exception(self):
+        class DescriptorError(ValueError):
+            def add_note(self, note):
+                raise AssertionError('internal notes must use the native method')
+
+        error = DescriptorError('descriptor failed')
+        cause = KeyError('original cause')
+        error.__cause__ = cause
+        error.__notes__ = ['earlier note']
+
+        class Descriptor:
+            def __set_name__(self, owner, name):
+                raise error
+
+        with self.assertRaises(DescriptorError) as cm:
+            class NotGoingToWork:
+                attr = Descriptor()
+
+        self.assertIs(cm.exception, error)
+        self.assertIs(error.__cause__, cause)
+        self.assertEqual(error.__notes__, [
+            'earlier note',
+            "Error calling __set_name__ on 'Descriptor' instance 'attr' in 'NotGoingToWork'",
+        ])
 
     def test_set_name_lookup(self):
         resolved = []
