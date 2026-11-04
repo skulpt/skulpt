@@ -520,5 +520,23 @@ class ScopeTests(unittest.TestCase):
     #     self.assertIsNone(ref())
 
 
+class TestSkulptScopeRegressions(unittest.TestCase):
+    """Bespoke Skulpt regressions for CPython-compatible scope behaviour."""
+
+    def test_nested_class_annotation_resolves_outer_name(self):
+        """Class annotations in nested scopes should resolve closure names correctly."""
+        def outer():
+            class Child:
+                pass
+
+            class Parent:
+                y: Child
+
+            return Parent, Child
+
+        Parent, Child = outer()
+        self.assertIs(Parent.__annotations__["y"], Child)
+
+
 if __name__ == '__main__':
     unittest.main()
