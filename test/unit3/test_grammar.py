@@ -884,6 +884,21 @@ class GrammarTests(unittest.TestCase):
                 break
         self.assertEqual(count, 0)
 
+    # Extracted from CPython test_grammar.test_control_flow_in_finally (#37830).
+    def test_break_in_finally_overrides_return(self):
+        def break_in_finally_after_return2(x):
+            for count in [0, 1]:
+                for count2 in [10, 20]:
+                    try:
+                        return count + count2
+                    finally:
+                        if x:
+                            break
+            return 'end', count, count2
+
+        self.assertEqual(break_in_finally_after_return2(False), 10)
+        self.assertEqual(break_in_finally_after_return2(True), ('end', 1, 10))
+
     def test_return_in_finally(self):
         def g1():
             try:
