@@ -143,6 +143,50 @@ class FloatTestCases(unittest.TestCase):
         self.assertRaises(OverflowError, float, -2**1024)
         self.assertEqual(float('inf'), float(str(2**1024)))
 
+class ReprTestCase(unittest.TestCase):
+    # CPython Lib/test/test_float.py, ReprTestCase.test_short_repr.
+    def test_short_repr(self):
+        # Short repr preserves the digits of strings with at most 15
+        # significant digits, modulo trailing zeros.
+        test_strings = [
+            # Include a decimal point or an exponent.
+            '0.0',
+            '1.0',
+            '0.01',
+            '0.02',
+            '0.03',
+            '0.04',
+            '0.05',
+            '1.23456789',
+            '10.0',
+            '100.0',
+            # Values >= 1e16 get an exponent...
+            '1000000000000000.0',
+            '9999999999999990.0',
+            '1e+16',
+            '1e+17',
+            # ... and so do values < 1e-4.
+            '0.001',
+            '0.001001',
+            '0.00010000000000001',
+            '0.0001',
+            '9.999999999999e-05',
+            '1e-05',
+            '8.72293771110361e+25',
+            '7.47005307342313e+26',
+            '2.86438000439698e+28',
+            '8.89142905246179e+28',
+            '3.08578087079232e+35',
+        ]
+        for s in test_strings:
+            negs = '-' + s
+            self.assertEqual(s, repr(float(s)))
+            self.assertEqual(negs, repr(float(negs)))
+            # Since Python 3.2, repr and str are identical.
+            self.assertEqual(repr(float(s)), str(float(s)))
+            self.assertEqual(repr(float(negs)), str(float(negs)))
+
+
 class FormatTestCase(unittest.TestCase):
 
     def test_format(self):
@@ -156,14 +200,13 @@ class FormatTestCase(unittest.TestCase):
         self.assertEqual(format(0.01, ''), '0.01')
         self.assertEqual(format(0.01, 'g'), '0.01')
 
-        # @TODO Skulpt doesn't handle this correctly - the precision is overrident to 6 when it shouldn't be
         # empty presentation type should format in the same way as str
         # (issue 5920)
         x = 100/7.
         self.assertEqual(format(x, ''), str(x))
-        # self.assertEqual(format(x, '-'), str(x))
-        # self.assertEqual(format(x, '>'), str(x))
-        # self.assertEqual(format(x, '2'), str(x))
+        self.assertEqual(format(x, '-'), str(x))
+        self.assertEqual(format(x, '>'), str(x))
+        self.assertEqual(format(x, '2'), str(x))
 
         self.assertEqual(format(1.0, 'f'), '1.000000')
 
@@ -193,12 +236,11 @@ class FormatTestCase(unittest.TestCase):
                 self.assertRaises(ValueError, format, 1e-100, format_spec)
                 self.assertRaises(ValueError, format, -1e-100, format_spec)
 
-        # @TODO Skulpt doesn't capitalize
         # issue 3382
         self.assertEqual(format(NAN, 'f'), 'nan')
-        # self.assertEqual(format(NAN, 'F'), 'NAN')
+        self.assertEqual(format(NAN, 'F'), 'NAN')
         self.assertEqual(format(INF, 'f'), 'inf')
-        # self.assertEqual(format(INF, 'F'), 'INF')
+        self.assertEqual(format(INF, 'F'), 'INF')
 
     # @support.requires_IEEE_754
     # def test_format_testfile(self):
@@ -239,6 +281,93 @@ class FormatTestCase(unittest.TestCase):
         self.assertEqual(format(-123.34, '00.10f'), '-123.3400000000')
         self.assertEqual(format(-123.34, '00.10e'), '-1.2334000000e+02')
         self.assertEqual(format(-123.34, '00.10g'), '-123.34')
+
+    def test_padding_without_grouping(self):
+        # CPython Lib/test/test_types.py, test_float__format__:
+        # existing zero-padding behaviour and issue 6902 alignment cases.
+        for value, spec, expected in (
+                (1234.0, '010f', '1234.000000'),
+                (1234.0, '011f', '1234.000000'),
+                (1234.0, '012f', '01234.000000'),
+                (-1234.0, '011f', '-1234.000000'),
+                (-1234.0, '012f', '-1234.000000'),
+                (-1234.0, '013f', '-01234.000000'),
+                (-1234.12341234, '013f', '-01234.123412'),
+                (-123456.12341234, '011.2f', '-0123456.12'),
+                (12345.6, '0<20', '12345.60000000000000'),
+                (12345.6, '1<20', '12345.61111111111111'),
+                (12345.6, '*<20', '12345.6*************'),
+                (12345.6, '0>20', '000000000000012345.6'),
+                (12345.6, '1>20', '111111111111112345.6'),
+                (12345.6, '*>20', '*************12345.6'),
+                (12345.6, '0=20', '000000000000012345.6'),
+                (12345.6, '1=20', '111111111111112345.6'),
+                (12345.6, '*=20', '*************12345.6')):
+            self.assertEqual(format(value, spec), expected)
+            self.assertEqual(value.__format__(spec), expected)
+
+    def test_grouped_zero_padding(self):
+        # CPython Lib/test/test_types.py, test_float__format__.
+        for value, spec, expected in (
+                (1.2, '010,.2', '0,000,001.2'),
+                (1234.0, '011,f', '1,234.000000'),
+                (1234.0, '012,f', '1,234.000000'),
+                (1234.0, '013,f', '01,234.000000'),
+                (-1234.0, '012,f', '-1,234.000000'),
+                (-1234.0, '013,f', '-1,234.000000'),
+                (-1234.0, '014,f', '-01,234.000000'),
+                (-12345.0, '015,f', '-012,345.000000'),
+                (-123456.0, '016,f', '-0,123,456.000000'),
+                (-123456.0, '017,f', '-0,123,456.000000'),
+                (-123456.12341234, '017,f', '-0,123,456.123412'),
+                (-123456.12341234, '013,.2f', '-0,123,456.12')):
+            self.assertEqual(format(value, spec), expected)
+            self.assertEqual(value.__format__(spec), expected)
+
+    def test_thousands_separators(self):
+        # CPython Lib/test/test_float.py, FormatTestCase.test_format.
+        x = 123_456.123_456
+        self.assertEqual(format(x, '_f'), '123_456.123456')
+        self.assertEqual(format(x, ',f'), '123,456.123456')
+
+    def test_format_specials(self):
+        # CPython Lib/test/test_float.py, test_format_specials.
+        for code in ('e', 'E', 'f', 'F', 'g', 'G', '%',
+                     '.0e', '.6f', '.20g'):
+            inf = 'INF' if code in 'EFG' else 'inf'
+            nan = 'NAN' if code in 'EFG' else 'nan'
+            if code == '%':
+                inf += '%'
+                nan += '%'
+            for value, expected in ((INF, inf), (-INF, '-' + inf),
+                                    (NAN, nan), (-NAN, nan)):
+                self.assertEqual(format(value, code), expected)
+                self.assertEqual(format(value, '+' + code),
+                                 expected if value < 0 else '+' + expected)
+                self.assertEqual(format(value, ' ' + code),
+                                 expected if value < 0 else ' ' + expected)
+        self.assertEqual(format(INF, '+08f'), '+0000inf')
+
+    def test_format_without_precision(self):
+        # CPython test_format: omitted precision retains the float's full
+        # string representation, including the last significant digit.
+        for spec in ('', '-', '>', '2'):
+            self.assertEqual(format(100 / 7.0, spec), '14.285714285714286')
+        for value, spec, expected in (
+                (1.5e16, '>', '1.5e+16'),
+                (1.5e-5, '>', '1.5e-05'),
+                (12.0, '+', '+12.0'),
+                (12.0, '08', '000012.0'),
+                (-0.0, '>', '-0.0')):
+            self.assertEqual(format(value, spec), expected)
+
+    def test_grouping_without_precision(self):
+        # Issue #1177: grouping must preserve the fractional digits and must
+        # not switch a large fixed-point value to six-digit scientific form.
+        for value, expected in ((1234.001, '1,234.001'),
+                                (1234567.1234, '1,234,567.1234')):
+            self.assertEqual(format(value, ','), expected)
+            self.assertEqual('{:,}'.format(value), expected)
 
 if __name__ == '__main__':
     unittest.main()

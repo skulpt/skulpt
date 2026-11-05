@@ -306,18 +306,17 @@ class TypesTests(unittest.TestCase):
         test(123456, "#012x", '0x000001e240')
         test(-123456, "#012x", '-0x00001e240')
 
-        # TODO: Uppercase the alternate hexadecimal prefix.
-        # test(0, "#X", '0X0')
-        # test(0, "-#X", '0X0')
-        # test(1, "-#X", '0X1')
-        # test(-1, "-#X", '-0X1')
-        # test(-1, "-#5X", ' -0X1')
-        # test(1, "+#5X", ' +0X1')
-        # test(100, "+#X", '+0X64')
-        # test(100, "#012X", '0X0000000064')
-        # test(-100, "#012X", '-0X000000064')
-        # test(123456, "#012X", '0X000001E240')
-        # test(-123456, "#012X", '-0X00001E240')
+        test(0, "#X", '0X0')
+        test(0, "-#X", '0X0')
+        test(1, "-#X", '0X1')
+        test(-1, "-#X", '-0X1')
+        test(-1, "-#5X", ' -0X1')
+        test(1, "+#5X", ' +0X1')
+        test(100, "+#X", '+0X64')
+        test(100, "#012X", '0X0000000064')
+        test(-100, "#012X", '-0X000000064')
+        test(123456, "#012X", '0X000001E240')
+        test(-123456, "#012X", '-0X00001E240')
 
         test(123, ',', '123')
         test(-123, ',', '-123')
@@ -329,8 +328,13 @@ class TypesTests(unittest.TestCase):
         test(-1234567, ',', '-1,234,567')
 
         # issue 5782, commas with no specifier type
-        # TODO: Include zero padding in digit grouping.
-        # test(1234, '010,', '00,001,234')
+        test(1234, '010,', '00,001,234')
+        test(1234, '08,', '0,001,234')
+        test(-1234, '010,', '-0,001,234')
+        test(0xabc, '#012_x', '0x0_0000_0abc')
+        test(1234, '0=10,', '00,001,234')
+        # Right alignment pads outside the grouped digits.
+        test(1234, '0>10,', '000001,234')
 
         # Unified type for integers
         test(10**100, 'd', '1' + '0' * 100)
@@ -346,8 +350,8 @@ class TypesTests(unittest.TestCase):
         self.assertRaises(TypeError, 3 .__format__, None)
         self.assertRaises(TypeError, 3 .__format__, 0)
         # can't have ',' with 'n'
-        # TODO: Reject explicit grouping with locale presentation.
-        # self.assertRaises(ValueError, 3 .__format__, ",n")
+        for spec in (",n", "_n"):
+            self.assertRaises(ValueError, 3 .__format__, spec)
         # can't have ',' with 'c'
         self.assertRaises(ValueError, 3 .__format__, ",c")
         # can't have '#' with 'c'
@@ -557,24 +561,11 @@ class TypesTests(unittest.TestCase):
 #         test(12345.6, "1=20", '111111111111112345.6')
 #         test(12345.6, "*=20", '*************12345.6')
 
-#     def test_format_spec_errors(self):
-#         # int, float, and string all share the same format spec
-#         # mini-language parser.
-
-#         # Check that we can't ask for too many digits. This is
-#         # probably a CPython specific test. It tries to put the width
-#         # into a C long.
-#         self.assertRaises(ValueError, format, 0, '1'*10000 + 'd')
-
-#         # Similar with the precision.
-#         self.assertRaises(ValueError, format, 0, '.' + '1'*10000 + 'd')
-
-#         # And may as well test both.
-#         self.assertRaises(ValueError, format, 0, '1'*1000 + '.' + '1'*10000 + 'd')
-
-#         # Make sure commas aren't allowed with various type codes
-#         for code in 'xXobns':
-#             self.assertRaises(ValueError, format, 0, ',' + code)
+    def test_format_spec_errors(self):
+        # CPython's width/precision overflow checks depend on C integer limits.
+        # Make sure commas aren't allowed with various type codes.
+        for code in 'xXobns':
+            self.assertRaises(ValueError, format, 0, ',' + code)
 
 #     def test_internal_sizes(self):
 #         self.assertGreater(object.__basicsize__, 0)
