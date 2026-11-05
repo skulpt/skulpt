@@ -79,35 +79,8 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
             if (this.$params === null) {
                 this.mk$params();
             }
-            const nparams = this.$params.sq$length();
-            if (nparams === 0) {
-                throw new Sk.builtin.TypeError("There are no type variables left in " + Sk.misceval.objectRepr(this));
-            }
-
-            /**@todo the following only makes sense when we do typing*/
-
-            // const is_tuple = item instanceof Sk.builtin.tuple;
-            // if (is_tuple) {
-            //     const nitems = item.sq$length();
-            //     if (nitems !== nparams) {
-            //         throw new Sk.builtin.TypeError("Too " + (nitems > nparams ? "many" : "few") + " arguments for " + Sk.misceval.objectRepr(this));
-            //     }
-            // }
-            // const args = this.$args.v;
-            // const new_args = [];
-            // args.forEach((arg) => {
-            //     if (this.is$typevar(arg)) {
-            //         const iparam = this.tuple$index(this.$params.v, arg);
-            //         if (is_tuple) {
-            //             arg = item.v[iparam];
-            //         } else {
-            //             arg = item;
-            //         }
-            //     }
-            //     new_args.push(arg);
-            // });
-            // const res = new Sk.builtin.GenericAlias(this.$origin, new Sk.builtin.tuple(new_args));
-            // return res;
+            const args = Sk.builtin.GenericAlias.$substitute(this.$args.v, this.$params.v, item);
+            return new Sk.builtin.GenericAlias(this.$origin, new Sk.builtin.tuple(args));
         },
     },
     methods: {
@@ -154,30 +127,7 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
     proto: {
         // functions here match similar functions in Objects/genericaliasobject.c
         mk$params() {
-            const arg_arr = this.$args.v;
-            const params = [];
-            arg_arr.forEach((t) => {
-                if (this.is$typevar(t)) {
-                    if (this.tuple$index(params, t) < 0) {
-                        params.push(t);
-                    }
-                }
-            });
-            this.$params = new Sk.builtin.tuple(params);
-        },
-        tuple$index(tup_arr, item) {
-            return tup_arr.indexOf(item);
-        },
-        is$typevar(type) {
-            if (type.tp$name !== "TypeVar") {
-                return false;
-            }
-            const module = Sk.abstr.lookupSpecial(type, Sk.builtin.str.$module);
-            if (module === undefined) {
-                // throw some sort of error but all objects have __module_ so we shouldn't be here.
-                throw Sk.builtin.RuntimeError("found object withought a __module__");
-            }
-            return module.toString() === "typing";
+            this.$params = new Sk.builtin.tuple(Sk.builtin.GenericAlias.$typeParameters(this.$args.v));
         },
         ga$repr(item) {
             if (item === Sk.builtin.Ellipsis) {
@@ -212,3 +162,53 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
         ],
     },
 });
+
+// Shared with typing aliases: preserve parameter identity and declaration order,
+// including parameters carried by nested aliases (Objects/genericaliasobject.c).
+Sk.builtin.GenericAlias.$typeParameters = function (args) {
+    const parameters = [];
+    for (const arg of args) {
+        let values = [];
+        if (arg.$isTypeParameter) {
+            values = [arg];
+        } else if (!arg.sk$type) {
+            const nested = Sk.abstr.lookupAttr(arg, new Sk.builtin.str("__parameters__"));
+            if (nested instanceof Sk.builtin.tuple) {
+                values = nested.v;
+            }
+        }
+        for (const parameter of values) {
+            if (!parameters.includes(parameter)) {
+                parameters.push(parameter);
+            }
+        }
+    }
+    return parameters;
+};
+
+Sk.builtin.GenericAlias.$substitute = function (args, parameters, item) {
+    const values = item instanceof Sk.builtin.tuple ? item.v : [item];
+    if (parameters.length === 0) {
+        throw new Sk.builtin.TypeError("There are no type variables left in this alias");
+    }
+    if (parameters.some((parameter) => parameter.$isVariadic)) {
+        throw new Sk.builtin.NotImplementedError("Parameter-pack substitution is not supported");
+    }
+    if (values.length !== parameters.length) {
+        throw new Sk.builtin.TypeError("Expected " + parameters.length + " type arguments, got " + values.length);
+    }
+    const replacements = new Map(parameters.map((parameter, i) => [parameter, values[i]]));
+    return args.map((arg) => {
+        if (replacements.has(arg)) {
+            return replacements.get(arg);
+        }
+        if (!arg.sk$type) {
+            const nested = Sk.abstr.lookupAttr(arg, new Sk.builtin.str("__parameters__"));
+            if (nested instanceof Sk.builtin.tuple && nested.v.length) {
+                const newArgs = nested.v.map((parameter) => replacements.has(parameter) ? replacements.get(parameter) : parameter);
+                return Sk.abstr.objectGetItem(arg, new Sk.builtin.tuple(newArgs));
+            }
+        }
+        return arg;
+    });
+};

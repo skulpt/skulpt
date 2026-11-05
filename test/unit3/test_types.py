@@ -1780,5 +1780,16 @@ class TestSkulptUnionRegressions(unittest.TestCase):
             class C(A | B): ...
 
 
+class TestTypingUnionParameters(unittest.TestCase):
+    def test_union_parameter_substitution(self):
+        # CPython test_types.UnionTests.test_union_parameter_substitution.
+        from typing import TypeVar
+        T = TypeVar("T")
+        alias = list[T] | None
+        self.assertEqual(alias.__parameters__, (T,))
+        self.assertEqual(alias[int], list[int] | None)
+        self.assertEqual(alias[int].__args__, (list[int], type(None)))
+
+
 if __name__ == '__main__':
     unittest.main()

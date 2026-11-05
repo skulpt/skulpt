@@ -9,6 +9,7 @@ Sk.builtin.UnionType = Sk.abstr.buildNativeClass("types.UnionType", {
     constructor: function UnionType(args) {
         // Constructor receives already flattened and deduplicated unique array
         this.$args = new Sk.builtin.tuple(args);
+        this.$params = null;
     },
     slots: {
         tp$new(args, kwargs) {
@@ -46,6 +47,12 @@ Sk.builtin.UnionType = Sk.abstr.buildNativeClass("types.UnionType", {
         nb$reflected_or(other) {
             return Sk.builtin.UnionType.$or.call(other, this);
         },
+        tp$as_sequence_or_mapping: true,
+        mp$subscript(item) {
+            const parameters = this.tp$getattr(new Sk.builtin.str("__parameters__")).v;
+            const args = Sk.builtin.GenericAlias.$substitute(this.$args.v, parameters, item);
+            return Sk.builtin.UnionType.$make(args);
+        },
     },
     methods: {
         __mro_entries__: {
@@ -56,6 +63,14 @@ Sk.builtin.UnionType = Sk.abstr.buildNativeClass("types.UnionType", {
         },
     },
     getsets: {
+        __parameters__: {
+            $get() {
+                if (this.$params === null) {
+                    this.$params = new Sk.builtin.tuple(Sk.builtin.GenericAlias.$typeParameters(this.$args.v));
+                }
+                return this.$params;
+            },
+        },
         __args__: {
             $get() {
                 return this.$args;
