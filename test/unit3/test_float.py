@@ -160,7 +160,7 @@ class FormatTestCase(unittest.TestCase):
         # empty presentation type should format in the same way as str
         # (issue 5920)
         x = 100/7.
-        # self.assertEqual(format(x, ''), str(x))
+        self.assertEqual(format(x, ''), str(x))
         # self.assertEqual(format(x, '-'), str(x))
         # self.assertEqual(format(x, '>'), str(x))
         # self.assertEqual(format(x, '2'), str(x))

@@ -137,18 +137,76 @@ class string_format(unittest.TestCase):
                          'foo{}{}'.format('bar', 6))
         self.assertEqual(fmt.format('foo{1}{num}{1}', None, 'bar', num=6),
                          'foo{1}{num}{1}'.format(None, 'bar', num=6))
-        # self.assertEqual(fmt.format('{:^{}}', 'bar', 6),
-        #                  '{:^{}}'.format('bar', 6))
-        # self.assertEqual(fmt.format('{:^{}} {}', 'bar', 6, 'X'),
-        #                  '{:^{}} {}'.format('bar', 6, 'X'))
-        # self.assertEqual(fmt.format('{:^{pad}}{}', 'foo', 'bar', pad=6),
-        #                  '{:^{pad}}{}'.format('foo', 'bar', pad=6))
+        self.assertEqual(fmt.format('{:^{}}', 'bar', 6), ' bar  ')
+        self.assertEqual(fmt.format('{:^{}} {}', 'bar', 6, 'X'), ' bar   X')
+        self.assertEqual(fmt.format('{:^{pad}}{}', 'foo', 'bar', pad=6),
+                         ' foo  bar')
 
         with self.assertRaises(ValueError):
             fmt.format('foo{1}{}', 'bar', 6)
 
         with self.assertRaises(ValueError):
             fmt.format('foo{}{1}', 'bar', 6)
+
+    # Adapted from CPython Lib/test/test_str.py, test_format and
+    # test_format_auto_numbering.
+    def test_nested_format_specs(self):
+        self.assertEqual('{:^{}}'.format('hello', 10), '  hello   ')
+        self.assertEqual('{0:^{1}}'.format('hello', 10), '  hello   ')
+        self.assertEqual('{value:^{width}}'.format(value='hello', width=10),
+                         '  hello   ')
+        self.assertEqual('{:.{}f}'.format(1.23456, 2), '1.23')
+        self.assertEqual('{0:.{1}s}'.format('hello world', 5), 'hello')
+        self.assertEqual('{0:{width}.{precision}s}'.format(
+            'hello world', width=10, precision=5), 'hello     ')
+        self.assertEqual('0x{:0{:d}X}'.format(0, 16), '0x0000000000000000')
+        self.assertEqual('{:{f}}{g}{}'.format(1, 3, g='g', f=2), ' 1g3')
+        self.assertEqual('{f:{}}{}{g}'.format(2, 4, f=1, g='g'), ' 14g')
+        self.assertEqual('{!r:>{}}'.format('x', 5), "  'x'")
+        self.assertEqual('{:{[width]}} {}'.format('x', {'width': 3}, 'y'),
+                         'x   y')
+
+        class EchoSpec:
+            def __format__(self, spec):
+                return spec
+
+        self.assertEqual('{:{{}}}'.format(EchoSpec()), '{}')
+        self.assertEqual('{:{}}'.format(EchoSpec(), '{value}'), '{value}')
+
+    def test_format_field_lookup(self):
+        # Delimiters inside an item key belong to the key, not the field syntax.
+        for key in ('{}', '{', '}', '!', ':', 'foo-bar', 'foo bar'):
+            self.assertEqual(('{0[' + key + ']}').format({key: 'value'}),
+                             'value')
+        self.assertEqual('{0[1][0].real}'.format([None, [3]]), '3')
+        self.assertEqual('{0[0]} {0[1]}'.format(['a', 'b']), 'a b')
+        self.assertRaises(ValueError, '{0[0]x}'.format, [None])
+        self.assertRaises(ValueError, '{0..real}'.format, 3)
+
+    def test_escaped_braces(self):
+        self.assertEqual('{{}}'.format(), '{}')
+        # Issues #1360 and #707: escapes must not consume arguments.
+        self.assertEqual('{{}}'.format('foo'), '{}')
+        self.assertEqual('The set is {{{}, {}}}.'.format(5, 9),
+                         'The set is {5, 9}.')
+        self.assertRaises(ValueError, 'The set is {{}, {}}.'.format, 5, 9)
+        self.assertEqual('{{}} {}'.format('x'), '{} x')
+        self.assertEqual('{{{0}}}'.format(123), '{123}')
+        self.assertEqual('{{{{0}}}}'.format(), '{{0}}')
+        self.assertEqual('}}x{{'.format(), '}x{')
+        self.assertEqual('one {{two: {}}} three'.format('xxx'),
+                         'one {two: xxx} three')
+
+    def test_nested_format_errors(self):
+        for template in ('{:{1}}', '{0:{}}', '{:{}}{0}', '{0:{1}}{}'):
+            self.assertRaises(ValueError, template.format, 'x', 2)
+        self.assertRaises(IndexError, '{:{}}'.format, 'x')
+        self.assertRaises(KeyError, '{:{width}}'.format, 'x')
+        self.assertRaises(ValueError, '{0:{1:{2}}}'.format, 'abc', 's', '')
+        self.assertRaises(ValueError, '{0:{1}}'.format, 'abc', 'invalid')
+        for template in ('{', '}', 'a{', 'a}', '{0', '{0:{1}', '{0}}',
+                         '{0!}', '{0!rs}', '{a{b}'):
+            self.assertRaises(ValueError, template.format, 'x', 2)
 
     def test_conversion_specifiers(self):
         fmt = str
@@ -161,6 +219,47 @@ class string_format(unittest.TestCase):
             "'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'")
         self.assertEqual(fmt.format("{0!a}",  chr(255)), "'\\xff'")
         self.assertEqual(fmt.format("{0!a}",  chr(256)), "'\\u0100'")
+
+    # Adapted from CPython Lib/test/test_str.py, test_format.
+    def test_string_precision_and_fill(self):
+        self.assertEqual('{0:.0s}'.format('abcdef'), '')
+        self.assertEqual('{0:.3s}'.format('ab'), 'ab')
+        self.assertEqual('{0:3.2s}'.format('abc'), 'ab ')
+        self.assertEqual('{0:\x00<6s}'.format('foo'), 'foo\x00\x00\x00')
+        self.assertEqual('{0:\x00^6s}'.format('foo'), '\x00foo\x00\x00')
+
+    def test_invalid_string_specs(self):
+        for spec in ('+s', '-s', ' ', '#', '#20', '=20s', ',s'):
+            self.assertRaises(ValueError, format, '', spec)
+            self.assertRaises(ValueError, ('{0:' + spec + '}').format, '')
+
+    def test_custom_format_and_conversions(self):
+        class CustomFormat:
+            def __format__(self, spec):
+                return 'formatted:' + spec
+            def __str__(self):
+                return 'string'
+            def __repr__(self):
+                return 'representation'
+
+        value = CustomFormat()
+        self.assertEqual('{0:abc}'.format(value), 'formatted:abc')
+        self.assertEqual('{0!s:>8}'.format(value), '  string')
+        self.assertEqual('{0!r}'.format(value), 'representation')
+
+        class DoubleInt(int):
+            def __format__(self, spec):
+                return int.__format__(self * 2, spec)
+
+        self.assertEqual('{0}'.format(DoubleInt(10)), '20')
+
+    def test_object_format_fallback(self):
+        class Plain:
+            def __str__(self):
+                return 'plain'
+
+        self.assertEqual('{}'.format(Plain()), 'plain')
+        self.assertRaises(TypeError, '{:>10}'.format, Plain())
 
     def test_name_lookup(self):
         fmt = str

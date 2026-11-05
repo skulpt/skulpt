@@ -501,7 +501,7 @@ class BuiltinTest(unittest.TestCase):
     def test_format(self):
         # Test the basic machinery of the format() builtin.  Don't test
         #  the specifics of the various formatters
-        # self.assertEqual(format(3, ''), '3')
+        self.assertEqual(format(3, ''), '3')
 
         # Returns some classes to use for various tests.  There's
         #  an old-style version, and a new-style version
@@ -547,7 +547,7 @@ class BuiltinTest(unittest.TestCase):
         empty_format_spec(3.1415e-104)
         empty_format_spec(-3.1415e-104)
         empty_format_spec(object)
-        # empty_format_spec(None)
+        empty_format_spec(None)
 
         # TypeError because self.__format__ returns the wrong type
         class BadFormatResult:
