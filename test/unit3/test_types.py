@@ -561,24 +561,11 @@ class TypesTests(unittest.TestCase):
 #         test(12345.6, "1=20", '111111111111112345.6')
 #         test(12345.6, "*=20", '*************12345.6')
 
-#     def test_format_spec_errors(self):
-#         # int, float, and string all share the same format spec
-#         # mini-language parser.
-
-#         # Check that we can't ask for too many digits. This is
-#         # probably a CPython specific test. It tries to put the width
-#         # into a C long.
-#         self.assertRaises(ValueError, format, 0, '1'*10000 + 'd')
-
-#         # Similar with the precision.
-#         self.assertRaises(ValueError, format, 0, '.' + '1'*10000 + 'd')
-
-#         # And may as well test both.
-#         self.assertRaises(ValueError, format, 0, '1'*1000 + '.' + '1'*10000 + 'd')
-
-#         # Make sure commas aren't allowed with various type codes
-#         for code in 'xXobns':
-#             self.assertRaises(ValueError, format, 0, ',' + code)
+    def test_format_spec_errors(self):
+        # CPython's width/precision overflow checks depend on C integer limits.
+        # Make sure commas aren't allowed with various type codes.
+        for code in 'xXobns':
+            self.assertRaises(ValueError, format, 0, ',' + code)
 
 #     def test_internal_sizes(self):
 #         self.assertGreater(object.__basicsize__, 0)

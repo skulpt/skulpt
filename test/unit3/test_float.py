@@ -282,20 +282,58 @@ class FormatTestCase(unittest.TestCase):
         self.assertEqual(format(-123.34, '00.10e'), '-1.2334000000e+02')
         self.assertEqual(format(-123.34, '00.10g'), '-123.34')
 
+    def test_padding_without_grouping(self):
+        # CPython Lib/test/test_types.py, test_float__format__:
+        # existing zero-padding behaviour and issue 6902 alignment cases.
+        for value, spec, expected in (
+                (1234.0, '010f', '1234.000000'),
+                (1234.0, '011f', '1234.000000'),
+                (1234.0, '012f', '01234.000000'),
+                (-1234.0, '011f', '-1234.000000'),
+                (-1234.0, '012f', '-1234.000000'),
+                (-1234.0, '013f', '-01234.000000'),
+                (-1234.12341234, '013f', '-01234.123412'),
+                (-123456.12341234, '011.2f', '-0123456.12'),
+                (12345.6, '0<20', '12345.60000000000000'),
+                (12345.6, '1<20', '12345.61111111111111'),
+                (12345.6, '*<20', '12345.6*************'),
+                (12345.6, '0>20', '000000000000012345.6'),
+                (12345.6, '1>20', '111111111111112345.6'),
+                (12345.6, '*>20', '*************12345.6'),
+                (12345.6, '0=20', '000000000000012345.6'),
+                (12345.6, '1=20', '111111111111112345.6'),
+                (12345.6, '*=20', '*************12345.6')):
+            self.assertEqual(format(value, spec), expected)
+            self.assertEqual(value.__format__(spec), expected)
+
     def test_grouped_zero_padding(self):
         # CPython Lib/test/test_types.py, test_float__format__.
         for value, spec, expected in (
+                (1.2, '010,.2', '0,000,001.2'),
+                (1234.0, '011,f', '1,234.000000'),
+                (1234.0, '012,f', '1,234.000000'),
                 (1234.0, '013,f', '01,234.000000'),
+                (-1234.0, '012,f', '-1,234.000000'),
+                (-1234.0, '013,f', '-1,234.000000'),
                 (-1234.0, '014,f', '-01,234.000000'),
+                (-12345.0, '015,f', '-012,345.000000'),
                 (-123456.0, '016,f', '-0,123,456.000000'),
                 (-123456.0, '017,f', '-0,123,456.000000'),
+                (-123456.12341234, '017,f', '-0,123,456.123412'),
                 (-123456.12341234, '013,.2f', '-0,123,456.12')):
             self.assertEqual(format(value, spec), expected)
             self.assertEqual(value.__format__(spec), expected)
 
+    def test_thousands_separators(self):
+        # CPython Lib/test/test_float.py, FormatTestCase.test_format.
+        x = 123_456.123_456
+        self.assertEqual(format(x, '_f'), '123_456.123456')
+        self.assertEqual(format(x, ',f'), '123,456.123456')
+
     def test_format_specials(self):
         # CPython Lib/test/test_float.py, test_format_specials.
-        for code in ('e', 'E', 'f', 'F', 'g', 'G', '%'):
+        for code in ('e', 'E', 'f', 'F', 'g', 'G', '%',
+                     '.0e', '.6f', '.20g'):
             inf = 'INF' if code in 'EFG' else 'inf'
             nan = 'NAN' if code in 'EFG' else 'nan'
             if code == '%':
