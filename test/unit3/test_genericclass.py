@@ -1,7 +1,117 @@
 import unittest
 
 
+class TestMROEntry(unittest.TestCase):
+    # Selected from CPython's Lib/test/test_genericclass.py.
+    def test_mro_entry(self):
+        tested = []
+        class A: ...
+        class B: ...
+        class C:
+            def __mro_entries__(self, bases):
+                tested.append(bases)
+                return (self.__class__,)
+        c = C()
+        self.assertEqual(tested, [])
+        class D(A, c, B): ...
+        self.assertEqual(tested[-1], (A, c, B))
+        self.assertEqual(D.__bases__, (A, C, B))
+        self.assertEqual(D.__orig_bases__, (A, c, B))
+        self.assertEqual(D.__mro__, (D, A, C, B, object))
+        d = D()
+        class E(d): ...
+        self.assertEqual(tested[-1], (d,))
+        self.assertEqual(E.__bases__, (D,))
+
+
+    def test_mro_entry_signature(self):
+        tested = []
+        class B: ...
+        class C:
+            def __mro_entries__(self, *args, **kwargs):
+                tested.extend([args, kwargs])
+                return (C,)
+        c = C()
+        self.assertEqual(tested, [])
+        class D(B, c): ...
+        self.assertEqual(tested[0], ((B, c),))
+        self.assertEqual(tested[1], {})
+
+
+    def test_mro_entry_none(self):
+        tested = []
+        class A: ...
+        class B: ...
+        class C:
+            def __mro_entries__(self, bases):
+                tested.append(bases)
+                return ()
+        c = C()
+        self.assertEqual(tested, [])
+        class D(A, c, B): ...
+        self.assertEqual(tested[-1], (A, c, B))
+        self.assertEqual(D.__bases__, (A, B))
+        self.assertEqual(D.__orig_bases__, (A, c, B))
+        self.assertEqual(D.__mro__, (D, A, B, object))
+        class E(c): ...
+        self.assertEqual(tested[-1], (c,))
+        self.assertEqual(E.__bases__, (object,))
+        self.assertEqual(E.__orig_bases__, (c,))
+        self.assertEqual(E.__mro__, (E, object))
+
+
+    def test_mro_entry_with_builtins(self):
+        tested = []
+        class A: ...
+        class C:
+            def __mro_entries__(self, bases):
+                tested.append(bases)
+                return (dict,)
+        c = C()
+        self.assertEqual(tested, [])
+        class D(A, c): ...
+        self.assertEqual(tested[-1], (A, c))
+        self.assertEqual(D.__bases__, (A, dict))
+        self.assertEqual(D.__orig_bases__, (A, c))
+        self.assertEqual(D.__mro__, (D, A, dict, object))
+
+
+    def test_mro_entry_metaclass(self):
+        meta_args = []
+        class Meta(type):
+            def __new__(mcls, name, bases, ns):
+                meta_args.extend([mcls, name, bases, ns])
+                return super().__new__(mcls, name, bases, ns)
+        class A: ...
+        class C:
+            def __mro_entries__(self, bases):
+                return (A,)
+        c = C()
+        class D(c, metaclass=Meta):
+            x = 1
+        self.assertEqual(meta_args[0], Meta)
+        self.assertEqual(meta_args[1], 'D')
+        self.assertEqual(meta_args[2], (A,))
+        self.assertEqual(meta_args[3]['x'], 1)
+        self.assertEqual(D.__bases__, (A,))
+        self.assertEqual(D.__orig_bases__, (c,))
+        self.assertEqual(D.__mro__, (D, A, object))
+        self.assertEqual(D.__class__, Meta)
+
+
 class TestClassGetitem(unittest.TestCase):
+    def test_generic_alias_base(self):
+        # CPython CAPITest.test_c_class, using the public GenericAlias instead
+        # of the CPython-only test extension's equivalent alias implementation.
+        from types import GenericAlias
+        alias = GenericAlias(list, int)
+        self.assertEqual(alias.__mro_entries__(()), (list,))
+        class C(alias):
+            pass
+        self.assertEqual(C.__bases__, (list,))
+        self.assertEqual(C.__orig_bases__, (alias,))
+        self.assertEqual(list(C([1, 2])), [1, 2])
+
     def test_class_getitem(self):
         getitem_args = []
         class C:
@@ -121,6 +231,41 @@ class TestClassGetitem(unittest.TestCase):
             def __class_getitem__(cls, item):
                 return 'from __class_getitem__'
         self.assertEqual(C[int], 'from metaclass')
+
+
+class TestSkulptMROEntryRegressions(unittest.TestCase):
+    """Bespoke cases for CPython's ordinary attribute-lookup contract."""
+
+    def test_instance_hooks_share_original_bases(self):
+        class A: ...
+        class B: ...
+        class Hook: ...
+        first, second = Hook(), Hook()
+        seen = []
+
+        def first_entry(bases):
+            seen.append(bases)
+            return (A,)
+
+        def second_entry(bases):
+            seen.append(bases)
+            return (B,)
+
+        first.__mro_entries__ = first_entry
+        second.__mro_entries__ = second_entry
+        class C(first, second): ...
+        self.assertEqual(C.__bases__, (A, B))
+        self.assertEqual(C.__orig_bases__, (first, second))
+        self.assertIs(seen[0], seen[1])
+        self.assertIs(C.__orig_bases__, seen[0])
+
+    def test_non_tuple_entries_rejected(self):
+        class Hook:
+            def __mro_entries__(self, bases):
+                return []
+
+        with self.assertRaisesRegex(TypeError, "__mro_entries__ must return a tuple"):
+            class C(Hook()): ...
 
 
 if __name__ == "__main__":

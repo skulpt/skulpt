@@ -1352,10 +1352,10 @@ Sk.exportSymbol("Sk.misceval.cellOwner", Sk.misceval.cellOwner);
  */
 Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closure2) {
     const _name = new Sk.builtin.str(name);
-    const _bases = update_bases(bases); // todo this function should go through the bases and check for __mro_entries__
-
     kws = kws || [];
-    bases = bases || [];
+    const orig_bases = new Sk.builtin.tuple(bases || []);
+    const _bases = update_bases(orig_bases);
+    bases = _bases.v;
     let meta;
     let is_class = true;
     const meta_idx = kws.indexOf("metaclass");
@@ -1437,6 +1437,9 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closur
         });
     }
 
+    if (_bases !== orig_bases) {
+        Sk.abstr.objectSetItem(ns, new Sk.builtin.str("__orig_bases__"), orig_bases);
+    }
     const klass = Sk.misceval.callsimOrSuspendArray(meta, [_name, _bases, ns], kws);
 
     // type.__new__ must populate the cell, including when called by a metaclass.
@@ -1455,9 +1458,32 @@ Sk.misceval.buildClass = function (globals, func, name, bases, cell, kws, closur
 };
 Sk.exportSymbol("Sk.misceval.buildClass", Sk.misceval.buildClass);
 
-function update_bases(bases) {
-    /** @todo this function should go through the bases and check for __mro_entries__ */
-    return new Sk.builtin.tuple(bases);
+function update_bases(orig_bases) {
+    // As in CPython's update_bases, retain the original tuple unless a base
+    // supplies __mro_entries__. Each hook receives that same original tuple.
+    const bases = orig_bases.v;
+    let new_bases;
+    for (let i = 0; i < bases.length; i++) {
+        const base = bases[i];
+        const hook = Sk.builtin.checkClass(base)
+            ? undefined
+            : Sk.abstr.lookupAttr(base, Sk.builtin.str.$mro_entries);
+        if (hook === undefined) {
+            if (new_bases !== undefined) {
+                new_bases.push(base);
+            }
+            continue;
+        }
+        const entries = Sk.misceval.callsimArray(hook, [orig_bases]);
+        if (!(entries instanceof Sk.builtin.tuple)) {
+            throw new Sk.builtin.TypeError("__mro_entries__ must return a tuple");
+        }
+        if (new_bases === undefined) {
+            new_bases = bases.slice(0, i);
+        }
+        new_bases.push(...entries.v);
+    }
+    return new_bases === undefined ? orig_bases : new Sk.builtin.tuple(new_bases);
 }
 
 function calculate_meta(meta, bases) {

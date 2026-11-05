@@ -105,10 +105,10 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
     },
     methods: {
         __mro_entries__: {
-            $meth() {
+            $meth(bases) {
                 return new Sk.builtin.tuple([this.$origin]);
             },
-            $flags: { NoArgs: true },
+            $flags: { OneArg: true },
         },
         __instancecheck__: {
             $meth(_) {
