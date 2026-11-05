@@ -782,6 +782,14 @@ Sk.builtin.type.tp$classmethods = {
     },
 };
 
+Sk.builtin.type.prototype.tp$as_number = true;
+Sk.builtin.type.prototype.nb$or = function (other) {
+    return Sk.builtin.UnionType.$or.call(this, other);
+};
+Sk.builtin.type.prototype.nb$reflected_or = function (other) {
+    return Sk.builtin.UnionType.$or.call(other, this);
+};
+
 // similar to generic.getSetDict but have to check if there is a builtin __dict__ descriptor that we should use first!
 const subtype_dict_getset_description = {
     $get() {
