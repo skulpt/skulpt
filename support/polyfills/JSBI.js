@@ -21,7 +21,7 @@ if (Sk.global.BigInt === undefined) {
         let number = One;
         y = JSBI.greaterThan(y, JSBI.__ZERO) ? y : JSBI.unaryMinus(y);
         while (JSBI.greaterThan(y, JSBI.__ZERO)) {
-            if (JSBI.bitwiseAnd(y, One)) {
+            if (JSBI.notEqual(JSBI.bitwiseAnd(y, One), JSBI.__ZERO)) {
                 number = JSBI.remainder(JSBI.multiply(number, x), z);
             }
             y = JSBI.signedRightShift(y, One);
