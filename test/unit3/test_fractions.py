@@ -679,6 +679,10 @@ class FractionTest(unittest.TestCase):
         self.assertEqual(hash(10**50), hash(F(10**50)))
         self.assertNotEqual(hash(float(10**23)), hash(F(10**23)))
         self.assertEqual(hinf, hash(F(1, hmod)))
+        # Skulpt regression: rational hashes use the denominator's modular inverse,
+        # including denominators that are not powers of two.
+        for denominator in (3, 5, 7, 10):
+            self.assertEqual(hash(F(1, denominator)) * denominator % hmod, 1)
         # Check that __hash__ produces the same value as hash(), for
         # consistency with int and Decimal.  (See issue #10356.)
         self.assertEqual(hash(F(-1)), F(-1).__hash__())
