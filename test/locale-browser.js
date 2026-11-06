@@ -1,10 +1,11 @@
 // Exercise the Python API with capabilities missing from older browsers.
 const fs = require("fs");
 const vm = require("vm");
+const coreFile = process.argv[2] || "dist/skulpt.min.js";
 
 async function run(intl, source) {
     const context = vm.createContext({ Intl: intl, Date, console, setTimeout, clearTimeout });
-    vm.runInContext(fs.readFileSync("dist/skulpt.min.js", "utf8"), context);
+    vm.runInContext(fs.readFileSync(coreFile, "utf8"), context);
     const Sk = context.Sk;
     Sk.configure({
         __future__: Sk.python3,
