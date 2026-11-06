@@ -489,6 +489,13 @@ class MathTests(unittest.TestCase):
 
 
     def testFabs(self):
+        # Skulpt regression: conversions must use the numeric type protocol.
+        from fractions import Fraction
+        class Floatable:
+            def __float__(self):
+                return -2.0
+        for value in (Fraction(-2), Floatable()):
+            self.assertEqual(math.fabs(value), 2.0)
         self.assertEqual(math.fabs(-1), 1.0)
         self.assertEqual(math.fabs(0), 0.0)
         self.assertRaises(TypeError, math.fabs)
@@ -1377,6 +1384,15 @@ class MathTests(unittest.TestCase):
         for value in [NAN, 0.0, -0.0, 2.0, -2.3, NINF, INF]:
             self.assertTrue(math.isnan(math.remainder(NAN, value)))
             self.assertTrue(math.isnan(math.remainder(value, NAN)))
+
+        # Skulpt regression: return floats after converting numeric NaN inputs.
+        class FloatableNaN:
+            def __float__(self):
+                return NAN
+        for x, y in ((FloatableNaN(), 1), (1, FloatableNaN())):
+            result = math.remainder(x, y)
+            self.assertIsInstance(result, float)
+            self.assertTrue(math.isnan(result))
 
         # remainder(x, inf) is x, for non-nan non-infinite x.
         for value in [-2.3, -0.0, 0.0, 2.3]:

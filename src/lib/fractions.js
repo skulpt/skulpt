@@ -247,7 +247,18 @@ function fractionsMod({ math, sys }) {
                 return new pyStr(`${this.$num}/${this.$den}`);
             },
             tp$hash() {
-                const dinv = pyPower(this.$den, sub(_PyHASH_MODULUS, _2), _PyHASH_MODULUS);
+                // Skulpt's modulus is composite, so Fermat's inverse formula
+                // does not apply. Extended Euclid also detects noninvertible denominators.
+                let a = mod(this.$den, _PyHASH_MODULUS);
+                let b = _PyHASH_MODULUS;
+                let x = _1;
+                let y = _0;
+                while (isTrue(b)) {
+                    const q = floorDiv(a, b);
+                    [a, b] = [b, mod(a, b)];
+                    [x, y] = [y, sub(x, mul(q, y))];
+                }
+                const dinv = eq(a, _1) ? mod(x, _PyHASH_MODULUS) : _0;
                 let hash_;
                 if (!isTrue(dinv)) {
                     hash_ = _PyHASH_INF;
@@ -305,7 +316,10 @@ function fractionsMod({ math, sys }) {
             nb$reflected_divmod,
             nb$remainder,
             nb$reflected_remainder,
-            nb$power(other) {
+            nb$power(other, modulo) {
+                if (modulo !== undefined) {
+                    throw new pyTypeError("Fraction.__pow__() does not accept a modulus");
+                }
                 if (isRational(other)) {
                     if (eq(getDenom(other), _1)) {
                         let power = getNumer(other);

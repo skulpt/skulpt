@@ -64,6 +64,8 @@ class PowTest(unittest.TestCase):
         self.powtest(float)
 
     def test_other(self):
+        # From CPython test_long: force arbitrary-precision modular exponentiation.
+        self.assertEqual(pow(2, 100, 2**100 - 3), 3)
         # Other tests-- not very systematic
         self.assertEqual(pow(3,3) % 8, pow(3,3,8))
         self.assertEqual(pow(3,3) % -8, pow(3,3,-8))
@@ -144,6 +146,16 @@ class PowTest(unittest.TestCase):
     #                         pow(a, -2, m)
     #                     with self.assertRaises(ValueError):
     #                         pow(a, -1001, m)
+
+
+class TestSkulptRegressions(unittest.TestCase):
+    def test_ternary_pow_uses_numeric_slot(self):
+        class ModularPower:
+            def __pow__(self, exponent, modulus=None):
+                return (exponent, modulus)
+        self.assertEqual(pow(ModularPower(), 5, 3), (5, 3))
+        from fractions import Fraction
+        self.assertRaises(TypeError, pow, Fraction(2), 5, 3)
 
 
 if __name__ == "__main__":
