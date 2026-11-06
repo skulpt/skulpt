@@ -698,6 +698,12 @@ class string_functions(unittest.TestCase):
         self.assertTrue("µ".isidentifier())
         self.assertTrue("𝔘𝔫𝔦𝔠𝔬𝔡𝔢".isidentifier())
 
+        # Skulpt regressions: XID properties apply to the original code points.
+        self.assertTrue("\U00010400".isidentifier())
+        self.assertTrue("x\U000E0100".isidentifier())
+        self.assertFalse("\u2f00".isidentifier())
+        self.assertFalse("a\n".isidentifier())
+
         self.assertFalse(" ".isidentifier())
         self.assertFalse("[".isidentifier())
         self.assertFalse("©".isidentifier())
@@ -733,11 +739,7 @@ class string_functions(unittest.TestCase):
 
         self.assertTrue('\U0001F46F'.isprintable())
 
-        # These tests involve characters outside the Basic Multilingual Plane (non-BMP),
-        # which require full Unicode code point handling (via .codePointAt or a category map).
-        # Our current implementation only partially supports non-BMP characters,
-# so these tests are commented out until that support is added.
-        # self.assertFalse('\U000E0020'.isprintable())
+        self.assertFalse('\U000E0020'.isprintable())
 
     def test_isdecimal(self):
         self.assertTrue("1234567890".isdecimal())
@@ -762,11 +764,8 @@ class string_functions(unittest.TestCase):
         for ch in ['\U00010401', '\U00010427', '\U00010429', '\U0001044E',
                    '\U0001F40D', '\U0001F46F', '\U00011065', '\U0001F107']:
             self.assertFalse(ch.isdecimal(), '{!a} is not decimal.'.format(ch))
-        # These tests involve characters outside the Basic Multilingual Plane (BMP),
-        # which are not currently supported by our Unicode.Nd regex (e.g., U+104A0, U+1D7F6).
-        # Skulpt will need codePoint-based logic to pass these, so they are commented out for now.
-        # for ch in ['\U0001D7F6', '\U00011066', '\U000104A0']:
-        #     self.assertTrue(ch.isdecimal(), '{!a} is decimal.'.format(ch))
+        for ch in ['\U0001D7F6', '\U00011066', '\U000104A0']:
+            self.assertTrue(ch.isdecimal(), '{!a} is decimal.'.format(ch))
 
     def test_removeprefix(self):
         self.assertEqual('spam'.removeprefix('sp'), 'am')

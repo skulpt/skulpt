@@ -1,5 +1,3 @@
-import Unicode from "../support/polyfills/Unicode";
-
 var tokens = Sk.token.tokens;
 
 const TokenError = Sk.builtin.SyntaxError;
@@ -83,15 +81,9 @@ function rstrip (input, what) {
 
 
 
-const { Lu, Ll, Lt, Lm, Lo, Nl, Mn, Mc, Nd, Pc } = Unicode;
-const the_underscore = "_";
-const Other_ID_Start = "\\u1885-\\u1886\\u2118\\u212E\\u309B-\\u309C";
-const Other_ID_Continue = "\\u00B7\\u0387\\u1369-\\u1371\\u19DA";
-const id_start = Lu + Ll + Lt + Lm + Lo + Nl + the_underscore + Other_ID_Start;
-const id_continue = id_start + Mn + Mc + Nd + Pc + Other_ID_Continue;
-
-const IDENTIFIER = "[" + id_start + "]+[" + id_continue + "]*"
-const IS_IDENTIFIER_REGEX = new RegExp("^" + IDENTIFIER + "$");
+// CPython uses XID_Start/Continue, with underscore also allowed at the start.
+const IDENTIFIER = "[_\\p{XID_Start}]\\p{XID_Continue}*";
+const IS_IDENTIFIER_REGEX = new RegExp("^" + IDENTIFIER + "$", "u");
 
 
 /**
@@ -101,8 +93,7 @@ const IS_IDENTIFIER_REGEX = new RegExp("^" + IDENTIFIER + "$");
  * @returns {boolean}
  */
 function isidentifier(str) {
-    var normalized = str.normalize('NFKC');
-    return IS_IDENTIFIER_REGEX.test(normalized);
+    return IS_IDENTIFIER_REGEX.test(str);
 }
 
 Sk.token.isIdentifier = isidentifier;
@@ -252,7 +243,7 @@ function getPseudoTokens() {
     var Number_ = group(Imagnumber, Floatnumber, Intnumber);
     var PseudoToken = Whitespace + group(PseudoExtras, Number_, Funny, ContStr, Name);
 
-    const PseudoTokenRegexp = new RegExp(PseudoToken);
+    const PseudoTokenRegexp = new RegExp(PseudoToken, "u");
     PSEUDO_TOKENS.set(py3, PseudoTokenRegexp);
     return PseudoTokenRegexp;
 }
@@ -418,7 +409,8 @@ function _tokenize(filename, readline, encoding, yield_) {
                 }
 
                 var token = line.substring(start, end);
-                var initial = line[start];
+                // Identifier starts can be astral, so inspect a complete code point.
+                var initial = String.fromCodePoint(line.codePointAt(start));
                 //console.log("token:",token, "initial:",initial, start, end);
                 if (contains(numchars, initial) ||                 // ordinary number
                     (initial == '.' && token != '.' && token != '...')) {
