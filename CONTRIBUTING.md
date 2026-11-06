@@ -1,104 +1,24 @@
-# CONTRIBUTE
+# CONTRIBUTING
 
-This is the contribute.md of our project. Great to have you here. Here are a few ways you can help make this project better!
+Great to have you here. Here are a few ways you can help make this project better!
 
 ## Team members
 
 The list of people who have contributed to Skulpt is too big and dynamic to be accurate
-in a document like this. Luckily Github does an excellent job of keeping track of
-[people who have contributed](https://github.com/skulpt/skulpt/graphs/contributors)
+in a document like this. Luckily Github does an excellent job keeping track of
+[people who have contributed](https://github.com/skulpt/skulpt/graphs/contributors).
 
 [Brad Miller](https://github.com/bnmnetp) is the current owner of the project. But see below for
 the full list of people with commit privileges.
 
 ## Learn & listen
 
-This section includes ways to get started with your open source project. Include links to documentation and to different communication channels:
+Links to documentation and to communication channels beyond GitHub:
 
--   github: Lots of good discussion happens around pull requests and bug reports
--   [gitter discussion](https://gitter.im/skulpt/skulpt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+- [README.md](https://github.com/skulpt/skulpt/blob/master/README.md)
+- [HACKING.md](https://github.com/skulpt/skulpt/blob/master/HACKING.md)
 -   [Mailing list](https://groups.google.com/forum/#!forum/skulpt)
--   IRC channel: [#skulpt](http://webchat.freenode.net/?channels=skulpt)
--   Blog: Some stuff about getting started is on [Brad's blog](http://reputablejournal.com)
-
-## Adding new features
-
-This section includes advice on how to build new features for the project & what kind of process it includes.
-
--   First you should make a Fork. If you have never made a fork before please read this [github help article](https://help.github.com/articles/fork-a-repo)
--   Check out the document HACKING.rst Although its a work in progress, it contains valuable information about Skulpt and how it is structured, some of the
-    naming conventions, and information to help you understand how it all works.
--   Create a feature branch using this command `git checkout -b feature_branch_name`
--   Once you have added a new feature make sure you develop some test cases and add them to the test bank. Even better would be to write the failing test first.
-    You can add a test by copying the unit-test template file `./test/unit_tmpl.py` to `./test/unit` and give it a descriptive name. Make sure the functions in
-    your test class start with `test`. [Here](https://docs.python.org/2/library/unittest.html) is some documentation on the unittest module (not everything is
-    implemented in skulpt).
--   Before submitting a pull request please make sure you run `./skulpt test` and `./skulpt dist` this checks that there are no regressions.  
-    We have an automatic system to do regression testing, but if your pull request fails it is certain that it will not be accepted.
--   Now you can push this branch to your fork on github (you can do this earlier too) with this command `git push -u origin feature_branch_name`. And create a Pull Request on github.
--   If the master branch gets updated before your pull request gets pulled in. You can do a `rebase` to base your commits off the new `master`. With a command
-    that looks like `git rebase upstream/master`. Make sure you do a **force** push to your branch `git push --force` because you've rewritten history, and all
-    your commits will appear in two fold if you don't
-
-We try to get to pull requests in a very timely way so they don't languish. Nothing is more frustrating than a project that just leaves pull requests sitting there for ages. Usually we get to them in a one or two days.
-
-### In short: TL;DR
-
--   fork: (on github)
--   branch: `git checkout -b feature_branch_name`
--   add unit-test
--   commit: `git commit -m 'failing test'` (you can do this more often)
--   write code
--   test: `npm run devbuild`, `npm test`, `npm run test3`, and `npm run dist`
--   commit: `git commit -m 'implement fix'` (you can do this more often)
--   push: `git push -u origin feature_branch_name`
--   pull-request: (on github)
-
-### NPM Commands
-
--   `npm run help`
-
-    Help on all `npm` commands.
-
--   `npm run build`
-
-    Production, optimized build.
-
--   `npm run devbuild`
-
-    Development, unoptimized build
-
--   `npm run watch`
-
-    Development, unoptimized build, which will automatically be rebuilt when there are any source changes.
-
--   `npm run dist`
-
-    Prepare the distribution: build the optimized Skulpt, run all tests, build docs.
-
--   `npm run brun <pyfile>`
-
-    Run Python <pyfile> in the browser. This will automatically rebuild the unoptimized Skulpt first.
-
--   `npm run btest`
-
-    Run the unit tests in the browser.
-
--   `npm run repl`
-
-    Open the REPL. You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
-
--   `npm test`
-
-    Run all tests. You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
-
--   `npm start <py2|py3> <pyfile>`
-
-    Run pyfile using either Python 2 (py2) or Python 3 (py3). You need to build Skulpt (either `npm run build` or `npm run devbuild`) first.
-
--   `npm run profile <py2|py3> <pyfile>`
-
-    Run pyfile using either Python 2 (py2) or Python 3 (py3) with the profiler on. Will report the profiling results to the console. You need to build the optimized Skulpt (`npm run build`) first.
+-   Blog: Some stuff about getting started is on [Brad's blog](http://reputablejournal.com) (e.g. [adding a module to skulpt](https://reputablejournal.com/2011/03/18/adding-a-module.html))
 
 ## Coding Style and Conventions
 
@@ -144,10 +64,10 @@ nice plugin called JSLintMate. You can easily install [jshint](http://jshint.org
 
 The committers are people who are responsible for reviewing and approving pull requests . These are
 generally people who have been around the project for a while and have "proven" themselves by contributing
-good code and ideas to the Skulpt. This list may change over time as people gain or lose interest in
+good code and ideas to Skulpt. This list may change over time as people gain or lose interest in
 Skulpt. If you would like to volunteer contact Brad.
 
-### Streamlined process for committers
+### Streamlined process for PRs from committers
 
 Committers can self approve a PR under the following conditions:
 
@@ -158,10 +78,9 @@ Committers can self approve a PR under the following conditions:
 
 If any of the above conditions are true, the committer should write up a quick justification as part of approving the PR and give it 48 hours in case anyone wants to add a review or make comments. After the 48 hour period then any committer, including the committer that created the PR can go ahead and merge.  Since github does not actually allow anyone to self approve, I have removed the requirement for approval.  We can track this easily enough amongst ourselves.
 
-### process for reviewing PRs from non-committers
+### Process for reviewing PRs from non-committers
 
-Although a lot of our testing, and checking for adherence to the style guidelines is done automatically
-the review process We should strive to approve or reject PRs as quickly as we can. Letting PRs linger for months or years does not encourage others to contribute to the project. So without making things overly complicated I think we ought to do the following:
+We should strive to approve or reject PRs as quickly as we can. Letting PRs linger for months or years does not encourage others to contribute to the project. So without making things overly complicated I think we ought to do the following:
 
 1.  Look at the diffs for each file on github, if it is pretty obvious what they are doing is correct then that is a good sign.
 2.  Look at the tests provided with the PR and try to think if there are additional tests that would provide better coverage. If you think additional tests are needed then you should let the owner of the PR know and have them add more tests. All new PRs that are adding new features should be using the new unittest framework, not the old numbered framework.
@@ -191,8 +110,7 @@ This section includes ideas on how non-developers can help with the project. Her
 -   You can help us answer questions our users have in the google group
 -   You can help build and design our website in doc
 -   You can help write blog posts about the project
-
--   Create an example of the project in real world by building something or
+    *   Create an example of the project in the real world by building something or
     showing what others have built.
--   Write about other people’s projects based on this project. Show how
+    *   Write about other people’s projects based on this project. Show how
     it’s used in daily life. Take screenshots and make videos!
