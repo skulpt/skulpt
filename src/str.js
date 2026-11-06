@@ -1,12 +1,4 @@
-const Unicode = require("../support/polyfills/Unicode").default;
 var keyhash_regex = /^[0-9!#_]/;
-
-// Precompiled regexes for performance (hoisted to module scope)
-// Remove space from Unicode.Zs
-const _zsNoSpace = Unicode.Zs.replace(" ", "").replace("\\u0020", "");
-// Build a regex for non-printable BMP characters
-const _NON_PRINTABLE_RE = new RegExp("[" + Unicode.C + Unicode.Zl + Unicode.Zp + _zsNoSpace + "]", "u");
-const _IS_DECIMAL_RE = new RegExp("^[" + Unicode.Nd + "]+$", "u");
 
 // These will be initialized after Sk.builtin.str is defined
 var EMPTY_STRING;
@@ -781,7 +773,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         },
         isdecimal: {
             $meth: function isdecimal() {
-                return new Sk.builtin.bool(_IS_DECIMAL_RE.test(this.v));
+                return new Sk.builtin.bool(Sk.unicode.isDecimal(this.v));
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -835,7 +827,7 @@ Sk.builtin.str = Sk.abstr.buildNativeClass("str", {
         },
         isprintable: {
             $meth: function isprintable() {
-                return new Sk.builtin.bool(!_NON_PRINTABLE_RE.test(this.v));
+                return new Sk.builtin.bool(Sk.unicode.isPrintable(this.v));
             },
             $flags: { NoArgs: true },
             $textsig: "($self, /)",
@@ -1601,6 +1593,3 @@ EMPTY_STRING = new Sk.builtin.str("");
 for (let i = 0; i < 256; i++) {
     INTERNED_ASCII_CHARS[i] = new Sk.builtin.str(String.fromCharCode(i));
 }
-
-// Expose Unicode character classes for internal use (e.g., re module)
-Sk.builtin.str._unicode = Unicode;

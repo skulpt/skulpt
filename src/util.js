@@ -1,10 +1,12 @@
 // Global Sk object
-var Sk = {}; // jshint ignore:line
-
-Sk.build = {
-    version: SKULPT_VERSION,
-    githash: GITHASH,
-    date: BUILDDATE
+// Declare these together to retain V8 fast properties in both build modes.
+var Sk = { // jshint ignore:line
+    unicode: undefined,
+    build: {
+        version: SKULPT_VERSION,
+        githash: GITHASH,
+        date: BUILDDATE
+    }
 };
 
 /**
