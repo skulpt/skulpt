@@ -761,5 +761,12 @@ class FractionTest(unittest.TestCase):
                                  pow, 3, 4, F(5))
 
 
+class TestSkulptRegressions(unittest.TestCase):
+    def test_hash_with_composite_modulus(self):
+        modulus = sys.hash_info.modulus
+        for denominator in (3, 5, 7, 10):
+            self.assertEqual(hash(F(1, denominator)) * denominator % modulus, 1)
+
+
 if __name__ == '__main__':
     unittest.main()
