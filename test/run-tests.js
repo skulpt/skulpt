@@ -41,6 +41,18 @@ function runRuntimeTests() {
     run("test/locale-browser.js", productionCore);
 }
 
+function runModernTests() {
+    run("test/build-variants.js");
+    const productionCore = "dist/modern/skulpt.modern.min.js";
+    run("test/testunit.js", "--python3", "--core", productionCore);
+    const webpack = require.resolve("webpack/bin/webpack.js");
+    const outputDir = "support/tmp/modern-runtime-test";
+    run(webpack, "--mode", "development", "--env.nativeOnly", "--output-path", outputDir);
+    for (const coreFile of [productionCore, `${outputDir}/skulpt.modern.js`]) {
+        run("--allow-natives-syntax", "test/v8-properties.js", coreFile);
+    }
+}
+
 switch (process.argv[2] || "all") {
     case "all":
         run("test/generator_suspensions.js");
@@ -52,6 +64,9 @@ switch (process.argv[2] || "all") {
         break;
     case "unicode-fallback":
         runUnicodeFallbackTests();
+        break;
+    case "modern":
+        runModernTests();
         break;
     case "runtime":
         runRuntimeTests();
