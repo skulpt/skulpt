@@ -1893,26 +1893,77 @@ function $builtinmodule(name) {
                 return new pyTuple([new pyInt(idx), new pyInt(idx + [...group].length)]); // want char length
             },
             hasOwnProperty: Object.prototype.hasOwnProperty,
-            template$regex: /\\([1-9][0-9]|[1-9])|\\g<([1-9][0-9]*)>|\\g<([^\d\W]\w*)>|\\g<?.*>?/g,
+            // Matches: \g<num>, \g<name>, \0XX (octal), \1XX (3-digit octal), \1-\99 (group ref), \n, \t, etc.
+            // 3 valid octal digits (1-3 followed by two 0-7) = octal
+            // 2 digits (1-9 followed by 0-9) = group reference
+            template$regex:
+                /\\g<([1-9][0-9]*)>|\\g<([^>]+)>|\\g<?.*>?|\\(0[0-7]{0,2})|\\([1-3][0-7]{2})|\\([1-9][0-9]?)|\\(.)/g,
+            template$escapes: {
+                n: "\n",
+                t: "\t",
+                r: "\r",
+                f: "\f",
+                v: "\v",
+                a: "\x07",
+                b: "\b",
+                "\\": "\\",
+            },
             template$repl(template) {
-                return template.replace(this.template$regex, (match, idx, idxg, name, offset, orig) => {
-                    let ret;
-                    idx = idx || idxg;
-                    if (idx !== undefined) {
-                        ret = idx < this.v.length ? this.v[idx] || "" : undefined;
-                    } else {
-                        if (this.v.groups && this.hasOwnProperty.call(this.v.groups, name)) {
-                            ret = this.v.groups[name] || "";
+                // Capture groups: (idxg), (name), (octal0), (octal3), (groupRef), (escape)
+                // octal0 = \0, \00, \000-\077 (starts with 0)
+                // octal3 = \100-\377 (3-digit octal in range, all digits 0-7)
+                // groupRef = \1-\99 (1-2 digits, may contain 8/9)
+                return template.replace(
+                    this.template$regex,
+                    (match, idxg, name, octal0, octal3, groupRef, escape, offset) => {
+                        const octal = octal0 !== undefined ? octal0 : octal3;
+                        if (octal !== undefined) {
+                            return String.fromCharCode(parseInt(octal, 8));
                         }
-                    }
-                    if (ret === undefined) {
-                        if (name) {
+
+                        // Both numeric spellings use the same capture lookup;
+                        // their existing error positions differ by one character.
+                        const index = groupRef !== undefined ? groupRef : idxg;
+                        if (index !== undefined) {
+                            const num = parseInt(index, 10);
+                            const ret = num < this.v.length ? this.v[num] || "" : undefined;
+                            if (ret === undefined) {
+                                const pos = offset + (idxg !== undefined ? 1 : 0);
+                                throw new re.error("invalid group reference " + num + " at position " + pos);
+                            }
+                            return ret;
+                        }
+
+                        // Handle character escapes like \n, \t, etc.
+                        if (escape !== undefined) {
+                            const replacement = this.template$escapes[escape];
+                            if (replacement !== undefined) {
+                                return replacement;
+                            }
+                            if (/[a-zA-Z]/.test(escape)) {
+                                throw new re.error("bad escape \\" + escape + " at position " + offset);
+                            }
+                            return match;
+                        }
+
+                        if (name !== undefined) {
+                            // Use the same Python identifier rules as pattern names.
+                            if (!Sk.token.isIdentifier(name)) {
+                                throw new re.error(
+                                    "bad character in group name '" + name + "'",
+                                    new pyStr(template),
+                                    new pyInt(Array.from(template.slice(0, offset)).length + 3)
+                                );
+                            }
+                            if (this.v.groups && this.hasOwnProperty.call(this.v.groups, name)) {
+                                return this.v.groups[name] || "";
+                            }
                             throw new IndexError("unknown group name '" + name + "'");
                         }
-                        throw new re.error("invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1));
+                        // The catch-all \g alternative reaches here for malformed references.
+                        throw new re.error("bad escape " + match + " at position " + offset);
                     }
-                    return ret;
-                });
+                );
             },
         },
         flags: {
