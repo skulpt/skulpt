@@ -1,5 +1,951 @@
-function $builtinmodule(name) {
+// ========================================================================
+// Python regular expression parser
+// Converts Python regex patterns to JavaScript regex patterns
+// ========================================================================
 
+// Tokenization, repetition validation, and group-width tracking follow CPython's
+// Lib/re/_parser.py. The AST and emitter translate the supported subset to JavaScript.
+function getReParser(makeError) {
+    const MAXREPEAT = 0xffffffff;
+    // Pre-compiled regex patterns for performance
+    const RE_CHAR_CLASS_ESCAPES = /^[dDwWsS]$/;
+    const RE_SPECIAL_CHARS = /[.*+?^${}()|[\]\\]/;
+    const RE_HEX_DIGIT = /^[0-9a-fA-F]$/;
+    const RE_OCTAL_DIGIT = /^[0-7]$/;
+    const RE_ALPHA = /^[a-zA-Z]$/;
+    const RE_DIGIT = /^[0-9]$/;
+    const RE_INLINE_FLAGS_START = /^[aiLmsux-]$/;
+    const RE_INLINE_FLAGS = /^[aiLmsux]$/;
+    const RE_INCOMPATIBLE_FLAGS = /[auL]/;
+
+    // Build category expressions lazily: most patterns need no Unicode tables.
+    let _unicodeClasses = null;
+    function getUnicodeClasses() {
+        if (_unicodeClasses) {
+            return _unicodeClasses;
+        }
+        try {
+            new RegExp("\\p{L}", "u");
+            // Use the engine's Unicode version, as native case folding does.
+            _unicodeClasses = {
+                d: "\\p{Nd}",
+                w: "\\p{L}\\p{N}_",
+                s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85\\p{Z}",
+            };
+            return _unicodeClasses;
+        } catch {
+            // Older engines use Skulpt's BMP tables instead.
+        }
+        const U = Sk.builtin.str._unicode;
+        _unicodeClasses = {
+            // Python \d: Only decimal digits (Nd), not all numeric (N)
+            d: U.Nd,
+            // Python \w is alphanumeric plus underscore, not connector punctuation.
+            // U.L also includes combining marks for Python identifiers.
+            w: U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.N + "_",
+            // Python \s: Whitespace including Unicode space separators
+            s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85" + U.Zs + U.Zl + U.Zp,
+        };
+        return _unicodeClasses;
+    }
+
+    // AST Node Types
+    class RegexNode {
+        constructor(type) {
+            this.type = type;
+        }
+    }
+    class Literal extends RegexNode {
+        constructor(char) {
+            super("Literal");
+            this.char = char;
+        }
+    }
+    class Escape extends RegexNode {
+        constructor(sequence) {
+            super("Escape");
+            this.sequence = sequence;
+        }
+    }
+    class Dot extends RegexNode {
+        constructor() {
+            super("Dot");
+        }
+    }
+    class Anchor extends RegexNode {
+        constructor(anchorType) {
+            super("Anchor");
+            this.anchorType = anchorType;
+        }
+    }
+    class CharacterClass extends RegexNode {
+        constructor(negated, items) {
+            super("CharacterClass");
+            this.negated = negated;
+            this.items = items;
+        }
+    }
+    class Group extends RegexNode {
+        constructor(capturing, name, subpattern, flags = null) {
+            super("Group");
+            this.capturing = capturing;
+            this.name = name;
+            this.subpattern = subpattern;
+            this.flags = flags;
+        }
+    }
+    class Backreference extends RegexNode {
+        constructor(ref) {
+            super("Backreference");
+            this.ref = ref;
+        }
+    }
+    class Lookaround extends RegexNode {
+        constructor(positive, forward, subpattern) {
+            super("Lookaround");
+            this.positive = positive;
+            this.forward = forward;
+            this.subpattern = subpattern;
+        }
+    }
+    class Quantifier extends RegexNode {
+        constructor(min, max, greedy, child) {
+            super("Quantifier");
+            this.min = min;
+            this.max = max;
+            this.greedy = greedy;
+            this.child = child;
+        }
+    }
+    class Alternation extends RegexNode {
+        constructor(branches) {
+            super("Alternation");
+            this.branches = branches;
+        }
+    }
+    class Sequence extends RegexNode {
+        constructor(elements) {
+            super("Sequence");
+            this.elements = elements;
+        }
+    }
+    // CPython's tokenizer keeps escaped pairs together and indexes codepoints.
+    class Tokenizer {
+        constructor(pattern) {
+            this.pattern = pattern;
+            this.chars = Array.from(pattern);
+            this.pos = 0;
+            this.length = this.chars.length;
+        }
+
+        peek(offset = 0) {
+            let index = this.pos;
+            for (let i = 0; i < offset && index < this.length; i++) {
+                index += this.chars[index] === "\\" ? 2 : 1;
+            }
+            if (index >= this.length) {
+                return null;
+            }
+            const char = this.chars[index];
+            if (char !== "\\") {
+                return char;
+            }
+            if (index + 1 === this.length) {
+                this.error("bad escape (end of pattern)", index);
+            }
+            return char + this.chars[index + 1];
+        }
+
+        get() {
+            const token = this.peek();
+            if (token !== null) {
+                this.pos += this.chars[this.pos] === "\\" ? 2 : 1;
+            }
+            return token;
+        }
+
+        match(char) {
+            const next = this.peek();
+            if (next === char) {
+                this.get();
+                return true;
+            }
+            return false;
+        }
+
+        getwhile(predicate) {
+            let result = "";
+            while (this.pos < this.length) {
+                const char = this.peek();
+                if (!char || !predicate(char)) {
+                    break;
+                }
+                result += this.get();
+            }
+            return result;
+        }
+
+        getUntil(char) {
+            let result = "";
+            while (this.pos < this.length) {
+                const next = this.peek();
+                if (!next || next === char) {
+                    break;
+                }
+                result += this.get();
+            }
+            return result;
+        }
+
+        error(msg, pos) {
+            throw makeError(msg, this.pattern, pos !== undefined ? pos : this.pos);
+        }
+    }
+
+    // CPython stores closed-group widths and the first group in a lookbehind.
+    // Names resolve to numbers here, so named and numeric references share checks.
+    class PatternState {
+        constructor() {
+            this.groupNames = new Map();
+            this.groupWidths = [null];
+            this.lookbehindGroups = null;
+        }
+
+        openGroup(name, source) {
+            const group = this.groupWidths.length;
+            if (name !== null) {
+                if (this.groupNames.has(name)) {
+                    source.error(`redefinition of group name '${name}'`);
+                }
+                this.groupNames.set(name, group);
+            }
+            this.groupWidths.push(null);
+            return group;
+        }
+
+        closeGroup(group, node) {
+            this.groupWidths[group] = this.getWidth(node);
+        }
+
+        checkReference(group, source, pos) {
+            if (group >= this.groupWidths.length) {
+                source.error(`invalid group reference ${group}`, pos);
+            }
+            if (this.groupWidths[group] === null) {
+                source.error("cannot refer to an open group", pos);
+            }
+            if (this.lookbehindGroups !== null && group >= this.lookbehindGroups) {
+                source.error("cannot refer to group defined in the same lookbehind subpattern", pos);
+            }
+        }
+
+        getWidth(node) {
+            // Different caps keep an unbounded/overflowing maximum distinct
+            // from its minimum, so saturation cannot imply fixed width.
+            switch (node.type) {
+                case "Literal":
+                case "Escape":
+                case "Dot":
+                case "CharacterClass":
+                    return [1, 1];
+                case "Anchor":
+                case "Lookaround":
+                    return [0, 0];
+                case "Backreference":
+                    return this.groupWidths[node.ref];
+                case "Group":
+                    return this.getWidth(node.subpattern);
+                case "Quantifier": {
+                    const [min, max] = this.getWidth(node.child);
+                    return [
+                        Math.min(min * node.min, MAXREPEAT - 1),
+                        Math.min(max === 0 ? 0 : max * (node.max === null ? Infinity : node.max), MAXREPEAT),
+                    ];
+                }
+                case "Sequence":
+                    return node.elements.reduce(
+                        ([min, max], item) => {
+                            const width = this.getWidth(item);
+                            return [Math.min(min + width[0], MAXREPEAT - 1), Math.min(max + width[1], MAXREPEAT)];
+                        },
+                        [0, 0]
+                    );
+                case "Alternation": {
+                    const widths = node.branches.map((branch) => this.getWidth(branch));
+                    return [Math.min(...widths.map((w) => w[0])), Math.max(...widths.map((w) => w[1]))];
+                }
+            }
+        }
+    }
+
+    // Parser
+    class RegexParser {
+        constructor(pattern, verbose) {
+            this.verbose = verbose;
+            this.inlineFlags = "";
+            this.tokenizer = new Tokenizer(pattern);
+            this.state = new PatternState();
+        }
+
+        parse() {
+            const result = this.parseAlternation(true);
+            if (this.tokenizer.peek() !== null) {
+                this.tokenizer.error("unbalanced parenthesis");
+            }
+            return result;
+        }
+
+        parseAlternation(allowGlobalFlags = false) {
+            const branches = [this.parseSequence(allowGlobalFlags)];
+            while (this.tokenizer.match("|")) {
+                branches.push(this.parseSequence());
+            }
+            return branches.length === 1 ? branches[0] : new Alternation(branches);
+        }
+
+        parseSequence(allowGlobalFlags = false) {
+            const elements = [];
+            while (true) {
+                this.skipIgnored();
+                const next = this.tokenizer.peek();
+                if (next === null || next === "|" || next === ")") {
+                    break;
+                }
+                if ("*+?{".includes(next)) {
+                    // Comments emit no atom: repetition still attaches to the
+                    // preceding atom, as in CPython.
+                    const last = elements.length - 1;
+                    const repeated = this.parseQuantified(elements[last]);
+                    if (repeated === null) {
+                        this.tokenizer.get();
+                        elements.push(new Literal("{"));
+                    } else {
+                        elements[last] = repeated;
+                    }
+                } else {
+                    const atom = this.parseAtom(allowGlobalFlags && elements.length === 0);
+                    if (atom !== null) {
+                        elements.push(atom);
+                    }
+                }
+            }
+            if (elements.length === 0) {
+                return new Sequence([]);
+            }
+            if (elements.length === 1) {
+                return elements[0];
+            }
+            return new Sequence(elements);
+        }
+
+        skipIgnored() {
+            if (!this.verbose) {
+                return;
+            }
+            while (this.tokenizer.peek() !== null) {
+                const char = this.tokenizer.peek();
+                if (" \t\n\r\v\f".includes(char)) {
+                    this.tokenizer.get();
+                } else if (char === "#") {
+                    this.tokenizer.getUntil("\n");
+                } else {
+                    break;
+                }
+            }
+        }
+
+        parseQuantified(atom) {
+            const start = this.tokenizer.pos;
+            const next = this.tokenizer.peek();
+            let min,
+                max,
+                greedy = true;
+
+            if (next === "*") {
+                this.tokenizer.get();
+                min = 0;
+                max = null;
+            } else if (next === "+") {
+                this.tokenizer.get();
+                min = 1;
+                max = null;
+            } else if (next === "?") {
+                this.tokenizer.get();
+                min = 0;
+                max = 1;
+            } else if (next === "{") {
+                const quantifier = this.parseRepetition();
+                if (quantifier) {
+                    min = quantifier.min;
+                    max = quantifier.max;
+                } else {
+                    return null;
+                }
+            }
+
+            if (!atom || atom.type === "Anchor") {
+                this.tokenizer.error("nothing to repeat", start);
+            }
+            if (atom.type === "Quantifier") {
+                this.tokenizer.error("multiple repeat", start);
+            }
+            if (this.tokenizer.peek() === "?") {
+                this.tokenizer.get();
+                greedy = false;
+            }
+            return new Quantifier(min, max, greedy, atom);
+        }
+
+        parseRepetition() {
+            const start = this.tokenizer.pos;
+            this.tokenizer.get();
+            const lo = this.tokenizer.getwhile((c) => RE_DIGIT.test(c));
+            const comma = this.tokenizer.match(",");
+            const hi = comma ? this.tokenizer.getwhile((c) => RE_DIGIT.test(c)) : lo;
+            if (!this.tokenizer.match("}") || (!lo && !comma)) {
+                this.tokenizer.pos = start;
+                return null;
+            }
+            const min = lo ? Number(lo) : 0;
+            const max = hi ? Number(hi) : null;
+            if (min >= MAXREPEAT || max >= MAXREPEAT) {
+                throw new Sk.builtin.OverflowError("the repetition number is too large");
+            }
+            if (max !== null && max < min) {
+                this.tokenizer.error("min repeat greater than max repeat", start + 1);
+            }
+            return { min, max };
+        }
+
+        parseAtom(allowGlobalFlags) {
+            const char = this.tokenizer.peek();
+            if (char === "(") {
+                return this.parseGroup(allowGlobalFlags);
+            }
+            if (char === "[") {
+                return this.parseCharacterClass();
+            }
+            if (char !== null && char.startsWith("\\")) {
+                return this.parseEscape();
+            }
+            if (char === ".") {
+                this.tokenizer.get();
+                return new Dot();
+            }
+            if (char === "^") {
+                this.tokenizer.get();
+                return new Anchor("start");
+            }
+            if (char === "$") {
+                this.tokenizer.get();
+                return new Anchor("end");
+            }
+            if (char !== null && !"|)*+?".includes(char)) {
+                this.tokenizer.get();
+                return new Literal(char);
+            }
+            this.tokenizer.error(`Unexpected character '${char}'`);
+        }
+
+        parseGroup(allowGlobalFlags) {
+            const start = this.tokenizer.pos;
+            this.tokenizer.get();
+            let capturing = true;
+            let name = null;
+            let flags = null;
+            if (this.tokenizer.match("?")) {
+                const extension = this.tokenizer.get();
+                if (extension === ":") {
+                    capturing = false;
+                } else if (extension === "P") {
+                    if (this.tokenizer.match("<")) {
+                        name = this.parseGroupName(">");
+                    } else if (this.tokenizer.match("=")) {
+                        const refPos = this.tokenizer.pos;
+                        const refName = this.parseGroupName(")");
+                        const group = this.state.groupNames.get(refName);
+                        if (group === undefined) {
+                            this.tokenizer.error(`unknown group name '${refName}'`, refPos);
+                        }
+                        this.state.checkReference(group, this.tokenizer, refPos);
+                        return new Backreference(group);
+                    } else {
+                        this.tokenizer.error("unknown extension ?P", start + 1);
+                    }
+                } else if (extension === "=" || extension === "!") {
+                    return this.parseLookaround(extension === "=", true, start);
+                } else if (extension === "<") {
+                    const direction = this.tokenizer.get();
+                    if (direction !== "=" && direction !== "!") {
+                        this.tokenizer.error("unknown extension ?<", start + 1);
+                    }
+                    return this.parseLookaround(direction === "=", false, start);
+                } else if (extension === "#") {
+                    this.tokenizer.getUntil(")");
+                    if (!this.tokenizer.match(")")) {
+                        this.tokenizer.error("missing ), unterminated comment", start);
+                    }
+                    return null;
+                } else if (extension !== null && RE_INLINE_FLAGS_START.test(extension)) {
+                    this.tokenizer.pos--;
+                    flags = this.parseFlags(allowGlobalFlags, start);
+                    if (flags === null) {
+                        return null;
+                    }
+                    capturing = false;
+                } else if (extension === "(") {
+                    this.tokenizer.error("conditional groups are not supported", start);
+                } else {
+                    this.tokenizer.error(`unknown extension ?${extension}`, start + 1);
+                }
+            }
+            const group = capturing ? this.state.openGroup(name, this.tokenizer) : null;
+            const verbose = this.verbose;
+            if (flags !== null) {
+                this.verbose = flags.on.includes("x") || (verbose && !flags.off.includes("x"));
+            }
+            const subpattern = this.parseAlternation();
+            this.verbose = verbose;
+            if (!this.tokenizer.match(")")) {
+                this.tokenizer.error("missing ), unterminated subpattern", start);
+            }
+            if (capturing) {
+                this.state.closeGroup(group, subpattern);
+            }
+            return new Group(capturing, name, subpattern, flags);
+        }
+
+        parseGroupName(end) {
+            const start = this.tokenizer.pos;
+            const name = this.tokenizer.getUntil(end);
+            if (!this.tokenizer.match(end)) {
+                this.tokenizer.error(`missing ${end}, unterminated name`, start);
+            }
+            if (!name) {
+                this.tokenizer.error("missing group name", start);
+            }
+            if (!Sk.token.isIdentifier(name)) {
+                this.tokenizer.error(`bad character in group name '${name}'`, start);
+            }
+            return name;
+        }
+
+        parseLookaround(positive, forward, start) {
+            const previous = this.state.lookbehindGroups;
+            if (!forward && previous === null) {
+                this.state.lookbehindGroups = this.state.groupWidths.length;
+            }
+            const subpattern = this.parseAlternation();
+            this.state.lookbehindGroups = previous;
+            if (!this.tokenizer.match(")")) {
+                this.tokenizer.error("missing ), unterminated subpattern", start);
+            }
+            if (!forward) {
+                const [min, max] = this.state.getWidth(subpattern);
+                if (min !== max) {
+                    this.tokenizer.error("look-behind requires fixed-width pattern", start);
+                }
+            }
+            return new Lookaround(positive, forward, subpattern);
+        }
+
+        parseFlags(allowGlobalFlags, start) {
+            const onFlags = this.tokenizer.getwhile((c) => RE_INLINE_FLAGS.test(c));
+            if (RE_ALPHA.test(this.tokenizer.peek())) {
+                this.tokenizer.error("unknown flag");
+            }
+            if ([...new Set(onFlags)].filter((c) => RE_INCOMPATIBLE_FLAGS.test(c)).length > 1) {
+                this.tokenizer.error("bad inline flags: flags 'a', 'u' and 'L' are incompatible");
+            }
+            if (this.tokenizer.match(")")) {
+                if (!allowGlobalFlags) {
+                    this.tokenizer.error("global flags not at the start of the expression", start);
+                }
+                this.inlineFlags += onFlags;
+                if (onFlags.includes("x") && !this.verbose) {
+                    this.verbose = true;
+                }
+                return null;
+            }
+            let offFlags = "";
+            const turnOff = this.tokenizer.match("-");
+            if (turnOff) {
+                offFlags = this.tokenizer.getwhile((c) => RE_INLINE_FLAGS.test(c));
+                if (RE_ALPHA.test(this.tokenizer.peek())) {
+                    this.tokenizer.error("unknown flag");
+                }
+                if (!offFlags) {
+                    this.tokenizer.error("missing flag");
+                }
+                if (RE_INCOMPATIBLE_FLAGS.test(offFlags)) {
+                    this.tokenizer.error("bad inline flags: cannot turn off flags 'a', 'u' and 'L'");
+                }
+                if ([...offFlags].some((c) => onFlags.includes(c))) {
+                    this.tokenizer.error("bad inline flags: flag turned on and off");
+                }
+            }
+            if (!this.tokenizer.match(":")) {
+                this.tokenizer.error(turnOff ? "missing :" : "missing -, : or )");
+            }
+            if (RE_INCOMPATIBLE_FLAGS.test(onFlags)) {
+                this.tokenizer.error("scoped type flags are not supported");
+            }
+            return { on: onFlags, off: offFlags };
+        }
+
+        parseCharacterClass() {
+            const start = this.tokenizer.pos;
+            this.tokenizer.get();
+            const negated = this.tokenizer.match("^");
+            const items = [];
+            while (this.tokenizer.peek() !== null) {
+                if (this.tokenizer.peek() === "]" && items.length) {
+                    break;
+                }
+                const item = this.parseCharacterClassItem();
+                if (
+                    this.tokenizer.peek() === "-" &&
+                    this.tokenizer.peek(1) !== "]" &&
+                    this.tokenizer.peek(1) !== null
+                ) {
+                    const dashPos = this.tokenizer.pos;
+                    this.tokenizer.get();
+                    const end = this.parseCharacterClassItem();
+                    if (item.type === "literal" && end.type === "literal") {
+                        // Validate range order - use codePointAt for proper Unicode support
+                        const startCode = item.char.codePointAt(0);
+                        const endCode = end.char.codePointAt(0);
+                        if (startCode > endCode) {
+                            this.tokenizer.error(`bad character range ${item.char}-${end.char}`, dashPos - 1);
+                        }
+                        items.push({ type: "range", start: item.char, end: end.char });
+                    } else {
+                        // Range with escape class is an error
+                        const startStr = item.type === "escape" ? `\\${item.sequence}` : item.char;
+                        const endStr = end.type === "escape" ? `\\${end.sequence}` : end.char;
+                        this.tokenizer.error(`bad character range ${startStr}-${endStr}`, dashPos - 1);
+                    }
+                } else {
+                    items.push(item);
+                }
+            }
+            if (!this.tokenizer.match("]")) {
+                this.tokenizer.error("unterminated character set", start);
+            }
+            return new CharacterClass(negated, items);
+        }
+
+        parseCharacterClassItem() {
+            const node = this.tokenizer.peek().startsWith("\\")
+                ? this.parseEscape(true)
+                : new Literal(this.tokenizer.get());
+            return node.type === "Escape"
+                ? { type: "escape", sequence: node.sequence }
+                : { type: "literal", char: node.char };
+        }
+
+        parseEscape(inClass = false) {
+            const startPos = this.tokenizer.pos;
+            const next = this.tokenizer.get().slice(1);
+
+            if (!inClass) {
+                const anchors = {
+                    A: "string_start",
+                    Z: "string_end",
+                    z: "string_end",
+                    b: "word_boundary",
+                    B: "not_word_boundary",
+                };
+                if (anchors[next]) {
+                    return new Anchor(anchors[next]);
+                }
+            } else if (next === "b") {
+                return new Literal("\b");
+            }
+
+            const escapes = { n: "\n", r: "\r", t: "\t", f: "\f", v: "\v", a: "\x07" };
+            if (escapes[next] !== undefined) {
+                return new Literal(escapes[next]);
+            }
+            if (RE_CHAR_CLASS_ESCAPES.test(next)) {
+                return new Escape(next);
+            }
+
+            if (next === "x" || next === "u" || next === "U") {
+                const length = { x: 2, u: 4, U: 8 }[next];
+                let hex = "";
+                while (
+                    hex.length < length &&
+                    this.tokenizer.peek() !== null &&
+                    RE_HEX_DIGIT.test(this.tokenizer.peek())
+                ) {
+                    hex += this.tokenizer.get();
+                }
+                if (hex.length !== length) {
+                    this.tokenizer.error(`incomplete escape \\${next}${hex}`, startPos);
+                }
+                const codePoint = parseInt(hex, 16);
+                if (codePoint > 0x10ffff) {
+                    this.tokenizer.error(`bad escape \\${next}${hex}`, startPos);
+                }
+                return new Literal(String.fromCodePoint(codePoint));
+            }
+
+            if (RE_DIGIT.test(next)) {
+                let digits = next;
+                let octal = inClass || next === "0";
+                if (octal) {
+                    if (!RE_OCTAL_DIGIT.test(next)) {
+                        this.tokenizer.error(`bad escape \\${next}`, startPos);
+                    }
+                    while (digits.length < 3 && RE_OCTAL_DIGIT.test(this.tokenizer.peek())) {
+                        digits += this.tokenizer.get();
+                    }
+                } else {
+                    if (RE_DIGIT.test(this.tokenizer.peek())) {
+                        digits += this.tokenizer.get();
+                    }
+                    if (/^[0-7]{2}$/.test(digits) && RE_OCTAL_DIGIT.test(this.tokenizer.peek())) {
+                        digits += this.tokenizer.get();
+                        octal = true;
+                    }
+                }
+                if (octal) {
+                    const value = parseInt(digits, 8);
+                    if (value > 0o377) {
+                        this.tokenizer.error(`octal escape value \\${digits} outside of range 0-0o377`, startPos);
+                    }
+                    return new Literal(String.fromCharCode(value));
+                }
+                const groupNum = parseInt(digits, 10);
+                this.state.checkReference(groupNum, this.tokenizer, startPos);
+                return new Backreference(groupNum);
+            }
+            if (RE_ALPHA.test(next)) {
+                this.tokenizer.error(`bad escape \\${next}`, startPos);
+            }
+            return new Literal(next);
+        }
+    }
+
+    // Generator - Convert AST to JavaScript regex
+    let hasLookbehindSupport = true;
+    try {
+        new RegExp("(?<!foo)");
+    } catch {
+        hasLookbehindSupport = false;
+    }
+
+    class JSRegexGenerator {
+        constructor(options = {}) {
+            this.unicodeMode = options.unicodeMode || false;
+            this.asciiMode = options.asciiMode || false;
+            this.dotAll = options.dotAll || false;
+            this.multiline = options.multiline || false;
+        }
+
+        generate(ast) {
+            return this.visit(ast);
+        }
+
+        visit(node) {
+            const method = `visit${node.type}`;
+            if (this[method]) {
+                return this[method](node);
+            }
+            throw new Error(`Unknown node type: ${node.type}`);
+        }
+
+        visitLiteral(node) {
+            if (RE_SPECIAL_CHARS.test(node.char)) {
+                return "\\" + node.char;
+            }
+            if (this.unicodeMode) {
+                const escapeMap = { "\t": "\\t", "\n": "\\n", "\r": "\\r", "\v": "\\v", "\f": "\\f" };
+                if (escapeMap[node.char]) {
+                    return escapeMap[node.char];
+                }
+            }
+            return node.char;
+        }
+
+        characterClasses() {
+            return this.asciiMode ? { w: "a-zA-Z0-9_", d: "0-9", s: "\\t\\n\\r\\f\\v " } : getUnicodeClasses();
+        }
+
+        visitEscape(node) {
+            const chars = this.characterClasses()[node.sequence.toLowerCase()];
+            return "[" + (node.sequence === node.sequence.toUpperCase() ? "^" : "") + chars + "]";
+        }
+        visitDot(node) {
+            return this.dotAll ? "[\\s\\S]" : "[^\\n]";
+        }
+
+        visitAnchor(node) {
+            // Keep native ^ where possible so anchored misses do not scan the input.
+            // JS also treats CR and Unicode separators as line endings. These
+            // assertions preserve Python's LF-only rules without native m flags.
+            switch (node.anchorType) {
+                case "start":
+                    if (!hasLookbehindSupport) {
+                        return "^";
+                    }
+                    return this.multiline ? "(?:^|(?<=\\n))" : "^";
+                case "end":
+                    return this.multiline ? "(?=\\n|(?![\\s\\S]))" : "(?=\\n?(?![\\s\\S]))";
+                case "string_start":
+                    return "^";
+                case "string_end":
+                    return "(?![\\s\\S])";
+                case "word_boundary":
+                case "not_word_boundary":
+                    return this.wordBoundary(node.anchorType === "not_word_boundary");
+                default:
+                    throw new Error(`Unknown anchor type: ${node.anchorType}`);
+            }
+        }
+
+        wordBoundary(negated) {
+            if (!hasLookbehindSupport) {
+                // Preserve master's native JS boundaries on older browsers. These
+                // have limited Unicode semantics, but keep existing patterns usable.
+                return negated ? "\\B" : "\\b";
+            }
+            const word = "[" + this.characterClasses().w + "]";
+            const boundary = `(?:(?<!${word})(?=${word})|(?<=${word})(?!${word}))`;
+            // Since Python 3.14, \B is the complement even on empty input.
+            return negated ? `(?!${boundary})` : boundary;
+        }
+
+        escapeClassLiteral(char) {
+            return /[\\\]\[\^-]/.test(char) ? "\\" + char : char;
+        }
+
+        visitCharacterClass(node) {
+            let chars = "";
+            const alternatives = [];
+            const classes = this.characterClasses();
+            for (const item of node.items) {
+                if (item.type === "literal") {
+                    chars += this.escapeClassLiteral(item.char);
+                } else if (item.type === "range") {
+                    chars += this.escapeClassLiteral(item.start) + "-" + this.escapeClassLiteral(item.end);
+                } else if (item.sequence === item.sequence.toLowerCase()) {
+                    chars += classes[item.sequence];
+                } else {
+                    alternatives.push(this.visitEscape(item));
+                }
+            }
+            if (!alternatives.length) {
+                return "[" + (node.negated ? "^" : "") + chars + "]";
+            }
+            if (chars) {
+                alternatives.push("[" + chars + "]");
+            }
+            const union = "(?:" + alternatives.join("|") + ")";
+            return node.negated ? `(?!${union})[\\s\\S]` : union;
+        }
+
+        visitGroup(node) {
+            let generator = this;
+            let prefix = "?:";
+            if (node.flags !== null) {
+                const { on, off } = node.flags;
+                generator = new JSRegexGenerator({
+                    ...this,
+                    dotAll: on.includes("s") || (this.dotAll && !off.includes("s")),
+                    multiline: on.includes("m") || (this.multiline && !off.includes("m")),
+                });
+                // Native i preserves master's support on newer engines. Without
+                // lookbehind, scoped m also needs the native modifier fallback.
+                let enable = "";
+                let disable = "";
+                for (const flag of hasLookbehindSupport ? "i" : "im") {
+                    if (on.includes(flag)) {
+                        enable += flag;
+                    }
+                    if (off.includes(flag)) {
+                        disable += flag;
+                    }
+                }
+                if (enable || disable) {
+                    prefix = "?" + enable + (disable ? "-" + disable : "") + ":";
+                }
+            }
+            const inner = generator.visit(node.subpattern);
+            if (node.capturing) {
+                return node.name ? `(?<${node.name}>${inner})` : `(${inner})`;
+            }
+            return `(${prefix}${inner})`;
+        }
+
+        visitBackreference(node) {
+            // A following decoded digit must not become part of this reference.
+            return `(?:\\${node.ref})`;
+        }
+
+        visitLookaround(node) {
+            const inner = this.visit(node.subpattern);
+            if (node.forward) {
+                return node.positive ? `(?=${inner})` : `(?!${inner})`;
+            }
+            return node.positive ? `(?<=${inner})` : `(?<!${inner})`;
+        }
+
+        visitQuantifier(node) {
+            const inner = this.visit(node.child);
+            let quantifier;
+            if (node.min === 0 && node.max === null) {
+                quantifier = "*";
+            } else if (node.min === 1 && node.max === null) {
+                quantifier = "+";
+            } else if (node.min === 0 && node.max === 1) {
+                quantifier = "?";
+            } else if (node.max === null) {
+                quantifier = `{${node.min},}`;
+            } else if (node.min === node.max) {
+                quantifier = `{${node.min}}`;
+            } else {
+                quantifier = `{${node.min},${node.max}}`;
+            }
+            if (!node.greedy) {
+                quantifier += "?";
+            }
+            // Keep the generated expression atomic, including expanded character classes.
+            return `(?:${inner})${quantifier}`;
+        }
+
+        visitAlternation(node) {
+            return node.branches.map((b) => this.visit(b)).join("|");
+        }
+        visitSequence(node) {
+            return node.elements.map((e) => this.visit(e)).join("");
+        }
+    }
+
+    function parse(pattern, verbose) {
+        const parser = new RegexParser(pattern, verbose);
+        const ast = parser.parse();
+        return {
+            ast,
+            inlineFlags: parser.inlineFlags,
+            groupCount: parser.state.groupWidths.length - 1,
+            groupNames: parser.state.groupNames,
+        };
+    }
+
+    function generate(ast, options) {
+        return new JSRegexGenerator(options).generate(ast);
+    }
+
+    return { parse, generate, hasLookbehindSupport };
+}
+
+// ========================================================================
+// Skulpt Module Definition
+// ========================================================================
+
+function $builtinmodule(name) {
     const {
         builtin: {
             dict: pyDict,
@@ -10,7 +956,7 @@ function $builtinmodule(name) {
             tuple: pyTuple,
             mappingproxy: pyMappingProxy,
             slice: pySlice,
-            none: {none$: pyNone},
+            none: { none$: pyNone },
             NotImplemented: { NotImplemented$: pyNotImplemented },
             Exception,
             OverflowError,
@@ -22,11 +968,9 @@ function $builtinmodule(name) {
             checkCallable,
             hex,
         },
-        abstr: { buildNativeClass, typeName, checkOneArg, numberBinOp, copyKeywordToNamedArgs, setUpModuleMethods },
+        abstr: { buildNativeClass, typeName, checkOneArg, numberBinOp, copyKeywordsToNamedArgs, setUpModuleMethods },
         misceval: { iterator: pyIterator, objectRepr, asIndexSized, isIndex, callsimArray: pyCall },
     } = Sk;
-
-
 
     const re = {
         __name__: new pyStr("re"),
@@ -228,27 +1172,17 @@ function $builtinmodule(name) {
         "ASCII and UNICODE flags are incompatible": new re.RegexFlag(re.A.valueOf() | re.U.valueOf()),
     });
 
-    // These flags can be anywhere in the pattern, (changed in 3.11 so that it has to be at the start)
-    const inline_regex = /\(\?([isamux]+)\)/g;
-
-    function adjustFlags(pyPattern, pyFlag) {
-        let jsPattern = pyPattern.toString();
+    function adjustFlags(pyFlag, parsedFlags) {
         let jsFlag = "g";
-        // currently not worrying about bytes;
-        // need to check compatibility of auL - also L not valid for str patterns
         let inlineFlags = 0;
-        jsPattern = jsPattern.replace(inline_regex, (match, inline) => {
-            for (let i of inline) {
-                const inlineFlag = jsInlineFlags[i];
-                inlineFlags = inlineFlags | inlineFlag.valueOf();
-            }
-            return "";
-        });
+        for (const flag of parsedFlags) {
+            inlineFlags |= jsInlineFlags[flag].valueOf();
+        }
 
         // check if inlineFlags (it throws a different error)
         flagFails.forEach(([msg, flag]) => {
             if ((flag.valueOf() & inlineFlags) === flag.valueOf()) {
-                throw new re.error("bad bad inline flags: " + msg);
+                throw new re.error("bad inline flags: " + msg);
             }
         });
 
@@ -273,116 +1207,51 @@ function $builtinmodule(name) {
         });
         pyFlag = new re.RegexFlag(pyFlag.valueOf()); // just incase we're an integer
 
-        return [jsPattern, jsFlag, pyFlag];
+        return [jsFlag, pyFlag];
     }
 
-    let neg_lookbehind_A = "(?<!\\\\n)";
-    (function checkLookBehindSupport() {
-        try {
-            eval("/(?<!foo)/");
-        } catch {
-            neg_lookbehind_A = "";
-        }
-    })();
-
-    /*
-     * Python docs:
-     * To match a literal ']' inside a set, precede it with a backslash, or place it at the beginning of the set.
-     * For example, both [()[\]{}] and []()[{}] will match a right bracket, as well as left bracket, braces, and parentheses.
-     * 
-     * This is not valid in JS so escape this occurrence
-     */
-    const initialUnescapedBracket = /([^\\])(\[\^?)\](\]|.*[^\\]\])/g;
-    // adjustments to {, | \\A | \\Z | $ | (?P=foo) | (?P<name>
-    // We also don't want these characters to be inside square brackets
-    // (?!(?:\]|[^\[]*[^\\]\])) Negative lookahead checking the next character is not ] (e.g. special case \\Z])
-    // And that we don't have an unescaped "]" so long as it's not preceded by a "[".
-    const py_to_js_regex = /([^\\])({,|\\A|\\Z|\$|\(\?P=([^\d\W]\w*)\)|\(\?P<([^\d\W]\w*)>)(?!(?:\]|[^\[]*[^\\]\]))/g;
-    // unicode mode in js regex treats \\\t incorrectly and should be converted to \\t
-    // similarly \" and \' \! \& throw errors
-    const py_to_js_unicode_escape = /\\[\t\r\n \v\f#&~"'!:,;`<>]|\\-(?!(?:\]|[^\[]*[^\\]\]))/g;
-    const quantifierErrors = /Incomplete quantifier|Lone quantifier/g;
+    // Get parser from module-level getReParser() function
+    const { parse, generate, hasLookbehindSupport } = getReParser(
+        (msg, pattern, pos) => new re.error(msg, new pyStr(pattern), new pyInt(pos))
+    );
+    if (hasLookbehindSupport) {
+        // The emitter handles multiline anchors with Python's LF-only semantics.
+        delete jsFlags.m;
+    }
 
     const _compiled_patterns = Object.create(null);
 
     function compile_pattern(pyPattern, pyFlag) {
-        let jsPattern, jsFlags;
-        [jsPattern, jsFlags, pyFlag] = adjustFlags(pyPattern, pyFlag);
-        const _cached = _compiled_patterns[pyPattern.toString()];
-        if (_cached && _cached.$flags === pyFlag) {
-            return _cached;
+        const cacheKey = pyPattern.toString() + "|" + pyFlag.valueOf();
+        const cached = _compiled_patterns[cacheKey];
+        if (cached) {
+            return cached;
         }
 
-        const named_groups = {};
-        jsPattern = "_" + jsPattern; // prepend so that we can safely not use negative lookbehinds in py_to_js_regex
-        jsPattern = jsPattern.replace(initialUnescapedBracket, "$1$2\\]$3");
-        jsPattern = jsPattern.replace(py_to_js_regex, (m, p0, p1, p2, p3, offset) => {
-            switch (p1) {
-                case "\\A":
-                    return p0 + neg_lookbehind_A + "^";
-                case "\\Z":
-                    return p0 + "$(?!\\n)";
-                case "{,":
-                    return p0 + "{0,";
-                case "$":
-                    return p0 + "(?:(?=\\n$)|$)";
-                default:
-                    if (p1.endsWith(">")) {
-                        named_groups[p3] = true;
-                        return p0 + "(?<" + p3 + ">";
-                    }
-                    if (!named_groups[p2]) {
-                        throw new re.error("unknown group name " + p2 + " at position " + offset + 1, pyPattern, new pyInt(offset + 1));
-                    }
-                    return p0 + "\\k<" + p2 + ">";
-            }
-        });
-        jsPattern = jsPattern.slice(1);
-        let regex;
-        let msg;
-        let unicodeEscapedPattern = jsPattern;
-        if (jsFlags.includes("u")) {
-            // then we we need to adjust the escapes for \\\t to be \\t etc because javascript reads escapes differently in unicode mode!
-            // '\\-' is different - inside a square bracket it gets compiled but outside it doesn't!
-            unicodeEscapedPattern = jsPattern.replace(py_to_js_unicode_escape, (m) => {
-                switch (m) {
-                    case "\\ ":
-                        return " ";
-                    case "\\\t":
-                        return "\\t";
-                    case "\\\n":
-                        return "\\n";
-                    case "\\\v":
-                        return "\\v";
-                    case "\\\f":
-                        return "\\f";
-                    case "\\r":
-                        return "\\r";
-                    default:
-                        return m.slice(1);
-                }
-            });
-        }
+        const parsed = parse(pyPattern.toString(), (pyFlag.valueOf() & re.X.valueOf()) !== 0);
+        let jsFlags;
+        [jsFlags, pyFlag] = adjustFlags(pyFlag, parsed.inlineFlags);
+        let convertedPattern;
         try {
-            regex = new RegExp(unicodeEscapedPattern, jsFlags);
+            convertedPattern = generate(parsed.ast, {
+                unicodeMode: jsFlags.includes("u"),
+                asciiMode: (pyFlag.valueOf() & re.A.valueOf()) !== 0,
+                dotAll: (pyFlag.valueOf() & re.S.valueOf()) !== 0,
+                multiline: (pyFlag.valueOf() & re.M.valueOf()) !== 0,
+            });
         } catch (e) {
-            if (quantifierErrors.test(e.message)) {
-                try {
-                    // try without the unicode flag since unicode mode is stricter
-                    regex = new RegExp(jsPattern, jsFlags.replace("u", ""));
-                } catch (e) {
-                    msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString(); 
-                    throw new re.error(msg, pyPattern);
-                }
-                //// uncomment when debugging
-                // Sk.asserts.fail(e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + jsPattern.toString());
-            } else {
-                msg = e.message.substring(e.message.lastIndexOf(":") + 2) + " in pattern: " + pyPattern.toString();
-                throw new re.error(msg, pyPattern);
-            }
+            throw new re.error(e.message, pyPattern);
         }
-        const ret = new re.Pattern(regex, pyPattern, pyFlag);
-        _compiled_patterns[pyPattern.toString()] = ret;
+
+        let regex;
+        try {
+            regex = new RegExp(convertedPattern, jsFlags);
+        } catch (e) {
+            const msg = e.message.substring(e.message.lastIndexOf(":") + 2);
+            throw new re.error(msg, pyPattern);
+        }
+        const ret = new re.Pattern(regex, pyPattern, pyFlag, parsed.groupCount, parsed.groupNames);
+        _compiled_patterns[cacheKey] = ret;
         return ret;
     }
 
@@ -401,26 +1270,58 @@ function $builtinmodule(name) {
 
     re.error = buildNativeClass("re.error", {
         base: Exception,
-        constructor: function error(msg, pattern, pos) {
-            this.$pattern = pattern;
-            this.$msg = msg;
-            this.$pos = pos || pyNone;
-            Exception.call(this, msg);
+        constructor: function error(msg = pyNone, pattern = pyNone, pos = pyNone) {
+            Exception.call(this);
+            this.$init(msg, pattern, pos);
         },
         slots: {
-            tp$doc:
-                "Exception raised for invalid regular expressions.\n\n    Attributes:\n\n        msg: The unformatted error message\n        pattern: The regular expression pattern\n",
+            tp$doc: "Exception raised for invalid regular expressions.\n\n    Attributes:\n\n        msg: The unformatted error message\n        pattern: The regular expression pattern\n",
             tp$init(args, kwargs) {
-                const [msg, pattern, pos] = copyKeywordToNamedArgs("re.error", ["msg", "pattern", "pos"], args, kwargs, [
-                    pyNone,
-                    pyNone,
-                ]);
+                const [msg, pattern, pos] = copyKeywordsToNamedArgs(
+                    "re.error",
+                    ["msg", "pattern", "pos"],
+                    args,
+                    kwargs,
+                    [pyNone, pyNone]
+                );
+                this.$init(msg, pattern, pos);
+            },
+        },
+        proto: {
+            $init(msg, pattern, pos) {
+                this.$msg = typeof msg === "string" ? new pyStr(msg) : msg;
                 this.$pattern = pattern;
                 this.$pos = pos;
-                this.$msg = msg;
+                this.$lineno = this.$colno = pyNone;
+                let formatted = this.$msg;
+                if (pattern !== pyNone && pos !== pyNone) {
+                    const index = pos.valueOf();
+                    const chars = Array.from(pattern.toString());
+                    const before = chars.slice(0, index);
+                    const line = before.filter((c) => c === "\n").length + 1;
+                    const column = index - before.lastIndexOf("\n");
+                    this.$lineno = new pyInt(line);
+                    this.$colno = new pyInt(column);
+                    let text = this.$msg.toString() + " at position " + index;
+                    if (chars.includes("\n")) {
+                        text += ` (line ${line}, column ${column})`;
+                    }
+                    formatted = new pyStr(text);
+                }
+                this.args = new pyTuple([formatted]);
             },
         },
         getsets: {
+            lineno: {
+                $get() {
+                    return this.$lineno;
+                },
+            },
+            colno: {
+                $get() {
+                    return this.$colno;
+                },
+            },
             msg: {
                 $get() {
                     return this.$msg;
@@ -443,12 +1344,19 @@ function $builtinmodule(name) {
     const maxsize = Number.MAX_SAFE_INTEGER;
 
     re.Pattern = buildNativeClass("re.Pattern", {
-        constructor: function (regex, str, flags) {
+        constructor: function (regex, str, flags, groupCount, groupNames) {
             this.v = regex;
             this.str = str;
             this.$flags = flags;
-            this.$groups = null;
+            // Like CPython's compiler, carry capture metadata from the parser.
+            // Rescanning the original source would count comments as groups.
+            this.$groupCount = groupCount;
+            this.$groupNames = groupNames;
             this.$groupindex = null;
+            // Non-global variants are safe to reuse across matching calls.
+            this.$searchRegex = null;
+            this.$matchRegex = null;
+            this.$fullmatchRegex = null;
         },
         slots: {
             $r() {
@@ -575,28 +1483,16 @@ function $builtinmodule(name) {
             },
             groups: {
                 $get() {
-                    if (this.$groups === null) {
-                        // we know we have a compiled expression so we just need to check matching brackets
-                        // bracket characters that are not inside [] not followed by ? but could be followed by ?P<
-                        const num_matches = (this.str.v.match(this.group$regex) || []).length;
-                        this.$groups = new pyInt(num_matches);
-                    }
-                    return this.$groups;
+                    return new pyInt(this.$groupCount);
                 },
                 $doc: "The number of capturing groups in the pattern.",
             },
             groupindex: {
                 $get() {
                     if (this.$groupindex === null) {
-                        const matches = this.str.v.matchAll(this.group$regex);
                         const arr = [];
-                        let i = 1;
-                        for (const match of matches) {
-                            if (match[1]) {
-                                arr.push(new pyStr(match[1]));
-                                arr.push(new pyInt(i));
-                            }
-                            i++;
+                        for (const [name, group] of this.$groupNames) {
+                            arr.push(new pyStr(name), new pyInt(group));
                         }
                         this.$groupindex = new pyMappingProxy(new pyDict(arr));
                     }
@@ -606,9 +1502,6 @@ function $builtinmodule(name) {
             },
         },
         proto: {
-            // Any opening bracket not inside [] Not followed by ? but might could be followed by ?P<foo>
-            // if it's a group like (?P<foo>) then we need to capture the foo
-            group$regex: /\((?!\?(?!P<).*)(?:\?P<([^\d\W]\w*)>)?(?![^\[]*\])/g,
             get$count(count) {
                 count = asIndexSized(count, OverflowError);
                 return count ? count : Number.POSITIVE_INFINITY;
@@ -729,22 +1622,24 @@ function $builtinmodule(name) {
                 return new re.Match(match, this, string, pos, endpos);
             },
             $search(string, pos, endpos) {
-                var regex = new RegExp(this.v.source, this.v.flags.replace("g", "")); // keep all flags except 'g';
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$searchRegex === null) {
+                    this.$searchRegex = new RegExp(this.v.source, this.v.flags.replace("g", ""));
+                }
+                return this.do$match(this.$searchRegex, string, pos, endpos);
             },
             $match(string, pos, endpos) {
-                let source = this.v.source;
-                let flags = this.v.flags.replace("g", "").replace("m", "");
-                source = "^" + source;
-                var regex = new RegExp(source, flags);
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$matchRegex === null) {
+                    const flags = this.v.flags.replace("g", "").replace("m", "");
+                    this.$matchRegex = new RegExp("^" + this.v.source, flags);
+                }
+                return this.do$match(this.$matchRegex, string, pos, endpos);
             },
             full$match(string, pos, endpos) {
-                let source = this.v.source;
-                let flags = this.v.flags.replace("g", "").replace("m", "");
-                source = "^(?:" + source + ")$";
-                var regex = new RegExp(source, flags);
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$fullmatchRegex === null) {
+                    const flags = this.v.flags.replace("g", "").replace("m", "");
+                    this.$fullmatchRegex = new RegExp("^(?:" + this.v.source + ")$", flags);
+                }
+                return this.do$match(this.$fullmatchRegex, string, pos, endpos);
             },
             find$iter(string, pos, endpos) {
                 let jsstr;
@@ -1021,26 +1916,77 @@ function $builtinmodule(name) {
                 return new pyTuple([new pyInt(idx), new pyInt(idx + [...group].length)]); // want char length
             },
             hasOwnProperty: Object.prototype.hasOwnProperty,
-            template$regex: /\\([1-9][0-9]|[1-9])|\\g<([1-9][0-9]*)>|\\g<([^\d\W]\w*)>|\\g<?.*>?/g,
+            // Matches: \g<num>, \g<name>, \0XX (octal), \1XX (3-digit octal), \1-\99 (group ref), \n, \t, etc.
+            // 3 valid octal digits (1-3 followed by two 0-7) = octal
+            // 2 digits (1-9 followed by 0-9) = group reference
+            template$regex:
+                /\\g<([1-9][0-9]*)>|\\g<([^>]+)>|\\g<?.*>?|\\(0[0-7]{0,2})|\\([1-3][0-7]{2})|\\([1-9][0-9]?)|\\(.)/g,
+            template$escapes: {
+                n: "\n",
+                t: "\t",
+                r: "\r",
+                f: "\f",
+                v: "\v",
+                a: "\x07",
+                b: "\b",
+                "\\": "\\",
+            },
             template$repl(template) {
-                return template.replace(this.template$regex, (match, idx, idxg, name, offset, orig) => {
-                    let ret;
-                    idx = idx || idxg;
-                    if (idx !== undefined) {
-                        ret = idx < this.v.length ? this.v[idx] || "" : undefined;
-                    } else {
-                        if (this.v.groups && this.hasOwnProperty.call(this.v.groups, name)) {
-                            ret = this.v.groups[name] || "";
+                // Capture groups: (idxg), (name), (octal0), (octal3), (groupRef), (escape)
+                // octal0 = \0, \00, \000-\077 (starts with 0)
+                // octal3 = \100-\377 (3-digit octal in range, all digits 0-7)
+                // groupRef = \1-\99 (1-2 digits, may contain 8/9)
+                return template.replace(
+                    this.template$regex,
+                    (match, idxg, name, octal0, octal3, groupRef, escape, offset) => {
+                        const octal = octal0 !== undefined ? octal0 : octal3;
+                        if (octal !== undefined) {
+                            return String.fromCharCode(parseInt(octal, 8));
                         }
-                    }
-                    if (ret === undefined) {
-                        if (name) {
+
+                        // Both numeric spellings use the same capture lookup;
+                        // their existing error positions differ by one character.
+                        const index = groupRef !== undefined ? groupRef : idxg;
+                        if (index !== undefined) {
+                            const num = parseInt(index, 10);
+                            const ret = num < this.v.length ? this.v[num] || "" : undefined;
+                            if (ret === undefined) {
+                                const pos = offset + (idxg !== undefined ? 1 : 0);
+                                throw new re.error("invalid group reference " + num + " at position " + pos);
+                            }
+                            return ret;
+                        }
+
+                        // Handle character escapes like \n, \t, etc.
+                        if (escape !== undefined) {
+                            const replacement = this.template$escapes[escape];
+                            if (replacement !== undefined) {
+                                return replacement;
+                            }
+                            if (/[a-zA-Z]/.test(escape)) {
+                                throw new re.error("bad escape \\" + escape + " at position " + offset);
+                            }
+                            return match;
+                        }
+
+                        if (name !== undefined) {
+                            // Use the same Python identifier rules as pattern names.
+                            if (!Sk.token.isIdentifier(name)) {
+                                throw new re.error(
+                                    "bad character in group name '" + name + "'",
+                                    new pyStr(template),
+                                    new pyInt(Array.from(template.slice(0, offset)).length + 3)
+                                );
+                            }
+                            if (this.v.groups && this.hasOwnProperty.call(this.v.groups, name)) {
+                                return this.v.groups[name] || "";
+                            }
                             throw new IndexError("unknown group name '" + name + "'");
                         }
-                        throw new re.error("invalid group reference " + (idx || match.slice(2)) + " at position " + (offset + 1));
+                        // The catch-all \g alternative reaches here for malformed references.
+                        throw new re.error("bad escape " + match + " at position " + offset);
                     }
-                    return ret;
-                });
+                );
             },
         },
         flags: {
