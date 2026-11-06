@@ -8,6 +8,13 @@ Sk.builtin.GenericAlias = Sk.abstr.buildNativeClass("types.GenericAlias", {
         this.$params = null;
     },
     slots: {
+        tp$as_number: true,
+        nb$or(other) {
+            return Sk.builtin.UnionType.$or.call(this, other);
+        },
+        nb$reflected_or(other) {
+            return Sk.builtin.UnionType.$or.call(other, this);
+        },
         tp$new(args, kwargs) {
             Sk.abstr.checkNoKwargs("GenericAlias", kwargs);
             Sk.abstr.checkArgsLen("GenericAlias", args, 2, 2);

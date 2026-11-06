@@ -628,15 +628,24 @@ Sk.builtin.open = function open (filename, mode, bufsize) {
 
 
 Sk.builtin.isinstance = function isinstance(obj, type) {
-    if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
-        throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
-    }
-
-    // Fast path
     const act_type = obj.ob$type;
     if (act_type === type) {
         return Sk.builtin.bool.true$;
     }
+    if (type instanceof Sk.builtin.UnionType) {
+        type = type.$args;
+    }
+    if (!(type instanceof Sk.builtin.tuple) && type.ob$type !== Sk.builtin.type) {
+        const check = Sk.abstr.lookupSpecial(type, Sk.builtin.str.$instancecheck);
+        if (check !== undefined) {
+            const result = Sk.misceval.callsimArray(check, [obj]);
+            return Sk.misceval.isTrue(result) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+        }
+    }
+    if (!Sk.builtin.checkClass(type) && !(type instanceof Sk.builtin.tuple)) {
+        throw new Sk.builtin.TypeError("isinstance() arg 2 must be a class, type, or tuple of classes and types");
+    }
+
     if (!(type instanceof Sk.builtin.tuple)) {
         // attempt 1
         if (act_type.$isSubType(type)) {
@@ -1041,14 +1050,26 @@ Sk.builtin.quit = function quit(msg) {
 };
 
 Sk.builtin.issubclass = function issubclass(c1, c2) {
-    if (!Sk.builtin.checkClass(c1)) {
-        throw new Sk.builtin.TypeError("issubclass() arg 1 must be a class");
+    if (c2 instanceof Sk.builtin.UnionType) {
+        c2 = c2.$args;
+    }
+    // Consult member hooks before fallback validation, just as tuple recursion
+    // does. A matching earlier member must not inspect a later failing member.
+    if (!(c2 instanceof Sk.builtin.tuple) && c2.ob$type !== Sk.builtin.type) {
+        const check = Sk.abstr.lookupSpecial(c2, Sk.builtin.str.$subclasscheck);
+        if (check !== undefined) {
+            const result = Sk.misceval.callsimArray(check, [c1]);
+            return Sk.misceval.isTrue(result) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
+        }
     }
     let c2_isClass = Sk.builtin.checkClass(c2);
     if (!c2_isClass && !(c2 instanceof Sk.builtin.tuple)) {
         throw new Sk.builtin.TypeError("issubclass() arg 2 must be a class or tuple of classes");
     }
     if (c2_isClass) {
+        if (!Sk.builtin.checkClass(c1)) {
+            throw new Sk.builtin.TypeError("issubclass() arg 1 must be a class");
+        }
         return c1.$isSubType(c2) ? Sk.builtin.bool.true$ : Sk.builtin.bool.false$;
     }
     // Handle tuple type argument

@@ -1667,5 +1667,118 @@ class MappingProxyTests(unittest.TestCase):
 #             'close', 'throw'}))
 
 
+class UnionTests(unittest.TestCase):
+    # Native-only selections from CPython's test_types.UnionTests, so this
+    # prerequisite does not depend on importing typing.
+    def test_or_types_operator(self):
+        self.assertEqual(int | type(None), int | None)
+        self.assertEqual(type(None) | int, None | int)
+        self.assertEqual(str | float | int | complex | int,
+                         (int | str) | (float | complex))
+        self.assertIs(int | int, int)
+        x = int | str
+        self.assertEqual(x, str | int)
+        self.assertNotEqual(x, {})
+        with self.assertRaises(TypeError):
+            int | 3
+        with self.assertRaises(TypeError):
+            3 | int
+        with self.assertRaises(TypeError):
+            x < x
+
+    def test_instancecheck_and_subclasscheck(self):
+        # CPython's native-union cases; assertTrue/False are used in place of
+        # its newer assertIsSubclass/assertNotIsSubclass helpers.
+        x = int | str
+        self.assertIsInstance(1, x)
+        self.assertIsInstance(True, x)
+        self.assertIsInstance("a", x)
+        self.assertNotIsInstance(None, x)
+        self.assertTrue(issubclass(int, x))
+        self.assertTrue(issubclass(bool, x))
+        self.assertTrue(issubclass(str, x))
+        self.assertFalse(issubclass(type(None), x))
+        x = int | None
+        self.assertIsInstance(None, x)
+        self.assertTrue(issubclass(type(None), x))
+
+    def test_bad_instancecheck(self):
+        # From CPython test_types: unions retain their members' runtime hooks.
+        class BadMeta(type):
+            def __instancecheck__(cls, inst):
+                1 / 0
+        x = int | BadMeta("A", (), {})
+        self.assertTrue(isinstance(1, x))
+        self.assertRaises(ZeroDivisionError, isinstance, [], x)
+
+    def test_bad_subclasscheck(self):
+        class BadMeta(type):
+            def __subclasscheck__(cls, sub):
+                1 / 0
+        x = int | BadMeta("A", (), {})
+        self.assertTrue(issubclass(int, x))
+        self.assertRaises(ZeroDivisionError, issubclass, list, x)
+
+    def test_hash(self):
+        self.assertEqual(hash(int | str), hash(str | int))
+
+    def test_or_type_operator_with_genericalias(self):
+        self.assertEqual(list[int] | str, str | list[int])
+        self.assertEqual((list[int] | str | list[int]).__args__, (list[int], str))
+        self.assertIsInstance(1, int | list[int])
+        with self.assertRaises(TypeError):
+            isinstance(1, list[int] | int)
+        with self.assertRaises(TypeError):
+            issubclass(int, list[int] | int)
+
+    def test_type_of_union(self):
+        from types import UnionType
+        self.assertIs(type(int | str), UnionType)
+        self.assertEqual((int | None).__args__, (int, type(None)))
+        with self.assertRaises(TypeError):
+            UnionType()
+
+    def test_names(self):
+        # Selected public-name contract from CPython TypesTests.test_names.
+        namespace = {}
+        exec("from types import *", namespace)
+        self.assertIs(namespace["UnionType"], type(int | str))
+
+    def test_union_construction_with_bad_equality(self):
+        # BadType construction cases from CPython's
+        # UnionTests.test_or_type_operator_with_genericalias.
+        class BadType(type):
+            def __eq__(self, other):
+                return 1 / 0
+
+        bt = BadType("bt", (), {})
+        bt2 = BadType("bt2", (), {})
+        self.assertIs((int | bt).__args__[1], bt)
+        with self.assertRaises(ZeroDivisionError):
+            bt | bt2
+
+
+class TestSkulptUnionRegressions(unittest.TestCase):
+    def test_subclass_hooks_precede_argument_validation(self):
+        # CPython's subclass-check protocol permits the hook to decide what
+        # constitutes an acceptable first argument, before fallback checking.
+        class Meta(type):
+            def __subclasscheck__(cls, value):
+                return value == 1
+
+        class C(metaclass=Meta): ...
+        self.assertTrue(issubclass(1, C))
+        self.assertTrue(issubclass(1, C | int))
+        self.assertFalse(issubclass(1, ()))
+
+    def test_cannot_subclass_union_of_heap_types(self):
+        # CPython rejects a union as a class base. Two ordinary user classes
+        # avoid an incidental builtin-layout conflict masking that check.
+        class A: ...
+        class B: ...
+        with self.assertRaisesRegex(TypeError, "Cannot subclass"):
+            class C(A | B): ...
+
+
 if __name__ == '__main__':
     unittest.main()
