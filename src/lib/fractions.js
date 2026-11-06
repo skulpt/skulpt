@@ -305,7 +305,10 @@ function fractionsMod({ math, sys }) {
             nb$reflected_divmod,
             nb$remainder,
             nb$reflected_remainder,
-            nb$power(other) {
+            nb$power(other, modulo) {
+                if (modulo !== undefined) {
+                    throw new pyTypeError("Fraction.__pow__() does not accept a modulus");
+                }
                 if (isRational(other)) {
                     if (eq(getDenom(other), _1)) {
                         let power = getNumer(other);
