@@ -2000,5 +2000,27 @@ class IsCloseTests(unittest.TestCase):
         self.assertIn("fabs", repr(math.fabs))
 
 
+class TestSkulptRegressions(unittest.TestCase):
+    def test_fabs_uses_float_protocol(self):
+        from fractions import Fraction
+
+        class Floatable:
+            def __float__(self):
+                return -2.0
+
+        for value in (Fraction(-2), Floatable()):
+            self.assertEqual(math.fabs(value), 2.0)
+
+    def test_remainder_returns_float_for_nan_conversions(self):
+        class FloatableNaN:
+            def __float__(self):
+                return NAN
+
+        for x, y in ((FloatableNaN(), 1), (1, FloatableNaN())):
+            result = math.remainder(x, y)
+            self.assertIsInstance(result, float)
+            self.assertTrue(math.isnan(result))
+
+
 if __name__ == '__main__':
     unittest.main()

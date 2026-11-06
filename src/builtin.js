@@ -27,6 +27,13 @@ Sk.builtin.asnum$ = function (a) {
     if (a instanceof Sk.builtin.float_) {
         return a.v;
     }
+    // Try nb$float for other numeric types (Decimal, Fraction, etc.)
+    if (a.nb$float !== undefined) {
+        const f = a.nb$float();
+        if (f instanceof Sk.builtin.float_) {
+            return f.v;
+        }
+    }
     if (a === Sk.builtin.none.none$) {
         return null;
     }
