@@ -9,6 +9,7 @@ require("./util.js");
 // Global support functions
 Sk.global["strftime"] = require("strftime");
 require("../support/polyfills/JSBI");
+Sk.unicode = require("../support/polyfills/Unicode").default;
 require("../support/polyfills/es6");
 require("setimmediate");
 
