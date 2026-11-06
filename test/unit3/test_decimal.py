@@ -3996,6 +3996,45 @@ class Coverage(unittest.TestCase):
         self.assertEqual(y, -x)
 
 
+class IntegerPowerTest(unittest.TestCase):
+    def test_large_integer_powers(self):
+        # Selected CPython decimaltestdata/power.decTest cases; IDs retained.
+        cases = [
+            ('powx212', 9, -383, 384, '1', '999999998', '1', []),
+            ('powx163', 9, -999999, 999999, '10', '999999', '1.00000000E+999999', ['Rounded']),
+            ('powx183', 9, -999999, 999999, '7', '1000000', '1.09651419E+845098', ['Inexact', 'Rounded']),
+            ('powx187', 9, -999999, 999999, '7', '-1000000', '9.11980901E-845099', ['Inexact', 'Rounded']),
+            ('powx397', 15, -999, 999, '0.02', '100000000', '0E-1013',
+             ['Underflow', 'Subnormal', 'Inexact', 'Rounded', 'Clamped']),
+            ('powx581', 9, -999, 999, 'Infinity', '-1000', '0', []),
+            # Skulpt regression: preserve exponent bits beyond JS's safe integer range.
+            ('skulpt-big-exponent', 28, -99, 99, '1.00000000000000000000000001',
+             '100000000000000000001', '1.000001000000500000166666718', ['Inexact', 'Rounded']),
+        ]
+        for case, prec, emin, emax, base, exponent, expected, conditions in cases:
+            ctx = P.Context(prec=prec, Emin=emin, Emax=emax, traps=[])
+            self.assertEqual(str(ctx.power(P.Decimal(base), P.Decimal(exponent))), expected, case)
+            self.assertEqual(set(signal for signal in ctx.flags if ctx.flags[signal]),
+                             set(getattr(P, name) for name in conditions), case)
+
+    def test_power_traps_record_all_flags(self):
+        # CPython power records the full status before raising its priority trap.
+        ctx = P.Context(prec=3, Emin=-2, Emax=2, traps=[P.Overflow])
+        self.assertRaises(P.Overflow, ctx.power, P.Decimal(2), 1000)
+        self.assertTrue(ctx.flags[P.Inexact])
+        self.assertTrue(ctx.flags[P.Rounded])
+        ctx = P.Context(prec=15, Emin=-999, Emax=999, traps=[P.Underflow, P.Inexact])
+        self.assertRaises(P.Underflow, ctx.power, P.Decimal('.02'), 100000000)
+        for signal in [P.Underflow, P.Subnormal, P.Inexact, P.Rounded, P.Clamped]:
+            self.assertTrue(ctx.flags[signal])
+
+    def test_daily_compounding(self):
+        # Skulpt regression: remove the arbitrary exponent-1000 cutoff.
+        with P.localcontext(P.Context(prec=28)):
+            self.assertEqual(str(P.Decimal('1.0001') ** 3650),
+                             '1.440487720760919451993430859')
+
+
 class PyFunctionality(unittest.TestCase):
     """Extra functionality in decimal.py"""
 

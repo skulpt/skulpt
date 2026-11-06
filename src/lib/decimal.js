@@ -865,21 +865,7 @@ function decimalImpl({ math, sys, collections }) {
                     }
                     throw new NotImplementedError("Decimal power with a nonintegral exponent is not yet implemented in Skulpt");
                 }
-                // Compute small integer powers exactly, then round once. Larger
-                // powers need a bounded-precision algorithm and remain unsupported.
-                if (other.$adjusted() >= 3) {
-                    throw new NotImplementedError("Decimal power with exponent magnitude >= 1000 is not yet implemented in Skulpt");
-                }
-                const exponent = other.nb$int().nb$abs();
-                const n = exponent.valueOf();
-                const sign = this._sign && n % 2 ? 1 : 0;
-                if (!this.nb$bool() || this.$isInf()) {
-                    const infinite = !!this.$isInf() !== !!other._sign;
-                    return _decFromTriple(sign, "0", infinite ? "F" : 0, infinite);
-                }
-                const coefficient = new pyInt(this._int).nb$power(exponent).toString();
-                const result = _decFromTriple(sign, coefficient, this._exp * n);
-                return other._sign ? _One.nb$divide(result, context) : result.$fix(context);
+                return this.$integerPower(other, context);
             },
             nb$reflected_power(other, modulo = pyNone) {
                 other = convertOther(other);
@@ -1680,6 +1666,105 @@ function decimalImpl({ math, sys, collections }) {
             },
         },
         proto: {
+            $integerPower(other, context) {
+                // CPython libmpdec: _qcheck_pow_one, _qcheck_pow_bounds,
+                // _mpd_qpow_int and _mpd_qpow_uint. All intermediate signals
+                // are collected before the caller's traps are checked.
+                const odd = other._exp <= 0 && "13579".includes(other._int[other._int.length + other._exp - 1]);
+                const sign = this._sign && odd ? 1 : 0;
+                if (!this.nb$bool() || this.$isInf()) {
+                    const infinite = !!this.$isInf() !== !!other._sign;
+                    return _decFromTriple(sign, "0", infinite ? "F" : 0, infinite);
+                }
+                const base = _decFromTriple(0, this._int, this._exp);
+                if (base.$cmp(_One, "Eq") === pyTrue) {
+                    // Preserve the quantum of 1.00**n up to the precision limit;
+                    // discarded zeros signal only Rounded. Negative powers use exponent 0.
+                    let exp = 0;
+                    if (!other._sign && this._exp < 0) {
+                        const multiplier = other.$cmp(_decFromTriple(0, String(context.$prec), 0), "Gt") === pyTrue
+                            ? context.$prec : other.nb$int().valueOf();
+                        exp = this._exp * multiplier;
+                        if (exp < 1 - context.$prec) {
+                            exp = 1 - context.$prec;
+                            context.$raiseError(Rounded);
+                        }
+                    }
+                    return _decFromTriple(sign, "1" + "0".repeat(-exp), exp);
+                }
+
+                // Lower bound for log10(abs(log10(base))), from libmpdec.
+                // This catches certain overflow/underflow without constructing
+                // an enormous integer exponent (for example Decimal('1e1000')).
+                const adjusted = base.$adjusted();
+                let logBound;
+                if (adjusted > 0) {
+                    logBound = String(adjusted).length - 1;
+                } else if (adjusted < -1) {
+                    logBound = String(-adjusted - 1).length - 1;
+                } else {
+                    const unit = _10.nb$power(new pyInt(-base._exp));
+                    const difference = new pyInt(base._int).nb$subtract(unit).nb$abs().toString();
+                    logBound = difference.length + base._exp - 1 - (adjusted === 0 ? 2 : 1);
+                }
+                const grows = (adjusted < 0) === !!other._sign;
+                const etiny = context.$Emin - context.$prec + 1;
+                const limitDigits = String(Math.abs(grows ? context.$Emax : etiny)).length;
+                const exponentDigits = other.$adjusted() + 1;
+                const bounded = limitDigits < logBound + exponentDigits - 1;
+                // libmpdec adds exponentDigits + 2 guard digits to bound accumulated
+                // multiplication error, plus one for a negative power's reciprocal.
+                const work = new Context(
+                    context.$prec + exponentDigits + 2 + other._sign,
+                    ROUND_HALF_EVEN, context.$Emin, context.$Emax, context.$capitals, 0,
+                    null, Object.fromEntries(_signals.map((signal) => [signal, 0]))
+                );
+                let result;
+                if (bounded) {
+                    // Let final context rounding choose infinity/max-finite or
+                    // zero/min-subnormal, including directed rounding modes.
+                    result = _decFromTriple(0, "1", grows ? context.$Emax + 1 : etiny - 1);
+                } else {
+                    const factor = other._sign ? _One.nb$divide(base, work) : base;
+                    const bits = other.nb$int().nb$abs().valueOf().toString(2);
+                    result = factor;
+                    for (let i = 1; i < bits.length; i++) {
+                        result = result.nb$multiply(result, work);
+                        if (bits[i] === "1") {
+                            result = result.nb$multiply(factor, work);
+                        }
+                        // Clamped with zero marks underflow; later powers cannot recover it.
+                        if (result._is_special || (!result.nb$bool() && work.$flags[Clamped])) {
+                            break;
+                        }
+                    }
+                }
+
+                work.$prec = context.$prec;
+                work.$rounding = context.$rounding;
+                work.$clamp = context.$clamp;
+                if (result.$isInf()) {
+                    // The work context uses HALF_EVEN; final overflow must use
+                    // the caller's mode, which can require a finite result.
+                    result = _decFromTriple(sign, "1", context.$Emax + 1);
+                } else {
+                    result = _decFromTriple(sign, result._int, result._exp);
+                }
+                result = result.$fix(work);
+                const signals = [Overflow, Underflow, Subnormal, Inexact, Rounded, Clamped];
+                for (const signal of signals) {
+                    if (work.$flags[signal]) {
+                        context.$flags[signal] = 1;
+                    }
+                }
+                // CPython records all flags before raising the highest-priority trap.
+                for (const signal of signals) {
+                    if (work.$flags[signal] && context.$traps[signal]) {
+                        context.$raiseError(signal, "power", sign);
+                    }
+                }
+                return result;
+            },
             $sameQuantum(other) {
                 other = convertOther(other, true);
                 // This comparison is quiet, including signalling NaNs.
