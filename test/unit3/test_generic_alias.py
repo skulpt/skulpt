@@ -263,5 +263,16 @@ class BaseTest(unittest.TestCase):
     #     self.assertEqual(a.__parameters__, (T,))
 
 
+class TestTypingParameterSubstitution(unittest.TestCase):
+    def test_native_generic_argument_substitution(self):
+        # CPython test_genericalias.BaseTest.test_parameter_chaining, selected cases.
+        from typing import TypeVar
+        T = TypeVar("T")
+        self.assertEqual(list[T][int], list[int])
+        self.assertEqual(dict[str, list[T]][int], dict[str, list[int]])
+        with self.assertRaises(TypeError):
+            list[T][int, str]
+
+
 if __name__ == "__main__":
     unittest.main()

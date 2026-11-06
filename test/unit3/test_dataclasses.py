@@ -18,6 +18,67 @@ from dataclasses import (
 
 class TestDataclasses(unittest.TestCase):
     # Selected behaviour from CPython's Lib/test/test_dataclasses.
+    def test_class_var(self):
+        # CPython TestCase.test_class_var; use the class's qualname in repr.
+        from typing import ClassVar
+
+        @dataclass
+        class C:
+            x: int
+            y: int = 10
+            z: ClassVar[int] = 1000
+            w: ClassVar[int] = 2000
+            t: ClassVar[int] = 3000
+            s: ClassVar = 4000
+
+        c = C(5)
+        self.assertEqual(repr(c), C.__qualname__ + "(x=5, y=10)")
+        self.assertEqual(len(fields(C)), 2)
+        self.assertEqual(len(C.__annotations__), 6)
+        self.assertEqual(c.z, 1000)
+        self.assertEqual(c.w, 2000)
+        self.assertEqual(c.t, 3000)
+        self.assertEqual(c.s, 4000)
+        C.z += 1
+        self.assertEqual(c.z, 1001)
+        c = C(20)
+        self.assertEqual((c.x, c.y), (20, 10))
+        self.assertEqual(c.z, 1001)
+        self.assertEqual(c.w, 2000)
+        self.assertEqual(c.t, 3000)
+        self.assertEqual(c.s, 4000)
+
+    def test_class_var_default_factory(self):
+        # CPython TestCase.test_class_var_default_factory.
+        from typing import ClassVar
+
+        with self.assertRaisesRegex(TypeError, "cannot have a default factory"):
+            @dataclass
+            class C:
+                x: ClassVar[int] = field(default_factory=int)
+
+    def test_generic_dataclasses(self):
+        # CPython TestCase.test_generic_dataclasses, plus specialised construction.
+        from typing import Generic, List, TypeVar
+
+        T = TypeVar("T")
+
+        @dataclass
+        class LabeledBox(Generic[T]):
+            content: T
+            label: str = "<unknown>"
+
+        box = LabeledBox(42)
+        self.assertEqual(box.content, 42)
+        self.assertEqual(box.label, "<unknown>")
+        Alias = List[LabeledBox[int]]
+        self.assertIs(Alias.__args__[0].__origin__, LabeledBox)
+        self.assertEqual(Alias.__args__[0].__args__, (int,))
+
+        box = LabeledBox[int](43, "answer")
+        self.assertEqual((box.content, box.label), (43, "answer"))
+        self.assertEqual(box.__orig_class__, LabeledBox[int])
+
     def test_no_repr(self):
         @dataclass(repr=False)
         class C:
@@ -649,8 +710,8 @@ class TestDataclasses(unittest.TestCase):
         self.assertEqual((c2.x, c2.z), (2, 4))
 
     def test_isnt_classvar_or_initvar(self):
-        # typing is not provided by Skulpt yet. An unbound ClassVar name,
-        # or a name merely containing ClassVar/InitVar, is an ordinary field.
+        # An unbound ClassVar name, or a name merely containing
+        # ClassVar/InitVar, is an ordinary field.
         for annotation in ("ClassVar[int]", "MyClassVarThing", "NotInitVar"):
             C = make_dataclass("C", [("x", annotation)])
             self.assertEqual([f.name for f in fields(C)], ["x"])
