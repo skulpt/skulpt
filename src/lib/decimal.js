@@ -244,6 +244,114 @@ function decimalImpl({ math, sys, collections }) {
         return pyNotImplemented;
     }
 
+    // Format specifier regex - matches PEP 3101 format spec
+    const _FORMAT_SPEC_REGEX =
+        /^(?:(?<fill>.)?(?<align>[<>=^]))?(?<sign>[-+ ])?(?<alt>#)?(?<zeropad>0)?(?<minimumwidth>(?!0)\d+)?(?<thousands_sep>,)?(?:\.(?<precision>0|(?!0)\d+))?(?<type>[eEfFgGn%])?$/;
+
+    function _parseFormatSpec(formatSpec) {
+        const m = formatSpec.match(_FORMAT_SPEC_REGEX);
+        if (!m) {
+            throw new ValueError("Invalid format specifier: " + formatSpec);
+        }
+        const g = m.groups || {};
+        if (g.zeropad && (g.fill || g.align)) {
+            throw new ValueError("Zero padding conflicts with fill or alignment: " + formatSpec);
+        }
+        const fill = g.fill || " ";
+        const align = g.align || ">";
+        return {
+            fill: fill,
+            align: align,
+            sign: g.sign || "-",
+            alt: !!g.alt,
+            zeropad: !!g.zeropad,
+            minimumwidth: parseInt(g.minimumwidth || "0", 10),
+            thousands_sep: g.thousands_sep || "",
+            precision: g.precision !== undefined ? parseInt(g.precision, 10) : null,
+            type: g.type || null,
+        };
+    }
+
+    function _formatSign(isNegative, spec) {
+        if (isNegative) {
+            return "-";
+        } else if (spec.sign === "+" || spec.sign === " ") {
+            return spec.sign;
+        }
+        return "";
+    }
+
+    function _formatAlign(sign, body, spec) {
+        const minimumwidth = spec.minimumwidth;
+        const fill = spec.fill;
+        const needed = minimumwidth - sign.length - body.length;
+        const padding = needed > 0 ? fill.repeat(needed) : "";
+        const align = spec.align;
+        if (align === "<") {
+            return sign + body + padding;
+        } else if (align === ">") {
+            return padding + sign + body;
+        } else if (align === "=") {
+            return sign + padding + body;
+        } else if (align === "^") {
+            const half = Math.floor(padding.length / 2);
+            return padding.slice(0, half) + sign + body + padding.slice(half);
+        }
+        return sign + body;
+    }
+
+    function _insertThousandsSep(digits, sep, minWidth = 1) {
+        // Insert separator every 3 digits from the right, padding with zeros if needed.
+        // minWidth is the minimum width of the RESULT (including separators).
+        // Based on CPython's _insert_thousands_sep.
+
+        if (!sep) {
+            // No separator - just pad to minWidth
+            if (digits.length < minWidth) {
+                return "0".repeat(minWidth - digits.length) + digits;
+            }
+            return digits;
+        }
+
+        // Build groups of 3 digits from right to left, padding as needed
+        const groups = [];
+        let remaining = digits;
+        let widthRemaining = minWidth;
+
+        while (true) {
+            // Calculate group length: min(max(digits_remaining, width_remaining, 1), 3)
+            // This ensures at least 1 digit and at most 3 digits per group
+            const l = Math.min(Math.max(remaining.length, widthRemaining, 1), 3);
+
+            // Build group with leading zeros if needed
+            const zerosNeeded = Math.max(0, l - remaining.length);
+            const group = "0".repeat(zerosNeeded) + remaining.slice(-l);
+            groups.unshift(group);
+
+            // Remove the digits we used
+            if (remaining.length > l) {
+                remaining = remaining.slice(0, -l);
+            } else {
+                remaining = "";
+            }
+
+            // Update remaining width
+            widthRemaining -= l;
+
+            // Check if we're done
+            if (remaining.length === 0 && widthRemaining <= 0) {
+                break;
+            }
+
+            // Account for the separator that will be added
+            widthRemaining -= sep.length;
+        }
+
+        return groups.join(sep);
+    }
+
+
+
     /**
      * @constructor
      *
@@ -1375,6 +1483,78 @@ function decimalImpl({ math, sys, collections }) {
                 $textsig: null,
                 $doc: null,
             },
+            __format__: {
+                $meth(formatSpec) {
+                    if (!(formatSpec instanceof pyStr)) {
+                        throw new TypeError("__format__ requires str");
+                    }
+                    const spec = _parseFormatSpec(formatSpec.toString());
+                    const context = getContext();
+                    const type = spec.type || (context.$capitals ? "G" : "g");
+                    if (type === "n") {
+                        throw new NotImplementedError("locale-aware Decimal formatting is not implemented");
+                    }
+                    if (this._is_special) {
+                        const body = this.tp$str().toString().replace(/^-/, "") + (type === "%" ? "%" : "");
+                        return new pyStr(_formatAlign(_formatSign(this._sign, spec), body, spec));
+                    }
+
+                    // CPython Decimal.__format__ rounds quietly before placing
+                    // the point, preserving trailing significant zeros.
+                    let value = type === "%" ? _decFromTriple(this._sign, this._int, this._exp + 2) : this;
+                    const precision = spec.precision === 0 && "gG".includes(type) ? 1 : spec.precision;
+                    if (precision !== null) {
+                        if ("eE".includes(type)) {
+                            value = value.$round(precision + 1, context.$rounding);
+                        } else if ("fF%".includes(type)) {
+                            value = value.$rescale(-precision, context.$rounding);
+                        } else if (value._int.length > precision) {
+                            value = value.$round(precision, context.$rounding);
+                        }
+                    }
+                    if (!value.nb$bool() && value._exp > 0 && "fF%".includes(type)) {
+                        value = value.$rescale(0, context.$rounding);
+                    }
+
+                    const leftdigits = value._exp + value._int.length;
+                    let dotplace;
+                    if ("eE".includes(type)) {
+                        dotplace = !value.nb$bool() && precision !== null ? 1 - precision : 1;
+                    } else if ("fF%".includes(type)) {
+                        dotplace = leftdigits;
+                    } else {
+                        dotplace = value._exp <= 0 && leftdigits > -6 ? leftdigits : 1;
+                    }
+
+                    let intpart, fracpart;
+                    if (dotplace < 0) {
+                        intpart = "0";
+                        fracpart = "0".repeat(-dotplace) + value._int;
+                    } else if (dotplace > value._int.length) {
+                        intpart = value._int + "0".repeat(dotplace - value._int.length);
+                        fracpart = "";
+                    } else {
+                        intpart = value._int.slice(0, dotplace) || "0";
+                        fracpart = value._int.slice(dotplace);
+                    }
+
+                    const exp = leftdigits - dotplace;
+                    const sign = _formatSign(value._sign, spec);
+                    let suffix = fracpart || spec.alt ? "." + fracpart : "";
+                    if (exp !== 0 || "eE".includes(type)) {
+                        suffix += ("EG".includes(type) ? "E" : "e") + (exp >= 0 ? "+" : "") + exp;
+                    }
+                    if (type === "%") {
+                        suffix += "%";
+                    }
+                    const minWidth = spec.zeropad ? spec.minimumwidth - sign.length - suffix.length : 0;
+                    intpart = _insertThousandsSep(intpart, spec.thousands_sep, minWidth);
+                    return new pyStr(_formatAlign(sign, intpart + suffix, spec));
+                },
+                $flags: { OneArg: true },
+                $textsig: null,
+                $doc: "Format the decimal using e, E, f, F, g, G or percent presentation.",
+            },
             __reduce__: {
                 $meth() {
                     return new pyTuple([this.ob$type, new pyTuple([this.tp$str()])]);
@@ -2043,6 +2223,18 @@ function decimalImpl({ math, sys, collections }) {
                     context.$raiseError(Rounded);
                 }
                 return result.$fix(context);
+            },
+            $round(places, rounding) {
+                // CPython Decimal._round: quiet significant-digit rounding.
+                if (this._is_special || !this.nb$bool()) {
+                    return this;
+                }
+                let result = this.$rescale(this.$adjusted() + 1 - places, rounding);
+                // A carry can change the adjusted exponent and add a trailing zero.
+                if (result.$adjusted() !== this.$adjusted()) {
+                    result = result.$rescale(result.$adjusted() + 1 - places, rounding);
+                }
+                return result;
             },
             $rescale(exp, rounding) {
                 // Quiet exponent rounding: no context limits or signals. Arithmetic
