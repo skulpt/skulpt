@@ -776,6 +776,232 @@ class ImplicitConstructionTest(unittest.TestCase):
     #                          '10' + rop + 'str')
 
 
+class FormatTest(unittest.TestCase):
+    '''Unit tests for the format function.'''
+    decimal = P  # Default to Python implementation
+
+    def test_formatting(self):
+        Decimal = self.decimal.Decimal
+
+        # triples giving a format, a Decimal, and the expected result
+        test_values = [
+            ('e', '0E-15', '0e-15'),
+            ('e', '2.3E-15', '2.3e-15'),
+            ('e', '2.30E+2', '2.30e+2'), # preserve significant zeros
+            ('e', '2.30000E-15', '2.30000e-15'),
+            ('e', '1.23456789123456789e40', '1.23456789123456789e+40'),
+            ('e', '1.5', '1.5e+0'),
+            ('e', '0.15', '1.5e-1'),
+            ('e', '0.015', '1.5e-2'),
+            ('e', '0.0000000000015', '1.5e-12'),
+            ('e', '15.0', '1.50e+1'),
+            ('e', '-15', '-1.5e+1'),
+            ('e', '0', '0e+0'),
+            ('e', '0E1', '0e+1'),
+            ('e', '0.0', '0e-1'),
+            ('e', '0.00', '0e-2'),
+            ('.6e', '0E-15', '0.000000e-9'),
+            ('.6e', '0', '0.000000e+6'),
+            ('.6e', '9.999999', '9.999999e+0'),
+            ('.6e', '9.9999999', '1.000000e+1'),
+            ('.6e', '-1.23e5', '-1.230000e+5'),
+            ('.6e', '1.23456789e-3', '1.234568e-3'),
+            ('f', '0', '0'),
+            ('f', '0.0', '0.0'),
+            ('f', '0E-2', '0.00'),
+            ('f', '0.00E-8', '0.0000000000'),
+            ('f', '0E1', '0'),
+            ('f', '3.2E1', '32'),
+            ('f', '3.2E2', '320'),
+            ('f', '3.20E2', '320'),
+            ('f', '3.200E2', '320.0'),
+            ('f', '3.2E-6', '0.0000032'),
+            ('.6f', '0E-15', '0.000000'),
+            ('.6f', '0E1', '0.000000'),
+            ('.6f', '0', '0.000000'),
+            ('.0f', '0', '0'),
+            ('.0f', '0e-2', '0'),
+            ('.0f', '3.14159265', '3'),
+            ('.1f', '3.14159265', '3.1'),
+            ('.4f', '3.14159265', '3.1416'),
+            ('.6f', '3.14159265', '3.141593'),
+            ('.7f', '3.14159265', '3.1415926'), # round-half-even!
+            ('.8f', '3.14159265', '3.14159265'),
+            ('.9f', '3.14159265', '3.141592650'),
+
+            ('g', '0', '0'),
+            ('g', '0.0', '0.0'),
+            ('g', '0E1', '0e+1'),
+            ('G', '0E1', '0E+1'),
+            ('g', '0E-5', '0.00000'),
+            ('g', '0E-6', '0.000000'),
+            ('g', '0E-7', '0e-7'),
+            ('g', '-0E2', '-0e+2'),
+            ('.0g', '3.14159265', '3'),  # 0 sig fig -> 1 sig fig
+            # Locale-aware 'n' formatting remains unsupported.
+            ('.1g', '3.14159265', '3'),
+            ('.2g', '3.14159265', '3.1'),
+            ('.5g', '3.14159265', '3.1416'),
+            ('.7g', '3.14159265', '3.141593'),
+            ('.8g', '3.14159265', '3.1415926'), # round-half-even!
+            ('.9g', '3.14159265', '3.14159265'),
+            ('.10g', '3.14159265', '3.14159265'), # don't pad
+
+            ('%', '0E1', '0%'),
+            ('%', '0E0', '0%'),
+            ('%', '0E-1', '0%'),
+            ('%', '0E-2', '0%'),
+            ('%', '0E-3', '0.0%'),
+            ('%', '0E-4', '0.00%'),
+
+            ('.3%', '0', '0.000%'),
+            ('.3%', '0E10', '0.000%'),
+            ('.3%', '0E-10', '0.000%'),
+            ('.3%', '2.34', '234.000%'),
+            ('.3%', '1.234567', '123.457%'),
+            ('.0%', '1.23', '123%'),
+
+            ('e', 'NaN', 'NaN'),
+            ('f', '-NaN123', '-NaN123'),
+            ('+g', 'NaN456', '+NaN456'),
+            ('.3e', 'Inf', 'Infinity'),
+            ('.16f', '-Inf', '-Infinity'),
+            ('.0g', '-sNaN', '-sNaN'),
+
+            ('', '1.00', '1.00'),
+
+            # test alignment and padding
+            ('6', '123', '   123'),
+            ('<6', '123', '123   '),
+            ('>6', '123', '   123'),
+            ('^6', '123', ' 123  '),
+            ('=+6', '123', '+  123'),
+            ('#<10', 'NaN', 'NaN#######'),
+            ('#<10', '-4.3', '-4.3######'),
+            ('#<+10', '0.0130', '+0.0130###'),
+            ('#< 10', '0.0130', ' 0.0130###'),
+            ('@>10', '-Inf', '@-Infinity'),
+            ('#>5', '-Inf', '-Infinity'),
+            ('?^5', '123', '?123?'),
+            ('%^6', '123', '%123%%'),
+            (' ^6', '-45.6', '-45.6 '),
+            ('/=10', '-45.6', '-/////45.6'),
+            ('/=+10', '45.6', '+/////45.6'),
+            ('/= 10', '45.6', ' /////45.6'),
+            ('\x00=10', '-inf', '-\x00Infinity'),
+            ('\x00^16', '-inf', '\x00\x00\x00-Infinity\x00\x00\x00\x00'),
+            ('\x00>10', '1.2345', '\x00\x00\x00\x001.2345'),
+            ('\x00<10', '1.2345', '1.2345\x00\x00\x00\x00'),
+
+            # thousands separator
+            (',', '1234567', '1,234,567'),
+            (',', '123456', '123,456'),
+            (',', '12345', '12,345'),
+            (',', '1234', '1,234'),
+            (',', '123', '123'),
+            (',', '12', '12'),
+            (',', '1', '1'),
+            (',', '0', '0'),
+            (',', '-1234567', '-1,234,567'),
+            (',', '-123456', '-123,456'),
+            ('7,', '123456', '123,456'),
+            ('8,', '123456', ' 123,456'),
+            ('08,', '123456', '0,123,456'), # special case: extra 0 needed
+            ('+08,', '123456', '+123,456'), # but not if there's a sign
+            (' 08,', '123456', ' 123,456'),
+            ('08,', '-123456', '-123,456'),
+            ('+09,', '123456', '+0,123,456'),
+            # ... with fractional part...
+            ('07,', '1234.56', '1,234.56'),
+            ('08,', '1234.56', '1,234.56'),
+            ('09,', '1234.56', '01,234.56'),
+            ('010,', '1234.56', '001,234.56'),
+            ('011,', '1234.56', '0,001,234.56'),
+            ('012,', '1234.56', '0,001,234.56'),
+            ('08,.1f', '1234.5', '01,234.5'),
+            # no thousands separators in fraction part
+            (',', '1.23456789', '1.23456789'),
+            (',%', '123.456789', '12,345.6789%'),
+            (',e', '123456', '1.23456e+5'),
+            (',E', '123456', '1.23456E+5'),
+
+            # issue 6850
+            ('a=-7.0', '0.12345', 'aaaa0.1'),
+
+            # issue 22090
+            ('<^+15.20%', 'inf', '<<+Infinity%<<<'),
+            ('\x07>,%', 'sNaN1234567', 'sNaN1234567%'),
+            ('=10.10%', 'NaN123', '   NaN123%'),
+            # CPython formatting keeps zero padding out of special values.
+            ('010', '-Infinity', ' -Infinity'),
+            ('+010', 'NaN', '      +NaN'),
+            ]
+        for fmt, d, result in test_values:
+            self.assertEqual(format(Decimal(d), fmt), result)
+
+        # bytes format argument
+        self.assertRaises(TypeError, Decimal(1).__format__, b'-020')
+        self.assertRaises(ValueError, format, Decimal(1), '<010.2f')
+
+    def test_format_fallback_rounding(self):
+        # From CPython's CFunctionality.test_format_fallback_rounding.
+        D = self.decimal.Decimal
+        self.assertEqual(format(D('6.09'), '#.1f'), '6.1')
+        with self.decimal.localcontext() as c:
+            c.rounding = self.decimal.ROUND_DOWN
+            self.assertEqual(format(D('6.09'), '#.1f'), '6.0')
+            self.assertEqual(format(D('9.99'), '.1e'), '9.9e+0')
+
+    def test_format_is_quiet(self):
+        # Skulpt regression: formatting must not apply arithmetic limits or signals.
+        with self.decimal.localcontext() as c:
+            c.prec = 1
+            c.Emax = 2
+            c.rounding = self.decimal.ROUND_DOWN
+            c.traps[self.decimal.Inexact] = True
+            c.clear_flags()
+            self.assertEqual(format(self.decimal.Decimal('1234.567'), '.2f'), '1234.56')
+            self.assertFalse(c.flags[self.decimal.Inexact])
+            self.assertFalse(c.flags[self.decimal.Rounded])
+
+    # Skulpt: locale module not fully implemented, skip n_format tests
+    # def test_n_format(self):
+    #     Decimal = self.decimal.Decimal
+    #
+    #     try:
+    #         from locale import CHAR_MAX
+    #     except ImportError:
+    #         self.skipTest('locale.CHAR_MAX not available')
+    @unittest.skip("Skulpt: locale module not fully implemented")
+    def test_n_format(self):
+        pass
+
+    @run_with_locale('LC_ALL', 'ps_AF')
+    def test_wide_char_separator_decimal_point(self):
+        # locale with wide char separator and decimal point
+        Decimal = self.decimal.Decimal
+
+        decimal_point = locale.localeconv()['decimal_point']
+        thousands_sep = locale.localeconv()['thousands_sep']
+        if decimal_point != '\u066b':
+            self.skipTest('inappropriate decimal point separator '
+                          '({!a} not {!a})'.format(decimal_point, '\u066b'))
+        if thousands_sep != '\u066c':
+            self.skipTest('inappropriate thousands separator '
+                          '({!a} not {!a})'.format(thousands_sep, '\u066c'))
+
+        self.assertEqual(format(Decimal('100000000.123'), 'n'),
+                         '100\u066c000\u066c000\u066b123')
+
+    def test_decimal_from_float_argument_type(self):
+        class A(self.decimal.Decimal):
+            def __init__(self, a):
+                self.a_type = type(a)
+        a = A.from_float(42.5)
+        self.assertEqual(self.decimal.Decimal, a.a_type)
+
+        a = A.from_float(42)
+        self.assertEqual(self.decimal.Decimal, a.a_type)
 
 
 class ArithmeticOperatorsTest(unittest.TestCase):
@@ -3770,6 +3996,29 @@ class Coverage(unittest.TestCase):
         self.assertEqual(y, -x)
 
 
+class PyFunctionality(unittest.TestCase):
+    """Extra functionality in decimal.py"""
+
+    def test_py_alternate_formatting(self):
+        # triples giving a format, a Decimal, and the expected result
+        Decimal = P.Decimal
+        localcontext = P.localcontext
+
+        test_values = [
+            # Issue 7094: Alternate formatting (specified by #)
+            ('.0e', '1.0', '1e+0'),
+            ('#.0e', '1.0', '1.e+0'),
+            ('.0f', '1.0', '1'),
+            ('#.0f', '1.0', '1.'),
+            ('g', '1.1', '1.1'),
+            ('#g', '1.1', '1.1'),
+            ('.0g', '1', '1'),
+            ('#.0g', '1', '1.'),
+            ('.0%', '1.0', '100%'),
+            ('#.0%', '1.0', '100.%'),
+            ]
+        for fmt, d, result in test_values:
+            self.assertEqual(format(Decimal(d), fmt), result)
 
 
 
