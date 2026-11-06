@@ -317,9 +317,18 @@ class TestParserRegressions(unittest.TestCase):
         cases = [
             ('w', '²', True), ('w', '\u2163', True), ('w', '\u203f', False),
             ('w', 'é', True), ('w', '_', True), ('d', '²', False),
+            ('w', '\u0301', False),
             ('d', '\u0660', True), ('s', '\u2028', True), ('s', '\u2029', True),
             ('s', '\x1c', True), ('s', '\ufeff', False),
         ]
+        # Engines without Unicode properties retain the older BMP-only tables.
+        if "Skulpt" not in sys.version or jseval(r"""
+            (() => {
+                try { new RegExp("\\p{L}", "u"); return true; }
+                catch { return false; }
+            })()
+        """):
+            cases.extend([('w', '\U00010400', True), ('d', '\U000104a0', True)])
         for category, char, expected in cases:
             for pattern in ['\\' + category, '[\\' + category + ']']:
                 self.assertEqual(bool(re.fullmatch(pattern, char)), expected)
@@ -338,7 +347,42 @@ class TestParserRegressions(unittest.TestCase):
             self.assertEqual(re.sub('a', replacement, 'a'), replacement)
 
 
-class TestBrowsersWithoutLookbehind(unittest.TestCase):
+class TestBrowserRegexCompatibility(unittest.TestCase):
+    def test_categories_without_unicode_properties(self):
+        if "Skulpt" not in sys.version:
+            self.skipTest("Skulpt-specific browser capability test")
+        restore_regexp = jseval(r"""
+            (() => {
+                const NativeRegExp = RegExp;
+                Sk.global.RegExp = new Proxy(NativeRegExp, {
+                    construct(target, args) {
+                        if (/\\[pP]\{/.test(String(args[0]))) {
+                            throw new SyntaxError("Unicode properties are not supported");
+                        }
+                        return Reflect.construct(target, args);
+                    },
+                });
+                return () => { Sk.global.RegExp = NativeRegExp; };
+            })()
+        """)
+        try:
+            del sys.modules['re']
+            import re as fallback_re
+            # Legacy BMP tables still distinguish letters, numbers and marks.
+            self.assertTrue(fallback_re.fullmatch(r'\w+', 'é_²'))
+            self.assertIsNone(fallback_re.fullmatch(r'\w', '\u0301'))
+            self.assertTrue(fallback_re.fullmatch(r'\W', '\u0301'))
+            self.assertTrue(fallback_re.fullmatch(r'\d', '\u0660'))
+            self.assertIsNone(fallback_re.fullmatch(r'\d', '²'))
+            self.assertTrue(fallback_re.fullmatch(r'\s', '\x1c'))
+            self.assertTrue(fallback_re.fullmatch(r'[^\W_]+', 'é²'))
+            self.assertEqual(
+                [m.span() for m in fallback_re.finditer(r'\b', 'é\u0301')],
+                [(0, 0), (1, 1)])
+        finally:
+            sys.modules['re'] = re
+            restore_regexp()
+
     def test_ascii_boundaries_without_lookbehind(self):
         if "Skulpt" not in sys.version:
             self.skipTest("Skulpt-specific browser capability test")
