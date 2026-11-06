@@ -700,7 +700,10 @@ function getReParser(makeError) {
     // Generator - Convert AST to JavaScript regex
     let hasLookbehindSupport = true;
     try {
-        new RegExp("(?<!foo)");
+        // Access the native RegExp constructor through Sk.global so Closure keeps
+        // this runtime probe instead of emitting a lookbehind regex literal. Engines
+        // without lookbehind reject that literal while parsing, before this catch runs.
+        new Sk.global.RegExp("(?<!foo)");
     } catch {
         hasLookbehindSupport = false;
     }
