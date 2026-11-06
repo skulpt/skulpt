@@ -2287,6 +2287,9 @@ function parsestr (c, n, s) {
                 else if (ch === "v") {
                     ret += "\v";
                 }
+                else if (ch === "a") {
+                    ret += "\x07";  // bell character
+                }
                 else if (ch === "0") {
                     ret += "\0";
                 }

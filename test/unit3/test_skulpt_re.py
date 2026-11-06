@@ -333,6 +333,11 @@ class TestParserRegressions(unittest.TestCase):
         self.assertIsNone(re.fullmatch(r'\s', '\u00a0', re.A))
         self.assertTrue(re.fullmatch(r'\s', ' ', re.A))
 
+    def test_replacement_punctuation_keeps_backslash(self):
+        for replacement in [r'\&', r'\!', r'\_', r'\é']:
+            self.assertEqual(re.sub('a', replacement, 'a'), replacement)
+
+
 class TestBrowsersWithoutLookbehind(unittest.TestCase):
     def test_ascii_boundaries_without_lookbehind(self):
         if "Skulpt" not in sys.version:
