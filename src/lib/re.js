@@ -18,19 +18,31 @@ function getReParser(makeError) {
     const RE_INLINE_FLAGS = /^[aiLmsux]$/;
     const RE_INCOMPATIBLE_FLAGS = /[auL]/;
 
-    // Access Unicode character classes from Sk.builtin.str._unicode (set in str.js)
-    // Build Python-compatible character classes lazily
+    // Build category expressions lazily: most patterns need no Unicode tables.
     let _unicodeClasses = null;
     function getUnicodeClasses() {
         if (_unicodeClasses) {
             return _unicodeClasses;
+        }
+        try {
+            new RegExp("\\p{L}", "u");
+            // Use the engine's Unicode version, as native case folding does.
+            _unicodeClasses = {
+                d: "\\p{Nd}",
+                w: "\\p{L}\\p{N}_",
+                s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85\\p{Z}",
+            };
+            return _unicodeClasses;
+        } catch {
+            // Older engines use Skulpt's BMP tables instead.
         }
         const U = Sk.builtin.str._unicode;
         _unicodeClasses = {
             // Python \d: Only decimal digits (Nd), not all numeric (N)
             d: U.Nd,
             // Python \w is alphanumeric plus underscore, not connector punctuation.
-            w: U.L + U.N + "_",
+            // U.L also includes combining marks for Python identifiers.
+            w: U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.N + "_",
             // Python \s: Whitespace including Unicode space separators
             s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85" + U.Zs + U.Zl + U.Zp,
         };
@@ -770,18 +782,19 @@ function getReParser(makeError) {
         }
 
         visitAnchor(node) {
+            // Keep native ^ where possible so anchored misses do not scan the input.
             // JS also treats CR and Unicode separators as line endings. These
-            // assertions preserve Python's LF-only rules even with native m flags.
+            // assertions preserve Python's LF-only rules without native m flags.
             switch (node.anchorType) {
                 case "start":
                     if (!hasLookbehindSupport) {
                         return "^";
                     }
-                    return this.multiline ? "(?:(?<![\\s\\S])|(?<=\\n))" : "(?<![\\s\\S])";
+                    return this.multiline ? "(?:^|(?<=\\n))" : "^";
                 case "end":
                     return this.multiline ? "(?=\\n|(?![\\s\\S]))" : "(?=\\n?(?![\\s\\S]))";
                 case "string_start":
-                    return hasLookbehindSupport ? "(?<![\\s\\S])" : "^";
+                    return "^";
                 case "string_end":
                     return "(?![\\s\\S])";
                 case "word_boundary":
@@ -925,7 +938,7 @@ function getReParser(makeError) {
         return new JSRegexGenerator(options).generate(ast);
     }
 
-    return { parse, generate };
+    return { parse, generate, hasLookbehindSupport };
 }
 
 // ========================================================================
@@ -1198,9 +1211,13 @@ function $builtinmodule(name) {
     }
 
     // Get parser from module-level getReParser() function
-    const { parse, generate } = getReParser(
+    const { parse, generate, hasLookbehindSupport } = getReParser(
         (msg, pattern, pos) => new re.error(msg, new pyStr(pattern), new pyInt(pos))
     );
+    if (hasLookbehindSupport) {
+        // The emitter handles multiline anchors with Python's LF-only semantics.
+        delete jsFlags.m;
+    }
 
     const _compiled_patterns = Object.create(null);
 
@@ -1336,6 +1353,10 @@ function $builtinmodule(name) {
             this.$groupCount = groupCount;
             this.$groupNames = groupNames;
             this.$groupindex = null;
+            // Non-global variants are safe to reuse across matching calls.
+            this.$searchRegex = null;
+            this.$matchRegex = null;
+            this.$fullmatchRegex = null;
         },
         slots: {
             $r() {
@@ -1601,22 +1622,24 @@ function $builtinmodule(name) {
                 return new re.Match(match, this, string, pos, endpos);
             },
             $search(string, pos, endpos) {
-                var regex = new RegExp(this.v.source, this.v.flags.replace("g", "")); // keep all flags except 'g';
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$searchRegex === null) {
+                    this.$searchRegex = new RegExp(this.v.source, this.v.flags.replace("g", ""));
+                }
+                return this.do$match(this.$searchRegex, string, pos, endpos);
             },
             $match(string, pos, endpos) {
-                let source = this.v.source;
-                let flags = this.v.flags.replace("g", "").replace("m", "");
-                source = "^" + source;
-                var regex = new RegExp(source, flags);
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$matchRegex === null) {
+                    const flags = this.v.flags.replace("g", "").replace("m", "");
+                    this.$matchRegex = new RegExp("^" + this.v.source, flags);
+                }
+                return this.do$match(this.$matchRegex, string, pos, endpos);
             },
             full$match(string, pos, endpos) {
-                let source = this.v.source;
-                let flags = this.v.flags.replace("g", "").replace("m", "");
-                source = "^(?:" + source + ")$";
-                var regex = new RegExp(source, flags);
-                return this.do$match(regex, string, pos, endpos);
+                if (this.$fullmatchRegex === null) {
+                    const flags = this.v.flags.replace("g", "").replace("m", "");
+                    this.$fullmatchRegex = new RegExp("^(?:" + this.v.source + ")$", flags);
+                }
+                return this.do$match(this.$fullmatchRegex, string, pos, endpos);
             },
             find$iter(string, pos, endpos) {
                 let jsstr;

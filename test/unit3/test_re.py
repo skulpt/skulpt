@@ -1479,8 +1479,8 @@ class ReTests(unittest.TestCase):
         # Letter) or 'No' (Number, Other).
         decimal_digits = [
             '\u0037', # '\N{DIGIT SEVEN}', category 'Nd'
-            # '\u0e58', # '\N{THAI DIGIT SIX}', category 'Nd'
-            # '\uff10', # '\N{FULLWIDTH DIGIT ZERO}', category 'Nd'
+            '\u0e58', # '\N{THAI DIGIT SIX}', category 'Nd'
+            '\uff10', # '\N{FULLWIDTH DIGIT ZERO}', category 'Nd'
             ]
         for x in decimal_digits:
             self.assertEqual(re.match(r'^\d$', x).group(0), x)
