@@ -26,25 +26,29 @@ try {
         w: "\\p{L}\\p{N}_",
         s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85\\p{Z}",
     };
-} catch {
-    const U = require("./UnicodeData").default;
-    const otherStart = "\\u1885-\\u1886\\u2118\\u212E\\u309B-\\u309C";
-    const otherContinue = "\\u00B7\\u0387\\u1369-\\u1371\\u19DA";
-    const start = U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.Nl + "_" + otherStart;
-    const continuation = start + U.Mn + U.Mc + U.Nd + U.Pc + otherContinue;
-    identifierPattern = "[" + start + "]+[" + continuation + "]*";
-    const identifierRegex = new RegExp("^" + identifierPattern + "$");
-    isIdentifier = (text) => identifierRegex.test(text.normalize("NFKC"));
-    tokenFlags = "";
-    nonDecimalRegex = new RegExp("[^" + U.Nd + "]", "u");
-    const zsNoSpace = U.Zs.replace(" ", "").replace("\\u0020", "");
-    nonPrintableRegex = new RegExp("[" + U.C + U.Zl + U.Zp + zsNoSpace + "]", "u");
-    regexClasses = {
-        d: U.Nd,
-        // Regex \w includes letters and numbers, but not identifier combining marks.
-        w: U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.N + "_",
-        s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85" + U.Zs + U.Zl + U.Zp,
-    };
+} catch (error) {
+    if (SKULPT_NATIVE_ONLY) {
+        throw error;
+    } else {
+        const U = require("./UnicodeData").default;
+        const otherStart = "\\u1885-\\u1886\\u2118\\u212E\\u309B-\\u309C";
+        const otherContinue = "\\u00B7\\u0387\\u1369-\\u1371\\u19DA";
+        const start = U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.Nl + "_" + otherStart;
+        const continuation = start + U.Mn + U.Mc + U.Nd + U.Pc + otherContinue;
+        identifierPattern = "[" + start + "]+[" + continuation + "]*";
+        const identifierRegex = new RegExp("^" + identifierPattern + "$");
+        isIdentifier = (text) => identifierRegex.test(text.normalize("NFKC"));
+        tokenFlags = "";
+        nonDecimalRegex = new RegExp("[^" + U.Nd + "]", "u");
+        const zsNoSpace = U.Zs.replace(" ", "").replace("\\u0020", "");
+        nonPrintableRegex = new RegExp("[" + U.C + U.Zl + U.Zp + zsNoSpace + "]", "u");
+        regexClasses = {
+            d: U.Nd,
+            // Regex \w includes letters and numbers, but not identifier combining marks.
+            w: U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.N + "_",
+            s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85" + U.Zs + U.Zl + U.Zp,
+        };
+    }
 }
 
 const Unicode = {

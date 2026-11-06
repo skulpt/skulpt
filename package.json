@@ -30,7 +30,11 @@
     "test:runtime": "node test/run-tests.js runtime",
     "start": "node support/run/runfile.js",
     "profile": "node --prof --no-logfile-per-isolate --log-internal-timer-events support/run/runfile.js -o",
-    "postprofile": "node --prof-process v8.log"
+    "postprofile": "node --prof-process v8.log",
+    "build:variants": "npm run build && npm run build:modern",
+    "prebuild:modern": "node support/build/wrapmodules.js internal",
+    "build:modern": "webpack --mode production --env.nativeOnly --output-path dist/modern",
+    "test:modern": "node test/run-tests.js modern"
   },
   "repository": {
     "type": "git",
@@ -46,7 +50,7 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
-    "acorn": "^6.1.1",
+    "acorn": "^8.19.0",
     "chalk": "^2.4.2",
     "clean-webpack-plugin": "^2.0.2",
     "closure-webpack-plugin": "^2.5.0",
