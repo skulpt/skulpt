@@ -116,6 +116,7 @@ class DecimalRegressionTests(unittest.TestCase):
         self.assertRaises(InvalidOperation, c.power, 0, 0)
         self.assertEqual(Decimal('1.234') ** 3, Decimal('1.88'))
         self.assertEqual(Decimal(2) ** -3, Decimal('0.125'))
+        self.assertEqual(Decimal('1.0001') ** 3650, Decimal('1.44'))
 
     def test_fractional_power_is_explicitly_unsupported(self):
         # Skulpt's partial implementation must not silently use binary floats.
