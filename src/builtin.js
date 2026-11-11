@@ -1227,8 +1227,16 @@ Sk.builtin.next_ = function next_(iter, default_) {
 Sk.builtin.reload = function reload() {
     throw new Sk.builtin.NotImplementedError("reload is not yet implemented");
 };
-Sk.builtin.vars = function vars() {
-    throw new Sk.builtin.NotImplementedError("vars is not yet implemented");
+Sk.builtin.vars = function vars(obj) {
+    if (obj === undefined) {
+        return Sk.builtin.locals();
+    }
+    return Sk.misceval.chain(Sk.builtin.getattr(obj, new Sk.builtin.str("__dict__"), null), (dict) => {
+        if (dict === null) {
+            throw new Sk.builtin.TypeError("vars() argument must have __dict__ attribute");
+        }
+        return dict;
+    });
 };
 
 Sk.builtin.apply_ = function apply_() {

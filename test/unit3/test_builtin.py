@@ -72,6 +72,24 @@ class AttrTest(unittest.TestCase):
 
 class BuiltinTest(unittest.TestCase):
 
+    def test_vars_object(self):
+        # Object cases from CPython Lib/test/test_builtin.py::test_vars.
+        class CustomDict:
+            @property
+            def __dict__(self):
+                return {'a': 2}
+
+        self.assertRaises(TypeError, vars, 42, 42)
+        self.assertRaises(TypeError, vars, 42)
+        self.assertEqual(vars(CustomDict()), {'a': 2})
+
+        class Example:
+            pass
+
+        obj = Example()
+        vars(obj)['a'] = 42
+        self.assertEqual(obj.a, 42)
+
     def test_import(self):
         __import__('sys')
         __import__('time')
