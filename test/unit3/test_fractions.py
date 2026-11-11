@@ -748,6 +748,25 @@ class FractionTest(unittest.TestCase):
         self.assertEqual(type(f.numerator), myint)
         self.assertEqual(type(f.denominator), myint)
 
+    def test_three_argument_pow(self):
+        message = "unsupported operand type(s) for ** or pow(): '%s', '%s', '%s'"
+        self.assertRaisesMessage(TypeError,
+                                 message % ("Fraction", "int", "int"),
+                                 pow, F(3), 4, 5)
+        self.assertRaisesMessage(TypeError,
+                                 message % ("int", "Fraction", "int"),
+                                 pow, 3, F(4), 5)
+        self.assertRaisesMessage(TypeError,
+                                 message % ("int", "int", "Fraction"),
+                                 pow, 3, 4, F(5))
+
+
+class TestSkulptRegressions(unittest.TestCase):
+    def test_hash_with_composite_modulus(self):
+        modulus = sys.hash_info.modulus
+        for denominator in (3, 5, 7, 10):
+            self.assertEqual(hash(F(1, denominator)) * denominator % modulus, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
