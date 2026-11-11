@@ -1275,6 +1275,27 @@ Compiler.prototype.outputLocals = function (unit) {
     return "";
 };
 
+// A resumed child dispatches before entering the block loop. In the loop,
+// fresh exceptions and compiler-emitted reraises share the same dispatch.
+Compiler.prototype.outputExceptionCatch = function (unit, inBlockLoop) {
+    const dispatch = "if ($exc.length===0) {throw $err;} $blk=$exc.pop();";
+    return "catch(err){" +
+        "if (!(err instanceof Sk.builtin.BaseException)) {err = new Sk.builtin.ExternalError(err);}" +
+        "if ($frame===undefined) {$frame=new Sk.builtin.frame(" +
+            unit.scopename + "," + JSON.stringify(this.filename) + ");}" +
+        "Sk.builtin.addTraceback(err,$frame,$currLineNo,$currColNo); $err=err;" +
+        (inBlockLoop ? "}" + dispatch : dispatch + "}");
+};
+
+Compiler.prototype.outputReraise = function (error) {
+    if (error !== undefined) {
+        out("$err=", error, ";");
+    }
+    // Leave the switch and go straight to exception dispatch without adding
+    // a traceback entry for this frame again.
+    out("break;");
+};
+
 Compiler.prototype.outputSuspensionHelpers = function (unit) {
     var i, t;
     var localSaveCode = [];
@@ -1294,7 +1315,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
                  "var $wakeFromSuspension = function() {" +
                     "var susp = "+unit.scopename+".$wakingSuspension; "+unit.scopename+".$wakingSuspension = undefined;" +
                     "$blk=susp.$blk; $loc=susp.$loc; $gbl=susp.$gbl; $exc=susp.$exc; $err=susp.$err; $postfinally=susp.$postfinally;" +
-                    "$currLineNo=susp.$lineno; $currColNo=susp.$colno; Sk.lastYield=Date.now();" +
+                    "$currLineNo=susp.$lineno; $currColNo=susp.$colno; $frame=susp.$frame; Sk.lastYield=Date.now();" +
                     (hasCell ? "$cell=susp.$cell;" : "");
 
     for (i = 0; i < localsToSave.length; i++) {
@@ -1302,8 +1323,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
         output += t + "=susp.$tmps." + t + ";";
     }
 
-    output +=  "try { $ret=susp.child.resume(); } catch(err) { if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if($exc.length>0) { $err=err; $blk=$exc.pop(); } else { throw err; } }" +
-                "};";
+    output += "try { $ret=susp.child.resume(); }" + this.outputExceptionCatch(unit, false) + "};";
     // Initial entry uses the function object; generator frames resume with the generator.
     output += "var $self = this;";
     output += unit.ste.generator ? "var $gen = $self;" : "";
@@ -1313,7 +1333,7 @@ Compiler.prototype.outputSuspensionHelpers = function (unit) {
                 "susp.resume=function(){" + unit.scopename + ".$wakingSuspension=susp; return " +
                 unit.scopename + ".call(" + (unit.ste.generator ? "$gen" : "$self") + "); };" +
                 "susp.data=susp.child.data;susp.$blk=$blk;susp.$loc=$loc;susp.$gbl=$gbl;susp.$exc=$exc;susp.$err=$err;susp.$postfinally=$postfinally;" +
-                "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;" +
+                "susp.$filename=$filename;susp.$lineno=$lineno;susp.$colno=$colno;susp.$frame=$frame;" +
                 "susp.optional=susp.child.optional;" +
                 (hasCell ? "susp.$cell=$cell;" : "");
 
@@ -1588,8 +1608,8 @@ Compiler.prototype.craise = function (s) {
 
         out("throw ", exc, ";");
     } else {
-        // re-raise
-        out("throw $err;");
+        out("if ($err===undefined) {throw new Sk.builtin.RuntimeError('No active exception to reraise');}");
+        this.outputReraise();
     }
 };
 
@@ -1694,7 +1714,7 @@ Compiler.prototype.ctry = function (s) {
 
     // If no except clause catches exception, throw it again
     this.setBlock(unhandled);
-    out("throw $err;");
+    this.outputReraise();
 
     this.setBlock(orelse);
     this.vseqstmt(s.orelse);
@@ -1722,7 +1742,9 @@ Compiler.prototype.ctry = function (s) {
         this.vseqstmt(s.finalbody);
         // If finalbody executes normally, AND we have an exception
         // to re-raise, we raise it.
-        out("if(",finalExceptionToReRaise,"!==undefined) { throw ",finalExceptionToReRaise,";}");
+        out("if(", finalExceptionToReRaise, "!==undefined) {");
+        this.outputReraise(finalExceptionToReRaise);
+        out("}");
 
         out("$postfinally=", pendingAction, ";");
         this.outputFinallyCascade();
@@ -1788,7 +1810,7 @@ Compiler.prototype.cwith = function (s, itemIdx) {
     out("$ret = Sk.misceval.applyOrSuspend(",exit,",undefined,Sk.builtin.getExcInfo($err),undefined,[]);");
     this._checkSuspension(s);
     this._jumptrue("$ret", carryOn);
-    out("throw $err;");
+    this.outputReraise();
 
     // finally: (kinda. NB that this is a "finally" that doesn't run in the
     //           exception case!)
@@ -2049,7 +2071,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         cellNames.map((name) => name + ":undefined").join(",") +
         "},$gbl=this && this.func_globals" +
         (hasFree ? ",$free=this && this.func_closure" : "") +
-        ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+        ",$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined,$frame;";
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
     }
@@ -2116,11 +2138,13 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
     }
 
+    const firstlineno = decorator_list && decorator_list.length ? decorator_list[0].lineno : n.lineno;
+
     // we've resolved the arguments now so we return a generator
     // call new generator and then save the suspension
     if (isGenerator) {
         this.u.varDeclsCode += `$gen = new Sk.builtin.generator(this.$name, this.$qualname);
-        $gen.gi$frame = $saveSuspension($gen.gi$input, '${this.filename}', $currLineNo, $currColNo);
+        $gen.gi$frame = $saveSuspension($gen.gi$input, '${this.filename}', ${firstlineno}, $currColNo);
         return $gen;`;
     }
 
@@ -2140,7 +2164,7 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     this.u.switchCode = "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "} }catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} }});";
+    this.u.suffixCode = "}}" + this.outputExceptionCatch(this.u, true) + "}});";
 
     //
     // jump back to the handler so it can do the main actual work of the
@@ -2174,7 +2198,6 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         }
     }
     const nested = this.stack.some((unit) => unit && unit.ste.blockType === FunctionBlock);
-    const firstlineno = decorator_list && decorator_list.length ? decorator_list[0].lineno : n.lineno;
     // CPython's CO_OPTIMIZED, CO_NEWLOCALS, CO_VARARGS, CO_VARKEYWORDS,
     // CO_NESTED and CO_GENERATOR bits.
     const flags = 0x03 | (vararg ? 0x04 : 0) | (kwarg ? 0x08 : 0) |
@@ -2504,7 +2527,7 @@ Compiler.prototype.cclass = function (s) {
         this.u.prefixCode += "var $classClosure={__class__:undefined};";
     }
     this.u.switchCode += "return (function $" + s.name.v + "$_closure($cell){";
-    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+    this.u.switchCode += "var $blk=" + entryBlock + ",$exc=[],$err=undefined,$ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined,$frame;";
 
     if (Sk.execLimit !== null) {
         this.u.switchCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
@@ -2516,7 +2539,7 @@ Compiler.prototype.cclass = function (s) {
     this.u.switchCode += "while(true){try{";
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
-    this.u.suffixCode = "}}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }}}";
+    this.u.suffixCode = "}}" + this.outputExceptionCatch(this.u, true) + "}";
     this.u.suffixCode += "}).call(null, $cell);});";
 
     this.u.private_ = s.name;
@@ -2977,7 +3000,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.varDeclsCode =
         "var $gbl = $forcegbl || {}, $blk=" + entryBlock +
         ",$exc=[],$loc=$forceloc || $gbl,$cell={},$err=undefined;" +
-        "var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined;";
+        "var $ret=undefined,$postfinally=undefined,$currLineNo=undefined,$currColNo=undefined,$frame;";
 
     if (Sk.execLimit !== null) {
         this.u.varDeclsCode += "if (typeof Sk.execStart === 'undefined') {Sk.execStart = Date.now()}";
@@ -3006,7 +3029,7 @@ Compiler.prototype.cmod = function (mod) {
     this.u.switchCode += this.outputInterruptTest();
     this.u.switchCode += "switch($blk){";
     this.u.suffixCode = "}";
-    this.u.suffixCode += "}catch(err){ if (!(err instanceof Sk.builtin.BaseException)) { err = new Sk.builtin.ExternalError(err); } err.traceback.push({lineno: $currLineNo, colno: $currColNo, filename: '"+this.filename+"'}); if ($exc.length>0) { $err = err; $blk=$exc.pop(); continue; } else { throw err; }} } });";
+    this.u.suffixCode += "}" + this.outputExceptionCatch(this.u, true) + "} });";
 
     // Note - this change may need to be adjusted for all the other instances of
     // switchCode and suffixCode in this file.  Not knowing how to test those

@@ -788,6 +788,14 @@ const pyCode = Sk.builtin.code = Sk.abstr.buildNativeClass("code", {
     },
 });
 
+// A compiled body is shared by closures and by every invocation's frame.
+Sk.builtin.code.fromCompiled = function (compiled, filename) {
+    if (compiled.$pythonCode === undefined) {
+        compiled.$pythonCode = new pyCode(filename, compiled);
+    }
+    return compiled.$pythonCode;
+};
+
 Sk.builtin.compile = function (source, filename, mode, flags, dont_inherit, optimize) {
     Sk.builtin.pyCheckType("source", "str", Sk.builtin.checkString(source));
     Sk.builtin.pyCheckType("filename", "str", Sk.builtin.checkString(filename));
