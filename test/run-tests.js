@@ -12,7 +12,7 @@ function run(...args) {
 
 function runJSBITests() {
     console.log("Testing numeric modules with JSBI");
-    for (const moduleName of ["test_pow", "test_fractions", "test_decimal"]) {
+    for (const moduleName of ["test_int", "test_pow", "test_fractions", "test_decimal"]) {
         run(
             "--require",
             "./test/force-jsbi.js",
