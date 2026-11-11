@@ -1583,6 +1583,7 @@ Compiler.prototype.craise = function (s) {
             out(    "throw new Sk.builtin.TypeError('exception causes must derive from BaseException');");
             out("}");
             out(exc, ".$cause = $ret;");
+            out(exc, ".$suppressContext = true;");
         }
 
         out("throw ", exc, ";");
