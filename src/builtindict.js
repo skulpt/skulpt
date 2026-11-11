@@ -56,6 +56,7 @@ Sk.builtins = {
     "NameError"          : Sk.builtin.NameError,
     "UnboundLocalError"  : Sk.builtin.UnboundLocalError,
     "IOError"            : Sk.builtin.IOError,
+    "OSError"            : Sk.builtin.OSError,
     "NotImplementedError": Sk.builtin.NotImplementedError,
     "SystemExit"         : Sk.builtin.SystemExit,
     "OverflowError"      : Sk.builtin.OverflowError,

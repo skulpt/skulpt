@@ -357,6 +357,8 @@ class GeneratorProtocolTest(unittest.TestCase):
         with self.assertRaises(RuntimeError) as caught:
             next(g)
         self.assertIs(caught.exception.__cause__, error)
+        self.assertIs(caught.exception.__context__, error)
+        self.assertTrue(caught.exception.__suppress_context__)
         self.assertEqual(list(g), [])
 
 
