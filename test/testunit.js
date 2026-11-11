@@ -3,11 +3,11 @@ const path = require('path');
 const program = require('commander');
 const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
-function test (python3, opt, module = undefined) {
+function test (python3, opt, module = undefined, core = undefined) {
     var startime, endtime, elapsed;
 
     // Import Skulpt
-    var skulpt = reqskulpt(false);
+    var skulpt = core ? require(path.resolve(core)) : reqskulpt(false);
     if (skulpt === null) {
         process.exit(1);
     }
@@ -120,6 +120,7 @@ program
     .option('--python3', 'Python 3')
     .option('-o, --opt', 'use optimized skulpt')
     .option('--module <module>', 'test specific module')
+    .option('--core <file>', 'test a specific built Skulpt core')
     .parse(process.argv);
 
-test(program.python3, program.opt, program.module);
+test(program.python3, program.opt, program.module, program.core);
