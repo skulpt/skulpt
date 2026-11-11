@@ -942,7 +942,7 @@ function decimalImpl({ math, sys, collections }) {
                         throw new OverflowError("Cannot convert infinity to integer");
                     }
                 }
-                const s = new pyInt((-1) ** this._sign);
+                const s = new pyInt(this._sign ? -1 : 1);
                 if (this._exp >= 0) {
                     return new pyInt(this._int).nb$multiply(_10.nb$power(new pyInt(this._exp))).nb$multiply(s);
                 } else {
