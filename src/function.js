@@ -71,6 +71,19 @@ Sk.builtin.func = Sk.abstr.buildNativeClass("function", {
         },
     },
     getsets: {
+        __code__: {
+            $get() {
+                const code = this.func_code;
+                if (code.$codeMetadata === undefined) {
+                    throw new Sk.builtin.AttributeError("native function has no __code__");
+                }
+                // Closures created from the same compiled body share a code object.
+                if (code.$pythonCode === undefined) {
+                    code.$pythonCode = new Sk.builtin.code(code.$codeMetadata.filename, code);
+                }
+                return code.$pythonCode;
+            },
+        },
         __name__: {
             $get() {
                 return this.$name;
