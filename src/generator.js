@@ -65,9 +65,6 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 const throwArgs = [type];
                 if (value !== undefined) { throwArgs.push(value); }
                 if (tb !== undefined) { throwArgs.push(tb); }
-                if (tb !== undefined && tb !== Sk.builtin.none.none$) {
-                    throw new Sk.builtin.NotImplementedError("generator.throw() with a traceback is not supported");
-                }
                 return Sk.misceval.chain(this.gi$throw(throwArgs), (ret) => {
                     if (ret === undefined) {
                         throw new Sk.builtin.StopIteration(this.gi$ret);
@@ -195,12 +192,17 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
             }, true);
         },
         gi$throw(throwArgs) {
-            const [type, value] = throwArgs;
+            const [type, value, traceback] = throwArgs;
             // CPython delegates the original arguments before normalising them.
             // Constructors run outside this generator's execution guard; failures
             // in construction are injected just like the requested exception.
             const normalizeAndInject = () => {
+                const hasTraceback = traceback !== undefined && traceback !== Sk.builtin.none.none$;
+                if (hasTraceback && !(traceback instanceof Sk.builtin.traceback)) {
+                    throw new Sk.builtin.TypeError("throw() third argument must be a traceback object");
+                }
                 let exception;
+                let normalizationFailed = false;
                 if (type instanceof Sk.builtin.BaseException) {
                     if (value !== undefined && value !== Sk.builtin.none.none$) {
                         throw new Sk.builtin.TypeError("instance exception may not have a separate value");
@@ -211,7 +213,10 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                         value instanceof Sk.builtin.tuple ? value.v : [value];
                     exception = Sk.misceval.tryCatch(
                         () => value instanceof type ? value : Sk.misceval.callsimOrSuspendArray(type, args),
-                        (error) => error
+                        (error) => {
+                            normalizationFailed = true;
+                            return error;
+                        }
                     );
                 } else {
                     throw new Sk.builtin.TypeError("exceptions must be classes or instances deriving from BaseException");
@@ -219,6 +224,8 @@ Sk.builtin.generator = Sk.abstr.buildIteratorClass("generator", {
                 return Sk.misceval.chain(exception, (error) => {
                     if (!(error instanceof Sk.builtin.BaseException)) {
                         error = new Sk.builtin.TypeError("exception constructor should have returned an instance of BaseException");
+                    } else if (hasTraceback && !normalizationFailed) {
+                        error.$traceback = traceback;
                     }
                     return this.gi$inject(error);
                 });

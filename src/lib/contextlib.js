@@ -99,7 +99,7 @@ function contextlib_mod(dependencies) {
                         ),
                         (outcome) => chain(
                             pyCallOrSuspend(exit, outcome.error ?
-                                [outcome.error.ob$type, outcome.error, pyNone] : [pyNone, pyNone, pyNone]),
+                                Sk.builtin.getExcInfo(outcome.error).v : [pyNone, pyNone, pyNone]),
                             (suppressed) => {
                                 if (outcome.error) {
                                     if (!Sk.misceval.isTrue(suppressed)) {
@@ -161,9 +161,12 @@ function contextlib_mod(dependencies) {
                             e.$cause === exception
                         ) {
                             // PEP 479 wraps escaped StopIteration; preserve the body exception.
+                            exception.$traceback = traceback;
                             return pyFalse;
                         }
                         if (e === exception) {
+                            // Propagation must keep the body traceback without the injected yield.
+                            exception.$traceback = traceback;
                             return pyFalse;
                         }
                         throw e;
