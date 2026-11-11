@@ -532,6 +532,13 @@ class IntTestCases(unittest.TestCase):
         z = x * y
         self.assertEqual(z, 22572168101082499047084554138087)
 
+    def test_skulpt_zero_times_large_int(self):
+        large = 1 << 70
+        for result in (0 * large, large * 0):
+            self.assertFalse(result)
+            with self.assertRaises(ZeroDivisionError):
+                1 // result
+
     def test_repr(self):
         self.assertEqual(repr(1), '1')
 

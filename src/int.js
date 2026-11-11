@@ -127,7 +127,7 @@ Sk.builtin.int_ = Sk.abstr.buildNativeClass("int", {
         ),
         nb$multiply: numberSlot(
             (v, w) => v * w,
-            (v, w) => (v === JSBI.__ZERO || w === JSBI.__ZERO ? 0 : JSBI.multiply(v, w))
+            (v, w) => (JSBI.equal(v, JSBI.__ZERO) || JSBI.equal(w, JSBI.__ZERO) ? 0 : JSBI.multiply(v, w))
         ),
         nb$divide: trueDivide,
         nb$floor_divide: numberDivisionSlot((v, w) => Math.floor(v / w), BigIntFloorDivide),
