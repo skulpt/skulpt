@@ -26,6 +26,8 @@
     "postdevbuild": "node support/build/wrapmodules.js builtin",
     "watch": "webpack --watch --mode development",
     "test": "node test/run-tests.js",
+    "test:unicode-fallback": "node test/run-tests.js unicode-fallback",
+    "test:runtime": "node test/run-tests.js runtime",
     "start": "node support/run/runfile.js",
     "profile": "node --prof --no-logfile-per-isolate --log-internal-timer-events support/run/runfile.js -o",
     "postprofile": "node --prof-process v8.log"

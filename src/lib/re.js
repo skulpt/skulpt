@@ -18,37 +18,6 @@ function getReParser(makeError) {
     const RE_INLINE_FLAGS = /^[aiLmsux]$/;
     const RE_INCOMPATIBLE_FLAGS = /[auL]/;
 
-    // Build category expressions lazily: most patterns need no Unicode tables.
-    let _unicodeClasses = null;
-    function getUnicodeClasses() {
-        if (_unicodeClasses) {
-            return _unicodeClasses;
-        }
-        try {
-            new RegExp("\\p{L}", "u");
-            // Use the engine's Unicode version, as native case folding does.
-            _unicodeClasses = {
-                d: "\\p{Nd}",
-                w: "\\p{L}\\p{N}_",
-                s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85\\p{Z}",
-            };
-            return _unicodeClasses;
-        } catch {
-            // Older engines use Skulpt's BMP tables instead.
-        }
-        const U = Sk.builtin.str._unicode;
-        _unicodeClasses = {
-            // Python \d: Only decimal digits (Nd), not all numeric (N)
-            d: U.Nd,
-            // Python \w is alphanumeric plus underscore, not connector punctuation.
-            // U.L also includes combining marks for Python identifiers.
-            w: U.Lu + U.Ll + U.Lt + U.Lm + U.Lo + U.N + "_",
-            // Python \s: Whitespace including Unicode space separators
-            s: "\\t\\n\\r\\f\\v\\x1c-\\x1f\\x85" + U.Zs + U.Zl + U.Zp,
-        };
-        return _unicodeClasses;
-    }
-
     // AST Node Types
     class RegexNode {
         constructor(type) {
@@ -770,7 +739,7 @@ function getReParser(makeError) {
         }
 
         characterClasses() {
-            return this.asciiMode ? { w: "a-zA-Z0-9_", d: "0-9", s: "\\t\\n\\r\\f\\v " } : getUnicodeClasses();
+            return this.asciiMode ? { w: "a-zA-Z0-9_", d: "0-9", s: "\\t\\n\\r\\f\\v " } : Sk.unicode.regexClasses;
         }
 
         visitEscape(node) {

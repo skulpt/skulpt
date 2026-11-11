@@ -24,6 +24,37 @@ function runJSBITests() {
     }
 }
 
+function runUnicodeFallbackTests() {
+    console.log("Testing with Unicode property escapes disabled");
+    // Each suite starts in a fresh process with the capability disabled before startup.
+    for (const moduleName of ["test_re", "skulpt_re", "string_functions"]) {
+        run(
+            "--require",
+            "./test/force-unicode-fallback.js",
+            "test/testunit.js",
+            "--python3",
+            "--module",
+            moduleName
+        );
+    }
+}
+
+function runRuntimeTests() {
+    const webpack = require.resolve("webpack/bin/webpack.js");
+    const outputDir = "support/tmp/runtime-test";
+    for (const mode of ["production", "development"]) {
+        run(webpack, "--mode", mode, "--output-path", `${outputDir}/${mode}`);
+    }
+
+    const productionCore = `${outputDir}/production/skulpt.min.js`;
+    const developmentCore = `${outputDir}/development/skulpt.js`;
+    run("test/compat-syntax.js", productionCore);
+    for (const coreFile of [productionCore, developmentCore]) {
+        run("--allow-natives-syntax", "test/v8-properties.js", coreFile);
+    }
+    run("test/locale-browser.js", productionCore);
+}
+
 switch (process.argv[2] || "all") {
     case "all":
         runJSBITests();
@@ -31,10 +62,17 @@ switch (process.argv[2] || "all") {
         run("test/testwrapper.js");
         run("test/testunit.js");
         run("test/testunit.js", "--python3");
-        run("test/locale-browser.js");
+        runUnicodeFallbackTests();
+        runRuntimeTests();
         break;
     case "jsbi":
         runJSBITests();
+        break;
+    case "unicode-fallback":
+        runUnicodeFallbackTests();
+        break;
+    case "runtime":
+        runRuntimeTests();
         break;
     default:
         throw new Error("Unknown test suite: " + process.argv[2]);
