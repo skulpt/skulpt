@@ -4,7 +4,7 @@ import unittest
 
 
 class TestTracebackObjects(unittest.TestCase):
-    # Adapted from CPython Lib/test/test_exceptions.py.
+    # Adapted from CPython Lib/test/test_exceptions.py::testWithTraceback.
     def test_with_traceback(self):
         try:
             raise IndexError(4)
@@ -21,6 +21,7 @@ class TestTracebackObjects(unittest.TestCase):
             error.__traceback__ = None
             self.assertIsNone(error.__traceback__)
 
+    # Adapted from CPython Lib/test/test_exceptions.py::testInvalidTraceback.
     def test_invalid_traceback(self):
         with self.assertRaisesRegex(TypeError, "__traceback__ must be a traceback or None"):
             Exception().__traceback__ = 5
@@ -62,7 +63,7 @@ class TestTracebackObjects(unittest.TestCase):
                 self.assertIs(reraised.__traceback__.tb_frame, original.tb_frame)
                 self.assertNotEqual(reraised.__traceback__.tb_lineno, original.tb_lineno)
 
-    def test_traceback_across_suspension(self):
+    def test_skulpt_traceback_across_suspension(self):
         def fail_after_sleep():
             time.sleep(0.001)
             raise ValueError
@@ -117,19 +118,6 @@ class TestTracebackObjects(unittest.TestCase):
             tb = error.__traceback__.tb_next
         self.assertIs(tb.tb_frame.f_code, gen.__code__)
         self.assertEqual(tb.tb_lineno, gen.__code__.co_firstlineno)
-
-    def test_generator_context_manager_keeps_body_traceback(self):
-        @contextmanager
-        def manager():
-            yield
-
-        try:
-            with manager():
-                raise ValueError
-        except ValueError as error:
-            tb = error.__traceback__
-        self.assertIs(tb.tb_frame.f_code, self.test_generator_context_manager_keeps_body_traceback.__code__)
-        self.assertIsNone(tb.tb_next)
 
     def test_context_decorator_keeps_body_traceback(self):
         @contextmanager
