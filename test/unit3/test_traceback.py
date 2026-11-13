@@ -1,4 +1,4 @@
-# Skulpt integration cases for the CPython 3.7 traceback formatter.
+# Selected CPython traceback tests and labelled Skulpt regressions.
 import sys
 import traceback
 import unittest
@@ -19,7 +19,7 @@ class TracebackFormattingTests(unittest.TestCase):
         except ValueError as error:
             return error
 
-    def test_imported_source_and_limits(self):
+    def test_skulpt_imported_source_and_limits(self):
         error = self.get_error()
         tb = error.__traceback__
         frames = traceback.extract_tb(tb)
@@ -42,6 +42,7 @@ class TracebackFormattingTests(unittest.TestCase):
             tb = error.__traceback__
         self.assertEqual(list(traceback.walk_tb(tb)), [(tb.tb_frame, tb.tb_lineno)])
 
+    # Adapted from CPython test_traceback.py::test_cause.
     def test_explicit_cause_and_chain_option(self):
         try:
             try:
@@ -56,6 +57,7 @@ class TracebackFormattingTests(unittest.TestCase):
         self.assertTrue(formatted.endswith('RuntimeError: replacement\n'))
         self.assertNotIn('ValueError: original\n', unchained)
 
+    # Adapted from the CPython test_traceback.py exception-instance cases.
     def test_format_exception_accepts_exception_instance(self):
         error = self.get_error()
         expected = traceback.format_exception(type(error), error, error.__traceback__)
@@ -85,7 +87,7 @@ class TracebackFormattingTests(unittest.TestCase):
         del error.__notes__
         self.assertEqual(traceback.format_exception_only(type(error), error), vanilla)
 
-    def test_exception_truthiness_is_not_used(self):
+    def test_skulpt_exception_truthiness_is_not_used(self):
         class Error(ValueError):
             def __bool__(self):
                 raise RuntimeError('formatting must not call __bool__')
@@ -110,7 +112,34 @@ class TracebackFormattingTests(unittest.TestCase):
         self.assertIn('  File "example.py", line 2\n', formatted)
         self.assertTrue(formatted.endswith('SyntaxError: invalid syntax\n'))
 
-    def test_unavailable_frame_operations_are_explicit(self):
+    # CPython Lib/test/test_traceback.py::TestStack.test_from_list_edited_stack.
+    def test_from_list_edited_stack(self):
+        s = traceback.StackSummary.from_list([('foo.py', 1, 'fred', 'line')])
+        s[0] = ('foo.py', 2, 'fred', 'line')
+        s2 = traceback.StackSummary.from_list(s)
+        self.assertEqual(
+            ['  File "foo.py", line 2, in fred\n    line\n'],
+            s2.format())
+
+    # Adapted from CPython Lib/test/test_traceback.py::test_syntax_error_no_lineno.
+    def test_syntax_error_no_lineno(self):
+        error = SyntaxError('bad syntax')
+        # Skulpt currently emits a "line None" header for an absent line number.
+        # self.assertEqual(traceback.format_exception_only(error),
+        #                  ['SyntaxError: bad syntax\n'])
+        error.lineno = 100
+        self.assertEqual(traceback.format_exception_only(error),
+                         ['  File "<string>", line 100\n', 'SyntaxError: bad syntax\n'])
+
+        error = SyntaxError('bad syntax')
+        error.filename = 'myfile.py'
+        # self.assertEqual(traceback.format_exception_only(error),
+        #                  ['SyntaxError: bad syntax (myfile.py)\n'])
+        error.lineno = 100
+        self.assertEqual(traceback.format_exception_only(error),
+                         ['  File "myfile.py", line 100\n', 'SyntaxError: bad syntax\n'])
+
+    def test_skulpt_unavailable_frame_operations_are_explicit(self):
         error = self.get_error()
         if sys.implementation.name == 'skulpt':
             with self.assertRaises(NotImplementedError):
