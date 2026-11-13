@@ -91,8 +91,7 @@ class ModuleTests(unittest.TestCase):
         self.assertEqual(foo.__dict__,
               {"__name__": "foo", "__doc__": "foodoc", "bar": 42,
                "__loader__": None, "__package__": None, "__spec__": None})
-        # self.assertTrue(foo.__dict__ is d)
-        # skulpt returns a mapping proxy of the object literal
+        self.assertIs(foo.__dict__, d)
 
     def test_dont_clear_dict(self):
         # See issue 7140.
@@ -289,7 +288,7 @@ class ModuleTests(unittest.TestCase):
         self.assertRaises(RuntimeError, getattr, M("mymod"), "melon")
 
     def test_live_dictionary_and_execution(self):
-        # Adapted from the module dictionary tests in the compiler stack.
+        # Skulpt regression for exec() using a live module namespace.
         module = ModuleType('example')
         namespace = module.__dict__
         self.assertIs(namespace, module.__dict__)
@@ -307,14 +306,16 @@ class ModuleTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             module.__dict__ = {}
 
-    def test_eval_preserves_module_result_name(self):
+    def test_skulpt_eval_preserves_module_result_name(self):
+        # Skulpt uses __final_res__ internally to return the result of eval().
         namespace = ModuleType('example').__dict__
         namespace['__final_res__'] = 19
         self.assertEqual(eval('__final_res__ + 23', namespace), 42)
         self.assertEqual(eval('__final_res__ + 23', {}, namespace), 42)
         self.assertEqual(namespace['__final_res__'], 19)
 
-    def test_module_dictionary_fromkeys(self):
+    def test_skulpt_module_dictionary_fromkeys(self):
+        # The native namespace view must produce a regular dict.
         namespace = ModuleType('example').__dict__
         result = namespace.fromkeys([1, 'key'])
         self.assertIs(type(result), dict)
