@@ -23,7 +23,7 @@ class CodeMetadataTests(unittest.TestCase):
         self.assertEqual(code.co_name, 'sample')
         self.assertIn('<code object sample', repr(code))
         self.assertEqual(code.co_filename, __file__)
-        self.assertEqual(code.co_firstlineno, 8)
+        self.assertEqual(code.co_firstlineno, 9)
         self.assertEqual(code.co_argcount, 1)
         self.assertEqual(code.co_posonlyargcount, 0)
         self.assertEqual(code.co_kwonlyargcount, 1)
