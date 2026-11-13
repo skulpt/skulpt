@@ -18,8 +18,8 @@ if jseval is not None:
                 globalThis.linecacheTestState = { read: Sk.read, source: "first\\r\\nsecond" };
                 Sk.read = function (filename) {
                     if (filename === "virtual-source.py") {
-                    return globalThis.linecacheTestState.source;
-                }
+                        return globalThis.linecacheTestState.source;
+                    }
                     return globalThis.linecacheTestState.read(filename);
                 };
             ''')
@@ -51,7 +51,7 @@ if jseval is not None:
             self.assertEqual(linecache.getline('delayed.py', 1), 'delayed source\n')
 
 
-class TestSourceFallback(unittest.TestCase):
+class TestSkulptSourceFallback(unittest.TestCase):
     def tearDown(self):
         linecache.clearcache()
 
@@ -92,14 +92,18 @@ class LineCacheTests(unittest.TestCase):
         linecache.clearcache()
 
     def test_lazycache_smoke(self):
-        lines = linecache.getlines(NONEXISTENT_FILENAME, self.module_globals)
         linecache.clearcache()
         self.assertEqual(
             True, linecache.lazycache(NONEXISTENT_FILENAME, self.module_globals))
         self.assertEqual(1, len(linecache.cache[NONEXISTENT_FILENAME]))
         # Note here that we're looking up a nonexistent filename with no
         # globals: this would error if the lazy value wasn't resolved.
-        self.assertEqual(lines, linecache.getlines(NONEXISTENT_FILENAME))
+        self.assertEqual(['loaded source\n'], linecache.getlines(NONEXISTENT_FILENAME))
+
+    def test_lazycache_check(self):
+        self.assertTrue(linecache.lazycache(NONEXISTENT_FILENAME, self.module_globals))
+        linecache.checkcache()
+        self.assertEqual(['loaded source\n'], linecache.getlines(NONEXISTENT_FILENAME))
 
     def test_lazycache_provide_after_failed_lookup(self):
         linecache.clearcache()
