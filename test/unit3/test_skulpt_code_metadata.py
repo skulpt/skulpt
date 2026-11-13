@@ -1,3 +1,4 @@
+# Skulpt regression tests for the metadata emitted by the compiler.
 import unittest
 
 
