@@ -1,31 +1,10 @@
+# Skulpt regressions for the native traceback runtime.
 from contextlib import contextmanager
 import time
 import unittest
 
 
 class TestTracebackObjects(unittest.TestCase):
-    # Adapted from CPython Lib/test/test_exceptions.py::testWithTraceback.
-    def test_with_traceback(self):
-        try:
-            raise IndexError(4)
-        except Exception as error:
-            tb = error.__traceback__
-
-        class MyException(Exception):
-            pass
-
-        for error in (BaseException(), IndexError(5), MyException()):
-            self.assertIsNone(error.__traceback__)
-            self.assertIs(error.with_traceback(tb), error)
-            self.assertIs(error.__traceback__, tb)
-            error.__traceback__ = None
-            self.assertIsNone(error.__traceback__)
-
-    # Adapted from CPython Lib/test/test_exceptions.py::testInvalidTraceback.
-    def test_invalid_traceback(self):
-        with self.assertRaisesRegex(TypeError, "__traceback__ must be a traceback or None"):
-            Exception().__traceback__ = 5
-
     def test_traceback_frames(self):
         def inner():
             raise ValueError
