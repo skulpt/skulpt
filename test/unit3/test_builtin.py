@@ -83,6 +83,7 @@ class BuiltinTest(unittest.TestCase):
         self.assertRaises(TypeError, vars, 42)
         self.assertEqual(vars(CustomDict()), {'a': 2})
 
+    def test_skulpt_vars_mutates_live_attributes(self):
         class Example:
             pass
 
