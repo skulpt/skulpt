@@ -1288,7 +1288,7 @@ function $builtinmodule() {
             $flags: { MinArgs: 2, MaxArgs: 2 },
             $doc: "Create a callable that returns its argument unchanged.",
         },
-        final_$rw$: {
+        final: {
             $meth(func) {
                 // No-op decorator
                 return func;

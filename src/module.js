@@ -11,7 +11,7 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
         tp$getattr(pyName, canSuspend) {
             const jsMangled = pyName.$mangled;
             const ret = this.$d[jsMangled];
-            if (ret !== undefined) {
+            if (ret !== undefined && jsMangled !== "__dict__") {
                 return ret;
             }
             // technically this is the wrong way round but its seems performance wise better
@@ -63,9 +63,13 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
     getsets: {
         __dict__: {
             $get() {
-                // modules in skulpt have a $d as a js object so just return it as a mapping proxy;
-                // TODO we should really have a dict object
-                return new Sk.builtin.mappingproxy(this.$d);
+                const namespace = this.$d;
+                let dict = moduleDictViews.get(namespace);
+                if (dict === undefined) {
+                    dict = new ModuleDict(namespace);
+                    moduleDictViews.set(namespace, dict);
+                }
+                return dict;
             },
         },
     },
@@ -129,3 +133,129 @@ Sk.builtin.module = Sk.abstr.buildNativeClass("module", {
 });
 
 Sk.exportSymbol("Sk.builtin.module", Sk.builtin.module);
+
+// Replacing a module's $d gives it a view of the new namespace.
+const moduleDictViews = new WeakMap();
+
+function readNamespaceEntry(namespace, name) {
+    if (!Object.prototype.propertyIsEnumerable.call(namespace, name)) {
+        return;
+    }
+    // Native code uses the same property spelling as compiled Python.
+    if (Sk.fixReserved(Sk.unfixReserved(name)) !== name) {
+        return;
+    }
+    const value = namespace[name];
+    // Native modules can keep private JS helpers beside Python values.
+    if (name[0] !== "$" || (value != null && value.sk$object === true)) {
+        return value;
+    }
+}
+
+function deleteNamespaceEntry(namespace, name) {
+    if (!Reflect.deleteProperty(namespace, name)) {
+        throw new Sk.builtin.TypeError("cannot delete module namespace entry '" + Sk.unfixReserved(name) + "'");
+    }
+}
+
+const ModuleDict = Sk.abstr.buildNativeClass("module_dict", {
+    base: Sk.builtin.dict,
+    constructor: function moduleDict(namespace) {
+        Sk.builtin.dict.call(this);
+        this.$namespace = namespace;
+    },
+    slots: {
+        tp$new() {
+            throw new Sk.builtin.TypeError("cannot create 'module_dict' instances");
+        },
+    },
+    classmethods: {
+        fromkeys: {
+            $meth(keys, value) {
+                // The result is an ordinary dict, independent of the module namespace.
+                return Sk.builtin.dict.prototype.fromkeys.$meth.call(Sk.builtin.dict, keys, value);
+            },
+            $flags: { MinArgs: 1, MaxArgs: 2 },
+        },
+    },
+    proto: {
+        sk$toNamespace() {
+            return this.$namespace;
+        },
+        get$size() {
+            // Count on demand so writes through any JS reference stay visible.
+            const namespace = this.$namespace;
+            let size = 0;
+            for (const name of Object.keys(namespace)) {
+                if (readNamespaceEntry(namespace, name) !== undefined) {
+                    size++;
+                }
+            }
+            return size;
+        },
+        quick$lookup(key) {
+            // Literal reserved-name suffixes cannot be represented in the JS namespace.
+            if (Sk.unfixReserved(key.v) === key.v) {
+                return readNamespaceEntry(this.$namespace, key.$mangled);
+            }
+        },
+        mp$lookup(key) {
+            if (Sk.builtin.checkString(key)) {
+                return this.quick$lookup(key);
+            }
+            Sk.abstr.objectHash(key);
+        },
+        dict$setItem(key, value) {
+            if (!Sk.builtin.checkString(key)) {
+                throw new Sk.builtin.TypeError("module namespace keys must be strings");
+            }
+            if (Sk.unfixReserved(key.v) !== key.v) {
+                throw new Sk.builtin.ValueError("module namespace keys cannot end with '_$rw$'");
+            }
+            const namespace = this.$namespace;
+            const name = key.$mangled;
+            let written;
+            if (Object.prototype.hasOwnProperty.call(namespace, name)) {
+                written = Reflect.set(namespace, name, value);
+            } else {
+                // Native namespace proxies can forward attribute writes to another module.
+                // A new dictionary key belongs to this module.
+                written = Reflect.defineProperty(namespace, name, {
+                    value, enumerable: true, writable: true, configurable: true,
+                });
+            }
+            if (!written) {
+                throw new Sk.builtin.TypeError("cannot write module namespace entry '" + key.v + "'");
+            }
+        },
+        pop$item(key) {
+            const value = this.mp$lookup(key);
+            if (value !== undefined) {
+                deleteNamespaceEntry(this.$namespace, key.$mangled);
+                return [key, value];
+            }
+        },
+        dict$clear() {
+            for (const name of Object.keys(this.$namespace)) {
+                if (readNamespaceEntry(this.$namespace, name) !== undefined) {
+                    deleteNamespaceEntry(this.$namespace, name);
+                }
+            }
+        },
+        dict$copy() {
+            return new Sk.builtin.dict(this.$items().flat());
+        },
+        $items() {
+            const namespace = this.$namespace;
+            const entries = [];
+            for (const name of Object.keys(namespace)) {
+                const value = readNamespaceEntry(namespace, name);
+                if (value !== undefined) {
+                    entries.push([new Sk.builtin.str(Sk.unfixReserved(name)), value]);
+                }
+            }
+            return entries;
+        },
+    },
+    flags: { sk$unacceptableBase: true },
+});

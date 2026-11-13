@@ -11,7 +11,7 @@
  * Do not use this function to convert a JS object to a dict
  * Instead use {@link Sk.ffi.remapToPy}
  *
- * To subclass from a dict in javascript you need to implement
+ * JavaScript dict subclasses with their own storage need to implement
  * mp$lookup
  * dict$setItem
  * dict$clear
@@ -19,6 +19,13 @@
  * dict$copy
  * get$size
  * $items
+ *
+ * The inherited fromkeys() calls the subclass with no arguments and then sets
+ * each key on the result. Override fromkeys if the subclass needs backing
+ * storage supplied by its caller. See ModuleDict in module.js for an example.
+ *
+ * Optionally, sk$toNamespace() returns the backing JavaScript namespace for exec.
+ * Compiled code reads and writes that object directly, including any Proxy behaviour.
  */
 Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
     constructor: function dict(L) {
@@ -69,7 +76,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
             }
             if (other === this) {
                 res = true;
-            } else if (this.size !== other.size) {
+            } else if (this.get$size() !== other.get$size()) {
                 res = false;
             } else {
                 let otherv;
@@ -291,7 +298,6 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         quick$lookup,
         mp$lookup,
         get$size() {
-            // can't be overridden by subclasses so we use this for the dict key iterator
             return this.size;
         },
         sk$asarray() {
@@ -307,7 +313,7 @@ Sk.builtin.dict = Sk.abstr.buildNativeClass("dict", {
         },
         dict$copy() {
             const newCopy = new Sk.builtin.dict([]);
-            newCopy.size = this.size;
+            newCopy.size = this.get$size();
             const entries = Object.entries(this.entries); // do it this way for mappingproxy
             for (let i in entries) {
                 const key = entries[i][0];

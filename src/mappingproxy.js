@@ -5,10 +5,7 @@
  * @param {Object} d
  *
  * @description
- * This should be called with the prototype of a type object
- * It returns a mapping proxy
- * useful for when we do typeobject.__dict__
- * or module.__dict__ since a module $d is an object literal
+ * Type objects use this mapping proxy to expose their prototype as __dict__.
  *
  * Internally this should be called with an object literal
  * from python this can be called with a dict instance (or @todo other mapping type)

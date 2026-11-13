@@ -288,6 +288,155 @@ class ModuleTests(unittest.TestCase):
             melon = Descr()
         self.assertRaises(RuntimeError, getattr, M("mymod"), "melon")
 
+    def test_live_dictionary_and_execution(self):
+        # Adapted from the module dictionary tests in the compiler stack.
+        module = ModuleType('example')
+        namespace = module.__dict__
+        self.assertIs(namespace, module.__dict__)
+        module.value = 1
+        self.assertEqual(namespace['value'], 1)
+        namespace['value'] = 2
+        self.assertEqual(module.value, 2)
+        exec('def read_value(): return value', namespace)
+        module.value = 3
+        self.assertEqual(module.read_value(), 3)
+        exec('del value', namespace)
+        self.assertNotIn('value', namespace)
+        namespace['__dict__'] = 'shadow'
+        self.assertIs(module.__dict__, namespace)
+        with self.assertRaises(AttributeError):
+            module.__dict__ = {}
+
+    def test_eval_preserves_module_result_name(self):
+        namespace = ModuleType('example').__dict__
+        namespace['__final_res__'] = 19
+        self.assertEqual(eval('__final_res__ + 23', namespace), 42)
+        self.assertEqual(eval('__final_res__ + 23', {}, namespace), 42)
+        self.assertEqual(namespace['__final_res__'], 19)
+
+    def test_module_dictionary_fromkeys(self):
+        namespace = ModuleType('example').__dict__
+        result = namespace.fromkeys([1, 'key'])
+        self.assertIs(type(result), dict)
+        self.assertEqual(result, {1: None, 'key': None})
+
+    @unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt execution globals')
+    def test_exec_restores_caller_globals_after_error(self):
+        namespace = ModuleType('example').__dict__
+        with self.assertRaises(RuntimeError):
+            exec('module_only = 1\nraise RuntimeError()', namespace)
+        self.assertEqual(namespace['module_only'], 1)
+        self.assertNotIn('module_only', globals())
+
+        with self.assertRaises(RuntimeError):
+            exec('local_only = copied_global\nraise RuntimeError()', {'copied_global': 2}, namespace)
+        self.assertEqual(namespace['local_only'], 2)
+        self.assertNotIn('copied_global', globals())
+
+    @unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt module namespace')
+    def test_module_dictionary_requires_string_keys(self):
+        namespace = ModuleType('example').__dict__
+        namespace.clear()
+        namespace['10'] = 'ten'
+        with self.assertRaises(TypeError):
+            namespace[10] = 'integer'
+        self.assertNotIn(10, namespace)
+        namespace['2'] = 'two'
+        self.assertEqual(len(namespace), 2)
+        self.assertEqual(namespace.copy(), {'10': 'ten', '2': 'two'})
+        self.assertEqual(namespace, {'10': 'ten', '2': 'two'})
+        self.assertEqual({'10': 'ten', '2': 'two'}, namespace)
+        self.assertNotEqual({'10': 'ten'}, namespace)
+
+    @unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt module namespace')
+    def test_module_dictionary_rejects_internal_key_suffix(self):
+        namespace = ModuleType('example').__dict__
+        namespace['name'] = 'original'
+        with self.assertRaises(ValueError):
+            namespace['name_$rw$'] = 'alias'
+        self.assertEqual(namespace['name'], 'original')
+        self.assertNotIn('name_$rw$', namespace)
+
+    @unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt module iterator snapshot')
+    def test_module_dictionary_iterator_snapshots_entries(self):
+        module = ModuleType('example')
+        namespace = module.__dict__
+        namespace.clear()
+        module.first = 1
+        module.second = 2
+        items = namespace.items()
+        iterator = iter(items)
+        self.assertEqual(next(iterator), ('first', 1))
+        module.second = 42
+        module.extra = 3
+        self.assertEqual(list(iterator), [('second', 2)])
+        self.assertEqual(list(items), [('first', 1), ('second', 42), ('extra', 3)])
+
+    @unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt host module')
+    def test_native_namespace_is_shared(self):
+        module = ModuleType('_module_dict_probe')
+        sys.modules[module.__name__] = module
+        try:
+            # Like Anvil's loadModule(), replace $d with a native namespace.
+            jseval("""
+                (() => {
+                    const module = Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe'));
+                    const shared = { fallback: new Sk.builtin.int_(1) };
+                    const namespace = {
+                        __name__: new Sk.builtin.str('_module_dict_probe'),
+                        name: new Sk.builtin.str('unmangled'),
+                    };
+                    module.$testNamespace = namespace;
+                    module.$d = new Proxy(namespace, {
+                        get(target, name) {
+                            return target[name] ?? shared[name];
+                        },
+                        set(target, name, value) {
+                            (name in target ? target : shared)[name] = value;
+                            return true;
+                        },
+                    });
+                })()
+            """)
+            namespace = module.__dict__
+            jseval("""
+                (() => {
+                    const module = Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe'));
+                    Object.defineProperty(module.$testNamespace, 'child', {
+                        value: new Sk.builtin.int_(42), enumerable: true, writable: true, configurable: true,
+                    });
+                })()
+            """)
+            self.assertEqual(len(namespace), 2)
+            self.assertEqual(namespace['child'], 42)
+            self.assertEqual(module.child, 42)
+            namespace['child'] = 43
+            self.assertEqual(jseval("""
+                Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe')).$d.child.v
+            """), 43)
+            jseval("""
+                delete Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe')).$d.child
+            """)
+            self.assertNotIn('child', namespace)
+            self.assertEqual(len(namespace), 1)
+            self.assertEqual(module.fallback, 1)
+            self.assertNotIn('fallback', namespace)
+            namespace['fallback'] = 2
+            self.assertEqual(module.fallback, 2)
+            self.assertEqual(namespace.pop('fallback'), 2)
+            self.assertEqual(module.fallback, 1)
+            self.assertEqual(len(namespace), 1)
+            self.assertNotIn('name', namespace)
+            namespace['name'] = 'mangled'
+            self.assertEqual(module.name, 'mangled')
+            self.assertEqual(list(namespace.items()), [
+                ('__name__', '_module_dict_probe'),
+                ('name', 'mangled'),
+            ])
+            self.assertEqual(len(namespace), 2)
+        finally:
+            del sys.modules['_module_dict_probe']
+
     # frozen and namespace module reprs are tested in importlib.
 
 
