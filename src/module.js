@@ -147,7 +147,7 @@ function readNamespaceEntry(namespace, name) {
     }
     const value = namespace[name];
     // Native modules can keep private JS helpers beside Python values.
-    if (name[0] !== "$" || (value != null && value.sk$object === true)) {
+    if (!name.includes("$") || (value != null && value.sk$object === true)) {
         return value;
     }
 }

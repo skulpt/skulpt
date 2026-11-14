@@ -393,6 +393,7 @@ class TestSkulptModuleDictionary(unittest.TestCase):
                 (() => {
                     const module = Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe'));
                     module.$d = { initial: new Sk.builtin.int_(1) };
+                    module.$d['native$helper'] = () => {};
                 })()
             """)
             namespace = module.__dict__
@@ -401,6 +402,10 @@ class TestSkulptModuleDictionary(unittest.TestCase):
                     new Sk.builtin.int_(42)
             """)
             self.assertEqual(namespace['initial'], 1)
+            self.assertNotIn('native$helper', namespace)
+            self.assertNotIn('native$helper', list(namespace))
+            setattr(module, '$foo', 42)
+            self.assertEqual(namespace['$foo'], 42)
             self.assertEqual(namespace['child'], 42)
             namespace['child'] = 43
             self.assertEqual(module.child, 43)
