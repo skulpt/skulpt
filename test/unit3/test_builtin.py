@@ -72,6 +72,28 @@ class AttrTest(unittest.TestCase):
 
 class BuiltinTest(unittest.TestCase):
 
+    def test_vars_object(self):
+        # Object cases from CPython Lib/test/test_builtin.py::test_vars.
+        # The no-argument cases depend on locals(), which Skulpt does not implement.
+        self.assertEqual(set(vars(sys)), set(dir(sys)))
+
+        class CustomDict:
+            @property
+            def __dict__(self):
+                return {'a': 2}
+
+        self.assertRaises(TypeError, vars, 42, 42)
+        self.assertRaises(TypeError, vars, 42)
+        self.assertEqual(vars(CustomDict()), {'a': 2})
+
+    def test_skulpt_vars_mutates_live_attributes(self):
+        class Example:
+            pass
+
+        obj = Example()
+        vars(obj)['a'] = 42
+        self.assertEqual(obj.a, 42)
+
     def test_import(self):
         __import__('sys')
         __import__('time')
