@@ -18,10 +18,10 @@ class BareLoader:
 
 class ModuleTests(unittest.TestCase):
     def test_uninitialized(self):
-        # An uninitialized module has no __dict__ or __name__,
-        # and __doc__ is None
+        # An uninitialized module has an empty dictionary and no __name__.
         foo = ModuleType.__new__(ModuleType)
-        self.assertFalse(foo.__dict__) # None or {} are acceptable
+        self.assertIsInstance(foo.__dict__, dict)
+        self.assertFalse(foo.__dict__)
         # self.assertRaises(SystemError, dir, foo)
         try:
             s = foo.__name__
@@ -286,6 +286,17 @@ class ModuleTests(unittest.TestCase):
         class M(ModuleType):
             melon = Descr()
         self.assertRaises(RuntimeError, getattr, M("mymod"), "melon")
+
+    # From CPython Lib/test/test_module/__init__.py.
+    def test_repeated_attribute_pops(self):
+        m = ModuleType("test")
+        d = m.__dict__
+        count = 0
+        for _ in range(100):
+            m.attr = 1
+            count += m.attr
+            d.pop("attr")
+        self.assertEqual(count, 100)
 
     def test_live_dictionary_and_execution(self):
         # Skulpt regression for exec() using a live module namespace.
