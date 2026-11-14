@@ -74,6 +74,9 @@ class BuiltinTest(unittest.TestCase):
 
     def test_vars_object(self):
         # Object cases from CPython Lib/test/test_builtin.py::test_vars.
+        # The no-argument cases depend on locals(), which Skulpt does not implement.
+        self.assertEqual(set(vars(sys)), set(dir(sys)))
+
         class CustomDict:
             @property
             def __dict__(self):
