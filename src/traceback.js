@@ -17,7 +17,7 @@ Sk.builtin.frame = Sk.abstr.buildNativeClass("frame", {
             },
         },
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 Sk.builtin.traceback = Sk.abstr.buildNativeClass("traceback", {
@@ -36,7 +36,7 @@ Sk.builtin.traceback = Sk.abstr.buildNativeClass("traceback", {
         tb_frame: { $get() { return this.$frame; } },
         tb_lineno: { $get() { return new Sk.builtin.int_(this.$lineno); } },
     },
-    flags: { sk$acceptable_as_base_class: false },
+    flags: { sk$unacceptableBase: true },
 });
 
 Sk.builtin.addTraceback = function (error, frame, lineno, colno) {

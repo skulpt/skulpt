@@ -85,6 +85,26 @@ class TracebackExceptionTests(unittest.TestCase):
         with self.assertRaisesRegex(TypeError, "__traceback__ must be a traceback or None"):
             Exception().__traceback__ = 5
 
+    # Traceback case from CPython Lib/test/test_exceptions.py::test_invalid_delattr.
+    def test_cannot_delete_traceback(self):
+        try:
+            raise IndexError(4)
+        except Exception as error:
+            self.assertRaisesRegex(TypeError, "may not be deleted", delattr, error, "__traceback__")
+
+    # From CPython Lib/test/test_exceptions.py::testNoneClearsTracebackAttr.
+    def test_none_clears_traceback(self):
+        try:
+            raise IndexError(4)
+        except Exception as error:
+            tb = error.__traceback__
+
+        error = Exception()
+        error.__traceback__ = tb
+        self.assertIs(error.__traceback__, tb)
+        error.__traceback__ = None
+        self.assertIsNone(error.__traceback__)
+
 
 class TestSkulptRegressions(unittest.TestCase):
     def test_chaining_assignment_preserves_state_on_error(self):

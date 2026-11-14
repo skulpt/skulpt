@@ -1282,7 +1282,7 @@ Compiler.prototype.outputExceptionCatch = function (unit, inBlockLoop) {
     return "catch(err){" +
         "if (!(err instanceof Sk.builtin.BaseException)) {err = new Sk.builtin.ExternalError(err);}" +
         "if ($frame===undefined) {$frame=new Sk.builtin.frame(" +
-            unit.scopename + "," + JSON.stringify(this.filename) + ");}" +
+            unit.scopename + "," + getJsLiteralForString(this.filename) + ");}" +
         "Sk.builtin.addTraceback(err,$frame,$currLineNo,$currColNo); $err=err;" +
         (inBlockLoop ? "}" + dispatch : dispatch + "}");
 };
