@@ -2164,10 +2164,30 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
         this.u.argnames = argnamesarr;
     }
 
+    // Keep Python names separate from the argument list used by call binding.
+    const scope = this.u.ste;
+    const { LOCAL, FunctionBlock } = Sk.SYMTAB_CONSTS;
+    const varnames = new Set(scope.varnames);
+    for (const name of this.u.localnames) {
+        if (!varnames.has(name) && scope.getScope(name) === LOCAL) {
+            varnames.add(name);
+        }
+    }
+    const nested = this.stack.some((unit) => unit && unit.ste.blockType === FunctionBlock);
+    const firstlineno = decorator_list && decorator_list.length ? decorator_list[0].lineno : n.lineno;
+    // CPython's CO_OPTIMIZED, CO_NEWLOCALS, CO_VARARGS, CO_VARKEYWORDS,
+    // CO_NESTED and CO_GENERATOR bits.
+    const flags = 0x03 | (vararg ? 0x04 : 0) | (kwarg ? 0x08 : 0) |
+        (nested ? 0x10 : 0) | (isGenerator ? 0x20 : 0);
+
     //
     // and exit the code object scope
     //
     this.exitScope();
+
+    out(scopename, ".$codeMetadata={filename:", getJsLiteralForString(this.filename),
+        ",firstlineno:", firstlineno, ",flags:", flags, ",varnames:[",
+        Array.from(varnames, (name) => getJsLiteralForString(unfixReserved(name))).join(","), "]};");
 
     //
     // attach the default values we evaluated at the beginning to the code
