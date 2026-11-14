@@ -2185,9 +2185,9 @@ Compiler.prototype.buildcodeobj = function (n, coname, decorator_list, args, cal
     //
     this.exitScope();
 
-    out(scopename, ".$codeMetadata={filename:", JSON.stringify(this.filename),
+    out(scopename, ".$codeMetadata={filename:", getJsLiteralForString(this.filename),
         ",firstlineno:", firstlineno, ",flags:", flags, ",varnames:[",
-        Array.from(varnames, (name) => JSON.stringify(unfixReserved(name))).join(","), "]};");
+        Array.from(varnames, (name) => getJsLiteralForString(unfixReserved(name))).join(","), "]};");
 
     //
     // attach the default values we evaluated at the beginning to the code
