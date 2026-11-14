@@ -88,10 +88,22 @@ const BaseException = Sk.abstr.buildNativeClass("BaseException", {
             },
         },
         __dict__: Sk.generic.getSetDict,
-        /**@todo */
-        // __traceback__: {},
+        __traceback__: {
+            $get() {
+                return this.$traceback || Sk.builtin.none.none$;
+            },
+            $set: BaseExc_setTraceback,
+        },
     },
     methods: {
+        with_traceback: {
+            $meth(tb) {
+                BaseExc_setTraceback.call(this, tb);
+                return this;
+            },
+            $flags: { OneArg: true },
+            $textsig: "($self, tb, /)",
+        },
         add_note: {
             $meth: BaseExc_add_note,
             $flags: { OneArg: true },
@@ -141,6 +153,14 @@ function BaseExc_str() {
         return new Sk.builtin.str(this.args.v[0]);
     }
     return this.args.$r();
+}
+
+function BaseExc_setTraceback(tb) {
+    checkDeleting(tb, "__traceback__");
+    if (!Sk.builtin.checkNone(tb) && !(tb instanceof Sk.builtin.traceback)) {
+        throw new Sk.builtin.TypeError("__traceback__ must be a traceback or None");
+    }
+    this.$traceback = tb;
 }
 
 function BaseExc_add_note(note) {
@@ -455,8 +475,6 @@ Sk.builtin.ExternalError = Sk.abstr.buildNativeClass("ExternalError", {
 // TODO: Extract into sys.exc_info(). Work out how the heck
 // to find out what exceptions are being processed by parent stack frames...
 Sk.builtin.getExcInfo = function (e) {
-    const v = [e.ob$type || Sk.builtin.none.none$, e, Sk.builtin.none.none$];
-    // TODO create a Traceback object for the third tuple element
-
-    return new Sk.builtin.tuple(v);
+    const none = Sk.builtin.none.none$;
+    return new Sk.builtin.tuple([e.ob$type || none, e, e.$traceback || none]);
 };

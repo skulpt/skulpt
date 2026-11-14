@@ -1,5 +1,5 @@
-# Selected CPython contextlib tests. Async managers, traceback introspection
-# and the remaining contextlib classes are outside this implementation.
+# Selected CPython contextlib tests. Async managers and some contextlib
+# classes are outside this implementation.
 """Unit tests for contextlib.py, and other context managers."""
 
 import unittest
@@ -7,6 +7,32 @@ from contextlib import *  # Tests __all__
 
 
 class ContextManagerTestCase(unittest.TestCase):
+
+    def test_contextmanager_traceback(self):
+        # CPython Lib/test/test_contextlib.py. Inspect native frames directly
+        # because the traceback formatter is supplied by a separate PR.
+        @contextmanager
+        def f():
+            yield
+
+        class RuntimeErrorSubclass(RuntimeError):
+            pass
+
+        class StopIterationSubclass(StopIteration):
+            pass
+
+        for error in (ZeroDivisionError(), RuntimeErrorSubclass(42),
+                      StopIteration('spam'), StopIterationSubclass('spam')):
+            try:
+                with f():
+                    raise error
+            except type(error) as caught:
+                self.assertIs(caught, error)
+                tb = caught.__traceback__
+                self.assertIs(tb.tb_frame.f_code, self.test_contextmanager_traceback.__code__)
+                self.assertIsNone(tb.tb_next)
+            else:
+                self.fail(f'{error} was suppressed')
 
     def test_contextmanager_plain(self):
         state = []
