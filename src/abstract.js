@@ -1424,7 +1424,7 @@ Sk.abstr.built$iterators = [];
 Sk.abstr.setUpModuleMethods = function (module_name, mod, method_defs) {
     Object.entries(method_defs).forEach(([method_name, method_def]) => {
         method_def.$name = method_def.$name || method_name; // operator e.g. some methods share method_defs
-        mod[method_name] = new Sk.builtin.sk_method(method_def, null, module_name);
+        mod[fixReserved(method_name)] = new Sk.builtin.sk_method(method_def, null, module_name);
     });
     return mod;
 };

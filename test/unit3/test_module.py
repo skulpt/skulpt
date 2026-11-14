@@ -18,10 +18,10 @@ class BareLoader:
 
 class ModuleTests(unittest.TestCase):
     def test_uninitialized(self):
-        # An uninitialized module has no __dict__ or __name__,
-        # and __doc__ is None
+        # An uninitialized module has an empty dictionary and no __name__.
         foo = ModuleType.__new__(ModuleType)
-        self.assertFalse(foo.__dict__) # None or {} are acceptable
+        self.assertIsInstance(foo.__dict__, dict)
+        self.assertFalse(foo.__dict__)
         # self.assertRaises(SystemError, dir, foo)
         try:
             s = foo.__name__
@@ -91,8 +91,7 @@ class ModuleTests(unittest.TestCase):
         self.assertEqual(foo.__dict__,
               {"__name__": "foo", "__doc__": "foodoc", "bar": 42,
                "__loader__": None, "__package__": None, "__spec__": None})
-        # self.assertTrue(foo.__dict__ is d)
-        # skulpt returns a mapping proxy of the object literal
+        self.assertIs(foo.__dict__, d)
 
     def test_dont_clear_dict(self):
         # See issue 7140.
@@ -288,7 +287,132 @@ class ModuleTests(unittest.TestCase):
             melon = Descr()
         self.assertRaises(RuntimeError, getattr, M("mymod"), "melon")
 
+    # From CPython Lib/test/test_module/__init__.py.
+    def test_repeated_attribute_pops(self):
+        m = ModuleType("test")
+        d = m.__dict__
+        count = 0
+        for _ in range(100):
+            m.attr = 1
+            count += m.attr
+            d.pop("attr")
+        self.assertEqual(count, 100)
+
     # frozen and namespace module reprs are tested in importlib.
+
+
+@unittest.skipUnless(sys.implementation.name == 'skulpt', 'Skulpt module namespace regressions')
+class TestSkulptModuleDictionary(unittest.TestCase):
+    def test_live_dictionary_and_execution(self):
+        # Skulpt regression for exec() using a live module namespace.
+        module = ModuleType('example')
+        namespace = module.__dict__
+        self.assertIs(namespace, module.__dict__)
+        module.value = 1
+        self.assertEqual(namespace['value'], 1)
+        namespace['value'] = 2
+        self.assertEqual(module.value, 2)
+        exec('def read_value(): return value', namespace)
+        module.value = 3
+        self.assertEqual(module.read_value(), 3)
+        exec('del value', namespace)
+        self.assertNotIn('value', namespace)
+        namespace['__dict__'] = 'shadow'
+        self.assertIs(module.__dict__, namespace)
+        with self.assertRaises(AttributeError):
+            module.__dict__ = {}
+
+    def test_eval_preserves_module_result_name(self):
+        # Skulpt uses __final_res__ internally to return the result of eval().
+        namespace = ModuleType('example').__dict__
+        namespace['__final_res__'] = 19
+        self.assertEqual(eval('__final_res__ + 23', namespace), 42)
+        self.assertEqual(eval('__final_res__ + 23', {}, namespace), 42)
+        self.assertEqual(namespace['__final_res__'], 19)
+
+    def test_module_dictionary_fromkeys(self):
+        # The native namespace view must produce a regular dict.
+        namespace = ModuleType('example').__dict__
+        result = namespace.fromkeys([1, 'key'])
+        self.assertIs(type(result), dict)
+        self.assertEqual(result, {1: None, 'key': None})
+
+    def test_exec_restores_caller_globals_after_error(self):
+        namespace = ModuleType('example').__dict__
+        with self.assertRaises(RuntimeError):
+            exec('module_only = 1\nraise RuntimeError()', namespace)
+        self.assertEqual(namespace['module_only'], 1)
+        self.assertNotIn('module_only', globals())
+
+        with self.assertRaises(RuntimeError):
+            exec('local_only = copied_global\nraise RuntimeError()', {'copied_global': 2}, namespace)
+        self.assertEqual(namespace['local_only'], 2)
+        self.assertNotIn('copied_global', globals())
+
+    def test_module_dictionary_requires_string_keys(self):
+        namespace = ModuleType('example').__dict__
+        namespace.clear()
+        namespace['10'] = 'ten'
+        with self.assertRaises(TypeError):
+            namespace[10] = 'integer'
+        self.assertNotIn(10, namespace)
+        namespace['2'] = 'two'
+        self.assertEqual(len(namespace), 2)
+        self.assertEqual(namespace.copy(), {'10': 'ten', '2': 'two'})
+        self.assertEqual(namespace, {'10': 'ten', '2': 'two'})
+        self.assertEqual({'10': 'ten', '2': 'two'}, namespace)
+        self.assertNotEqual({'10': 'ten'}, namespace)
+
+    def test_module_dictionary_rejects_internal_key_suffix(self):
+        namespace = ModuleType('example').__dict__
+        namespace['name'] = 'original'
+        with self.assertRaises(ValueError):
+            namespace['name_$rw$'] = 'alias'
+        self.assertEqual(namespace['name'], 'original')
+        self.assertNotIn('name_$rw$', namespace)
+
+    def test_module_dictionary_iterator_snapshots_entries(self):
+        module = ModuleType('example')
+        namespace = module.__dict__
+        namespace.clear()
+        module.first = 1
+        module.second = 2
+        items = namespace.items()
+        iterator = iter(items)
+        self.assertEqual(next(iterator), ('first', 1))
+        module.second = 42
+        module.extra = 3
+        self.assertEqual(list(iterator), [('second', 2)])
+        self.assertEqual(list(items), [('first', 1), ('second', 42), ('extra', 3)])
+
+    def test_native_module_uses_plain_namespace(self):
+        module = ModuleType('_module_dict_probe')
+        sys.modules[module.__name__] = module
+        try:
+            jseval("""
+                (() => {
+                    const module = Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe'));
+                    module.$d = { initial: new Sk.builtin.int_(1) };
+                    module.$d['native$helper'] = () => {};
+                })()
+            """)
+            namespace = module.__dict__
+            jseval("""
+                Sk.sysmodules.mp$subscript(new Sk.builtin.str('_module_dict_probe')).$d.child =
+                    new Sk.builtin.int_(42)
+            """)
+            self.assertEqual(namespace['initial'], 1)
+            self.assertNotIn('native$helper', namespace)
+            self.assertNotIn('native$helper', list(namespace))
+            setattr(module, '$foo', 42)
+            self.assertEqual(namespace['$foo'], 42)
+            self.assertEqual(namespace['child'], 42)
+            namespace['child'] = 43
+            self.assertEqual(module.child, 43)
+            exec('del child', namespace)
+            self.assertFalse(hasattr(module, 'child'))
+        finally:
+            del sys.modules['_module_dict_probe']
 
 
 if __name__ == '__main__':

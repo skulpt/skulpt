@@ -107,7 +107,6 @@ Sk.builtins = {
     // "bytearray" : Sk.builtin.bytearray,
     // "callable"  : Sk.builtin.callable,
     // "delattr"   : Sk.builtin.delattr,
-    // "eval_$rw$" : Sk.builtin.eval_,
     "execfile"  : Sk.builtin.execfile,
     
     "help"      : Sk.builtin.help,
@@ -152,7 +151,7 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
                 throw new Sk.builtin.ValueError("Empty module name");
             }
             // check globals - locals is just ignored __import__
-            globals = globLocToJs(globals, "globals") || {};
+            globals = copyNamespaceToJs(globals, "globals") || {};
             formlist = Sk.ffi.remapToJs(formlist);
             level = Sk.ffi.remapToJs(level);
 
@@ -252,16 +251,14 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
         $doc: "Return the tuple (x//y, x%y).  Invariant: div*y + mod == x.",
     },
 
-    eval_$rw$: {
-        $name: "eval",
+    eval: {
         $meth: function (source, globals, locals) {
-            // check globals
-            const tmp_globals = globLocToJs(globals, "globals");
-            // check locals
-            const tmp_locals = globLocToJs(locals, "locals");
-            return Sk.misceval.chain(Sk.builtin.eval(source, tmp_globals, tmp_locals), (res) => {
-                reassignGlobLoc(globals, tmp_globals);
-                reassignGlobLoc(locals, tmp_locals);
+            // eval uses a temporary result property, so give it copies of the namespaces.
+            const jsGlobals = copyNamespaceToJs(globals, "globals");
+            const jsLocals = copyNamespaceToJs(locals, "locals");
+            return Sk.misceval.chain(Sk.builtin.eval(source, jsGlobals, jsLocals), (res) => {
+                writeBackNamespace(globals, jsGlobals);
+                writeBackNamespace(locals, jsLocals);
                 return res;
             });
         },
@@ -273,13 +270,29 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
 
     exec: {
         $meth: function (source, globals, locals) {
-            // check globals
-            const tmp_globals = globLocToJs(globals, "globals");
-            // check locals
-            const tmp_locals = globLocToJs(locals, "locals");
-            return Sk.misceval.chain(Sk.builtin.exec(source, tmp_globals, tmp_locals), (new_locals) => {
-                reassignGlobLoc(globals, tmp_globals);
-                reassignGlobLoc(locals, tmp_locals);
+            const liveGlobals = getLiveNamespace(globals);
+            const liveLocals = getLiveNamespace(locals);
+            const jsGlobals = liveGlobals || copyNamespaceToJs(globals, "globals");
+            const jsLocals = liveLocals || copyNamespaceToJs(locals, "locals");
+            const execute = () => Sk.builtin.exec(source, jsGlobals, jsLocals);
+            let result;
+            if (liveGlobals !== undefined || liveLocals !== undefined) {
+                const previousGlobals = Sk.globals;
+                // Restore the caller's globals if execution in a live namespace raises.
+                result = Sk.misceval.tryCatch(execute, (error) => {
+                    Sk.globals = previousGlobals;
+                    throw error;
+                });
+            } else {
+                result = execute();
+            }
+            return Sk.misceval.chain(result, () => {
+                if (liveGlobals === undefined) {
+                    writeBackNamespace(globals, jsGlobals);
+                }
+                if (liveLocals === undefined) {
+                    writeBackNamespace(locals, jsLocals);
+                }
                 return Sk.builtin.none.none$;
             });
         },
@@ -515,33 +528,35 @@ Sk.abstr.setUpModuleMethods("builtins", Sk.builtins, {
     },
 });
 
-// function used for exec and eval
-function globLocToJs(glob_loc, name) {
-    let tmp = undefined;
-    if (glob_loc === undefined || Sk.builtin.checkNone(glob_loc)) {
-        glob_loc = undefined;
-    } else if (!(glob_loc instanceof Sk.builtin.dict)) {
-        throw new Sk.builtin.TypeError(name + " must be a dict or None, not " + Sk.abstr.typeName(glob_loc));
-    } else {
-        tmp = {};
-        // we only support dicts here since actually we need to convert this to a hashmap for skulpts version of
-        // compiled code. Any old mapping won't do, it must be iterable!
-        glob_loc.$items().forEach(([key, val]) => {
-            if (Sk.builtin.checkString(key)) {
-                tmp[key.$mangled] = val;
-            }
-        });
+function getLiveNamespace(dict) {
+    if (dict instanceof Sk.builtin.dict && dict.sk$toNamespace !== undefined) {
+        return dict.sk$toNamespace();
     }
-    return tmp;
 }
 
-function reassignGlobLoc(dict, obj) {
+function copyNamespaceToJs(dict, role) {
     if (dict === undefined || Sk.builtin.checkNone(dict)) {
         return;
     }
-    for (let key in obj) {
-        // this isn't technically correct - if they use delete in the exec this breaks
-        dict.mp$ass_subscript(new Sk.builtin.str(Sk.unfixReserved(key)), obj[key]);
+    if (!(dict instanceof Sk.builtin.dict)) {
+        throw new Sk.builtin.TypeError(role + " must be a dict or None, not " + Sk.abstr.typeName(dict));
+    }
+    const namespace = {};
+    for (const [key, value] of dict.$items()) {
+        if (Sk.builtin.checkString(key)) {
+            namespace[key.$mangled] = value;
+        }
+    }
+    return namespace;
+}
+
+function writeBackNamespace(dict, namespace) {
+    if (dict === undefined || Sk.builtin.checkNone(dict)) {
+        return;
+    }
+    // The temporary namespace contains assignments, but loses deletions.
+    for (const name in namespace) {
+        dict.mp$ass_subscript(new Sk.builtin.str(Sk.unfixReserved(name)), namespace[name]);
     }
 }
 
