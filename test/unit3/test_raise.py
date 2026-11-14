@@ -64,5 +64,93 @@ class TestCause(unittest.TestCase):
             self.fail("No exception raised")
 
 
+# Raise and traceback cases from CPython Lib/test/test_raise.py.
+def get_tb():
+    try:
+        raise OSError()
+    except OSError as e:
+        return e.__traceback__
+
+
+class TestRaise(unittest.TestCase):
+
+    def test_invalid_reraise(self):
+        try:
+            raise
+        except RuntimeError as e:
+            self.assertIn("No active exception", str(e))
+        else:
+            self.fail("No exception raised")
+
+    def test_reraise(self):
+        try:
+            try:
+                raise IndexError()
+            except IndexError as e:
+                exc1 = e
+                raise
+        except IndexError as exc2:
+            self.assertIs(exc1, exc2)
+        else:
+            self.fail("No exception raised")
+
+    # Skulpt does not restore the outer handled exception after the inner handler.
+    # def test_except_reraise(self):
+    #     def reraise():
+    #         try:
+    #             raise TypeError("foo")
+    #         except TypeError:
+    #             try:
+    #                 raise KeyError("caught")
+    #             except KeyError:
+    #                 pass
+    #             raise
+    #     self.assertRaises(TypeError, reraise)
+
+    def test_finally_reraise(self):
+        def reraise():
+            try:
+                raise TypeError("foo")
+            except TypeError:
+                try:
+                    raise KeyError("caught")
+                finally:
+                    raise
+        self.assertRaises(KeyError, reraise)
+
+    # Skulpt does not carry the handled exception into a nested function call.
+    # def test_nested_reraise(self):
+    #     def nested_reraise():
+    #         raise
+    #     def reraise():
+    #         try:
+    #             raise TypeError("foo")
+    #         except TypeError:
+    #             nested_reraise()
+    #     self.assertRaises(TypeError, reraise)
+
+    def test_yield_reraise(self):
+        def reraise():
+            try:
+                raise TypeError("foo")
+            except TypeError:
+                yield 1
+                raise
+        g = reraise()
+        next(g)
+        self.assertRaises(TypeError, lambda: next(g))
+        self.assertRaises(StopIteration, lambda: next(g))
+
+    def test_accepts_traceback(self):
+        tb = get_tb()
+        try:
+            raise IndexError().with_traceback(tb)
+        except IndexError as e:
+            self.assertNotEqual(e.__traceback__, tb)
+            self.assertEqual(e.__traceback__.tb_next, tb)
+        else:
+            self.fail("No exception raised")
+
+
 if __name__ == "__main__":
     unittest.main()
