@@ -5,6 +5,8 @@ the unittest module from cpython.
 
 '''
 import re
+import types
+from collections import Counter
 import sys
 from contextlib import contextmanager
 
@@ -268,6 +270,7 @@ class TestResult(object):
 
 class TestCase(object):
     failureException = AssertionError
+    longMessage = True
     _legacy_assertions = False
 
     def __init_subclass__(cls, **kwargs):
@@ -563,106 +566,152 @@ class TestCase(object):
     def __call__(self, *args, **kwargs):
         return self.run(*args, **kwargs)
 
-    def assertEqual(self, actual, expected, feedback=""):
+    def _formatMessage(self, msg, standardMsg):
+        if not self.longMessage:
+            return msg or standardMsg
+        if msg is None:
+            return standardMsg
+        return '%s : %s' % (standardMsg, msg)
+
+    def _describe_attribute_owner(self, obj):
+        if isinstance(obj, types.ModuleType):
+            return 'module %r' % obj.__name__
+        if isinstance(obj, type):
+            return 'type object %r' % obj.__name__
+        return '%r object' % type(obj).__name__
+
+    def assertHasAttr(self, obj, name, msg=None):
+        if not hasattr(obj, name):
+            self.fail(self._formatMessage(msg, '%s has no attribute %r' % (
+                self._describe_attribute_owner(obj), name)))
+
+    def assertNotHasAttr(self, obj, name, msg=None):
+        if hasattr(obj, name):
+            self.fail(self._formatMessage(msg, '%s has unexpected attribute %r' % (
+                self._describe_attribute_owner(obj), name)))
+
+    def assertDictEqual(self, d1, d2, msg=None):
+        self.assertIsInstance(d1, dict, 'First argument is not a dictionary')
+        self.assertIsInstance(d2, dict, 'Second argument is not a dictionary')
+        self.assertEqual(d1, d2, msg)
+
+    def assertCountEqual(self, first, second, msg=None):
+        first, second = list(first), list(second)
+        try:
+            first_counts, second_counts = Counter(first), Counter(second)
+        except TypeError:
+            # Match equal elements without assuming hashability or sortability.
+            for value in first:
+                try:
+                    second.remove(value)
+                except ValueError:
+                    break
+            else:
+                if not second:
+                    return
+        else:
+            if first_counts == second_counts:
+                return
+        self.fail(self._formatMessage(msg, 'Element counts were not equal'))
+
+    def assertEqual(self, actual, expected, msg=None):
         res = actual==expected
-        if not res and feedback == "":
-            feedback = "Expected %s to equal %s" % (str(actual),str(expected))
-        self.appendResult(res, actual ,expected, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to equal %s" % (str(actual),str(expected)))
+        self.appendResult(res, actual ,expected, msg)
 
-    def assertNotEqual(self, actual, expected, feedback=""):
+    def assertNotEqual(self, actual, expected, msg=None):
         res = actual != expected
-        if not res and feedback == "":
-            feedback = "Expected %s to not equal %s" % (str(actual),str(expected))
-        self.appendResult(res, actual, expected, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not equal %s" % (str(actual),str(expected)))
+        self.appendResult(res, actual, expected, msg)
 
-    def assertTrue(self,x, feedback=""):
+    def assertTrue(self,x, msg=None):
         res = bool(x) is True
-        if not res and feedback == "":
-            feedback = "Expected %s to be True" % (str(x))
-        self.appendResult(res, x, True, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be True" % (str(x)))
+        self.appendResult(res, x, True, msg)
 
-    def assertFalse(self,x, feedback=""):
+    def assertFalse(self,x, msg=None):
         res = not bool(x)
-        if not res and feedback == "":
-            feedback = "Expected %s to be False" % (str(x))
-        self.appendResult(res, x, False, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be False" % (str(x)))
+        self.appendResult(res, x, False, msg)
 
-    def assertIs(self,a,b, feedback=""):
+    def assertIs(self,a,b, msg=None):
         res = a is b
-        if not res and feedback == "":
-            feedback = "Expected %s to be the same object as %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be the same object as %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertIsNot(self,a,b, feedback=""):
+    def assertIsNot(self,a,b, msg=None):
         res = a is not b
-        if not res and feedback == "":
-            feedback = "Expected %s to not be the same object as %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not be the same object as %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertIsNone(self,x, feedback=""):
+    def assertIsNone(self,x, msg=None):
         res = x is None
-        if not res and feedback == "":
-            feedback = "Expected %s to be None" % (str(x))
-        self.appendResult(res, x, None, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be None" % (str(x)))
+        self.appendResult(res, x, None, msg)
 
-    def assertIsNotNone(self,x, feedback=""):
+    def assertIsNotNone(self,x, msg=None):
         res = x is not None
-        if not res and feedback == "":
-            feedback = "Expected %s to not be None" % (str(x))
-        self.appendResult(res, x, None, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not be None" % (str(x)))
+        self.appendResult(res, x, None, msg)
 
-    def assertIn(self, a, b, feedback=""):
+    def assertIn(self, a, b, msg=None):
         res = a in b
-        if not res and feedback == "":
-            feedback = "Expected %s to be in %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be in %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertNotIn(self, a, b, feedback=""):
+    def assertNotIn(self, a, b, msg=None):
         res = a not in b
-        if not res and feedback == "":
-            feedback = "Expected %s to not be in %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not be in %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertIsInstance(self,a,b, feedback=""):
+    def assertIsInstance(self,a,b, msg=None):
         res = isinstance(a,b)
-        if not res and feedback == "":
-            feedback = "Expected %s to be an instance of %s" % (str(a), str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be an instance of %s" % (str(a), str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertNotIsInstance(self,a,b, feedback=""):
+    def assertNotIsInstance(self,a,b, msg=None):
         res = not isinstance(a,b)
-        if not res and feedback == "":
-            feedback = "Expected %s to not be an instance of %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not be an instance of %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertRegex(self, text, expected_regex, feedback=""):
+    def assertRegex(self, text, expected_regex, msg=None):
         """Fail the test unless the text matches the regular expression."""
         if isinstance(expected_regex, (str, )): #bytes
-            assert expected_regex, "expected_regex must not be empty."
             expected_regex = re.compile(expected_regex)
         if not expected_regex.search(text):
             res = False
-            if feedback == "":
-                feedback = "Regex didn't match: %r not found in %r" % (
-                    repr(expected_regex), text)
+            msg = self._formatMessage(msg, "Regex didn't match: %r not found in %r" % (
+                expected_regex.pattern, text))
         else:
             res = True
-        self.appendResult(res, text, expected_regex, feedback)
+        self.appendResult(res, text, expected_regex, msg)
 
-    def assertNotRegex(self, text, unexpected_regex, feedback=""):
+    def assertNotRegex(self, text, unexpected_regex, msg=None):
         """Fail the test if the text matches the regular expression."""
         if isinstance(unexpected_regex, (str, )): # bytes
             unexpected_regex = re.compile(unexpected_regex)
         match = unexpected_regex.search(text)
         if match:
-            feedback = 'Regex matched: %r matches %r in %r' % (
+            default = 'Regex matched: %r matches %r in %r' % (
                 text[match.start() : match.end()],
-                repr(unexpected_regex),
+                unexpected_regex.pattern,
                 text)
-            # _formatMessage ensures the longMessage option is respected
-        self.appendResult(not bool(match), text, unexpected_regex, feedback)
+            msg = self._formatMessage(msg, default)
+        self.appendResult(not bool(match), text, unexpected_regex, msg)
 
-    def assertAlmostEqual(self, a, b, places=7, feedback="", delta=None):
+    def assertAlmostEqual(self, a, b, places=7, msg=None, delta=None):
 
         if delta is not None:
             res = abs(a-b) <= delta
@@ -671,11 +720,11 @@ class TestCase(object):
                 places = 7
             res = round(a-b, places) == 0
         
-        if not res and feedback == "":
-            feedback = "Expected %s to equal %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to equal %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertNotAlmostEqual(self, a, b, places=7, feedback="", delta=None):
+    def assertNotAlmostEqual(self, a, b, places=7, msg=None, delta=None):
 
         if delta is not None:
             res = not (a == b) and abs(a - b) > delta
@@ -685,33 +734,33 @@ class TestCase(object):
 
             res = round(a-b, places) != 0
 
-        if not res and feedback == "":
-            feedback = "Expected %s to not equal %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to not equal %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertGreater(self,a,b, feedback=""):
+    def assertGreater(self,a,b, msg=None):
         res = a > b
-        if not res and feedback == "":
-            feedback = "Expected %s to be greater than %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be greater than %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertGreaterEqual(self,a,b, feedback=""):
+    def assertGreaterEqual(self,a,b, msg=None):
         res = a >= b
-        if not res and feedback == "":
-            feedback = "Expected %s to be >= %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be >= %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertLess(self, a, b, feedback=""):
+    def assertLess(self, a, b, msg=None):
         res = a < b
-        if not res and feedback == "":
-            feedback = "Expected %s to be less than %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be less than %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
-    def assertLessEqual(self,a,b, feedback=""):
+    def assertLessEqual(self,a,b, msg=None):
         res = a <= b
-        if not res and feedback == "":
-            feedback = "Expected %s to be <= %s" % (str(a),str(b))
-        self.appendResult(res, a, b, feedback)
+        if not res:
+            msg = self._formatMessage(msg, "Expected %s to be <= %s" % (str(a),str(b)))
+        self.appendResult(res, a, b, msg)
 
     def appendResult(self,res,actual,expected,feedback):
         if res:
