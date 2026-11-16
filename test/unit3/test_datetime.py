@@ -441,7 +441,7 @@ class TestTimeZone(unittest.TestCase):
         time_deltas.extend([-delta for delta in time_deltas])
 
         for delta in time_deltas:
-            # with self.subTest(test_type='good', delta=delta):
+            with self.subTest(test_type='good', delta=delta):
                 timezone(delta)
 
         # Test timedeltas on and outside the boundaries
@@ -452,7 +452,7 @@ class TestTimeZone(unittest.TestCase):
         bad_time_deltas.extend([-delta for delta in bad_time_deltas])
 
         for delta in bad_time_deltas:
-            # with self.subTest(test_type='bad', delta=delta):
+            with self.subTest(test_type='bad', delta=delta):
                 with self.assertRaises(ValueError):
                     timezone(delta)
 
@@ -936,7 +936,7 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
         ]
 
         for name, func, expected in tests:
-            # with self.subTest(name):
+            with self.subTest(name):
                 act = func(d1, td)
                 self.assertEqual(act, expected)
                 self.assertIsInstance(act, DateSubclass)
@@ -955,7 +955,7 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
         ]
 
         for name, func, expected in tests:
-            # with self.subTest(name):
+            with self.subTest(name):
                 act = func(d1, td)
                 self.assertEqual(act, expected)
                 self.assertIsInstance(act, DateTimeSubclass)
@@ -1055,7 +1055,7 @@ class TestTimeDelta(HarmlessMixedComparison, unittest.TestCase):
                 return divmodresult
 
         for divmodresult in [None, (), (0, 1, 2), (0, -1)]:
-            # with self.subTest(divmodresult=divmodresult):
+            with self.subTest(divmodresult=divmodresult):
                 # The following examples should not crash.
                 try:
                     timedelta(microseconds=BadInt(1))
@@ -1413,11 +1413,11 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
                 test_cases.append((new_date, new_iso))
 
         for d, exp_iso in test_cases:
-            # with self.subTest(d=d, comparison="tuple"):
+            with self.subTest(d=d, comparison="tuple"):
                 self.assertEqual(d.isocalendar(), exp_iso)
 
             # Check that the tuple contents are accessible by field name
-            # with self.subTest(d=d, comparison="fields"):
+            with self.subTest(d=d, comparison="fields"):
                 t = d.isocalendar()
                 self.assertEqual((t.year, t.week, t.weekday), exp_iso)
 
@@ -1800,8 +1800,8 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
         for constr_name, constr_args in test_cases:
             for base_obj in (DateSubclass, base_d):
                 # Test both the classmethod and method
-                # with self.subTest(base_obj_type=type(base_obj),
-                #                   constr_name=constr_name):
+                with self.subTest(base_obj_type=type(base_obj),
+                                  constr_name=constr_name):
                     constr = getattr(base_obj, constr_name)
 
                     dt = constr(*constr_args)
@@ -1867,10 +1867,10 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
         for dt_tuple in base_dates:
             dt = self.theclass(*dt_tuple)
             dt_str = dt.isoformat()
-            # with self.subTest(dt_str=dt_str):
-            dt_rt = self.theclass.fromisoformat(dt.isoformat())
+            with self.subTest(dt_str=dt_str):
+                dt_rt = self.theclass.fromisoformat(dt.isoformat())
 
-            self.assertEqual(dt, dt_rt)
+                self.assertEqual(dt, dt_rt)
 
     def test_fromisoformat_subclass(self):
         class DateSubclass(self.theclass):
@@ -1933,7 +1933,7 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
         ]
 
         for datecomps in dates:
-            # with self.subTest(datecomps=datecomps):
+            with self.subTest(datecomps=datecomps):
                 dobj = self.theclass(*datecomps)
                 isocal = dobj.isocalendar()
 
@@ -1959,7 +1959,7 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
         ]
 
         for isocal in isocals:
-            # with self.subTest(isocal=isocal):
+            with self.subTest(isocal=isocal):
                 with self.assertRaises(ValueError):
                     self.theclass.fromisocalendar(*isocal)
 
@@ -1982,7 +1982,7 @@ class TestDate(HarmlessMixedComparison, unittest.TestCase):
                 isocals.append(tuple(err_val))
 
         for isocal in isocals:
-            # with self.subTest(isocal=isocal):
+            with self.subTest(isocal=isocal):
                 with self.assertRaises(TypeError):
                     self.theclass.fromisocalendar(*isocal)
 
@@ -2106,8 +2106,8 @@ class TestDateTime(TestDate):
         for exp_tz, tzi in tzinfos:
             dt = dt_base.replace(tzinfo=tzi)
             exp = exp_base + exp_tz
-            # with self.subTest(tzi=tzi):
-            assert dt.isoformat() == exp
+            with self.subTest(tzi=tzi):
+                assert dt.isoformat() == exp
 
     def test_format(self):
         dt = self.theclass(2007, 9, 10, 4, 5, 1, 123)
@@ -2613,7 +2613,7 @@ class TestDateTime(TestDate):
             ('2004-12-01 13:02\ud80047.197', '%Y-%m-%d %H:%M\ud800%S.%f'),
         ]
         for string, format in inputs:
-            # with self.subTest(string=string, format=format):
+            with self.subTest(string=string, format=format):
                 expected = _strptime._strptime_datetime(self.theclass, string,
                                                         format)
                 got = self.theclass.strptime(string, format)
@@ -2682,12 +2682,12 @@ class TestDateTime(TestDate):
         ]
         for reason, string, format, target in inputs:
             reason = 'test single digit ' + reason
-            # with self.subTest(reason=reason,
-            #                   string=string,
-            #                   format=format,
-            #                   target=target):
-            newdate = strptime(string, format)
-            self.assertEqual(newdate, target, reason)
+            with self.subTest(reason=reason,
+                              string=string,
+                              format=format,
+                              target=target):
+                newdate = strptime(string, format)
+                self.assertEqual(newdate, target, reason)
 
     def test_more_timetuple(self):
         # This tests fields beyond those tested by the TestDate.test_timetuple.
@@ -2885,8 +2885,8 @@ class TestDateTime(TestDate):
         for constr_name, constr_args, expected in test_cases:
             for base_obj in (DateTimeSubclass, base_d):
                 # Test both the classmethod and method
-                # with self.subTest(base_obj_type=type(base_obj),
-                #                   constr_name=constr_name):
+                with self.subTest(base_obj_type=type(base_obj),
+                                  constr_name=constr_name):
                     constructor = getattr(base_obj, constr_name)
 
                     dt = constructor(*constr_args)
@@ -2917,7 +2917,7 @@ class TestDateTime(TestDate):
         ]
 
         for name, meth_name, kwargs in test_cases:
-            # with self.subTest(name):
+            with self.subTest(name):
                 constr = getattr(DateTimeSubclass, meth_name)
                 dt = constr(**kwargs)
 
@@ -2950,9 +2950,9 @@ class TestDateTime(TestDate):
 
         for dt in dts:
             for sep in separators:
-                    dtstr = dt.isoformat(sep=sep)
+                dtstr = dt.isoformat(sep=sep)
 
-                # with self.subTest(dtstr=dtstr):
+                with self.subTest(dtstr=dtstr):
                     dt_rt = self.theclass.fromisoformat(dtstr)
                     self.assertEqual(dt, dt_rt)
 
@@ -2977,9 +2977,9 @@ class TestDateTime(TestDate):
             dt = base_dt.replace(tzinfo=tzi)
             dtstr = dt.isoformat()
 
-            # with self.subTest(tstr=dtstr):
-            dt_rt = self.theclass.fromisoformat(dtstr)
-            assert dt == dt_rt, dt_rt
+            with self.subTest(tstr=dtstr):
+                dt_rt = self.theclass.fromisoformat(dtstr)
+                assert dt == dt_rt, dt_rt
 
     def test_fromisoformat_separators(self):
         separators = [
@@ -2994,9 +2994,9 @@ class TestDateTime(TestDate):
             dt = self.theclass(2018, 1, 31, 23, 59, 47, 124789)
             dtstr = dt.isoformat(sep=sep)
 
-            # with self.subTest(dtstr=dtstr):
-            dt_rt = self.theclass.fromisoformat(dtstr)
-            self.assertEqual(dt, dt_rt)
+            with self.subTest(dtstr=dtstr):
+                dt_rt = self.theclass.fromisoformat(dtstr)
+                self.assertEqual(dt, dt_rt)
 
     def test_fromisoformat_ambiguous(self):
         # Test strings like 2018-01-31+12:15 (where +12:15 is not a time zone)
@@ -3005,9 +3005,9 @@ class TestDateTime(TestDate):
             dt = self.theclass(2018, 1, 31, 12, 15)
             dtstr = dt.isoformat(sep=sep)
 
-            # with self.subTest(dtstr=dtstr):
-            dt_rt = self.theclass.fromisoformat(dtstr)
-            self.assertEqual(dt, dt_rt)
+            with self.subTest(dtstr=dtstr):
+                dt_rt = self.theclass.fromisoformat(dtstr)
+                self.assertEqual(dt, dt_rt)
 
     def test_fromisoformat_timespecs(self):
         datetime_bases = [
@@ -3031,9 +3031,9 @@ class TestDateTime(TestDate):
 
                     dt = self.theclass(*(dt_tuple[0:(4 + ip)]), tzinfo=tzi)
                     dtstr = dt.isoformat(timespec=ts)
-                    # with self.subTest(dtstr=dtstr):
-                    dt_rt = self.theclass.fromisoformat(dtstr)
-                    self.assertEqual(dt, dt_rt)
+                    with self.subTest(dtstr=dtstr):
+                        dt_rt = self.theclass.fromisoformat(dtstr)
+                        self.assertEqual(dt, dt_rt)
 
     def test_fromisoformat_fails_datetime(self):
         # Test that fromisoformat() fails on invalid values
@@ -3069,7 +3069,7 @@ class TestDateTime(TestDate):
         ]
 
         for bad_str in bad_strs:
-            # with self.subTest(bad_str=bad_str):
+            with self.subTest(bad_str=bad_str):
                 with self.assertRaises(ValueError):
                     self.theclass.fromisoformat(bad_str)
 
@@ -3312,8 +3312,8 @@ class TestTime(HarmlessMixedComparison, unittest.TestCase):
         for exp_tz, tzi in tzinfos:
             t = t_base.replace(tzinfo=tzi)
             exp = exp_base + exp_tz
-            # with self.subTest(tzi=tzi):
-            assert t.isoformat() == exp
+            with self.subTest(tzi=tzi):
+                assert t.isoformat() == exp
 
     def test_1653736(self):
         # verify it doesn't accept extra keyword arguments
@@ -3940,9 +3940,9 @@ class TestTimeTZ(TestTime, TZInfoBase, unittest.TestCase):
                 t = self.theclass(*ttup, tzinfo=tzi)
                 tstr = t.isoformat()
 
-                # with self.subTest(tstr=tstr):
-                t_rt = self.theclass.fromisoformat(tstr)
-                self.assertEqual(t, t_rt)
+                with self.subTest(tstr=tstr):
+                    t_rt = self.theclass.fromisoformat(tstr)
+                    self.assertEqual(t, t_rt)
 
     def test_fromisoformat_timezone(self):
         base_time = self.theclass(12, 30, 45, 217456)
@@ -3965,9 +3965,9 @@ class TestTimeTZ(TestTime, TZInfoBase, unittest.TestCase):
             t = base_time.replace(tzinfo=tzi)
             tstr = t.isoformat()
 
-            # with self.subTest(tstr=tstr):
-            t_rt = self.theclass.fromisoformat(tstr)
-            assert t == t_rt, t_rt
+            with self.subTest(tstr=tstr):
+                t_rt = self.theclass.fromisoformat(tstr)
+                assert t == t_rt, t_rt
 
     def test_fromisoformat_timespecs(self):
         time_bases = [
@@ -3992,9 +3992,9 @@ class TestTimeTZ(TestTime, TZInfoBase, unittest.TestCase):
 
                     t = self.theclass(*(t_tuple[0:(1 + ip)]), tzinfo=tzi)
                     tstr = t.isoformat(timespec=ts)
-                    # with self.subTest(tstr=tstr):
-                    t_rt = self.theclass.fromisoformat(tstr)
-                    self.assertEqual(t, t_rt)
+                    with self.subTest(tstr=tstr):
+                        t_rt = self.theclass.fromisoformat(tstr)
+                        self.assertEqual(t, t_rt)
 
     def test_fromisoformat_fails(self):
         bad_strs = [
@@ -4022,7 +4022,7 @@ class TestTimeTZ(TestTime, TZInfoBase, unittest.TestCase):
         ]
 
         for bad_str in bad_strs:
-            # with self.subTest(bad_str=bad_str):
+            with self.subTest(bad_str=bad_str):
                 with self.assertRaises(ValueError):
                     self.theclass.fromisoformat(bad_str)
 

@@ -184,17 +184,17 @@ class TestBasicOps(unittest.TestCase):
             for i in range(len(data)):
                 s = data[:i]
                 batches = list(batched(s, n))
-                # with self.subTest(s=s, n=n, batches=batches):
-                # Order is preserved and no data is lost
-                self.assertEqual(''.join(chain(*batches)), s)
-                # Each batch is an exact tuple
-                self.assertTrue(all(type(batch) is tuple for batch in batches))
-                # All but the last batch is of size n
-                if batches:
-                    last_batch = batches.pop()
-                    self.assertTrue(all(len(batch) == n for batch in batches))
-                    self.assertTrue(len(last_batch) <= n)
-                    batches.append(last_batch)
+                with self.subTest(s=s, n=n, batches=batches):
+                    # Order is preserved and no data is lost
+                    self.assertEqual(''.join(chain(*batches)), s)
+                    # Each batch is an exact tuple
+                    self.assertTrue(all(type(batch) is tuple for batch in batches))
+                    # All but the last batch is of size n
+                    if batches:
+                        last_batch = batches.pop()
+                        self.assertTrue(all(len(batch) == n for batch in batches))
+                        self.assertTrue(len(last_batch) <= n)
+                        batches.append(last_batch)
 
 
     def test_chain(self):
@@ -2046,7 +2046,7 @@ class TestVariousIteratorArgs(unittest.TestCase):
         r = [('a', 'b'), ('c', 'd'), ('e',)]
         n = 2
         for g in (G, I, Ig, L, R):
-            # with self.subTest(g=g):
+            with self.subTest(g=g):
                 self.assertEqual(list(batched(g(s), n)), r)
         self.assertEqual(list(batched(S(s), 2)), [])
         self.assertRaises(TypeError, batched, X(s), 2)

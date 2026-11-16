@@ -751,11 +751,11 @@ class MathTests(unittest.TestCase):
         )
 
         for value in test_values:
-            #with self.subTest(value=value):
-            s = math.isqrt(value)
-            self.assertIs(type(s), int)
-            self.assertLessEqual(s*s, value)
-            self.assertLess(value, (s+1)*(s+1))
+            with self.subTest(value=value):
+                s = math.isqrt(value)
+                self.assertIs(type(s), int)
+                self.assertLessEqual(s*s, value)
+                self.assertLess(value, (s+1)*(s+1))
 
         # Negative values
         with self.assertRaises(ValueError):
@@ -791,9 +791,9 @@ class MathTests(unittest.TestCase):
             100.0, -4.0,
         ]
         for value in bad_values:
-            #with self.subTest(value=value):
-            with self.assertRaises(TypeError):
-                math.isqrt(value)
+            with self.subTest(value=value):
+                with self.assertRaises(TypeError):
+                    math.isqrt(value)
 
     def testLdexp(self):
         self.assertRaises(TypeError, math.ldexp)
@@ -1275,7 +1275,7 @@ class MathTests(unittest.TestCase):
         # ]
 
         for case in testcases:
-            # with self.subTest(case=case):
+            with self.subTest(case=case):
                 x, y, expected = case.split()
                 x = float(x)
                 y = float(y)
@@ -1354,18 +1354,18 @@ class MathTests(unittest.TestCase):
             '3.7e-322 1e-322 -2.5e-323',
             '4.45e-322 1e-322 5e-323']
         for case in tiny_testcases:
-            # with self.subTest(case=case):
-            x, y, expected = case.split()
-            x = float(x)
-            y = float(y)
-            expected = float(expected)
-            neg_expected = -expected
-            # # validate_spec(x, y, expected)
-            actual = math.remainder(x, y)
-            neg_actual = math.remainder(-x,y)
+            with self.subTest(case=case):
+                x, y, expected = case.split()
+                x = float(x)
+                y = float(y)
+                expected = float(expected)
+                neg_expected = -expected
+                # # validate_spec(x, y, expected)
+                actual = math.remainder(x, y)
+                neg_actual = math.remainder(-x,y)
             
-            self.assertEqual(actual, expected)
-            self.assertEqual(neg_actual, neg_expected)
+                self.assertEqual(actual, expected)
+                self.assertEqual(neg_actual, neg_expected)
         # tiny = float('5e-324')  # min +ve subnormal
         # for n in range(-25, 25):
         #     if n == 0:

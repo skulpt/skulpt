@@ -738,19 +738,19 @@ class GrammarTests(unittest.TestCase):
             custom_msg = "call to '{}'".format(keyword)
             for case in cases:
                 source = case.format(keyword)
-                # with self.subTest(source=source):
-                # with self.assertRaisesRegex(SyntaxError, custom_msg):
-                with self.assertRaises(SyntaxError) as e:
-                    exec(source)
-                # @TODO improve our error message here
-                # self.assertIn(custom_msg, str(e.exception))
+                with self.subTest(source=source):
+                    # with self.assertRaisesRegex(SyntaxError, custom_msg):
+                    with self.assertRaises(SyntaxError) as e:
+                        exec(source)
+                    # @TODO improve our error message here
+                    # self.assertIn(custom_msg, str(e.exception))
                 source = source.replace("foo", "(foo.)")
-                # with self.subTest(source=source):
-                # with self.assertRaisesRegex(SyntaxError) as e:
-                with self.assertRaises(SyntaxError) as e:
-                    exec(source)
-                # @TODO improve our error messages here
-                # self.assertIn("invalid syntax", str(e.exception))
+                with self.subTest(source=source):
+                    # with self.assertRaisesRegex(SyntaxError) as e:
+                    with self.assertRaises(SyntaxError) as e:
+                        exec(source)
+                    # @TODO improve our error messages here
+                    # self.assertIn("invalid syntax", str(e.exception))
 
     def test_del_stmt(self):
         # 'del' exprlist
