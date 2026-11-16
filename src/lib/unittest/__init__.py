@@ -771,3 +771,4 @@ def main(verbosity=1):
 
 
 from .suite import TestSuite
+from .loader import TestLoader, defaultTestLoader
