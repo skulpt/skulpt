@@ -13,8 +13,6 @@ def _accept_feedback(assertion):
 
 
 class TestCaseGui(TestCase):
-     _legacy_assertions = True
-
      # Existing Runestone exercises pass feedback by name and display it as the note.
      longMessage = False
      assertEqual = _accept_feedback(TestCase.assertEqual)
@@ -40,6 +38,10 @@ class TestCaseGui(TestCase):
 
      def __init__(self):
           TestCase.__init__(self)
+          self.numPassed = 0
+          self.numFailed = 0
+          self.assertFailed = 0
+          self.tlist = [getattr(self, name) for name in dir(self) if name.startswith('test')]
           self.divid = document.currentDiv()
           self.mydiv = document.getElementById(self.divid)
           res = document.getElementById(self.divid+'_unit_results')
@@ -54,6 +56,7 @@ class TestCaseGui(TestCase):
 
 
      def main(self):
+         # Existing exercises call this directly for per-assertion feedback.
          t = document.createElement('table')
          self.resTable = t
          self.resdiv.appendChild(self.resTable)
@@ -77,6 +80,16 @@ class TestCaseGui(TestCase):
                  self.appendResult('Error', None, None, e)
                  self.numFailed += 1
                  self.showSummary()
+
+     def fail(self, msg=None):
+         # Preserve the GUI's non-raising behaviour for explicit fail() calls.
+         print('Fail' if msg is None else 'Fail: ' + msg)
+         self.assertFailed += 1
+
+     def _handle_unexpected_exception(self, actual, expected):
+         # Score the mismatch and suppress the exception so later checks still run.
+         self.appendResult(False, actual, expected, "Expected {} but got {}".format(expected, actual))
+         return True
 
      def appendResult(self,res,actual,expected,param):
          trimActual = False
