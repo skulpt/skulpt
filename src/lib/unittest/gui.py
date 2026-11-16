@@ -1,8 +1,42 @@
 import document
 from unittest import TestCase
 
+
+def _accept_feedback(assertion):
+    def check(self, *args, **kwargs):
+        if 'feedback' in kwargs:
+            if 'msg' in kwargs:
+                raise TypeError('use either feedback or msg')
+            kwargs['msg'] = kwargs.pop('feedback')
+        return assertion(self, *args, **kwargs)
+    return check
+
+
 class TestCaseGui(TestCase):
      _legacy_assertions = True
+
+     # Existing Runestone exercises pass feedback by name and display it as the note.
+     longMessage = False
+     assertEqual = _accept_feedback(TestCase.assertEqual)
+     assertNotEqual = _accept_feedback(TestCase.assertNotEqual)
+     assertTrue = _accept_feedback(TestCase.assertTrue)
+     assertFalse = _accept_feedback(TestCase.assertFalse)
+     assertIs = _accept_feedback(TestCase.assertIs)
+     assertIsNot = _accept_feedback(TestCase.assertIsNot)
+     assertIsNone = _accept_feedback(TestCase.assertIsNone)
+     assertIsNotNone = _accept_feedback(TestCase.assertIsNotNone)
+     assertIn = _accept_feedback(TestCase.assertIn)
+     assertNotIn = _accept_feedback(TestCase.assertNotIn)
+     assertIsInstance = _accept_feedback(TestCase.assertIsInstance)
+     assertNotIsInstance = _accept_feedback(TestCase.assertNotIsInstance)
+     assertRegex = _accept_feedback(TestCase.assertRegex)
+     assertNotRegex = _accept_feedback(TestCase.assertNotRegex)
+     assertAlmostEqual = _accept_feedback(TestCase.assertAlmostEqual)
+     assertNotAlmostEqual = _accept_feedback(TestCase.assertNotAlmostEqual)
+     assertGreater = _accept_feedback(TestCase.assertGreater)
+     assertGreaterEqual = _accept_feedback(TestCase.assertGreaterEqual)
+     assertLess = _accept_feedback(TestCase.assertLess)
+     assertLessEqual = _accept_feedback(TestCase.assertLessEqual)
 
      def __init__(self):
           TestCase.__init__(self)
