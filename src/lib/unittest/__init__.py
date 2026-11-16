@@ -162,6 +162,9 @@ class TestCase(object):
 
     def __init__(self, methodName='runTest'):
         self._testMethodName = methodName
+        self._cleanups = []
+        self._active_result = None
+        self._cleanups_ok = True
         if methodName != 'runTest' and not hasattr(self, methodName):
             raise ValueError('no such test method in %s: %s' % (self.__class__, methodName))
         self.numPassed = 0
@@ -225,8 +228,11 @@ class TestCase(object):
                 self.assertFailed += 1
                 self.numFailed += 1
                 print('Test threw exception in %s (%s)' % (self.cleanName(func), e))
+                self._run_legacy_cleanups()
                 continue
 
+            if not self._run_legacy_cleanups():
+                self.assertFailed += 1
             if self.assertFailed:
                 self.numFailed += 1
                 print('Tests failed in %s ' % self.cleanName(func))
@@ -240,6 +246,48 @@ class TestCase(object):
 
     def defaultTestResult(self):
         return TestResult()
+
+    def addCleanup(self, *args, **kwargs):
+        if not args:
+            raise TypeError('addCleanup() requires a cleanup function')
+        self._cleanups.append((args[0], args[1:], kwargs))
+
+    def enterContext(self, cm):
+        cls = type(cm)
+        try:
+            enter = cls.__enter__
+            exit = cls.__exit__
+        except AttributeError:
+            raise TypeError('%r does not support the context manager protocol' % cls)
+        value = enter(cm)
+        self.addCleanup(exit, cm, None, None, None)
+        return value
+
+    def doCleanups(self):
+        result = self._active_result
+        if result is None:
+            result = TestResult()
+        success = True
+        while self._cleanups:
+            function, args, kwargs = self._cleanups.pop()
+            if not self._run_test_part(lambda: function(*args, **kwargs), result):
+                success = False
+        if self._active_result is not None:
+            self._cleanups_ok = self._cleanups_ok and success
+        return success
+
+    def _run_legacy_cleanups(self):
+        if not self._cleanups:
+            return True
+        result = TestResult()
+        self._active_result = result
+        try:
+            success = self.doCleanups()
+        finally:
+            self._active_result = None
+        for _, message in result.failures + result.errors:
+            print(message)
+        return success
 
     def _run_test_part(self, function, result):
         try:
@@ -273,11 +321,19 @@ class TestCase(object):
                 if getattr(item, '__unittest_skip__', False):
                     result.addSkip(self, getattr(item, '__unittest_skip_why__', ''))
                     return result
-            if self._run_test_part(self.setUp, result):
-                passed = self._run_test_part(method, result)
-                torn_down = self._run_test_part(self.tearDown, result)
-                if passed and torn_down:
+            self._active_result = result
+            self._cleanups_ok = True
+            try:
+                passed = self._run_test_part(self.setUp, result)
+                if passed:
+                    passed = self._run_test_part(method, result)
+                    torn_down = self._run_test_part(self.tearDown, result)
+                    passed = passed and torn_down
+                self.doCleanups()
+                if passed and self._cleanups_ok:
                     result.addSuccess(self)
+            finally:
+                self._active_result = None
             return result
         finally:
             result.stopTest(self)
