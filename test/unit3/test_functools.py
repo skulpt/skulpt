@@ -1163,12 +1163,7 @@ class TestTotalOrdering(unittest.TestCase):
 #     def __eq__(self, other):
 #         return self.value == other.value
 
-def ignore_skulpt(f):
-    @functools.wraps(f)
-    def wrapper(self, *args, **kws):
-        if (self.verbosity > 1):
-            print(f.__name__, 'was ignored by skulpt')
-    return wrapper
+ignore_skulpt = unittest.skip('Requires unsupported Skulpt features')
 
 class TestCache:
     # This tests that the pass-through is working as designed.

@@ -44,11 +44,11 @@ class TypeFunctionTest(unittest.TestCase):
         class X: pass
         self.assertEqual(type(X), type(type))
         x = X()
-        self.assertEqual(str(type(x)), "<class '__main__.X'>")
+        self.assertEqual(str(type(x)), "<class '%s.X'>" % __name__)
         class Y(): pass
         self.assertEqual(type(Y), type(type))
         y = Y() # changed since y takes no arguments
-        self.assertEqual(str(type(y)), "<class '__main__.Y'>")
+        self.assertEqual(str(type(y)), "<class '%s.Y'>" % __name__)
 
     def test_bool(self):
         lst = [1, 2, 3]

@@ -51,7 +51,7 @@ class VariableTests(unittest.TestCase):
             
         self.assertTrue(baz(10))
         y = MyClass()
-        self.assertEqual(y.l, ["__main__", True, type(foo)])
+        self.assertEqual(y.l, [__name__, True, type(foo)])
         
     def test_mult_variable_assignment(self):
         a,b,c = 1,2,3
