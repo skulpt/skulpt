@@ -300,5 +300,114 @@ class TestCaseRun(unittest.TestCase):
         self.assertEqual(result.errors, [])
 
 
+# From CPython Lib/test/test_unittest/test_runner.py at 18ef0f0cb52.
+class CustomError(Exception):
+    pass
+
+
+class TestCM:
+    def __init__(self, ordering, enter_result=None):
+        self.ordering = ordering
+        self.enter_result = enter_result
+
+    def __enter__(self):
+        self.ordering.append('enter')
+        return self.enter_result
+
+    def __exit__(self, *exc_info):
+        self.ordering.append('exit')
+
+
+class TestCleanUp(unittest.TestCase):
+
+    def testCleanUp(self):
+        class TestableTest(unittest.TestCase):
+            def testNothing(self):
+                pass
+
+        test = TestableTest('testNothing')
+        self.assertEqual(test._cleanups, [])
+
+        cleanups = []
+
+        def cleanup1(*args, **kwargs):
+            cleanups.append((1, args, kwargs))
+
+        def cleanup2(*args, **kwargs):
+            cleanups.append((2, args, kwargs))
+
+        test.addCleanup(cleanup1, 1, 2, 3, four='hello', five='goodbye')
+        test.addCleanup(cleanup2)
+
+        self.assertEqual(test._cleanups,
+                         [(cleanup1, (1, 2, 3), dict(four='hello', five='goodbye')),
+                          (cleanup2, (), {})])
+
+        self.assertTrue(test.doCleanups())
+        self.assertEqual(cleanups, [(2, (), {}), (1, (1, 2, 3), dict(four='hello', five='goodbye'))])
+
+    def testCleanupInRun(self):
+        blowUp = False
+        ordering = []
+
+        class TestableTest(unittest.TestCase):
+            def setUp(self):
+                ordering.append('setUp')
+                test.addCleanup(cleanup2)
+                if blowUp:
+                    raise CustomError('foo')
+
+            def testNothing(self):
+                ordering.append('test')
+                test.addCleanup(cleanup3)
+
+            def tearDown(self):
+                ordering.append('tearDown')
+
+        test = TestableTest('testNothing')
+
+        def cleanup1():
+            ordering.append('cleanup1')
+        def cleanup2():
+            ordering.append('cleanup2')
+        def cleanup3():
+            ordering.append('cleanup3')
+        test.addCleanup(cleanup1)
+
+        def success(some_test):
+            self.assertEqual(some_test, test)
+            ordering.append('success')
+
+        result = unittest.TestResult()
+        result.addSuccess = success
+
+        test.run(result)
+        self.assertEqual(ordering, ['setUp', 'test', 'tearDown', 'cleanup3',
+                                    'cleanup2', 'cleanup1', 'success'])
+
+        blowUp = True
+        ordering = []
+        test = TestableTest('testNothing')
+        test.addCleanup(cleanup1)
+        test.run(result)
+        self.assertEqual(ordering, ['setUp', 'cleanup2', 'cleanup1'])
+
+    def test_enterContext(self):
+        class TestableTest(unittest.TestCase):
+            def testNothing(self):
+                pass
+
+        test = TestableTest('testNothing')
+        cleanups = []
+
+        test.addCleanup(cleanups.append, 'cleanup1')
+        cm = TestCM(cleanups, 42)
+        self.assertEqual(test.enterContext(cm), 42)
+        test.addCleanup(cleanups.append, 'cleanup2')
+
+        self.assertTrue(test.doCleanups())
+        self.assertEqual(cleanups, ['enter', 'cleanup2', 'exit', 'cleanup1'])
+
+
 if __name__ == '__main__':
     unittest.main()
