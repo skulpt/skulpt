@@ -2,6 +2,8 @@ import document
 from unittest import TestCase
 
 class TestCaseGui(TestCase):
+     _legacy_assertions = True
+
      def __init__(self):
           TestCase.__init__(self)
           self.divid = document.currentDiv()
