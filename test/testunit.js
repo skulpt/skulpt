@@ -4,7 +4,7 @@ const program = require('commander');
 const runUnitModule = require('../support/run/unittest');
 const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
-function test (python3, opt, module = undefined, core = undefined) {
+function test (python3, opt, moduleSuffixes, core = undefined) {
     var starttime, endtime, elapsed;
 
     // Import Skulpt
@@ -43,17 +43,14 @@ function test (python3, opt, module = undefined, core = undefined) {
         let stat = fs.statSync(file);
         let basename = path.basename(file, ".py");
 
-        if (stat.isFile() && basename.startsWith("test_") && path.extname(file) == ".py") {
-            if (module && !basename.endsWith(module)) {
-                continue;
-            }
+        if (moduleSuffixes.length && !moduleSuffixes.some((suffix) => basename.endsWith(suffix))) {
+            continue;
+        }
 
+        if (stat.isFile() && basename.startsWith("test_") && path.extname(file) == ".py") {
             modules.push([file, basename]);
         } else if (stat.isDirectory() && basename.startsWith("test_")) {
             if (!fs.statSync(file + "/__init__.py").isFile()) {
-                continue;
-            }
-            if (module && !basename.endsWith(module)) {
                 continue;
             }
             modules.push([file + ".py", path.basename(file + ".py", ".py")]);
@@ -115,7 +112,8 @@ function test (python3, opt, module = undefined, core = undefined) {
 program
     .option('--python3', 'Python 3')
     .option('-o, --opt', 'use optimized skulpt')
-    .option('--module <module>', 'test specific module')
+    .option('--module <module>', 'test modules matching this suffix (repeatable)',
+        (suffix, suffixes) => suffixes.concat(suffix), [])
     .option('--core <file>', 'test a specific built Skulpt core')
     .parse(process.argv);
 

@@ -30,17 +30,15 @@ function runJSBITests() {
 
 function runUnicodeFallbackTests() {
     printHeading("Unicode fallback tests");
-    // Each suite starts in a fresh process with the capability disabled before startup.
-    for (const moduleName of ["test_re", "skulpt_re", "string_functions"]) {
-        run(
-            "--require",
-            "./test/force-unicode-fallback.js",
-            "test/testunit.js",
-            "--python3",
-            "--module",
-            moduleName
-        );
-    }
+    run(
+        "--require",
+        "./test/force-unicode-fallback.js",
+        "test/testunit.js",
+        "--python3",
+        "--module", "test_re",
+        "--module", "skulpt_re",
+        "--module", "string_functions"
+    );
 }
 
 function runRuntimeTests() {
