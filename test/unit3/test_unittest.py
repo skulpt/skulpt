@@ -638,5 +638,60 @@ class TestSubtests(unittest.TestCase):
         self.assertTrue(result.wasSuccessful())
 
 
+# From CPython Lib/test/test_unittest/test_runner.py at 18ef0f0cb52.
+class TestScopedCleanup(unittest.TestCase):
+
+    def test_addClassCleanUp(self):
+        class TestableTest(unittest.TestCase):
+            def testNothing(self):
+                pass
+        test = TestableTest('testNothing')
+        self.assertEqual(test._class_cleanups, [])
+        class_cleanups = []
+
+        def class_cleanup1(*args, **kwargs):
+            class_cleanups.append((3, args, kwargs))
+
+        def class_cleanup2(*args, **kwargs):
+            class_cleanups.append((4, args, kwargs))
+
+        TestableTest.addClassCleanup(class_cleanup1, 1, 2, 3,
+                                     four='hello', five='goodbye')
+        TestableTest.addClassCleanup(class_cleanup2)
+
+        self.assertEqual(test._class_cleanups,
+                         [(class_cleanup1, (1, 2, 3),
+                           dict(four='hello', five='goodbye')),
+                          (class_cleanup2, (), {})])
+
+        TestableTest.doClassCleanups()
+        self.assertEqual(class_cleanups, [(4, (), {}), (3, (1, 2, 3),
+                                          dict(four='hello', five='goodbye'))])
+
+    def test_add_and_do_ModuleCleanup(self):
+        module_cleanups = []
+
+        def module_cleanup1(*args, **kwargs):
+            module_cleanups.append((3, args, kwargs))
+
+        def module_cleanup2(*args, **kwargs):
+            module_cleanups.append((4, args, kwargs))
+
+        class Module(object):
+            unittest.addModuleCleanup(module_cleanup1, 1, 2, 3,
+                                      four='hello', five='goodbye')
+            unittest.addModuleCleanup(module_cleanup2)
+
+        self.assertEqual(unittest._module_cleanups,
+                         [(module_cleanup1, (1, 2, 3),
+                           dict(four='hello', five='goodbye')),
+                          (module_cleanup2, (), {})])
+
+        unittest.doModuleCleanups()
+        self.assertEqual(module_cleanups, [(4, (), {}), (3, (1, 2, 3),
+                                          dict(four='hello', five='goodbye'))])
+        self.assertEqual(unittest._module_cleanups, [])
+
+
 if __name__ == '__main__':
     unittest.main()
