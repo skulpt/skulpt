@@ -430,6 +430,118 @@ class TestCleanUp(unittest.TestCase):
         self.assertEqual(cleanups, ['enter', 'cleanup2', 'exit', 'cleanup1'])
 
 
+class List(list):
+    pass
+
+
+class TestAssertionHelpers(unittest.TestCase):
+    def test_cpython_assertions(self):
+        # From CPython test_case.py at 18ef0f0cb52. Run the assertions in raising mode.
+        # assertCountEqual utility-internal cases require the separate unittest.util module.
+        class Assertions(unittest.TestCase):
+            def testAssertHasAttr(self):
+                a = List()
+                a.x = 1
+                self.assertHasAttr(a, 'x')
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertHasAttr(a, 'y')
+                self.assertEqual(str(cm.exception),
+                        "'List' object has no attribute 'y'")
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertHasAttr(List, 'spam')
+                self.assertEqual(str(cm.exception),
+                        "type object 'List' has no attribute 'spam'")
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertHasAttr(sys, 'nonexistent')
+                self.assertEqual(str(cm.exception),
+                        "module 'sys' has no attribute 'nonexistent'")
+
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertHasAttr(a, 'y', 'ababahalamaha')
+                self.assertIn('ababahalamaha', str(cm.exception))
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertHasAttr(a, 'y', msg='ababahalamaha')
+                self.assertIn('ababahalamaha', str(cm.exception))
+
+            def testAssertNotHasAttr(self):
+                a = List()
+                a.x = 1
+                self.assertNotHasAttr(a, 'y')
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertNotHasAttr(a, 'x')
+                self.assertEqual(str(cm.exception),
+                        "'List' object has unexpected attribute 'x'")
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertNotHasAttr(List, 'append')
+                self.assertEqual(str(cm.exception),
+                        "type object 'List' has unexpected attribute 'append'")
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertNotHasAttr(sys, 'modules')
+                self.assertEqual(str(cm.exception),
+                        "module 'sys' has unexpected attribute 'modules'")
+
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertNotHasAttr(a, 'x', 'ababahalamaha')
+                self.assertIn('ababahalamaha', str(cm.exception))
+                with self.assertRaises(self.failureException) as cm:
+                    self.assertNotHasAttr(a, 'x', msg='ababahalamaha')
+                self.assertIn('ababahalamaha', str(cm.exception))
+
+            def testAssertCountEqual(self):
+                a = object()
+                self.assertCountEqual([1, 2, 3], [3, 2, 1])
+                self.assertCountEqual(['foo', 'bar', 'baz'], ['bar', 'baz', 'foo'])
+                self.assertCountEqual([a, a, 2, 2, 3], (a, 2, 3, a, 2))
+                self.assertCountEqual([1, "2", "a", "a"], ["a", "2", True, "a"])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [1, 2] + [3] * 100, [1] * 100 + [2, 3])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [1, "2", "a", "a"], ["a", "2", True, 1])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [10], [10, 11])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [10, 11], [10])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [10, 11, 10], [10, 11])
+
+                # Test that sequences of unhashable objects can be tested for sameness:
+                self.assertCountEqual([[1, 2], [3, 4], 0], [False, [3, 4], [1, 2]])
+                # Test that iterator of unhashable objects can be tested for sameness:
+                self.assertCountEqual(iter([1, 2, [], 3, 4]),
+                                      iter([1, 2, [], 3, 4]))
+
+                # hashable types, but not orderable
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [], [divmod, 'x', 1, 5j, 2j, frozenset()])
+                # comparing dicts
+                self.assertCountEqual([{'a': 1}, {'b': 2}], [{'b': 2}, {'a': 1}])
+                # comparing heterogeneous non-hashable sequences
+                self.assertCountEqual([1, 'x', divmod, []], [divmod, [], 'x', 1])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [], [divmod, [], 'x', 1, 5j, 2j, set()])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [[1]], [[2]])
+
+                # Same elements, but not same sequence length
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [1, 1, 2], [2, 1])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [1, 1, "2", "a", "a"], ["2", "2", True, "a"])
+                self.assertRaises(self.failureException, self.assertCountEqual,
+                                  [1, {'b': 2}, None, True], [{'b': 2}, True, None])
+
+                # Same elements which don't reliably compare, in
+                # different order, see issue 10242
+                a = [{2,4}, {1,2}]
+                b = a[::-1]
+                self.assertCountEqual(a, b)
+
+        for name in ("testAssertHasAttr", "testAssertNotHasAttr", "testAssertCountEqual"):
+            result = Assertions(name).run()
+            self.assertEqual(result.failures, [])
+            self.assertEqual(result.errors, [])
+
+
 # From CPython Lib/test/test_unittest/test_skipping.py at 18ef0f0cb52.
 class TestExpectedFailure(unittest.TestCase):
 
