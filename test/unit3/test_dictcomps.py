@@ -67,6 +67,36 @@ class DictComprehensionTest(unittest.TestCase):
     #     self.assertRaisesRegex(SyntaxError, "can't assign", lambda: compile("{x: y for y, x in ((1, 2), (3, 4))} = 5", "<test>","exec"))
     #
     #     self.assertRaisesRegex(SyntaxError, "can't assign", lambda: compile("{x: y for y, x in ((1, 2), (3, 4))} += 5", "<test>","exec"))
+    # Verbatim CPython 3.14 Lib/test/test_dictcomps.py, commit 18ef0f0cb52.
+    def test_evaluation_order(self):
+        expected = {
+            'H': 'W',
+            'e': 'o',
+            'l': 'l',
+            'o': 'd',
+        }
+
+        expected_calls = [
+            ('key', 'H'), ('value', 'W'),
+            ('key', 'e'), ('value', 'o'),
+            ('key', 'l'), ('value', 'r'),
+            ('key', 'l'), ('value', 'l'),
+            ('key', 'o'), ('value', 'd'),
+        ]
+
+        actual_calls = []
+
+        def add_call(pos, value):
+            actual_calls.append((pos, value))
+            return value
+
+        actual = {
+            add_call('key', k): add_call('value', v)
+            for k, v in zip('Hello', 'World')
+        }
+
+        self.assertEqual(actual, expected)
+        self.assertEqual(actual_calls, expected_calls)
 
 
 if __name__ == "__main__":
