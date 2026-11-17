@@ -106,6 +106,10 @@ class _ShouldStop(Exception):
 _subtest_message_unset = object()
 
 
+def _class_name(cls):
+    return '%s.%s' % (cls.__module__, getattr(cls, '__qualname__', cls.__name__))
+
+
 class _SubTest(object):
     def __init__(self, test_case, msg, params):
         self.test_case = test_case
@@ -290,6 +294,27 @@ class TestCase(object):
         self.tlist = []
         if methodName == 'runTest':
             self.tlist = [getattr(self, name) for name in dir(self) if name.startswith('test')]
+
+    def id(self):
+        return '%s.%s' % (_class_name(type(self)), self._testMethodName)
+
+    def __str__(self):
+        return '%s (%s.%s)' % (self._testMethodName, _class_name(type(self)), self._testMethodName)
+
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        return self._testMethodName == other._testMethodName
+
+    def __hash__(self):
+        return hash((type(self), self._testMethodName))
+
+    def shortDescription(self):
+        doc = getattr(self, self._testMethodName).__doc__
+        return doc.strip().split('\n')[0].strip() if doc else None
+
+    def countTestCases(self):
+        return 1
 
     def setUp(self):
         pass
@@ -743,3 +768,7 @@ def main(verbosity=1):
                 tc.main()
             except:
                 print("Uncaught Error in: ", name)
+
+
+from .suite import TestSuite
+from .loader import TestLoader, defaultTestLoader
