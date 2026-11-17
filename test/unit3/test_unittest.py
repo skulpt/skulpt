@@ -120,6 +120,19 @@ class LoggingResult(unittest.TestResult):
         self._events.append('addUnexpectedSuccess')
         super().addUnexpectedSuccess(*args)
 
+    def addSubTest(self, test, subtest, err):
+        if err is None:
+            self._events.append('addSubTestSuccess')
+        else:
+            self._events.append('addSubTestFailure')
+        super().addSubTest(test, subtest, err)
+
+
+class LegacyLoggingResult(LoggingResult):
+    @property
+    def addSubTest(self):
+        raise AttributeError
+
 
 class TestCaseRun(unittest.TestCase):
 
@@ -506,6 +519,123 @@ class TestExpectedFailure(unittest.TestCase):
         self.assertFalse(result.expectedFailures)
         self.assertEqual(result.unexpectedSuccesses, [test])
         self.assertFalse(result.wasSuccessful())
+
+
+# From CPython Lib/test/test_unittest/test_case.py at 18ef0f0cb52.
+class TestSubtests(unittest.TestCase):
+
+    def _check_call_order__subtests(self, result, events, expected_events):
+        class Foo(Test.LoggingTestCase):
+            def test(self):
+                super(Foo, self).test()
+                for i in [1, 2, 3]:
+                    with self.subTest(i=i):
+                        if i == 1:
+                            self.fail('failure')
+                        for j in [2, 3]:
+                            with self.subTest(j=j):
+                                if i * j == 6:
+                                    raise RuntimeError('raised by Foo.test')
+                1 / 0
+
+        # Order is the following:
+        # i=1 => subtest failure
+        # i=2, j=2 => subtest success
+        # i=2, j=3 => subtest error
+        # i=3, j=2 => subtest error
+        # i=3, j=3 => subtest success
+        # toplevel => error
+        Foo(events).run(result)
+        self.assertEqual(events, expected_events)
+
+    def test_run_call_order__subtests(self):
+        events = []
+        result = LoggingResult(events)
+        expected = ['startTest', 'setUp', 'test',
+                    'addSubTestFailure', 'addSubTestSuccess',
+                    'addSubTestFailure', 'addSubTestFailure',
+                    'addSubTestSuccess', 'addError', 'tearDown', 'stopTest']
+        self._check_call_order__subtests(result, events, expected)
+
+    def test_run_call_order__subtests_legacy(self):
+        # With a legacy result object (without an addSubTest method),
+        # text execution stops after the first subtest failure.
+        events = []
+        result = LegacyLoggingResult(events)
+        expected = ['startTest', 'setUp', 'test',
+                    'addFailure', 'tearDown', 'stopTest']
+        self._check_call_order__subtests(result, events, expected)
+
+    def _check_call_order__subtests_success(self, result, events, expected_events):
+        class Foo(Test.LoggingTestCase):
+            def test(self):
+                super(Foo, self).test()
+                for i in [1, 2]:
+                    with self.subTest(i=i):
+                        for j in [2, 3]:
+                            with self.subTest(j=j):
+                                pass
+
+        Foo(events).run(result)
+        self.assertEqual(events, expected_events)
+
+    def test_run_call_order__subtests_success(self):
+        events = []
+        result = LoggingResult(events)
+        # The 6 subtest successes are individually recorded, in addition
+        # to the whole test success.
+        expected = (['startTest', 'setUp', 'test']
+                    + 6 * ['addSubTestSuccess']
+                    + ['tearDown', 'addSuccess', 'stopTest'])
+        self._check_call_order__subtests_success(result, events, expected)
+
+    # From CPython test_case.py.
+    def test_run_call_order__subtests_failfast(self):
+        events = []
+        result = LoggingResult(events)
+        result.failfast = True
+
+        class Foo(Test.LoggingTestCase):
+            def test(self):
+                super(Foo, self).test()
+                with self.subTest(i=1):
+                    self.fail('failure')
+                with self.subTest(i=2):
+                    self.fail('failure')
+                self.fail('failure')
+
+        expected = ['startTest', 'setUp', 'test',
+                    'addSubTestFailure', 'tearDown', 'stopTest']
+        Foo(events).run(result)
+        self.assertEqual(events, expected)
+
+    # From CPython test_skipping.py.
+    def test_expected_failure_subtests(self):
+        # A failure in any subtest counts as the expected failure of the
+        # whole test.
+        class Foo(unittest.TestCase):
+            @unittest.expectedFailure
+            def test_die(self):
+                with self.subTest():
+                    # This one succeeds
+                    pass
+                with self.subTest():
+                    self.fail("help me!")
+                with self.subTest():
+                    # This one doesn't get executed
+                    self.fail("shouldn't come here")
+        events = []
+        result = LoggingResult(events)
+        test = Foo("test_die")
+        self.assertIs(test.run(result), result)
+        self.assertEqual(events,
+                         ['startTest', 'addSubTestSuccess',
+                          'addExpectedFailure', 'stopTest'])
+        self.assertFalse(result.failures)
+        self.assertEqual(len(result.expectedFailures), 1)
+        self.assertIs(result.expectedFailures[0][0], test)
+        self.assertFalse(result.unexpectedSuccesses)
+        self.assertTrue(result.wasSuccessful())
 
 
 if __name__ == '__main__':

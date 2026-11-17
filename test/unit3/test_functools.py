@@ -539,7 +539,7 @@ class TestPartialMethod(unittest.TestCase):
 
     def test_descriptors(self):
         for obj in [self.A, self.a]:
-            # with self.subTest(obj=obj):
+            with self.subTest(obj=obj):
                 self.assertEqual(obj.static(), ((8,), {}))
                 self.assertEqual(obj.static(5), ((8, 5), {}))
                 self.assertEqual(obj.static(d=8), ((8,), {'d': 8}))
@@ -1132,19 +1132,19 @@ class TestTotalOrdering(unittest.TestCase):
         with self.assertRaises(TypeError):
             ImplementsGreaterThanEqualTo(7) >= ImplementsLessThanEqualTo(7)
 
-        # with self.subTest("GE when equal"):
-        a = ComparatorNotImplemented(8)
-        b = ComparatorNotImplemented(8)
-        self.assertEqual(a, b)
-        with self.assertRaises(TypeError):
-            a >= b
+        with self.subTest("GE when equal"):
+            a = ComparatorNotImplemented(8)
+            b = ComparatorNotImplemented(8)
+            self.assertEqual(a, b)
+            with self.assertRaises(TypeError):
+                a >= b
 
-        # with self.subTest("LE when equal"):
-        a = ComparatorNotImplemented(9)
-        b = ComparatorNotImplemented(9)
-        self.assertEqual(a, b)
-        with self.assertRaises(TypeError):
-            a <= b
+        with self.subTest("LE when equal"):
+            a = ComparatorNotImplemented(9)
+            b = ComparatorNotImplemented(9)
+            self.assertEqual(a, b)
+            with self.assertRaises(TypeError):
+                a <= b
 
 #     def test_pickle(self):
 #         for proto in range(pickle.HIGHEST_PROTOCOL + 1):
@@ -1680,7 +1680,7 @@ class TestLRU:
         funcs = (cls.cached_func[0], cls.cached_meth, cls.cached_staticmeth,
                  self.module.lru_cache(2)(part))
         for f in funcs:
-            # with self.subTest(func=f):
+            with self.subTest(func=f):
                 f_copy = copy.copy(f)
                 self.assertIs(f_copy, f)
 
@@ -1692,7 +1692,7 @@ class TestLRU:
         funcs = (cls.cached_func[0], cls.cached_meth, cls.cached_staticmeth,
                  self.module.lru_cache(2)(part))
         for f in funcs:
-            # with self.subTest(func=f):
+            with self.subTest(func=f):
                 f_copy = copy.deepcopy(f)
                 self.assertIs(f_copy, f)
 

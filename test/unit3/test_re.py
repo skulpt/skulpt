@@ -123,7 +123,7 @@ class ReTests(unittest.TestCase):
         self.assertEqual(re.sub('a', '\t\n\v\r\f\a\b', 'a'), '\t\n\v\r\f\a\b')
 
         for c in 'cdehijklmopqsuwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ':
-            # with self.subTest(c):
+            with self.subTest(c):
                 with self.assertRaises(re.error):
                     self.assertEqual(re.sub('a', '\\' + c, 'a'), '\\' + c)
 
@@ -338,7 +338,7 @@ class ReTests(unittest.TestCase):
             ('(:*)', ['', ':', '', '', 'a', ':', '', '', 'b', '::', '', '', 'c', '', '']),
             ('(:)*', ['', ':', '', None, 'a', ':', '', None, 'b', ':', '', None, 'c', None, '']),
         ]:
-            # with self.subTest(sep=sep):
+            with self.subTest(sep=sep):
                 self.assertTypedEqual(re.split(sep, ':a:b::c'), expected)
 
         for sep, expected in [
@@ -347,8 +347,8 @@ class ReTests(unittest.TestCase):
             # (r'(?=:)', ['', ':a', ':b', ':', ':c']),
             (r'(?<=:)', [':', 'a:', 'b:', ':', 'c']),
         ]:
-    # with self.subTest(sep=sep):
-            self.assertTypedEqual(re.split(sep, ':a:b::c'), expected)
+            with self.subTest(sep=sep):
+                self.assertTypedEqual(re.split(sep, ':a:b::c'), expected)
 
     def test_qualified_re_split(self):
         self.assertEqual(re.split(":", ":a:b::c", 2), ['', 'a', 'b::c'])
@@ -704,10 +704,10 @@ class ReTests(unittest.TestCase):
         self.assertIsNone(re.match(r"[\^a]+", 'b'))
         re.purge()  # for warnings
         for c in 'ceghijklmopqyCEFGHIJKLMNOPQRTVXY':
-            # with self.subTest(c):
+            with self.subTest(c):
                 self.assertRaises(re.error, re.compile, '\\%c' % c)
         for c in 'ceghijklmopqyzABCEFGHIJKLMNOPQRTVXYZ':
-            # with self.subTest(c):
+            with self.subTest(c):
                 self.assertRaises(re.error, re.compile, '[\\%c]' % c)
 
     # def test_named_unicode_escapes(self):

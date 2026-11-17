@@ -88,36 +88,36 @@ class BaseTest(unittest.TestCase):
             if t is None:
                 continue
             tname = t.__name__
-            # with self.subTest(f"Testing {tname}"):
-            alias = t[int]
-            self.assertIs(alias.__origin__, t)
-            self.assertEqual(alias.__args__, (int,))
-            self.assertEqual(alias.__parameters__, ())
+            with self.subTest(f"Testing {tname}"):
+                alias = t[int]
+                self.assertIs(alias.__origin__, t)
+                self.assertEqual(alias.__args__, (int,))
+                self.assertEqual(alias.__parameters__, ())
 
     def test_unsubscriptable(self):
         for t in int, str, float: #, Sized, Hashable:
             tname = t.__name__
-            # with self.subTest(f"Testing {tname}"):
-            with self.assertRaises(TypeError):
-                t[int]
+            with self.subTest(f"Testing {tname}"):
+                with self.assertRaises(TypeError):
+                    t[int]
 
     def test_instantiate(self):
         for t in tuple, list, dict, set, frozenset, defaultdict, deque:
             tname = t.__name__
-            # with self.subTest(f"Testing {tname}"):
-            alias = t[int]
-            self.assertEqual(alias(), t())
-            if t is dict:
-                self.assertEqual(alias(iter([('a', 1), ('b', 2)])), dict(a=1, b=2))
-                self.assertEqual(alias(a=1, b=2), dict(a=1, b=2))
-            elif t is defaultdict:
-                def default():
-                    return 'value'
-                a = alias(default)
-                d = defaultdict(default)
-                self.assertEqual(a['test'], d['test'])
-            else:
-                self.assertEqual(alias(iter((1, 2, 3))), t((1, 2, 3)))
+            with self.subTest(f"Testing {tname}"):
+                alias = t[int]
+                self.assertEqual(alias(), t())
+                if t is dict:
+                    self.assertEqual(alias(iter([('a', 1), ('b', 2)])), dict(a=1, b=2))
+                    self.assertEqual(alias(a=1, b=2), dict(a=1, b=2))
+                elif t is defaultdict:
+                    def default():
+                        return 'value'
+                    a = alias(default)
+                    d = defaultdict(default)
+                    self.assertEqual(a['test'], d['test'])
+                else:
+                    self.assertEqual(alias(iter((1, 2, 3))), t((1, 2, 3)))
 
     def test_unbound_methods(self):
         t = list[int]

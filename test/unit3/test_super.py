@@ -295,11 +295,11 @@ class TestSuper(unittest.TestCase):
                 namespace['__classcell__'] = cell
                 return super().__new__(cls, name, bases, namespace)
 
-        # Skulpt: subTest is not supported.
         for bad_cell in (None, 0, "", object()):
-            with self.assertRaises(TypeError):
-                class A(metaclass=Meta, cell=bad_cell):
-                    pass
+            with self.subTest(bad_cell=bad_cell):
+                with self.assertRaises(TypeError):
+                    class A(metaclass=Meta, cell=bad_cell):
+                        pass
 
 
     def test___classcell___wrong_cell(self):

@@ -6,6 +6,7 @@ the unittest module from cpython.
 '''
 import re
 import sys
+from contextlib import contextmanager
 
 
 class SkipTest(Exception):
@@ -49,6 +50,28 @@ def expectedFailure(test_item):
 
 class _UnexpectedSuccess(Exception):
     pass
+
+
+class _ShouldStop(Exception):
+    pass
+
+
+_subtest_message_unset = object()
+
+
+class _SubTest(object):
+    def __init__(self, test_case, msg, params):
+        self.test_case = test_case
+        self.msg = msg
+        self.params = params
+
+    def __str__(self):
+        parts = []
+        if self.msg is not _subtest_message_unset:
+            parts.append('[%s]' % self.msg)
+        if self.params:
+            parts.append('(%s)' % ', '.join('%s=%r' % item for item in self.params.items()))
+        return ' '.join(parts) or '(<subtest>)'
 
 
 class _AssertRaisesContext(object):
@@ -132,6 +155,8 @@ class TestResult(object):
         self.skipped = []
         self.expectedFailures = []
         self.unexpectedSuccesses = []
+        self.failfast = False
+        self.shouldStop = False
 
     def startTestRun(self):
         pass
@@ -149,9 +174,13 @@ class TestResult(object):
         pass
 
     def addFailure(self, test, err):
+        if self.failfast:
+            self.stop()
         self.failures.append((test, self._exc_info_to_string(err)))
 
     def addError(self, test, err):
+        if self.failfast:
+            self.stop()
         self.errors.append((test, self._exc_info_to_string(err)))
 
     def _exc_info_to_string(self, err):
@@ -168,7 +197,19 @@ class TestResult(object):
         self.expectedFailures.append((test, self._exc_info_to_string(err)))
 
     def addUnexpectedSuccess(self, test):
+        if self.failfast:
+            self.stop()
         self.unexpectedSuccesses.append(test)
+
+    def addSubTest(self, test, subtest, err):
+        if err is not None:
+            if self.failfast:
+                self.stop()
+            failures = self.failures if issubclass(err[0], test.failureException) else self.errors
+            failures.append((subtest, self._exc_info_to_string(err)))
+
+    def stop(self):
+        self.shouldStop = True
 
     def wasSuccessful(self):
         return not (self.failures or self.errors or self.unexpectedSuccesses)
@@ -183,6 +224,10 @@ class TestCase(object):
         self._cleanups = []
         self._active_result = None
         self._cleanups_ok = True
+        self._subtest = None
+        self._subtests_ok = True
+        self._expecting_failure = False
+        self._expected_subtest_failure = None
         if methodName != 'runTest' and not hasattr(self, methodName):
             raise ValueError('no such test method in %s: %s' % (self.__class__, methodName))
         self.numPassed = 0
@@ -313,6 +358,8 @@ class TestCase(object):
             function()
         except KeyboardInterrupt:
             raise
+        except _ShouldStop:
+            return self._subtests_ok, self._expected_subtest_failure
         except SkipTest as error:
             result.addSkip(self, str(error))
         except BaseException as error:
@@ -326,6 +373,45 @@ class TestCase(object):
         else:
             return True, None
         return False, None
+
+    @contextmanager
+    def subTest(self, msg=_subtest_message_unset, **params):
+        result = self._active_result
+        add_subtest = getattr(result, 'addSubTest', None)
+        if add_subtest is None:
+            yield
+            return
+
+        parent = self._subtest
+        if parent is not None:
+            for name, value in parent.params.items():
+                params.setdefault(name, value)
+        subtest = self._subtest = _SubTest(self, msg, params)
+        previous_success = self._subtests_ok
+        self._subtests_ok = True
+        try:
+            try:
+                yield
+            except (KeyboardInterrupt, _ShouldStop):
+                raise
+            except SkipTest as error:
+                self._subtests_ok = False
+                result.addSkip(subtest, str(error))
+            except BaseException as error:
+                exc_info = (type(error), error, error.__traceback__)
+                if self._expecting_failure:
+                    self._expected_subtest_failure = exc_info
+                    raise _ShouldStop()
+                self._subtests_ok = False
+                add_subtest(self, subtest, exc_info)
+            else:
+                if self._subtests_ok:
+                    add_subtest(self, subtest, None)
+            if not self._subtests_ok and getattr(result, 'failfast', False):
+                raise _ShouldStop()
+        finally:
+            self._subtests_ok = self._subtests_ok and previous_success
+            self._subtest = parent
 
     def run(self, result=None):
         own_result = result is None
@@ -344,17 +430,22 @@ class TestCase(object):
                     return result
             self._active_result = result
             self._cleanups_ok = True
+            self._subtests_ok = True
             try:
                 expecting_failure = (getattr(self, '__unittest_expecting_failure__', False) or
                                      getattr(getattr(method, '__func__', method), '__unittest_expecting_failure__', False))
                 passed, _ = self._run_test_part(self.setUp, result)
                 expected_failure = None
                 if passed:
-                    passed, expected_failure = self._run_test_part(method, result, expecting_failure)
+                    self._expecting_failure = expecting_failure
+                    try:
+                        passed, expected_failure = self._run_test_part(method, result, expecting_failure)
+                    finally:
+                        self._expecting_failure = False
                     torn_down, _ = self._run_test_part(self.tearDown, result)
                     passed = passed and torn_down
                 self.doCleanups()
-                if passed and self._cleanups_ok:
+                if passed and self._cleanups_ok and self._subtests_ok:
                     if not expecting_failure:
                         result.addSuccess(self)
                     elif expected_failure is not None:
@@ -374,6 +465,7 @@ class TestCase(object):
                                 result.addFailure(self, (type(error), error, error.__traceback__))
             finally:
                 self._active_result = None
+                self._expected_subtest_failure = None
             return result
         finally:
             result.stopTest(self)

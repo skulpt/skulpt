@@ -442,17 +442,17 @@ class CalculationTests(unittest.TestCase):
                     return
                 for weekday_format in ('%w', '%u', '%a', '%A'):
                     format_string = year_week_format + ' ' + weekday_format
-                    # with self.subTest(test_reason,
-                    #                   date=ymd_tuple,
-                    #                   format=format_string):
-                    dt_date = datetime_date(*ymd_tuple)
-                    strp_input = dt_date.strftime(format_string)
-                    strp_output = _strptime._strptime_time(strp_input,
-                                                            format_string)
-                    msg = "%r: %s != %s" % (strp_input,
-                                            strp_output[7],
-                                            dt_date.timetuple()[7])
-                    self.assertEqual(strp_output[:3], ymd_tuple, msg)
+                    with self.subTest(test_reason,
+                                      date=ymd_tuple,
+                                      format=format_string):
+                        dt_date = datetime_date(*ymd_tuple)
+                        strp_input = dt_date.strftime(format_string)
+                        strp_output = _strptime._strptime_time(strp_input,
+                                                                format_string)
+                        msg = "%r: %s != %s" % (strp_input,
+                                                strp_output[7],
+                                                dt_date.timetuple()[7])
+                        self.assertEqual(strp_output[:3], ymd_tuple, msg)
         test_helper((1901, 1, 3), "week 0")
         test_helper((1901, 1, 8), "common case")
         test_helper((1901, 1, 13), "day on Sunday")

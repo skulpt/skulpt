@@ -154,18 +154,18 @@ class LongTest(unittest.TestCase):
 
     def check_division(self, x, y):
         eq = self.assertEqual
-        # with self.subTest(x=x, y=y):
-        q, r = divmod(x, y)
-        q2, r2 = x//y, x%y
-        pab, pba = x*y, y*x
-        eq(pab, pba, "multiplication does not commute")
-        eq(q, q2, "divmod returns different quotient than /")
-        eq(r, r2, "divmod returns different mod than %")
-        eq(x, q*y + r, "x != q*y + r after divmod")
-        if y > 0:
-            self.assertTrue(0 <= r < y, "bad mod from divmod")
-        else:
-            self.assertTrue(y < r <= 0, "bad mod from divmod")
+        with self.subTest(x=x, y=y):
+            q, r = divmod(x, y)
+            q2, r2 = x//y, x%y
+            pab, pba = x*y, y*x
+            eq(pab, pba, "multiplication does not commute")
+            eq(q, q2, "divmod returns different quotient than /")
+            eq(r, r2, "divmod returns different mod than %")
+            eq(x, q*y + r, "x != q*y + r after divmod")
+            if y > 0:
+                self.assertTrue(0 <= r < y, "bad mod from divmod")
+            else:
+                self.assertTrue(y < r <= 0, "bad mod from divmod")
 
     def test_division(self):
         digits = list(range(1, MAXDIGITS+1)) + list(range(KARATSUBA_CUTOFF,
@@ -220,63 +220,63 @@ class LongTest(unittest.TestCase):
             for bbits in bits:
                 if bbits < abits:
                     continue
-                # with self.subTest(abits=abits, bbits=bbits):
-                b = (1 << bbits) - 1
-                x = a * b
-                y = ((1 << (abits + bbits)) -
-                        (1 << abits) -
-                        (1 << bbits) +
-                        1)
-                self.assertEqual(x, y)
+                with self.subTest(abits=abits, bbits=bbits):
+                    b = (1 << bbits) - 1
+                    x = a * b
+                    y = ((1 << (abits + bbits)) -
+                            (1 << abits) -
+                            (1 << bbits) +
+                            1)
+                    self.assertEqual(x, y)
 
     def check_bitop_identities_1(self, x):
         eq = self.assertEqual
-        # with self.subTest(x=x):
-        eq(x & 0, 0)
-        eq(x | 0, x)
-        eq(x ^ 0, x)
-        eq(x & -1, x)
-        eq(x | -1, -1)
-        eq(x ^ -1, ~x)
-        eq(x, ~~x)
-        eq(x & x, x)
-        eq(x | x, x)
-        eq(x ^ x, 0)
-        eq(x & ~x, 0)
-        eq(x | ~x, -1)
-        eq(x ^ ~x, -1)
-        eq(-x, 1 + ~x)
-        eq(-x, ~(x-1))
+        with self.subTest(x=x):
+            eq(x & 0, 0)
+            eq(x | 0, x)
+            eq(x ^ 0, x)
+            eq(x & -1, x)
+            eq(x | -1, -1)
+            eq(x ^ -1, ~x)
+            eq(x, ~~x)
+            eq(x & x, x)
+            eq(x | x, x)
+            eq(x ^ x, 0)
+            eq(x & ~x, 0)
+            eq(x | ~x, -1)
+            eq(x ^ ~x, -1)
+            eq(-x, 1 + ~x)
+            eq(-x, ~(x-1))
         for n in range(2*SHIFT):
             p2 = 2 ** n
-            # with self.subTest(x=x, n=n, p2=p2):
-            eq(x << n >> n, x)
-            eq(x // p2, x >> n)
-            eq(x * p2, x << n)
-            eq(x & -p2, x >> n << n)
-            eq(x & -p2, x & ~(p2 - 1))
+            with self.subTest(x=x, n=n, p2=p2):
+                eq(x << n >> n, x)
+                eq(x // p2, x >> n)
+                eq(x * p2, x << n)
+                eq(x & -p2, x >> n << n)
+                eq(x & -p2, x & ~(p2 - 1))
 
     def check_bitop_identities_2(self, x, y):
         eq = self.assertEqual
-        # with self.subTest(x=x, y=y):
-        eq(x & y, y & x)
-        eq(x | y, y | x)
-        eq(x ^ y, y ^ x)
-        eq(x ^ y ^ x, y)
-        eq(x & y, ~(~x | ~y))
-        eq(x | y, ~(~x & ~y))
-        eq(x ^ y, (x | y) & ~(x & y))
-        eq(x ^ y, (x & ~y) | (~x & y))
-        eq(x ^ y, (x | y) & (~x | ~y))
+        with self.subTest(x=x, y=y):
+            eq(x & y, y & x)
+            eq(x | y, y | x)
+            eq(x ^ y, y ^ x)
+            eq(x ^ y ^ x, y)
+            eq(x & y, ~(~x | ~y))
+            eq(x | y, ~(~x & ~y))
+            eq(x ^ y, (x | y) & ~(x & y))
+            eq(x ^ y, (x & ~y) | (~x & y))
+            eq(x ^ y, (x | y) & (~x | ~y))
 
     def check_bitop_identities_3(self, x, y, z):
         eq = self.assertEqual
-        # with self.subTest(x=x, y=y, z=z):
-        eq((x & y) & z, x & (y & z))
-        eq((x | y) | z, x | (y | z))
-        eq((x ^ y) ^ z, x ^ (y ^ z))
-        eq(x & (y | z), (x & y) | (x & z))
-        eq(x | (y & z), (x | y) & (x | z))
+        with self.subTest(x=x, y=y, z=z):
+            eq((x & y) & z, x & (y & z))
+            eq((x | y) | z, x | (y | z))
+            eq((x ^ y) ^ z, x ^ (y ^ z))
+            eq(x & (y | z), (x & y) | (x & z))
+            eq(x | (y & z), (x | y) & (x | z))
 
     def test_bitop_identities(self):
         for x in special:
@@ -307,11 +307,11 @@ class LongTest(unittest.TestCase):
     def check_format_1(self, x):
         for base, mapper in (2, bin), (8, oct), (10, str), (10, repr), (16, hex):
             got = mapper(x)
-            # with self.subTest(x=x, mapper=mapper.__name__):
-            expected = self.slow_format(x, base)
-            self.assertEqual(got, expected)
-            # with self.subTest(got=got):
-            self.assertEqual(int(got, 0), x)
+            with self.subTest(x=x, mapper=mapper.__name__):
+                expected = self.slow_format(x, base)
+                self.assertEqual(got, expected)
+            with self.subTest(got=got):
+                self.assertEqual(int(got, 0), x)
 
     def test_format(self):
         for x in special:
@@ -613,15 +613,15 @@ class LongTest(unittest.TestCase):
             for y in cases:
                 Ry = Rat(y)
                 Rcmp = (Rx > Ry) - (Rx < Ry)
-                # with self.subTest(x=x, y=y, Rcmp=Rcmp):
-                xycmp = (x > y) - (x < y)
-                eq(Rcmp, xycmp)
-                eq(x == y, Rcmp == 0)
-                eq(x != y, Rcmp != 0)
-                eq(x < y, Rcmp < 0)
-                eq(x <= y, Rcmp <= 0)
-                eq(x > y, Rcmp > 0)
-                eq(x >= y, Rcmp >= 0)
+                with self.subTest(x=x, y=y, Rcmp=Rcmp):
+                    xycmp = (x > y) - (x < y)
+                    eq(Rcmp, xycmp)
+                    eq(x == y, Rcmp == 0)
+                    eq(x != y, Rcmp != 0)
+                    eq(x < y, Rcmp < 0)
+                    eq(x <= y, Rcmp <= 0)
+                    eq(x > y, Rcmp > 0)
+                    eq(x >= y, Rcmp >= 0)
 
     def test__format__(self):
         self.assertEqual(format(123456789, 'd'), '123456789')
