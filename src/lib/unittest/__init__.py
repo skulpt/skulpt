@@ -41,6 +41,16 @@ def skipUnless(condition, reason):
         return skip(reason)
     return lambda func: func
 
+
+def expectedFailure(test_item):
+    test_item.__unittest_expecting_failure__ = True
+    return test_item
+
+
+class _UnexpectedSuccess(Exception):
+    pass
+
+
 class _AssertRaisesContext(object):
     """A context manager used to implement TestCase.assertRaises* methods."""
     def __init__(self, expected, test_case, expected_regex=None):
@@ -120,6 +130,8 @@ class TestResult(object):
         self.failures = []
         self.errors = []
         self.skipped = []
+        self.expectedFailures = []
+        self.unexpectedSuccesses = []
 
     def startTestRun(self):
         pass
@@ -152,8 +164,14 @@ class TestResult(object):
     def addSkip(self, test, reason):
         self.skipped.append((test, reason))
 
+    def addExpectedFailure(self, test, err):
+        self.expectedFailures.append((test, self._exc_info_to_string(err)))
+
+    def addUnexpectedSuccess(self, test):
+        self.unexpectedSuccesses.append(test)
+
     def wasSuccessful(self):
-        return not (self.failures or self.errors)
+        return not (self.failures or self.errors or self.unexpectedSuccesses)
 
 
 class TestCase(object):
@@ -270,7 +288,8 @@ class TestCase(object):
         success = True
         while self._cleanups:
             function, args, kwargs = self._cleanups.pop()
-            if not self._run_test_part(lambda: function(*args, **kwargs), result):
+            passed, _ = self._run_test_part(lambda: function(*args, **kwargs), result)
+            if not passed:
                 success = False
         if self._active_result is not None:
             self._cleanups_ok = self._cleanups_ok and success
@@ -289,7 +308,7 @@ class TestCase(object):
             print(message)
         return success
 
-    def _run_test_part(self, function, result):
+    def _run_test_part(self, function, result, expecting_failure=False):
         try:
             function()
         except KeyboardInterrupt:
@@ -298,13 +317,15 @@ class TestCase(object):
             result.addSkip(self, str(error))
         except BaseException as error:
             exc_info = (type(error), error, error.__traceback__)
+            if expecting_failure:
+                return True, exc_info
             if isinstance(error, self.failureException):
                 result.addFailure(self, exc_info)
             else:
                 result.addError(self, exc_info)
         else:
-            return True
-        return False
+            return True, None
+        return False, None
 
     def run(self, result=None):
         own_result = result is None
@@ -324,14 +345,33 @@ class TestCase(object):
             self._active_result = result
             self._cleanups_ok = True
             try:
-                passed = self._run_test_part(self.setUp, result)
+                expecting_failure = (getattr(self, '__unittest_expecting_failure__', False) or
+                                     getattr(getattr(method, '__func__', method), '__unittest_expecting_failure__', False))
+                passed, _ = self._run_test_part(self.setUp, result)
+                expected_failure = None
                 if passed:
-                    passed = self._run_test_part(method, result)
-                    torn_down = self._run_test_part(self.tearDown, result)
+                    passed, expected_failure = self._run_test_part(method, result, expecting_failure)
+                    torn_down, _ = self._run_test_part(self.tearDown, result)
                     passed = passed and torn_down
                 self.doCleanups()
                 if passed and self._cleanups_ok:
-                    result.addSuccess(self)
+                    if not expecting_failure:
+                        result.addSuccess(self)
+                    elif expected_failure is not None:
+                        add_failure = getattr(result, 'addExpectedFailure', None)
+                        if add_failure is not None:
+                            add_failure(self, expected_failure)
+                        else:
+                            result.addSuccess(self)
+                    else:
+                        add_success = getattr(result, 'addUnexpectedSuccess', None)
+                        if add_success is not None:
+                            add_success(self)
+                        else:
+                            try:
+                                raise _UnexpectedSuccess('The test was supposed to fail, but it passed')
+                            except _UnexpectedSuccess as error:
+                                result.addFailure(self, (type(error), error, error.__traceback__))
             finally:
                 self._active_result = None
             return result
