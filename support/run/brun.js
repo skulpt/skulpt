@@ -90,6 +90,10 @@ function brun (test, fname) {
             });
         });
 
+        app.get('/test/unittest.js', function (req, res) {
+            res.sendFile(path.resolve('support', 'run', 'unittest.js'));
+        });
+
         app.get('/test/runner.js', function (req, res) {
             res.sendFile(path.resolve('support', 'run', 'btestrunner.js'), {}, function (err) {
                 if (err) {

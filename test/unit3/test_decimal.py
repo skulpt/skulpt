@@ -56,7 +56,7 @@ RoundingModes = [
 ]
 
 # Tests are built around these assumed context defaults.
-# test_main() restores the original context.
+# A module cleanup restores the original context.
 ORIGINAL_CONTEXT = {
   P: P.getcontext().copy()
 }
@@ -4063,13 +4063,10 @@ class PyFunctionality(unittest.TestCase):
 
 
 
-def test_main():
+def setUpModule():
     init(P)
-    try:
-        unittest.main(verbosity=1)
-    finally:
-        P.setcontext(ORIGINAL_CONTEXT[P])
+    unittest.addModuleCleanup(P.setcontext, ORIGINAL_CONTEXT[P])
 
 
 if __name__ == '__main__':
-    test_main()
+    unittest.main()

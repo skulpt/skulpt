@@ -10,8 +10,12 @@ function run(...args) {
     }
 }
 
+function printHeading(title) {
+    console.log(`\n=== ${title} ===\n`);
+}
+
 function runJSBITests() {
-    console.log("Testing numeric modules with JSBI");
+    printHeading("Numeric tests with JSBI");
     for (const moduleName of ["test_int", "test_pow", "test_fractions", "test_decimal"]) {
         run(
             "--require",
@@ -25,7 +29,7 @@ function runJSBITests() {
 }
 
 function runUnicodeFallbackTests() {
-    console.log("Testing with Unicode property escapes disabled");
+    printHeading("Unicode fallback tests");
     // Each suite starts in a fresh process with the capability disabled before startup.
     for (const moduleName of ["test_re", "skulpt_re", "string_functions"]) {
         run(
@@ -40,6 +44,7 @@ function runUnicodeFallbackTests() {
 }
 
 function runRuntimeTests() {
+    printHeading("Build and runtime checks");
     const webpack = require.resolve("webpack/bin/webpack.js");
     const outputDir = "support/tmp/runtime-test";
     for (const mode of ["production", "development"]) {
@@ -56,6 +61,7 @@ function runRuntimeTests() {
 }
 
 function runModernTests() {
+    printHeading("Modern build checks");
     run("test/build-variants.js");
     const productionCore = "dist/modern/skulpt.modern.min.js";
     run("test/testunit.js", "--python3", "--core", productionCore);
@@ -70,9 +76,12 @@ function runModernTests() {
 switch (process.argv[2] || "all") {
     case "all":
         runJSBITests();
+        printHeading("Suspension and script tests");
         run("test/generator_suspensions.js");
         run("test/testwrapper.js");
+        printHeading("Python 2 unit tests");
         run("test/testunit.js");
+        printHeading("Python 3 unit tests");
         run("test/testunit.js", "--python3");
         runUnicodeFallbackTests();
         runRuntimeTests();

@@ -35,8 +35,6 @@ function rununits(myDiv, pyver) {
         return Sk.builtinFiles["files"][f];
     };
 
-    const regexp = /.*Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)/g;
-
     Sk.buf = "";
 
     Sk.configure({
@@ -58,10 +56,13 @@ function rununits(myDiv, pyver) {
         modules.push([test, module]);
     }
 
-    function runtest (tests, passed, failed) {
+    function runtest (tests, collected, started, failedModules) {
         if (tests.length == 0) {
-            outf("Summary");
-            outf("Passed: " + passed + " Failed: " + failed);
+            outf("Summary\n");
+            outf("Collected: " + collected + " Started: " + started + " Failed modules: " + failedModules.length + "\n");
+            for (const file of failedModules) {
+                outf("  " + file + "\n");
+            }
             return;
         }
 
@@ -74,36 +75,25 @@ function rununits(myDiv, pyver) {
         outf(test[0] + "\n");
 
         // Run test
-        Sk.misceval.asyncToPromise(function() {
-            return Sk.importMain(test[1], false, true);
-        }).then(function () {
-            var found;
-
-            // Print results
+        runUnitModule(test[1]).then(function ([moduleCollected, moduleStarted, successful]) {
             outf(Sk.buf);
-
-            // Check for internal errors
-            if (Sk.buf.indexOf("Uncaught Error in") != -1) {
-                outf("Internal uncaught errors, failed: 1\n\n");
-                failed += 1;
-            }
-
-            // Update results
-            while ((found = regexp.exec(Sk.buf)) !== null) {
-                passed += parseInt(found[1]);
-                failed += parseInt(found[2]);
+            collected += moduleCollected;
+            started += moduleStarted;
+            if (!successful) {
+                failedModules.push(test[0]);
             }
 
             // Let the browser update the DOM
             return new Promise(function (resolve) { setTimeout(resolve, 0); });
         }).catch(function (err) {
-            failed += 1;
+            failedModules.push(test[0]);
+            outf(Sk.buf);
             outf("UNCAUGHT EXCEPTION: " + err);
             outf(err.stack);
         }).then(function () {
-            runtest(tests, passed, failed)
+            runtest(tests, collected, started, failedModules);
         });
     }
 
-    runtest(modules, 0, 0);
+    runtest(modules, 0, 0, []);
 }

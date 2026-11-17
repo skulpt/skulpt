@@ -184,10 +184,7 @@ class _AssertRaisesContext(object):
             res = False
             feedback = "{} not raised".format(exp_exc)
         elif not issubclass(exc_type, self.expected):
-            if not self.test_case._legacy_assertions:
-                return False
-            res = False
-            feedback = "Expected {} but got {}".format(exp_exc, act_exc)
+            return self.test_case._handle_unexpected_exception(act_exc, exp_exc)
 
         elif self.expected_regex is not None:
             expected_regex = self.expected_regex
@@ -271,7 +268,6 @@ class TestResult(object):
 class TestCase(object):
     failureException = AssertionError
     longMessage = True
-    _legacy_assertions = False
 
     def __init_subclass__(cls, **kwargs):
         cls._class_cleanups = []
@@ -288,15 +284,6 @@ class TestCase(object):
         self._expected_subtest_failure = None
         if methodName != 'runTest' and not hasattr(self, methodName):
             raise ValueError('no such test method in %s: %s' % (self.__class__, methodName))
-        self.numPassed = 0
-        self.numFailed = 0
-        self.numSkipped = 0
-        self.assertPassed = 0
-        self.assertFailed = 0
-        self.verbosity = 1
-        self.tlist = []
-        if methodName == 'runTest':
-            self.tlist = [getattr(self, name) for name in dir(self) if name.startswith('test')]
 
     def id(self):
         return '%s.%s' % (_class_name(type(self)), self._testMethodName)
@@ -344,67 +331,6 @@ class TestCase(object):
     @classmethod
     def doClassCleanups(cls):
         cls.tearDown_exceptions = _run_scope_cleanups(cls._class_cleanups)
-    
-    def cleanName(self,funcName):
-        return funcName.__func__.__name__
-
-    def main(self):
-        # The browser and standalone harnesses consume this runner's counters.
-        previous = self._legacy_assertions
-        self._legacy_assertions = True
-        try:
-            self._run_legacy_tests()
-        finally:
-            self._legacy_assertions = previous
-
-    def _run_legacy_tests(self):
-
-        for func in self.tlist:
-            # Check if test is marked as skipped
-            # Need to check __func__ for bound methods to get the decorated function attributes
-            underlying_func = getattr(func, '__func__', func)
-            skip_class = getattr(self.__class__, '__unittest_skip__', False)
-            if skip_class or getattr(underlying_func, '__unittest_skip__', False):
-                skipped_item = self.__class__ if skip_class else underlying_func
-                skip_reason = getattr(skipped_item, '__unittest_skip_why__', '')
-                self.numSkipped += 1
-                if self.verbosity > 1:
-                    print('Skipped %s: %s' % (self.cleanName(func), skip_reason))
-                continue
-
-            if self.verbosity > 1:
-                print('Running %s' % self.cleanName(func))
-            self.assertPassed = 0
-            self.assertFailed = 0
-            skip_error = None
-            try:
-                self.setUp()
-                try:
-                    func()
-                except SkipTest as e:
-                    skip_error = e
-                self.tearDown()
-            except SkipTest as e:
-                skip_error = e
-            except Exception as e:
-                self.assertFailed += 1
-                self.numFailed += 1
-                print('Test threw exception in %s (%s)' % (self.cleanName(func), e))
-                self._run_legacy_cleanups()
-                continue
-
-            if not self._run_legacy_cleanups():
-                self.assertFailed += 1
-            if self.assertFailed:
-                self.numFailed += 1
-                print('Tests failed in %s ' % self.cleanName(func))
-            elif skip_error is not None:
-                self.numSkipped += 1
-                if self.verbosity > 1:
-                    print('Skipped %s: %s' % (self.cleanName(func), str(skip_error)))
-            else:
-                self.numPassed += 1
-        self.showSummary()
 
     def defaultTestResult(self):
         return TestResult()
@@ -427,19 +353,6 @@ class TestCase(object):
                 success = False
         if self._active_result is not None:
             self._cleanups_ok = self._cleanups_ok and success
-        return success
-
-    def _run_legacy_cleanups(self):
-        if not self._cleanups:
-            return True
-        result = TestResult()
-        self._active_result = result
-        try:
-            success = self.doCleanups()
-        finally:
-            self._active_result = None
-        for _, message in result.failures + result.errors:
-            print(message)
         return success
 
     def _run_test_part(self, function, result, expecting_failure=False):
@@ -618,7 +531,7 @@ class TestCase(object):
         res = actual==expected
         if not res:
             msg = self._formatMessage(msg, "Expected %s to equal %s" % (str(actual),str(expected)))
-        self.appendResult(res, actual ,expected, msg)
+        self.appendResult(res, actual, expected, msg)
 
     def assertNotEqual(self, actual, expected, msg=None):
         res = actual != expected
@@ -762,14 +675,14 @@ class TestCase(object):
             msg = self._formatMessage(msg, "Expected %s to be <= %s" % (str(a),str(b)))
         self.appendResult(res, a, b, msg)
 
-    def appendResult(self,res,actual,expected,feedback):
-        if res:
-            self.assertPassed += 1
-        elif self._legacy_assertions:
-            print('Fail: ' + feedback)
-            self.assertFailed += 1
-        else:
+    def appendResult(self, res, actual, expected, feedback):
+        # TestCaseGui renders both values for every assertion, including passes.
+        if not res:
             raise self.failureException(feedback)
+
+    def _handle_unexpected_exception(self, actual, expected):
+        # Returning False from the assertRaises context propagates the original exception.
+        return False
 
     def assertRaises(self, expected_exception, *args, **kwargs):
         context = _AssertRaisesContext(expected_exception, self)
@@ -785,38 +698,27 @@ class TestCase(object):
         return context.handle('assertRaisesRegex', args, kwargs)
 
     def fail(self, msg=None):
-        if not self._legacy_assertions:
-            raise self.failureException(msg)
-        if msg is None:
-            msg = 'Fail'
-        else:
-            msg = 'Fail: ' + msg
-        print(msg)
-        self.assertFailed += 1
+        raise self.failureException(msg)
 
     def skipTest(self, reason):
         """Skip this test."""
         raise SkipTest(reason)
 
-    def showSummary(self):
-        # don't divde by zero
-        # pct = self.numPassed / (self.numPassed+self.numFailed) * 100
-        total = self.numPassed + self.numFailed + self.numSkipped
-        print("Ran %d tests, passed: %d failed: %d skipped: %d\n" % (total,
-                                               self.numPassed, self.numFailed, self.numSkipped))
 
-
-
-def main(verbosity=1):
-    glob = globals() # globals() still needs work
-    for name in glob:
-        if type(glob[name]) == type and issubclass(glob[name], TestCase):
-            try:
-                tc = glob[name]()
-                tc.verbosity = verbosity
-                tc.main()
-            except:
-                print("Uncaught Error in: ", name)
+def main(module='__main__', verbosity=1, exit=False, testRunner=None):
+    """Run a module's tests, with optional SystemExit for standalone callers."""
+    # Embedded callers use the result to decide how to handle failures.
+    if isinstance(module, str):
+        module = __import__(module, fromlist=['__name__'])
+    suite = defaultTestLoader.loadTestsFromModule(module)
+    if testRunner is None:
+        testRunner = TextTestRunner(verbosity=verbosity)
+    elif isinstance(testRunner, type):
+        testRunner = testRunner(verbosity=verbosity)
+    result = testRunner.run(suite)
+    if exit:
+        raise SystemExit(0 if result.wasSuccessful() else 1)
+    return result
 
 
 from .suite import TestSuite

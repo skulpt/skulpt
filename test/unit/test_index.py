@@ -1,5 +1,4 @@
 import unittest
-from test import test_support
 import operator
 #from sys import maxint
 #maxsize = test_support.MAX_Py_ssize_t
@@ -303,25 +302,10 @@ class StringTestCase(SeqTestCase):
 #         self.assertRaises(OverflowError, lambda: "a" * self.neg)
 
 
-def test_main():
-    test_support.run_unittest(
-        BaseTestCase,
-        ListTestCase,
-        TupleTestCase,
-        # ByteArrayTestCase,
-        StringTestCase,
-        # UnicodeTestCase,
-        # ClassicSeqTestCase,
-        # NewSeqTestCase,
-        # XRangeTestCase,
-        # OverflowTestCase,
-    )
-    # with test_support.check_py3k_warnings():
-    #     test_support.run_unittest(
-    #         ClassicSeqDeprecatedTestCase,
-    #         NewSeqDeprecatedTestCase,
-    #     )
+def load_tests(loader, tests, pattern):
+    return unittest.TestSuite(loader.loadTestsFromTestCase(case)
+                              for case in (BaseTestCase, ListTestCase, TupleTestCase, StringTestCase))
 
 
 if __name__ == "__main__":
-    test_main()
+    unittest.main()

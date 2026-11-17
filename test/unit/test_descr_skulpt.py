@@ -43,7 +43,7 @@ class FucntionAndMethodDescriptorTests(unittest.TestCase):
 
         t = Test()
 
-        self.assertTrue(str(t.test).startswith('<bound method Test.test of <__main__.Test object'))
+        self.assertTrue(str(t.test).startswith('<bound method Test.test of <%s.Test object' % __name__))
 
         # when __dict__ is implemented
         # self.assertTrue(str(Test.__dict__['test'].startwith('<function test'))

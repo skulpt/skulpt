@@ -1,10 +1,11 @@
 const fs = require('fs');
 const path = require('path');
 const program = require('commander');
+const runUnitModule = require('../support/run/unittest');
 const reqskulpt = require('../support/run/require-skulpt').requireSkulpt;
 
 function test (python3, opt, module = undefined, core = undefined) {
-    var startime, endtime, elapsed;
+    var starttime, endtime, elapsed;
 
     // Import Skulpt
     var skulpt = core ? require(path.resolve(core)) : reqskulpt(false);
@@ -24,8 +25,6 @@ function test (python3, opt, module = undefined, core = undefined) {
         dir = "test/unit";
         pyver = Sk.python2;
     }
-
-    const regexp = /.*Ran.*passed:\s+(\d+)\s+failed:\s+(\d+)/g;
 
     // Configure Skulpt to run unit tests
     Sk.configure({
@@ -63,14 +62,17 @@ function test (python3, opt, module = undefined, core = undefined) {
 
     starttime = Date.now();
 
-    function runtest (tests, passed, failed) {
+    function runtest (tests, collected, started, failedModules) {
         if (tests.length == 0) {
             endtime = Date.now();
             elapsed = (endtime - starttime) / 1000;
             console.log("Summary");
-            console.log("Passed: " + passed + " Failed: " + failed);
+            console.log("Collected: " + collected + " Started: " + started + " Failed modules: " + failedModules.length);
+            for (const file of failedModules) {
+                console.log("  " + file);
+            }
             console.log("Total run time for all unit tests: " + elapsed.toString() + "s");
-            if (failed > 0) {
+            if (failedModules.length > 0) {
                 process.exit(1);
             }
             return;
@@ -85,35 +87,29 @@ function test (python3, opt, module = undefined, core = undefined) {
         console.log(test[0] + "\n");
 
         // Run test
-        Sk.misceval.asyncToPromise(function() {
-            return Sk.importMain(test[1], false, true);
-        }).then(function () {
-            var found;
-
-            // Print results
+        runUnitModule(test[1]).then(function ([moduleCollected, moduleStarted, successful]) {
             console.log(Sk.buf);
-
-            // Check for internal errors
-            if (Sk.buf.indexOf("Uncaught Error in") != -1) {
-                console.log("Internal uncaught errors, failed: 1\n");
-                failed += 1;
-            }
-
-            // Update results
-            while ((found = regexp.exec(Sk.buf)) !== null) {
-                passed += parseInt(found[1]);
-                failed += parseInt(found[2]);
+            collected += moduleCollected;
+            started += moduleStarted;
+            if (!successful) {
+                failedModules.push(test[0]);
             }
         }).catch(function (err) {
-            failed += 1;
+            failedModules.push(test[0]);
+            console.log(Sk.buf);
             console.log("UNCAUGHT EXCEPTION: " + err);
             console.log(err.stack);
         }).then(function () {
-            runtest(tests, passed, failed)
+            runtest(tests, collected, started, failedModules);
         });
     }
 
-    runtest(modules, 0, 0);
+    if (modules.length === 0) {
+        console.error("No test modules matched");
+        process.exitCode = 1;
+        return;
+    }
+    runtest(modules, 0, 0, []);
 }
 
 program
