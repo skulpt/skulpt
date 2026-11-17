@@ -16,18 +16,31 @@ function contextlib_mod(dependencies) {
         bool: { false$: pyFalse },
         none: { none$: pyNone },
         tuple: pyTuple,
+        AttributeError,
+        BaseException,
+        ExternalError,
         RuntimeError,
+        TypeError,
+        getExcInfo,
         StopIteration,
         checkNone,
         issubclass,
     } = Sk.builtin;
 
-    const { callsimOrSuspendArray: pyCallOrSuspend, chain, tryCatch } = Sk.misceval;
+    const {
+        callsimArray: pyCall,
+        callsimOrSuspendArray: pyCallOrSuspend,
+        chain,
+        isTrue,
+        iterFor,
+        tryCatch,
+    } = Sk.misceval;
 
     const {
         setUpModuleMethods,
         buildNativeClass,
         iternext,
+        checkNoArgs,
         checkOneArg,
         checkNoKwargs,
         copyKeywordsToNamedArgs,
@@ -41,6 +54,7 @@ function contextlib_mod(dependencies) {
         __all__: toPy([
             "contextmanager",
             "closing",
+            "ExitStack",
             "nullcontext",
             "suppress",
         ]),
@@ -228,6 +242,148 @@ function contextlib_mod(dependencies) {
         __exit__(type, value, tb) {
             return chain(objectGetAttr(this.$gen, closeStr, true), (close) =>
                 chain(pyCallOrSuspend(close), () => pyNone));
+        },
+    });
+
+    function lookupContextMethod(type, name) {
+        return tryCatch(
+            () => type.tp$getattr(name, true),
+            (error) => {
+                if (!(error instanceof AttributeError)) {
+                    throw error;
+                }
+            }
+        );
+    }
+
+    function requireContextMethod(type, name) {
+        return chain(lookupContextMethod(type, name), (method) => {
+            if (method !== undefined) {
+                return method;
+            }
+            return chain(objectGetAttr(type, pyStr.$module, true), (module) =>
+                chain(objectGetAttr(type, pyStr.$qualname, true), (qualname) => {
+                    const error = new TypeError(
+                        "'" + module.v + "." + qualname.v + "' object does not support the context manager protocol"
+                    );
+                    error.$suppressContext = true;
+                    throw error;
+                })
+            );
+        });
+    }
+
+    function registerExit(stack, exit, manager) {
+        const callback = manager === undefined ? exit : pyCall(Sk.builtin.method, [exit, manager]);
+        stack.$exitCallbacks.push((excDetails) => pyCallOrSuspend(callback, excDetails));
+    }
+
+    contextlib.ExitStack = buildNativeContextManager("contextlib.ExitStack", {
+        __init__(args, kwargs) {
+            checkNoArgs("ExitStack", args, kwargs);
+            this.$exitCallbacks = [];
+        },
+        __enter__() {
+            return this;
+        },
+        __exit__(type, exc, traceback) {
+            const receivedException = exc !== pyNone;
+            let pendingRaise = false;
+
+            // Read the live stack on each step: callbacks can register more work
+            // or transfer the remaining callbacks via pop_all().
+            const callbacks = { tp$iternext: () => this.$exitCallbacks.pop() };
+            const result = iterFor(callbacks, (callback) => tryCatch(
+                () => chain(callback(exc === pyNone ? [pyNone, pyNone, pyNone] : getExcInfo(exc).v), (suppress) => {
+                    if (isTrue(suppress)) {
+                        exc = pyNone;
+                        pendingRaise = false;
+                    }
+                }),
+                (error) => {
+                    // Match compiled exception handlers for errors from JavaScript.
+                    // Implicit exception chaining requires runtime support.
+                    exc = error instanceof BaseException ? error : new ExternalError(error);
+                    pendingRaise = true;
+                }
+            ));
+
+            return chain(result, () => {
+                if (pendingRaise) {
+                    throw exc;
+                }
+                return new pyBool(receivedException && exc === pyNone);
+            });
+        },
+        methods: {
+            pop_all: {
+                $meth() {
+                    return chain(pyCallOrSuspend(this.ob$type), (newStack) => {
+                        newStack.$exitCallbacks = this.$exitCallbacks;
+                        this.$exitCallbacks = [];
+                        return newStack;
+                    });
+                },
+                $flags: { NoArgs: true },
+            },
+            push: {
+                $meth(exit) {
+                    return chain(lookupContextMethod(exit.ob$type, pyStr.$exit), (method) => {
+                        if (method === undefined) {
+                            registerExit(this, exit);
+                        } else {
+                            registerExit(this, method, exit);
+                        }
+                        return exit;
+                    });
+                },
+                $flags: { NamedArgs: ["exit"] },
+            },
+            enter_context: {
+                $meth(manager) {
+                    // CPython takes the methods from the type and passes the
+                    // manager explicitly, bypassing instance attributes.
+                    const type = manager.ob$type;
+                    let enter;
+                    return chain(
+                        requireContextMethod(type, pyStr.$enter),
+                        (method) => {
+                            enter = method;
+                            return requireContextMethod(type, pyStr.$exit);
+                        },
+                        (exit) => chain(pyCallOrSuspend(enter, [manager]), (result) => {
+                            registerExit(this, exit, manager);
+                            return result;
+                        })
+                    );
+                },
+                $flags: { NamedArgs: ["cm"] },
+            },
+            callback: {
+                $meth(args, kwargs) {
+                    if (args.length === 0) {
+                        throw new TypeError("ExitStack.callback() requires a callback");
+                    }
+                    const callback = args[0];
+                    const callbackArgs = args.slice(1);
+                    // A callback registered here cannot suppress an exception.
+                    this.$exitCallbacks.push(() =>
+                        chain(pyCallOrSuspend(callback, callbackArgs, kwargs), () => pyNone)
+                    );
+                    return callback;
+                },
+                $flags: { FastCall: true },
+            },
+            close: {
+                $meth() {
+                    return chain(
+                        objectGetAttr(this, pyStr.$exit, true),
+                        (exit) => pyCallOrSuspend(exit, [pyNone, pyNone, pyNone]),
+                        () => pyNone
+                    );
+                },
+                $flags: { NoArgs: true },
+            },
         },
     });
 
