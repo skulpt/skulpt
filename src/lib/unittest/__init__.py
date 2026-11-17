@@ -14,6 +14,53 @@ class SkipTest(Exception):
     pass
 
 
+def _register_cleanup(cleanups, args, kwargs):
+    if not args:
+        raise TypeError('a cleanup function is required')
+    cleanups.append((args[0], args[1:], kwargs))
+
+
+def _enter_context(cm, add_cleanup):
+    cls = type(cm)
+    try:
+        enter = cls.__enter__
+        exit = cls.__exit__
+    except AttributeError:
+        raise TypeError('%r does not support the context manager protocol' % cls)
+    value = enter(cm)
+    add_cleanup(exit, cm, None, None, None)
+    return value
+
+
+_module_cleanups = []
+
+
+def addModuleCleanup(*args, **kwargs):
+    _register_cleanup(_module_cleanups, args, kwargs)
+
+
+def enterModuleContext(cm):
+    return _enter_context(cm, addModuleCleanup)
+
+
+def _run_scope_cleanups(cleanups):
+    errors = []
+    while cleanups:
+        function, args, kwargs = cleanups.pop()
+        try:
+            function(*args, **kwargs)
+        except Exception as error:
+            errors.append((type(error), error, error.__traceback__))
+    return errors
+
+
+def doModuleCleanups():
+    errors = _run_scope_cleanups(_module_cleanups)
+    if errors:
+        _, error, traceback = errors[0]
+        raise error.with_traceback(traceback)
+
+
 def skip(reason):
     """
     Unconditionally skip a test.
@@ -219,6 +266,10 @@ class TestCase(object):
     failureException = AssertionError
     _legacy_assertions = False
 
+    def __init_subclass__(cls, **kwargs):
+        cls._class_cleanups = []
+        super(TestCase, cls).__init_subclass__(**kwargs)
+
     def __init__(self, methodName='runTest'):
         self._testMethodName = methodName
         self._cleanups = []
@@ -245,6 +296,26 @@ class TestCase(object):
 
     def tearDown(self):
         pass
+
+    @classmethod
+    def setUpClass(cls):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        pass
+
+    @classmethod
+    def addClassCleanup(cls, *args, **kwargs):
+        _register_cleanup(cls._class_cleanups, args, kwargs)
+
+    @classmethod
+    def enterClassContext(cls, cm):
+        return _enter_context(cm, cls.addClassCleanup)
+
+    @classmethod
+    def doClassCleanups(cls):
+        cls.tearDown_exceptions = _run_scope_cleanups(cls._class_cleanups)
     
     def cleanName(self,funcName):
         return funcName.__func__.__name__
@@ -311,20 +382,10 @@ class TestCase(object):
         return TestResult()
 
     def addCleanup(self, *args, **kwargs):
-        if not args:
-            raise TypeError('addCleanup() requires a cleanup function')
-        self._cleanups.append((args[0], args[1:], kwargs))
+        _register_cleanup(self._cleanups, args, kwargs)
 
     def enterContext(self, cm):
-        cls = type(cm)
-        try:
-            enter = cls.__enter__
-            exit = cls.__exit__
-        except AttributeError:
-            raise TypeError('%r does not support the context manager protocol' % cls)
-        value = enter(cm)
-        self.addCleanup(exit, cm, None, None, None)
-        return value
+        return _enter_context(cm, self.addCleanup)
 
     def doCleanups(self):
         result = self._active_result
