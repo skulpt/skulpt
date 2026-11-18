@@ -184,6 +184,39 @@ class ExceptionTest(unittest.TestCase):
         self.assertEqual(cm.exception.value.value, 2)
 
 
+class TestSkulptRegressions(unittest.TestCase):
+    def test_return_value_before_unreachable_yield(self):
+        # Issue #1379: a later yield must not reject a Python 3 return value.
+        def demo_generator():
+            yield 1
+            yield 2
+            return 'StopIteration description'
+            yield 3
+
+        gen = demo_generator()
+        self.assertEqual(next(gen), 1)
+        self.assertEqual(next(gen), 2)
+        with self.assertRaises(StopIteration) as caught:
+            next(gen)
+        self.assertEqual(caught.exception.value, 'StopIteration description')
+        self.assertEqual(str(caught.exception), 'StopIteration description')
+        with self.assertRaises(StopIteration) as caught:
+            next(gen)
+        self.assertIsNone(caught.exception.value)
+
+    def test_return_value_before_yield_from(self):
+        # The same symbol-table restriction also applied to yield from.
+        def child(value):
+            return value
+            yield from ()
+
+        def parent(value):
+            yield (yield from child(value))
+
+        for value in (None, 1, (2,), StopIteration(3)):
+            self.assertEqual(list(parent(value)), [value])
+
+
 class TestPEP479(unittest.TestCase):
     def test_stopiteration_wrapping(self):
         def f():
