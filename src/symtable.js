@@ -790,7 +790,7 @@ SymbolTable.prototype.visitExpr = function (e) {
                 this.visitExpr(e.value);
             }
             this.cur.generator = true;
-            if (this.cur.returnsValue) {
+            if (!Sk.__future__.python3 && this.cur.returnsValue) {
                 throw new Sk.builtin.SyntaxError("'return' with argument inside generator", this.filename);
             }
             break;
