@@ -23,11 +23,10 @@ var $builtinmodule = function (name) {
             int_: pyInt,
             str: pyStr,
             func: pyFunc,
-            object: pyObject,
             none: { none$: pyNone },
             TypeError: pyTypeError,
             ValueError,
-            OverFlowError,
+            OverflowError,
             checkNone,
             checkNumber,
             checkComplex,
@@ -39,8 +38,9 @@ var $builtinmodule = function (name) {
             chain: chainOrSuspend,
             isTrue,
             iterFor,
-            retryOptionSuspensionOrThrow,
+            retryOptionalSuspensionOrThrow,
             richCompareBool,
+            tryCatch,
             asIndexSized,
             isIndex,
             objectRepr,
@@ -106,38 +106,48 @@ var $builtinmodule = function (name) {
                 let [iterable, n, strict] = copyKeywordsToNamedArgs("batched", [null, null, "strict"], args, kws, [
                     pyFalse,
                 ]);
-                n = asIndexSized(n, OverFlowError);
+                n = asIndexSized(n, OverflowError);
                 if (n < 1) {
                     throw new ValueError("n must be at least one");
                 }
 
-                const iter = pyIter(iterable);
-                return new mod.batched(iter, n, isTrue(strict));
+                return new mod.batched(pyIter(iterable), n, isTrue(strict));
             },
             tp$doc: "Batch data into tuples of length n. The last batch may be shorter than n.",
         },
         iternext(canSuspend) {
-            let i = 0;
-            const result = [];
-            const rv = chainOrSuspend(
-                iterFor(this.it, (item) => {
-                    i++;
-                    result.push(item);
-                    if (i === this.n) {
-                        return Break();
-                    }
-                }),
-                () => {
-                    if (i == 0) {
-                        return;
-                    }
-                    if (i < this.n && this.strict) {
-                        throw new ValueError("batched(): incomplete batch");
-                    }
-                    return new pyTuple(result);
+            if (this.it === null) {
+                return;
+            }
+            const batch = [];
+            const result = tryCatch(
+                () =>
+                    chainOrSuspend(
+                        iterFor(this.it, (item) => {
+                            batch.push(item);
+                            if (batch.length === this.n) {
+                                return Break();
+                            }
+                        }),
+                        () => {
+                            if (batch.length < this.n) {
+                                this.it = null;
+                                if (!batch.length) {
+                                    return;
+                                }
+                                if (this.strict) {
+                                    throw new ValueError("batched(): incomplete batch");
+                                }
+                            }
+                            return new pyTuple(batch);
+                        }
+                    ),
+                (error) => {
+                    this.it = null;
+                    throw error;
                 }
             );
-            return canSuspend ? rv : retryOptionSuspensionOrThrow(rv);
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
     });
 
@@ -145,32 +155,26 @@ var $builtinmodule = function (name) {
         constructor: function chain(iterables) {
             this.iterables = iterables;
             this.current_it = null;
-            this.tp$iternext = () => {
-                // different initial iteration
-                this.tp$iternext = this.constructor.prototype.tp$iternext;
-                this.current_it = this.iterables.tp$iternext();
-                if (this.current_it === undefined) {
-                    this.tp$iternext = () => undefined;
-                    return;
-                }
-                this.current_it = pyIter(this.current_it);
-                return this.tp$iternext();
-            };
         },
-        iternext(canSuspend) {
-            let element;
-            while (element === undefined) {
-                element = this.current_it.tp$iternext();
-                if (element === undefined) {
-                    this.current_it = this.iterables.tp$iternext();
-                    if (this.current_it === undefined) {
-                        this.tp$iternext = () => undefined;
-                        return;
+        iternext() {
+            while (this.iterables !== null) {
+                if (this.current_it === null) {
+                    let iterable;
+                    try {
+                        iterable = this.iterables.tp$iternext();
+                        if (iterable === undefined) {
+                            this.iterables = null;
+                            return;
+                        }
+                        this.current_it = pyIter(iterable);
+                    } catch (error) {
+                        this.iterables = null;
+                        throw error;
                     }
-                    this.current_it = pyIter(this.current_it);
-                } else {
-                    return element;
                 }
+                const item = this.current_it.tp$iternext();
+                if (item !== undefined) return item;
+                this.current_it = null;
             }
         },
         slots: {
@@ -213,7 +217,7 @@ var $builtinmodule = function (name) {
         let iterable, r;
         [iterable, r] = copyKeywordsToNamedArgs(combinations_proto.tp$name, ["iterable", "r"], args, kwargs, []);
         const pool = arrayFromIterable(iterable);
-        r = asIndexSized(r, OverFlowError);
+        r = asIndexSized(r, OverflowError);
         if (r < 0) {
             throw new ValueError("r must be non-negative");
         }
@@ -316,14 +320,12 @@ var $builtinmodule = function (name) {
             ((this.data = data), (this.selectors = selectors));
         },
         iternext() {
-            let d = this.data.tp$iternext();
-            let s = this.selectors.tp$iternext();
-            while (d !== undefined && s !== undefined) {
-                if (isTrue(s)) {
-                    return d;
-                }
-                d = this.data.tp$iternext();
-                s = this.selectors.tp$iternext();
+            while (true) {
+                const item = this.data.tp$iternext();
+                if (item === undefined) return;
+                const selector = this.selectors.tp$iternext();
+                if (selector === undefined) return;
+                if (isTrue(selector)) return item;
             }
         },
         slots: {
@@ -333,7 +335,7 @@ var $builtinmodule = function (name) {
                 [data, selectors] = copyKeywordsToNamedArgs("compress", ["data", "selectors"], args, kwargs, []);
                 data = pyIter(data);
                 selectors = pyIter(selectors);
-                if (this === mod.count.prototype) {
+                if (this === mod.compress.prototype) {
                     return new mod.compress(data, selectors);
                 } else {
                     const instance = new this.constructor();
@@ -502,22 +504,20 @@ var $builtinmodule = function (name) {
     });
 
     mod._grouper = buildIteratorClass("itertools._grouper", {
-        constructor: function _grouper(groupby, id) {
+        constructor: function _grouper(groupby, key) {
             this.groupby = groupby;
-            this.tgtkey = groupby.tgtkey;
-            this.id = groupby.id;
+            this.key = key;
         },
-        iternext(canSuspend) {
-            const compare = richCompareBool(this.groupby.currkey, this.tgtkey, "Eq");
-            if (this.groupby.id === this.id && compare) {
-                let tmp = this.groupby.currval;
-                this.groupby.currval = this.groupby.iter.tp$iternext();
-                if (this.groupby.currval !== undefined) {
-                    this.groupby.currkey = pyCall(this.groupby.keyf, [this.groupby.currval]);
-                }
-                return tmp;
+        iternext() {
+            const parent = this.groupby;
+            if (parent.grouper !== this) return;
+            const key = parent.currval === undefined ? parent.$advance() : parent.currkey;
+            if (key === undefined || parent.grouper !== this) return;
+            if (this.key === key || richCompareBool(this.key, key, "Eq")) {
+                const item = parent.currval;
+                parent.currval = parent.currkey = undefined;
+                return item;
             }
-            return;
         },
     });
 
@@ -525,24 +525,41 @@ var $builtinmodule = function (name) {
         constructor: function groupby(iter, keyf) {
             this.iter = iter;
             this.keyf = keyf;
-            this.currval;
-            this.currkey = this.tgtkey = new pyObject();
-            this.id;
+            // The parent buffers one item. Its active grouper consumes it, or the parent skips it.
+            this.currval = this.currkey = this.tgtkey = undefined;
+            this.grouper = null;
         },
-        iternext(canSuspend) {
-            this.id = new Object();
-            let compare = richCompareBool(this.currkey, this.tgtkey, "Eq");
-            while (compare) {
-                this.currval = this.iter.tp$iternext();
-                if (this.currval === undefined) {
-                    return;
+        iternext() {
+            this.grouper = null;
+            return this.$nextGroup(this.currval === undefined ? this.$advance() : this.currkey);
+        },
+        proto: {
+            $advance() {
+                const item = this.iter.tp$iternext();
+                if (item !== undefined) return this.$setCurrent(item);
+            },
+            $setCurrent(item) {
+                const key = this.keyf === undefined ? item : pyCall(this.keyf, [item]);
+                this.currval = item;
+                this.currkey = key;
+                return key;
+            },
+            $nextGroup(key) {
+                while (key !== undefined) {
+                    if (
+                        this.tgtkey === undefined ||
+                        !(this.tgtkey === key || richCompareBool(this.tgtkey, key, "Eq"))
+                    ) {
+                        return this.$startGroup();
+                    }
+                    key = this.$advance();
                 }
-                this.currkey = pyCall(this.keyf, [this.currval]);
-                compare = richCompareBool(this.currkey, this.tgtkey, "Eq");
-            }
-            this.tgtkey = this.currkey;
-            const grouper = new mod._grouper(this);
-            return new pyTuple([this.currkey, grouper]);
+            },
+            $startGroup() {
+                this.tgtkey = this.currkey;
+                this.grouper = new mod._grouper(this, this.tgtkey);
+                return new pyTuple([this.tgtkey, this.grouper]);
+            },
         },
         slots: {
             tp$doc: "groupby(iterable, key=None) -> make an iterator that returns consecutive\nkeys and groups from the iterable.  If the key function is not specified or\nis None, the element itself is used for grouping.\n",
@@ -550,7 +567,7 @@ var $builtinmodule = function (name) {
                 let iter, key;
                 [iter, key] = copyKeywordsToNamedArgs("groupby", ["iterable", "key"], args, kwargs, [pyNone]);
                 iter = pyIter(iter);
-                key = checkNone(key) ? new pyFunc((x) => x) : key;
+                key = checkNone(key) ? undefined : key;
                 if (this === mod.groupby.prototype) {
                     return new mod.groupby(iter, key);
                 } else {
@@ -565,42 +582,36 @@ var $builtinmodule = function (name) {
     mod.islice = buildIteratorClass("itertools.islice", {
         constructor: function islice(iter, start, stop, step) {
             this.iter = iter;
-            this.previt = start;
+            this.index = 0;
+            this.nextIndex = start;
             this.stop = stop;
             this.step = step;
-            // different first iteration
-            this.tp$iternext = () => {
-                this.tp$iternext = this.constructor.prototype.tp$iternext;
-                if (this.previt >= this.stop) {
-                    // consume generator up to stop and return
-                    for (let i = 0; i < this.stop; i++) {
-                        this.iter.tp$iternext();
-                    }
-                    return;
-                } else {
-                    //conusme generator up to start and yield
-                    for (let i = 0; i < this.previt; i++) {
-                        this.iter.tp$iternext();
-                    }
-                    return this.iter.tp$iternext();
-                }
-            };
         },
-        iternext(canSuspend) {
-            if (this.previt + this.step >= this.stop) {
-                // consume generator up to stop and return
-                for (let i = this.previt + 1; i < this.stop; i++) {
-                    this.previt += this.step;
-                    this.iter.tp$iternext();
+        iternext() {
+            if (this.iter === null) return;
+            try {
+                while (this.index < this.nextIndex) {
+                    if (this.iter.tp$iternext() === undefined) {
+                        this.iter = null;
+                        return;
+                    }
+                    this.index++;
                 }
-                return;
-            } else {
-                // consume generator up to previt + step and yield
-                for (let i = this.previt + 1; i < this.previt + this.step; i++) {
-                    this.iter.tp$iternext();
+                if (this.index >= this.stop) {
+                    this.iter = null;
+                    return;
                 }
-                this.previt += this.step;
-                return this.iter.tp$iternext();
+                const item = this.iter.tp$iternext();
+                if (item === undefined) {
+                    this.iter = null;
+                    return;
+                }
+                this.index++;
+                this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
+                return item;
+            } catch (error) {
+                this.iter = null;
+                throw error;
             }
         },
         slots: {
@@ -700,7 +711,7 @@ var $builtinmodule = function (name) {
                 let iterable, r;
                 [iterable, r] = copyKeywordsToNamedArgs("permutations", ["iterable", "r"], args, kwargs, [pyNone]);
                 const pool = arrayFromIterable(iterable);
-                r = checkNone(r) ? pool.length : asIndexSized(r, OverFlowError);
+                r = checkNone(r) ? pool.length : asIndexSized(r, OverflowError);
                 if (r < 0) {
                     throw new ValueError("r must be non-negative");
                 }
@@ -729,36 +740,26 @@ var $builtinmodule = function (name) {
             },
             tp$doc: "Return an iterator of overlapping pairs taken from the input iterator.\n\n    s -> (s0,s1), (s1,s2), (s2, s3), ...",
         },
-        iternext(canSuspend) {
-            let old = this.old;
-            const setupIter = [null];
-            if (old === null) {
-                setupIter.push(() => this.it.tp$iternext(canSuspend));
-                setupIter.push((res) => {
-                    if (res === undefined) {
-                        return;
-                    }
-                    old = res;
-                    this.old = res;
-                });
-            }
-            const rv = chainOrSuspend(
-                ...setupIter,
-                () => {
-                    if (old !== null) {
-                        return this.it.tp$iternext(canSuspend);
-                    }
-                },
-                (res) => {
-                    if (res === undefined) {
-                        this.old = null;
-                        return;
-                    }
-                    this.old = res;
-                    return new pyTuple([old, res]);
+        iternext() {
+            if (this.it === null) return;
+            try {
+                const old = this.old === null ? this.it.tp$iternext() : this.old;
+                if (old === undefined || this.it === null) {
+                    this.it = this.old = null;
+                    return;
                 }
-            );
-            return canSuspend ? rv : retryOptionSuspensionOrThrow(rv);
+                this.old = old;
+                const item = this.it.tp$iternext();
+                if (item === undefined) {
+                    this.it = this.old = null;
+                    return;
+                }
+                this.old = item;
+                return new pyTuple([old, item]);
+            } catch (error) {
+                this.it = this.old = null;
+                throw error;
+            }
         },
     });
 
@@ -801,22 +802,16 @@ var $builtinmodule = function (name) {
             tp$doc: "product(*iterables, repeat=1) --> product object\n\nCartesian product of input iterables.  Equivalent to nested for-loops.\n\nFor example, product(A, B) returns the same as:  ((x,y) for x in A for y in B).\nThe leftmost iterators are in the outermost for-loop, so the output tuples\ncycle in a manner similar to an odometer (with the rightmost element changing\non every iteration).\n\nTo compute the product of an iterable with itself, specify the number\nof repetitions with the optional repeat keyword argument. For example,\nproduct(A, repeat=4) means the same as product(A, A, A, A).\n\nproduct('ab', range(3)) --> ('a',0) ('a',1) ('a',2) ('b',0) ('b',1) ('b',2)\nproduct((0,1), (0,1), (0,1)) --> (0,0,0) (0,0,1) (0,1,0) (0,1,1) (1,0,0) ...",
             tp$new(args, kwargs) {
                 let [repeat] = copyKeywordsToNamedArgs("product", ["repeat"], [], kwargs, [new pyInt(1)]);
-                repeat = asIndexSized(repeat, OverFlowError);
-                if (repeat < 0) {
-                    throw new ValueError("repeat argument cannot be negative");
-                }
-                const iterables = [];
-                for (let i = 0; i < args.length; i++) {
-                    iterables.push(arrayFromIterable(args[i])); // want each arg as an array
-                }
-                const pools = [].concat(...Array(repeat).fill(iterables));
-                if (this === mod.product.prototype) {
-                    return new mod.product(pools);
-                } else {
-                    const instance = new this.constructor();
-                    mod.product.call(instance, pools);
-                    return instance;
-                }
+                repeat = asIndexSized(repeat, OverflowError);
+                if (repeat < 0) throw new ValueError("repeat argument cannot be negative");
+                const iterables = repeat === 0 ? [] : args.map((iterable) => arrayFromIterable(iterable));
+                const n = iterables.length;
+                const pools = new Array(n * repeat);
+                for (let i = 0; i < pools.length; i++) pools[i] = iterables[i % n];
+                if (this === mod.product.prototype) return new mod.product(pools);
+                const instance = new this.constructor();
+                mod.product.call(instance, pools);
+                return instance;
             },
         },
     });
@@ -824,15 +819,18 @@ var $builtinmodule = function (name) {
     mod.repeat = buildIteratorClass("itertools.repeat", {
         constructor: function repeat(object, times) {
             this.object = object;
-            this.times = times;
+            this.times = times === undefined ? undefined : Math.max(0, times);
             if (times === undefined) {
                 this.tp$iternext = () => {
                     return this.object;
                 };
             }
         },
-        iternext(canSuspend) {
-            return this.times-- > 0 ? this.object : undefined;
+        iternext() {
+            if (this.times > 0) {
+                this.times--;
+                return this.object;
+            }
         },
         slots: {
             tp$doc: "repeat(object [,times]) -> create an iterator which returns the object\nfor the specified number of times.  If not specified, returns the object\nendlessly.",
@@ -840,7 +838,7 @@ var $builtinmodule = function (name) {
                 let object, times;
                 [object, times] = copyKeywordsToNamedArgs("repeat", ["object", "times"], args, kwargs, [null]);
                 if (times !== null) {
-                    times = asIndexSized(times, OverFlowError);
+                    times = asIndexSized(times, OverflowError);
                 } else {
                     times = undefined;
                 }
@@ -859,7 +857,7 @@ var $builtinmodule = function (name) {
             },
         },
         methods: {
-            __lenght_hint__: {
+            __length_hint__: {
                 $meth() {
                     if (this.times === undefined) {
                         throw new pyTypeError("len() of unsized object");
@@ -891,7 +889,6 @@ var $builtinmodule = function (name) {
                 let func, iter;
                 [func, iter] = copyKeywordsToNamedArgs("starmap", ["func", "iterable"], args, kwargs, []);
                 iter = pyIter(iter);
-                func = checkNone(func) ? pyBool : func;
                 if (this === mod.starmap.prototype) {
                     return new mod.starmap(func, iter);
                 } else {
@@ -948,25 +945,29 @@ var $builtinmodule = function (name) {
             this.fillvalue = fillvalue;
             this.active = this.iters.length;
         },
-        iternext(canSuspend) {
-            if (!this.active) {
-                return;
-            }
-            let val;
+        iternext() {
+            if (!this.active) return;
             const values = [];
-            for (let i = 0; i < this.iters.length; i++) {
-                val = this.iters[i].tp$iternext();
-                if (val === undefined) {
-                    this.active--;
-                    if (!this.active) {
-                        return;
+            try {
+                for (let i = 0; i < this.iters.length; i++) {
+                    const iter = this.iters[i];
+                    if (iter === null) {
+                        values.push(this.fillvalue);
+                        continue;
                     }
-                    this.iters[i] = new mod.repeat(this.fillvalue);
-                    val = this.fillvalue;
+                    let item = iter.tp$iternext();
+                    if (item === undefined) {
+                        this.iters[i] = null;
+                        if (--this.active === 0) return;
+                        item = this.fillvalue;
+                    }
+                    values.push(item);
                 }
-                values.push(val);
+                return new pyTuple(values);
+            } catch (error) {
+                this.active = 0;
+                throw error;
             }
-            return new pyTuple(values);
         },
         slots: {
             tp$doc: "zip_longest(iter1 [,iter2 [...]], [fillvalue=None]) --> zip_longest object\n\nReturn a zip_longest object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the longest iterable in the argument sequence\nis exhausted and then it raises StopIteration.  When the shorter iterables\nare exhausted, the fillvalue is substituted in their place.  The fillvalue\ndefaults to None or can be specified by a keyword argument.\n",

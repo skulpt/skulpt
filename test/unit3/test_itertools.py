@@ -857,7 +857,7 @@ class TestBasicOps(unittest.TestCase):
         s = [DummyCmp(), DummyCmp(), None]
 
         # __eq__ failure on outer object
-        # self.assertRaises(ExpectedError, gulp, s, func=id)
+        self.assertRaises(ExpectedError, gulp, s, func=id)
         # __eq__ failure on inner object
         self.assertRaises(ExpectedError, gulp, s)
 
@@ -2207,19 +2207,19 @@ class TestVariousIteratorArgs(unittest.TestCase):
 #             self.assertRaises(TypeError, tee, N(s))
 #             self.assertRaises(ZeroDivisionError, list, tee(E(s))[0])
 
-# class LengthTransparency(unittest.TestCase):
-#     pass
+# From CPython's test_itertools.LengthTransparency.
+class LengthTransparency(unittest.TestCase):
 
-#     def test_repeat(self):
-#         self.assertEqual(operator.length_hint(repeat(None, 50)), 50)
-#         self.assertEqual(operator.length_hint(repeat(None, 0)), 0)
-#         self.assertEqual(operator.length_hint(repeat(None), 12), 12)
+    def test_repeat(self):
+        self.assertEqual(operator.length_hint(repeat(None, 50)), 50)
+        self.assertEqual(operator.length_hint(repeat(None, 0)), 0)
+        self.assertEqual(operator.length_hint(repeat(None), 12), 12)
 
-#     def test_repeat_with_negative_times(self):
-#         self.assertEqual(operator.length_hint(repeat(None, -1)), 0)
-#         self.assertEqual(operator.length_hint(repeat(None, -2)), 0)
-#         self.assertEqual(operator.length_hint(repeat(None, times=-1)), 0)
-#         self.assertEqual(operator.length_hint(repeat(None, times=-2)), 0)
+    def test_repeat_with_negative_times(self):
+        self.assertEqual(operator.length_hint(repeat(None, -1)), 0)
+        self.assertEqual(operator.length_hint(repeat(None, -2)), 0)
+        self.assertEqual(operator.length_hint(repeat(None, times=-1)), 0)
+        self.assertEqual(operator.length_hint(repeat(None, times=-2)), 0)
 
 class RegressionTests(unittest.TestCase):
 
@@ -2287,28 +2287,29 @@ class RegressionTests(unittest.TestCase):
         it = chain.from_iterable(() for unused in range(100000))  
         self.assertRaises(StopIteration, next, it)
 
-#     def test_issue30347_1(self):
-#         def f(n):
-#             if n == 5:
-#                 list(b)
-#             return n != 6
-#         for (k, b) in groupby(range(10), f):
-#             list(b)  # shouldn't crash
+    # CPython regressions for re-entrant groupby keys and comparisons.
+    def test_issue30347_1(self):
+        def f(n):
+            if n == 5:
+                list(b)
+            return n != 6
+        for (k, b) in groupby(range(10), f):
+            list(b)  # shouldn't crash
 
-#     def test_issue30347_2(self):
-#         class K:
-#             def __init__(self, v):
-#                 pass
-#             def __eq__(self, other):
-#                 nonlocal i
-#                 i += 1
-#                 if i == 1:
-#                     next(g, None)
-#                 return True
-#         i = 0
-#         g = next(groupby(range(10), K))[1]
-#         for j in range(2):
-#             next(g, None)  # shouldn't crash
+    def test_issue30347_2(self):
+        class K:
+            def __init__(self, v):
+                pass
+            def __eq__(self, other):
+                nonlocal i
+                i += 1
+                if i == 1:
+                    next(g, None)
+                return True
+        i = 0
+        g = next(groupby(range(10), K))[1]
+        for j in range(2):
+            next(g, None)  # shouldn't crash
 
 
 # class SubclassWithKwargsTest(unittest.TestCase):
@@ -2638,6 +2639,95 @@ class RegressionTests(unittest.TestCase):
 
 #     # doctest the examples in the library reference
 #     support.run_doctest(sys.modules[__name__], verbose)
+
+class TestSkulptRegressions(unittest.TestCase):
+    # CPython's itertoolsmodule.c is the reference for consumption and error state.
+    def test_islice_consumption_and_permanent_exhaustion(self):
+        source = iter(range(10))
+        self.assertEqual(list(islice(source, 5, 3)), [])
+        self.assertEqual(next(source), 5)
+
+        source = iter(range(10))
+        sliced = islice(source, 1, 6, 3)
+        self.assertEqual(list(sliced), [1, 4])
+        self.assertIsNone(next(sliced, None))
+        self.assertEqual(next(source), 6)
+
+        class Empty:
+            calls = 0
+            def __iter__(self):
+                return self
+            def __next__(self):
+                self.calls += 1
+                raise StopIteration
+        source = Empty()
+        self.assertEqual(list(islice(source, 100)), [])
+        self.assertEqual(source.calls, 1)
+
+    def test_source_error_exhausts_islice_and_zip_longest(self):
+        class Source:
+            calls = 0
+            def __iter__(self):
+                return self
+            def __next__(self):
+                self.calls += 1
+                if self.calls == 2:
+                    raise ValueError("source")
+                return self.calls
+
+        for make_iterator in (lambda s: islice(s, 10),
+                              lambda s: islice(s, 0, 10, 3),
+                              lambda s: zip_longest(s, range(10))):
+            source = Source()
+            iterator = make_iterator(source)
+            next(iterator)
+            self.assertRaises(ValueError, next, iterator)
+            self.assertIsNone(next(iterator, None))
+            self.assertIsNone(next(iterator, None))
+            self.assertEqual(source.calls, 2)
+
+    def test_groupby_does_not_prefetch_before_returning_item(self):
+        calls = []
+        def key(value):
+            calls.append(value)
+            return value
+        groups = groupby([1, 2], key)
+        _, first = next(groups)
+        self.assertEqual(next(first), 1)
+        self.assertEqual(calls, [1])
+        _, second = next(groups)
+        self.assertEqual(list(first), [])
+        self.assertEqual(list(second), [2])
+
+    def test_chain_discards_invalid_source(self):
+        iterator = chain.from_iterable([1, [2]])
+        self.assertRaises(TypeError, next, iterator)
+        self.assertIsNone(next(iterator, None))
+
+    def test_compress_stops_before_reading_an_unused_selector(self):
+        selectors = iter([1, 2])
+        self.assertEqual(list(compress([], selectors)), [])
+        self.assertEqual(next(selectors), 1)
+
+    def test_product_repeat_zero_and_large_empty_product(self):
+        source = iter([1, 2])
+        self.assertEqual(list(product(source, repeat=0)), [()])
+        self.assertEqual(next(source), 1)
+        self.assertEqual(list(product(repeat=200000)), [()])
+
+    def test_starmap_requires_a_callable(self):
+        self.assertRaises(TypeError, next, starmap(None, [()]))
+
+    def test_oversized_counts_raise_python_overflow(self):
+        huge = 10 ** 100
+        for constructor, args in ((repeat, (None, huge)),
+                                  (combinations, ([], huge)),
+                                  (combinations_with_replacement, ([], huge)),
+                                  (permutations, ([], huge)),
+                                  (batched, ([], huge))):
+            self.assertRaises(OverflowError, constructor, *args)
+        self.assertRaises(OverflowError, product, repeat=huge)
+
 
 if __name__ == "__main__":
     # test_main(verbose=True)
