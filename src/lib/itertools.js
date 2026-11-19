@@ -35,13 +35,15 @@ var $builtinmodule = function (name) {
         misceval: {
             arrayFromIterable,
             Break,
-            callsimArray: pyCall,
+            callsimOrSuspendArray: pyCallOrSuspend,
             chain: chainOrSuspend,
             isTrue,
+            iterArray,
             iterFor,
             retryOptionalSuspensionOrThrow,
             richCompareBool,
             tryCatch,
+            tryFinally,
             asIndexSized,
             isIndex,
             objectRepr,
@@ -55,20 +57,42 @@ var $builtinmodule = function (name) {
         constructor: function accumulate(iter, func, initial) {
             this.iter = iter;
             this.func = func;
-            this.total = initial;
-            // different initial iteration
-            this.tp$iternext = () => {
-                this.total = checkNone(this.total) ? this.iter.tp$iternext() : this.total;
-                this.tp$iternext = this.constructor.prototype.tp$iternext;
-                return this.total;
-            };
+            this.initial = initial;
+            this.total = undefined;
         },
         iternext(canSuspend) {
-            let element = this.iter.tp$iternext();
-            if (element !== undefined) {
-                this.total = pyCall(this.func, [this.total, element]);
+            if (this.initial !== undefined) {
+                this.total = this.initial;
+                this.initial = undefined;
                 return this.total;
             }
+            const element = this.iter.tp$iternext(true);
+            const result =
+                element && element.$isSuspension
+                    ? chainOrSuspend(element, (element) => this.$add(element))
+                    : this.$add(element);
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+        },
+        proto: {
+            $add(element) {
+                if (element === undefined) {
+                    return;
+                }
+                const total =
+                    this.total === undefined
+                        ? element
+                        : this.func === undefined
+                          ? numberBinOp(this.total, element, "Add")
+                          : pyCallOrSuspend(this.func, [this.total, element]);
+                if (total.$isSuspension) {
+                    return chainOrSuspend(total, (total) => {
+                        this.total = total;
+                        return total;
+                    });
+                }
+                this.total = total;
+                return total;
+            },
         },
         slots: {
             tp$doc: "accumulate(iterable[, func, initial]) --> accumulate object\n\nReturn series of accumulated sums (or other binary function results).",
@@ -83,7 +107,8 @@ var $builtinmodule = function (name) {
                     [pyNone, pyNone]
                 );
                 iter = pyIter(iter);
-                func = checkNone(func) ? new pyFunc((a, b) => numberBinOp(a, b, "Add")) : func;
+                func = checkNone(func) ? undefined : func;
+                initial = checkNone(initial) ? undefined : initial;
                 if (this === mod.accumulate.prototype) {
                     return new mod.accumulate(iter, func, initial);
                 } else {
@@ -157,26 +182,53 @@ var $builtinmodule = function (name) {
             this.iterables = iterables;
             this.current_it = null;
         },
-        iternext() {
-            while (this.iterables !== null) {
-                if (this.current_it === null) {
-                    let iterable;
+        iternext(canSuspend) {
+            const item = this.current_it === null ? undefined : this.current_it.tp$iternext(true);
+            if (item !== undefined && !item.$isSuspension) {
+                return item;
+            }
+            const result =
+                item === undefined
+                    ? this.$nextIterable()
+                    : chainOrSuspend(item, (item) => (item === undefined ? this.$nextIterable() : item));
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+        },
+        proto: {
+            $nextIterable() {
+                this.current_it = null;
+                if (this.iterables === null) {
+                    return;
+                }
+                const source = {
+                    tp$iternext: () =>
+                        tryCatch(
+                            () => this.iterables.tp$iternext(true),
+                            (error) => {
+                                this.iterables = null;
+                                throw error;
+                            }
+                        ),
+                };
+                const result = iterFor(source, (iterable) => {
                     try {
-                        iterable = this.iterables.tp$iternext();
-                        if (iterable === undefined) {
-                            this.iterables = null;
-                            return;
-                        }
                         this.current_it = pyIter(iterable);
                     } catch (error) {
                         this.iterables = null;
                         throw error;
                     }
-                }
-                const item = this.current_it.tp$iternext();
-                if (item !== undefined) return item;
-                this.current_it = null;
-            }
+                    return chainOrSuspend(this.current_it.tp$iternext(true), (item) => {
+                        if (item !== undefined) {
+                            return Break(item);
+                        }
+                    });
+                });
+                return chainOrSuspend(result, (item) => {
+                    if (item === undefined) {
+                        this.iterables = this.current_it = null;
+                    }
+                    return item;
+                });
+            },
         },
         slots: {
             tp$doc: "chain(*iterables) --> chain object\n\nReturn a chain object whose .__next__() method returns elements from the\nfirst iterable until it is exhausted, then elements from the next\niterable, until all of the iterables are exhausted.",
@@ -217,18 +269,18 @@ var $builtinmodule = function (name) {
     function combinationsNew(combinations_proto, args, kwargs) {
         let iterable, r;
         [iterable, r] = copyKeywordsToNamedArgs(combinations_proto.tp$name, ["iterable", "r"], args, kwargs, []);
-        const pool = arrayFromIterable(iterable);
         r = asIndexSized(r, OverflowError);
-        if (r < 0) {
-            throw new ValueError("r must be non-negative");
-        }
-        if (this === combinations_proto) {
-            return new combinations_proto.constructor(pool, r);
-        } else {
+        return chainOrSuspend(arrayFromIterable(iterable, true), (pool) => {
+            if (r < 0) {
+                throw new ValueError("r must be non-negative");
+            }
+            if (this === combinations_proto) {
+                return new combinations_proto.constructor(pool, r);
+            }
             const instance = new this.constructor();
             combinations_proto.constructor.call(instance, pool, r);
             return instance;
-        }
+        });
     }
 
     mod.combinations = buildIteratorClass("itertools.combinations", {
@@ -318,16 +370,25 @@ var $builtinmodule = function (name) {
 
     mod.compress = buildIteratorClass("itertools.compress", {
         constructor: function compress(data, selectors) {
-            ((this.data = data), (this.selectors = selectors));
+            this.data = data;
+            this.selectors = selectors;
         },
-        iternext() {
-            while (true) {
-                const item = this.data.tp$iternext();
-                if (item === undefined) return;
-                const selector = this.selectors.tp$iternext();
-                if (selector === undefined) return;
-                if (isTrue(selector)) return item;
-            }
+        iternext(canSuspend) {
+            const result = iterFor(this.data, (item) =>
+                chainOrSuspend(
+                    this.selectors.tp$iternext(true),
+                    (selector) => (selector === undefined ? undefined : isTrue(selector)),
+                    (selected) => {
+                        if (selected === undefined) {
+                            return Break();
+                        }
+                        if (selected) {
+                            return Break(item);
+                        }
+                    }
+                )
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "compress(data, selectors) --> iterator over selected data\n\nReturn data elements corresponding to true selector elements.\nForms a shorter iterator from selected data elements using the\nselectors to choose the data elements.",
@@ -391,28 +452,30 @@ var $builtinmodule = function (name) {
         constructor: function cycle(iter) {
             this.iter = iter;
             this.saved = [];
-            this.consumed = false;
             this.i = 0;
-            this.length;
         },
-        iternext() {
-            let element;
-            if (!this.consumed) {
-                element = this.iter.tp$iternext();
+        iternext(canSuspend) {
+            if (this.iter === null) {
+                return this.$nextSaved();
+            }
+            const result = chainOrSuspend(this.iter.tp$iternext(true), (element) => {
                 if (element !== undefined) {
                     this.saved.push(element);
                     return element;
-                } else {
-                    this.consumed = true;
-                    this.length = this.saved.length;
-                    if (!this.length) {
-                        return;
-                    }
                 }
-            }
-            element = this.saved[this.i];
-            this.i = (this.i + 1) % this.length;
-            return element;
+                this.iter = null;
+                return this.$nextSaved();
+            });
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+        },
+        proto: {
+            $nextSaved() {
+                const element = this.saved[this.i];
+                if (++this.i >= this.saved.length) {
+                    this.i = 0;
+                }
+                return element;
+            },
         },
         slots: {
             tp$doc: "cycle(iterable) --> cycle object\n\nReturn elements from the iterable until it is exhausted.\nThen repeat the sequence indefinitely.",
@@ -434,19 +497,25 @@ var $builtinmodule = function (name) {
         constructor: function dropwhile(predicate, iter) {
             this.predicate = predicate;
             this.iter = iter;
-            this.passed;
+            this.passed = false;
         },
-        iternext() {
-            let x = this.iter.tp$iternext();
-            while (this.passed === undefined && x !== undefined) {
-                const val = pyCall(this.predicate, [x]);
-                if (!isTrue(val)) {
-                    this.passed = true;
-                    return x;
-                }
-                x = this.iter.tp$iternext();
+        iternext(canSuspend) {
+            if (this.passed) {
+                return this.iter.tp$iternext(canSuspend);
             }
-            return x;
+            const result = iterFor(this.iter, (item) =>
+                chainOrSuspend(
+                    pyCallOrSuspend(this.predicate, [item]),
+                    (value) => isTrue(value),
+                    (passed) => {
+                        if (!passed) {
+                            this.passed = true;
+                            return Break(item);
+                        }
+                    }
+                )
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "dropwhile(predicate, iterable) --> dropwhile object\n\nDrop items from the iterable while predicate(item) is true.\nAfterwards, return every element until the iterable is exhausted.",
@@ -472,26 +541,25 @@ var $builtinmodule = function (name) {
             this.iter = iter;
         },
         iternext(canSuspend) {
-            let x = this.iter.tp$iternext();
-            if (x === undefined) {
-                return;
-            }
-            let val = pyCall(this.predicate, [x]);
-            while (isTrue(val)) {
-                x = this.iter.tp$iternext();
-                if (x === undefined) {
-                    return;
-                }
-                val = pyCall(this.predicate, [x]);
-            }
-            return x;
+            const result = iterFor(this.iter, (item) =>
+                chainOrSuspend(
+                    this.predicate === undefined ? item : pyCallOrSuspend(this.predicate, [item]),
+                    (value) => isTrue(value),
+                    (passed) => {
+                        if (!passed) {
+                            return Break(item);
+                        }
+                    }
+                )
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "filterfalse(function or None, sequence) --> filterfalse object\n\nReturn those items of sequence for which function(item) is false.\nIf function is None, return the items that are false.",
             tp$new(args, kwargs) {
                 checkNoKwargs("filterfalse", kwargs);
                 checkArgsLen("filterfalse", args, 2, 2);
-                const predicate = checkNone(args[0]) ? pyBool : args[0];
+                const predicate = checkNone(args[0]) || args[0] === pyBool ? undefined : args[0];
                 const iter = pyIter(args[1]);
                 if (this === mod.filterfalse.prototype) {
                     return new mod.filterfalse(predicate, iter);
@@ -509,16 +577,28 @@ var $builtinmodule = function (name) {
             this.groupby = groupby;
             this.key = key;
         },
-        iternext() {
+        iternext(canSuspend) {
             const parent = this.groupby;
-            if (parent.grouper !== this) return;
-            const key = parent.currval === undefined ? parent.$advance() : parent.currkey;
-            if (key === undefined || parent.grouper !== this) return;
-            if (this.key === key || richCompareBool(this.key, key, "Eq")) {
-                const item = parent.currval;
-                parent.currval = parent.currkey = undefined;
-                return item;
+            if (parent.grouper !== this) {
+                return;
             }
+            const result = chainOrSuspend(
+                parent.currval === undefined ? parent.$advance() : parent.currkey,
+                (key) => {
+                    if (key === undefined || parent.grouper !== this) {
+                        return false;
+                    }
+                    return this.key === key || richCompareBool(this.key, key, "Eq");
+                },
+                (matches) => {
+                    if (matches && parent.grouper === this) {
+                        const item = parent.currval;
+                        parent.currval = parent.currkey = undefined;
+                        return item;
+                    }
+                }
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
     });
 
@@ -530,27 +610,43 @@ var $builtinmodule = function (name) {
             this.currval = this.currkey = this.tgtkey = undefined;
             this.grouper = null;
         },
-        iternext() {
+        iternext(canSuspend) {
             this.grouper = null;
-            return this.$nextGroup(this.currval === undefined ? this.$advance() : this.currkey);
+            const result = this.$nextGroup(this.currval === undefined ? this.$advance() : this.currkey);
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         proto: {
             $advance() {
-                const item = this.iter.tp$iternext();
-                if (item !== undefined) return this.$setCurrent(item);
+                const item = this.iter.tp$iternext(true);
+                if (item === undefined) {
+                    return;
+                }
+                return item.$isSuspension
+                    ? chainOrSuspend(item, (item) => (item === undefined ? undefined : this.$setCurrent(item)))
+                    : this.$setCurrent(item);
             },
             $setCurrent(item) {
-                const key = this.keyf === undefined ? item : pyCall(this.keyf, [item]);
+                const key = this.keyf === undefined ? item : pyCallOrSuspend(this.keyf, [item]);
+                if (key.$isSuspension) {
+                    return chainOrSuspend(key, (key) => {
+                        this.currval = item;
+                        this.currkey = key;
+                        return key;
+                    });
+                }
                 this.currval = item;
                 this.currkey = key;
                 return key;
             },
             $nextGroup(key) {
+                // Continue synchronously until a new group or an actual suspension.
                 while (key !== undefined) {
-                    if (
-                        this.tgtkey === undefined ||
-                        !(this.tgtkey === key || richCompareBool(this.tgtkey, key, "Eq"))
-                    ) {
+                    if (key.$isSuspension) {
+                        return chainOrSuspend(key, (key) => this.$nextGroup(key));
+                    }
+                    const matches =
+                        this.tgtkey !== undefined && (this.tgtkey === key || richCompareBool(this.tgtkey, key, "Eq"));
+                    if (!matches) {
                         return this.$startGroup();
                     }
                     key = this.$advance();
@@ -588,32 +684,59 @@ var $builtinmodule = function (name) {
             this.stop = stop;
             this.step = step;
         },
-        iternext() {
-            if (this.iter === null) return;
-            try {
-                while (this.index < this.nextIndex) {
-                    if (this.iter.tp$iternext() === undefined) {
+        iternext(canSuspend) {
+            const result = tryCatch(
+                () => {
+                    if (this.iter === null || (this.index === this.nextIndex && this.index >= this.stop)) {
                         this.iter = null;
                         return;
                     }
-                    this.index++;
-                }
-                if (this.index >= this.stop) {
+                    if (this.index === this.nextIndex) {
+                        const item = this.iter.tp$iternext(true);
+                        if (item === undefined) {
+                            this.iter = null;
+                            return;
+                        }
+                        if (!item.$isSuspension) {
+                            this.index++;
+                            this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
+                            return item;
+                        }
+                        const result = chainOrSuspend(item, (item) => {
+                            if (item === undefined) {
+                                this.iter = null;
+                            } else {
+                                this.index++;
+                                this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
+                            }
+                            return item;
+                        });
+                        return result;
+                    }
+                    const skipped = iterFor(this.iter, (item) => {
+                        const index = this.index++;
+                        if (index === this.nextIndex) {
+                            this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
+                            return Break(item);
+                        }
+                        if (this.index === this.nextIndex && this.index >= this.stop) {
+                            return Break();
+                        }
+                    });
+                    const result = chainOrSuspend(skipped, (item) => {
+                        if (item === undefined) {
+                            this.iter = null;
+                        }
+                        return item;
+                    });
+                    return result;
+                },
+                (error) => {
                     this.iter = null;
-                    return;
+                    throw error;
                 }
-                const item = this.iter.tp$iternext();
-                if (item === undefined) {
-                    this.iter = null;
-                    return;
-                }
-                this.index++;
-                this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
-                return item;
-            } catch (error) {
-                this.iter = null;
-                throw error;
-            }
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "islice(iterable, stop) --> islice object\nislice(iterable, start, stop[, step]) --> islice object\n\nReturn an iterator whose next() method returns selected values from an\niterable.  If start is specified, will skip all preceding elements;\notherwise, start defaults to zero.  Step defaults to one.  If\nspecified as another value, step determines how many values are \nskipped between successive calls.  Works like a slice() on a list\nbut returns an iterator.",
@@ -711,18 +834,18 @@ var $builtinmodule = function (name) {
             tp$new(args, kwargs) {
                 let iterable, r;
                 [iterable, r] = copyKeywordsToNamedArgs("permutations", ["iterable", "r"], args, kwargs, [pyNone]);
-                const pool = arrayFromIterable(iterable);
-                r = checkNone(r) ? pool.length : asIndexSized(r, OverflowError);
-                if (r < 0) {
-                    throw new ValueError("r must be non-negative");
-                }
-                if (this === mod.permutations.prototype) {
-                    return new mod.permutations(pool, r);
-                } else {
+                return chainOrSuspend(arrayFromIterable(iterable, true), (pool) => {
+                    r = checkNone(r) ? pool.length : asIndexSized(r, OverflowError);
+                    if (r < 0) {
+                        throw new ValueError("r must be non-negative");
+                    }
+                    if (this === mod.permutations.prototype) {
+                        return new mod.permutations(pool, r);
+                    }
                     const instance = new this.constructor();
                     mod.permutations.call(instance, pool, r);
                     return instance;
-                }
+                });
             },
         },
     });
@@ -741,26 +864,33 @@ var $builtinmodule = function (name) {
             },
             tp$doc: "Return an iterator of overlapping pairs taken from the input iterator.\n\n    s -> (s0,s1), (s1,s2), (s2, s3), ...",
         },
-        iternext() {
-            if (this.it === null) return;
-            try {
-                const old = this.old === null ? this.it.tp$iternext() : this.old;
-                if (old === undefined || this.it === null) {
-                    this.it = this.old = null;
-                    return;
-                }
-                this.old = old;
-                const item = this.it.tp$iternext();
-                if (item === undefined) {
-                    this.it = this.old = null;
-                    return;
-                }
-                this.old = item;
-                return new pyTuple([old, item]);
-            } catch (error) {
-                this.it = this.old = null;
-                throw error;
+        iternext(canSuspend) {
+            if (this.it === null) {
+                return;
             }
+            const result = tryCatch(
+                () =>
+                    chainOrSuspend(this.old === null ? this.it.tp$iternext(true) : this.old, (old) => {
+                        if (old === undefined || this.it === null) {
+                            this.it = this.old = null;
+                            return;
+                        }
+                        this.old = old;
+                        return chainOrSuspend(this.it.tp$iternext(true), (item) => {
+                            if (item === undefined) {
+                                this.it = this.old = null;
+                                return;
+                            }
+                            this.old = item;
+                            return new pyTuple([old, item]);
+                        });
+                    }),
+                (error) => {
+                    this.it = this.old = null;
+                    throw error;
+                }
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
     });
 
@@ -804,15 +934,31 @@ var $builtinmodule = function (name) {
             tp$new(args, kwargs) {
                 let [repeat] = copyKeywordsToNamedArgs("product", ["repeat"], [], kwargs, [new pyInt(1)]);
                 repeat = asIndexSized(repeat, OverflowError);
-                if (repeat < 0) throw new ValueError("repeat argument cannot be negative");
-                const iterables = repeat === 0 ? [] : args.map((iterable) => arrayFromIterable(iterable));
-                const n = iterables.length;
-                const pools = new Array(n * repeat);
-                for (let i = 0; i < pools.length; i++) pools[i] = iterables[i % n];
-                if (this === mod.product.prototype) return new mod.product(pools);
-                const instance = new this.constructor();
-                mod.product.call(instance, pools);
-                return instance;
+                if (repeat < 0) {
+                    throw new ValueError("repeat argument cannot be negative");
+                }
+                const iterables = [];
+                const collected =
+                    repeat === 0
+                        ? undefined
+                        : iterArray(args, (iterable) =>
+                              chainOrSuspend(arrayFromIterable(iterable, true), (pool) => {
+                                  iterables.push(pool);
+                              })
+                          );
+                return chainOrSuspend(collected, () => {
+                    const n = iterables.length;
+                    const pools = new Array(n * repeat);
+                    for (let i = 0; i < pools.length; i++) {
+                        pools[i] = iterables[i % n];
+                    }
+                    if (this === mod.product.prototype) {
+                        return new mod.product(pools);
+                    }
+                    const instance = new this.constructor();
+                    mod.product.call(instance, pools);
+                    return instance;
+                });
             },
         },
     });
@@ -877,13 +1023,14 @@ var $builtinmodule = function (name) {
             this.iter = iter;
         },
         iternext(canSuspend) {
-            const args = this.iter.tp$iternext();
-            if (args === undefined) {
-                return;
-            }
-            const unpack = arrayFromIterable(args);
-            const val = pyCall(this.func, unpack);
-            return val;
+            const result = chainOrSuspend(this.iter.tp$iternext(true), (args) => {
+                if (args !== undefined) {
+                    return chainOrSuspend(arrayFromIterable(args, true), (unpacked) =>
+                        pyCallOrSuspend(this.func, unpacked)
+                    );
+                }
+            });
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$new(args, kwargs) {
@@ -906,17 +1053,22 @@ var $builtinmodule = function (name) {
             this.predicate = predicate;
             this.iter = iter;
         },
-        iternext() {
-            const x = this.iter.tp$iternext();
-            if (x !== undefined) {
-                const val = pyCall(this.predicate, [x]);
-                if (isTrue(val)) {
-                    return x;
-                } else {
-                    // failed
-                    this.tp$iternext = () => undefined;
+        iternext(canSuspend) {
+            const result = chainOrSuspend(this.iter.tp$iternext(true), (item) => {
+                if (item !== undefined) {
+                    return chainOrSuspend(
+                        pyCallOrSuspend(this.predicate, [item]),
+                        (value) => isTrue(value),
+                        (passed) => {
+                            if (passed) {
+                                return item;
+                            }
+                            this.tp$iternext = () => undefined;
+                        }
+                    );
                 }
-            }
+            });
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "takewhile(predicate, iterable) --> takewhile object\n\nReturn successive entries from an iterable as long as the \npredicate evaluates to true for each entry.",
@@ -942,24 +1094,31 @@ var $builtinmodule = function (name) {
             this.source = source;
             this.node = node;
         },
-        iternext() {
+        iternext(canSuspend) {
             const node = this.node;
             if (node.next !== null) {
                 this.node = node.next;
                 return node.value;
             }
-            if (this.source.running) throw new RuntimeError("cannot re-enter the tee iterator");
-            this.source.running = true;
-            try {
-                const item = this.source.iter.tp$iternext();
-                if (item !== undefined) {
-                    node.value = item;
-                    node.next = this.node = { next: null };
-                }
-                return item;
-            } finally {
-                this.source.running = false;
+            if (this.source.running) {
+                throw new RuntimeError("cannot re-enter the tee iterator");
             }
+            this.source.running = true;
+            return tryFinally(
+                () => {
+                    const result = chainOrSuspend(this.source.iter.tp$iternext(true), (item) => {
+                        if (item !== undefined) {
+                            node.value = item;
+                            node.next = this.node = { next: null };
+                        }
+                        return item;
+                    });
+                    return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+                },
+                () => {
+                    this.source.running = false;
+                }
+            );
         },
         slots: {
             tp$new(args, kwargs) {
@@ -1010,29 +1169,42 @@ var $builtinmodule = function (name) {
             this.fillvalue = fillvalue;
             this.active = this.iters.length;
         },
-        iternext() {
-            if (!this.active) return;
-            const values = [];
-            try {
-                for (let i = 0; i < this.iters.length; i++) {
-                    const iter = this.iters[i];
-                    if (iter === null) {
-                        values.push(this.fillvalue);
-                        continue;
+        iternext(canSuspend) {
+            const result = tryCatch(
+                () => {
+                    if (!this.active) {
+                        return;
                     }
-                    let item = iter.tp$iternext();
-                    if (item === undefined) {
-                        this.iters[i] = null;
-                        if (--this.active === 0) return;
-                        item = this.fillvalue;
-                    }
-                    values.push(item);
+                    const values = [];
+                    const result = iterArray(this.iters, (iter) => {
+                        if (iter === null) {
+                            values.push(this.fillvalue);
+                            return;
+                        }
+                        return chainOrSuspend(iter.tp$iternext(true), (item) => {
+                            if (item === undefined) {
+                                this.iters[values.length] = null;
+                                if (--this.active === 0) {
+                                    return Break();
+                                }
+                                item = this.fillvalue;
+                            }
+                            values.push(item);
+                        });
+                    });
+                    const row = chainOrSuspend(result, () => {
+                        if (this.active) {
+                            return new pyTuple(values);
+                        }
+                    });
+                    return row;
+                },
+                (error) => {
+                    this.active = 0;
+                    throw error;
                 }
-                return new pyTuple(values);
-            } catch (error) {
-                this.active = 0;
-                throw error;
-            }
+            );
+            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
         },
         slots: {
             tp$doc: "zip_longest(iter1 [,iter2 [...]], [fillvalue=None]) --> zip_longest object\n\nReturn a zip_longest object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the longest iterable in the argument sequence\nis exhausted and then it raises StopIteration.  When the shorter iterables\nare exhausted, the fillvalue is substituted in their place.  The fillvalue\ndefaults to None or can be specified by a keyword argument.\n",

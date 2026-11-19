@@ -2749,6 +2749,8 @@ class TestTee(unittest.TestCase):
         self.assertRaises(OverflowError, tee, [], -(10 ** 100))
 
     def test_reentrant_pull_can_be_retried(self):
+        from time import sleep
+
         class Source:
             first = True
             def __iter__(self):
@@ -2756,6 +2758,7 @@ class TestTee(unittest.TestCase):
             def __next__(self):
                 if self.first:
                     self.first = False
+                    sleep(0)
                     return next(second)
                 return 42
 
@@ -2765,6 +2768,135 @@ class TestTee(unittest.TestCase):
         self.assertEqual(next(first), 42)
         self.assertEqual(next(second), 42)
 
+
+class TestSkulptItertoolsSuspensions(unittest.TestCase):
+    @staticmethod
+    def delayed(items):
+        from time import sleep
+        for item in items:
+            sleep(0)
+            yield item
+        sleep(0)
+
+    def test_sources_and_eager_pool_collection(self):
+        delayed = self.delayed
+        self.assertEqual(list(accumulate(delayed([1, 2, 3]))), [1, 3, 6])
+        self.assertEqual(list(chain.from_iterable(delayed([delayed([]), delayed([1]), delayed([2])]))), [1, 2])
+        self.assertEqual(list(batched(delayed(range(5)), 2)), [(0, 1), (2, 3), (4,)])
+        self.assertEqual(list(pairwise(delayed([1, 2, 3]))), [(1, 2), (2, 3)])
+        self.assertEqual(take(5, cycle(delayed([1, 2]))), [1, 2, 1, 2, 1])
+        self.assertEqual(list(combinations(delayed('ABC'), 2)), [('A', 'B'), ('A', 'C'), ('B', 'C')])
+        self.assertEqual(list(combinations_with_replacement(delayed('AB'), 2)), [('A', 'A'), ('A', 'B'), ('B', 'B')])
+        self.assertEqual(list(permutations(delayed('AB'), 1)), [('A',), ('B',)])
+        self.assertEqual(list(product(delayed('AB'), delayed([1, 2]))), [('A', 1), ('A', 2), ('B', 1), ('B', 2)])
+        self.assertEqual(list(zip_longest(delayed([1]), delayed([2, 3]))), [(1, 2), (None, 3)])
+
+    def test_callbacks(self):
+        from time import sleep
+
+        class Truth:
+            def __init__(self, value):
+                self.value = value
+            def __bool__(self):
+                return self.value
+
+        class Length:
+            def __len__(self):
+                return 0
+
+        def predicate(item):
+            sleep(0)
+            return Truth(item < 2)
+
+        def add(left, right):
+            sleep(0)
+            return left + right
+
+        delayed = self.delayed
+        self.assertEqual(list(accumulate(delayed([1, 2, 3]), add, initial=10)), [10, 11, 13, 16])
+        self.assertEqual(list(compress(delayed('abc'), delayed([Length(), Truth(True), Truth(False)]))), ['b'])
+        self.assertEqual(list(filterfalse(predicate, delayed([1, 2, 3]))), [2, 3])
+        empty = Length()
+        self.assertEqual(list(filterfalse(None, delayed([empty, 1]))), [empty])
+        self.assertEqual(list(takewhile(predicate, delayed([1, 2, 0]))), [1])
+        self.assertEqual(list(dropwhile(predicate, delayed([1, 2, 0]))), [2, 0])
+        self.assertEqual(list(starmap(add, delayed([delayed([1, 2]), delayed([3, 4])]))), [3, 7])
+        batches = batched(delayed([1]), 2, strict=Truth(True))
+        with self.assertRaises(ValueError):
+            next(batches)
+        self.assertIsNone(next(batches, None))
+
+    def test_groupby_source_and_key_callback(self):
+        from time import sleep
+
+        class Key:
+            def __init__(self, value):
+                self.value = value
+            def __eq__(self, other):
+                return self.value == other.value
+
+        def key(value):
+            sleep(0)
+            return Key(value)
+
+        groups = groupby(self.delayed('AABBBA'), key)
+        first_key, first = next(groups)
+        self.assertEqual((first_key.value, next(first)), ('A', 'A'))
+        second_key, second = next(groups)
+        self.assertEqual(list(first), [])
+        self.assertEqual((second_key.value, list(second)), ('B', ['B', 'B', 'B']))
+        self.assertEqual([(k.value, list(g)) for k, g in groups], [('A', ['A'])])
+
+    def test_islice_stops_at_exact_position(self):
+        source = self.delayed(range(10))
+        sliced = islice(source, 1, 6, 3)
+        self.assertEqual(list(sliced), [1, 4])
+        self.assertIsNone(next(sliced, None))
+        self.assertEqual(next(source), 6)
+        source = self.delayed(range(10))
+        self.assertEqual(list(islice(source, 5, 3, 2)), [])
+        self.assertEqual(next(source), 5)
+        self.assertEqual(list(islice(self.delayed(range(2)), 10000000, None)), [])
+
+    def test_tee_pulls_each_value_once(self):
+        source = self.delayed(range(4))
+        first, second = tee(source)
+        self.assertEqual(next(first), 0)
+        self.assertEqual(take(2, second), [0, 1])
+        nested, = tee(first, 1)
+        self.assertEqual(list(first), [1, 2, 3])
+        self.assertEqual(list(nested), [1, 2, 3])
+        self.assertEqual(list(second), [2, 3])
+
+
+
+class TestSkulptItertoolsSuspensionErrors(unittest.TestCase):
+    def test_permutations_consumes_pool_before_validating_r(self):
+        source = iter([1, 2])
+        self.assertRaises(TypeError, permutations, source, "bad")
+        self.assertEqual(list(source), [])
+
+    def test_source_error_exhausts_islice_and_zip_longest(self):
+        from time import sleep
+        class Source:
+            calls = 0
+            def __iter__(self):
+                return self
+            def __next__(self):
+                sleep(0)
+                self.calls += 1
+                if self.calls == 2:
+                    raise ValueError("source")
+                return self.calls
+        for make_iterator in (lambda s: islice(s, 10),
+                              lambda s: islice(s, 0, 10, 3),
+                              lambda s: zip_longest(s, range(10))):
+            source = Source()
+            iterator = make_iterator(source)
+            next(iterator)
+            self.assertRaises(ValueError, next, iterator)
+            self.assertIsNone(next(iterator, None))
+            self.assertEqual(source.calls, 2)
 
 if __name__ == "__main__":
     # test_main(verbose=True)
