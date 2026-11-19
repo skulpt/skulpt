@@ -287,7 +287,7 @@ var $builtinmodule = function (name) {
         constructor: function combinations(pool, r) {
             this.pool = pool;
             this.r = r;
-            this.indices = new Array(r).fill().map((_, i) => i);
+            this.indices = r <= pool.length ? Array.from({ length: r }, (_, i) => i) : null;
             this.n = pool.length;
             this.tp$iternext = () => {
                 if (this.r > this.n) {
@@ -329,7 +329,7 @@ var $builtinmodule = function (name) {
         constructor: function combinations_with_replacement(pool, r) {
             this.pool = pool;
             this.r = r;
-            this.indices = new Array(r).fill(0);
+            this.indices = !r || pool.length ? new Array(r).fill(0) : null;
             this.n = pool.length;
             this.tp$iternext = () => {
                 if (this.r && !this.n) {
@@ -458,17 +458,23 @@ var $builtinmodule = function (name) {
             if (this.iter === null) {
                 return this.$nextSaved();
             }
-            const result = chainOrSuspend(this.iter.tp$iternext(true), (element) => {
+            const element = this.iter.tp$iternext(true);
+            if (element && element.$isSuspension) {
+                const result = chainOrSuspend(element, (element) => this.$save(element));
+                return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+            }
+            return this.$save(element);
+        },
+        proto: {
+            $save(element) {
                 if (element !== undefined) {
                     this.saved.push(element);
                     return element;
                 }
                 this.iter = null;
                 return this.$nextSaved();
-            });
-            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
-        },
-        proto: {
+            },
+
             $nextSaved() {
                 const element = this.saved[this.i];
                 if (++this.i >= this.saved.length) {
@@ -685,58 +691,74 @@ var $builtinmodule = function (name) {
             this.step = step;
         },
         iternext(canSuspend) {
-            const result = tryCatch(
-                () => {
-                    if (this.iter === null || (this.index === this.nextIndex && this.index >= this.stop)) {
+            let result;
+            try {
+                result = this.$nextItem();
+            } catch (error) {
+                this.iter = null;
+                throw error;
+            }
+            if (result && result.$isSuspension) {
+                // One error handler covers the complete pull, including resumed skips.
+                const pending = result;
+                result = tryCatch(
+                    () => pending,
+                    (error) => {
+                        this.iter = null;
+                        throw error;
+                    }
+                );
+                return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+            }
+            return result;
+        },
+        proto: {
+            $nextItem() {
+                if (this.iter === null) {
+                    return;
+                }
+                while (this.index < this.nextIndex) {
+                    const item = this.iter.tp$iternext(true);
+                    if (item === undefined) {
                         this.iter = null;
                         return;
                     }
-                    if (this.index === this.nextIndex) {
-                        const item = this.iter.tp$iternext(true);
+                    if (item.$isSuspension) {
+                        return chainOrSuspend(item, (item) => {
+                            if (item === undefined) {
+                                this.iter = null;
+                                return;
+                            }
+                            this.index++;
+                            return this.$nextItem();
+                        });
+                    }
+                    this.index++;
+                }
+                if (this.index >= this.stop) {
+                    this.iter = null;
+                    return;
+                }
+                const item = this.iter.tp$iternext(true);
+                if (item === undefined) {
+                    this.iter = null;
+                    return;
+                }
+                if (item.$isSuspension) {
+                    return chainOrSuspend(item, (item) => {
                         if (item === undefined) {
                             this.iter = null;
                             return;
                         }
-                        if (!item.$isSuspension) {
-                            this.index++;
-                            this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
-                            return item;
-                        }
-                        const result = chainOrSuspend(item, (item) => {
-                            if (item === undefined) {
-                                this.iter = null;
-                            } else {
-                                this.index++;
-                                this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
-                            }
-                            return item;
-                        });
-                        return result;
-                    }
-                    const skipped = iterFor(this.iter, (item) => {
-                        const index = this.index++;
-                        if (index === this.nextIndex) {
-                            this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
-                            return Break(item);
-                        }
-                        if (this.index === this.nextIndex && this.index >= this.stop) {
-                            return Break();
-                        }
-                    });
-                    const result = chainOrSuspend(skipped, (item) => {
-                        if (item === undefined) {
-                            this.iter = null;
-                        }
+                        this.index++;
+                        this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
                         return item;
                     });
-                    return result;
-                },
-                (error) => {
-                    this.iter = null;
-                    throw error;
                 }
-            );
-            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+                this.index++;
+                this.nextIndex = Math.min(this.nextIndex + this.step, this.stop);
+                return item;
+            },
         },
         slots: {
             tp$doc: "islice(iterable, stop) --> islice object\nislice(iterable, start, stop[, step]) --> islice object\n\nReturn an iterator whose next() method returns selected values from an\niterable.  If start is specified, will skip all preceding elements;\notherwise, start defaults to zero.  Step defaults to one.  If\nspecified as another value, step determines how many values are \nskipped between successive calls.  Works like a slice() on a list\nbut returns an iterator.",
@@ -801,8 +823,8 @@ var $builtinmodule = function (name) {
             this.pool = pool;
             this.r = r;
             const n = pool.length;
-            this.indices = new Array(n).fill().map((_, i) => i);
-            this.cycles = new Array(r).fill().map((_, i) => n - i);
+            this.indices = r <= n ? Array.from({ length: n }, (_, i) => i) : null;
+            this.cycles = r <= n ? Array.from({ length: r }, (_, i) => n - i) : null;
             this.n = n;
             this.tp$iternext = () => {
                 // different initial iteration
@@ -817,12 +839,21 @@ var $builtinmodule = function (name) {
             for (let i = this.r - 1; i >= 0; i--) {
                 this.cycles[i]--;
                 if (this.cycles[i] == 0) {
-                    this.indices.push(this.indices.splice(i, 1)[0]); // push ith element to the end
+                    const first = this.indices[i];
+                    for (let j = i + 1; j < this.n; j++) {
+                        this.indices[j - 1] = this.indices[j];
+                    }
+                    this.indices[this.n - 1] = first;
                     this.cycles[i] = this.n - i;
                 } else {
-                    const j = this.cycles[i];
-                    [this.indices[i], this.indices[this.n - j]] = [this.indices[this.n - j], this.indices[i]]; //swap elements;
-                    const res = this.indices.map((i) => this.pool[i]).slice(0, this.r);
+                    const j = this.n - this.cycles[i];
+                    const index = this.indices[i];
+                    this.indices[i] = this.indices[j];
+                    this.indices[j] = index;
+                    const res = new Array(this.r);
+                    for (let k = 0; k < this.r; k++) {
+                        res[k] = this.pool[this.indices[k]];
+                    }
                     return new pyTuple(res);
                 }
             }
@@ -897,37 +928,32 @@ var $builtinmodule = function (name) {
     mod.product = buildIteratorClass("itertools.product", {
         constructor: function product(pools) {
             this.pools = pools;
-            this.n = pools.length;
-            this.indices = Array(pools.length).fill(0);
-            this.pool_sizes = pools.map((x) => x.length);
+            this.indices = new Array(pools.length).fill(0);
             this.tp$iternext = () => {
                 this.tp$iternext = this.constructor.prototype.tp$iternext;
-                const res = this.indices.map((_, i) => this.pools[i][this.indices[i]]);
-                if (res.some((element) => element === undefined)) {
-                    this.n = 0; // at least one pool arguments is an empty iterator
+                if (this.pools.some((pool) => pool.length === 0)) {
+                    this.pools = null;
                     return;
                 }
-                return new pyTuple(res);
+                return new pyTuple(this.pools.map((pool) => pool[0]));
             };
         },
-        iternext(canSuspend) {
-            let i = this.n - 1;
-            while (i >= 0 && i < this.n) {
-                this.indices[i]++;
-                if (this.indices[i] >= this.pool_sizes[i]) {
-                    this.indices[i] = -1;
-                    i--;
-                } else {
-                    i++;
-                }
-            }
-            if (!this.n || this.indices.every((index) => index === -1)) {
-                this.n = 0; // we've done all the iterations
+        iternext() {
+            if (this.pools === null) {
                 return;
-            } else {
-                const res = this.indices.map((_, i) => this.pools[i][this.indices[i]]);
-                return new pyTuple(res);
             }
+            let i = this.pools.length - 1;
+            for (; i >= 0; i--) {
+                if (++this.indices[i] < this.pools[i].length) {
+                    break;
+                }
+                this.indices[i] = 0;
+            }
+            if (i < 0) {
+                this.pools = null;
+                return;
+            }
+            return new pyTuple(this.pools.map((pool, i) => pool[this.indices[i]]));
         },
         slots: {
             tp$doc: "product(*iterables, repeat=1) --> product object\n\nCartesian product of input iterables.  Equivalent to nested for-loops.\n\nFor example, product(A, B) returns the same as:  ((x,y) for x in A for y in B).\nThe leftmost iterators are in the outermost for-loop, so the output tuples\ncycle in a manner similar to an odometer (with the rightmost element changing\non every iteration).\n\nTo compute the product of an iterable with itself, specify the number\nof repetitions with the optional repeat keyword argument. For example,\nproduct(A, repeat=4) means the same as product(A, A, A, A).\n\nproduct('ab', range(3)) --> ('a',0) ('a',1) ('a',2) ('b',0) ('b',1) ('b',2)\nproduct((0,1), (0,1), (0,1)) --> (0,0,0) (0,0,1) (0,1,0) (0,1,1) (1,0,0) ...",
@@ -1170,41 +1196,63 @@ var $builtinmodule = function (name) {
             this.active = this.iters.length;
         },
         iternext(canSuspend) {
-            const result = tryCatch(
-                () => {
-                    if (!this.active) {
-                        return;
+            if (!this.active) {
+                return;
+            }
+            let result;
+            try {
+                result = this.$nextRow([]);
+            } catch (error) {
+                this.active = 0;
+                throw error;
+            }
+            if (result && result.$isSuspension) {
+                const pending = result;
+                result = tryCatch(
+                    () => pending,
+                    (error) => {
+                        this.active = 0;
+                        throw error;
                     }
-                    const values = [];
-                    const result = iterArray(this.iters, (iter) => {
-                        if (iter === null) {
-                            values.push(this.fillvalue);
-                            return;
-                        }
-                        return chainOrSuspend(iter.tp$iternext(true), (item) => {
+                );
+                return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+            }
+            return result;
+        },
+        proto: {
+            $nextRow(values) {
+                while (values.length < this.iters.length) {
+                    const index = values.length;
+                    const iter = this.iters[index];
+                    if (iter === null) {
+                        values.push(this.fillvalue);
+                        continue;
+                    }
+                    let item = iter.tp$iternext(true);
+                    if (item && item.$isSuspension) {
+                        return chainOrSuspend(item, (item) => {
                             if (item === undefined) {
-                                this.iters[values.length] = null;
+                                this.iters[index] = null;
                                 if (--this.active === 0) {
-                                    return Break();
+                                    return;
                                 }
                                 item = this.fillvalue;
                             }
                             values.push(item);
+                            return this.$nextRow(values);
                         });
-                    });
-                    const row = chainOrSuspend(result, () => {
-                        if (this.active) {
-                            return new pyTuple(values);
+                    }
+                    if (item === undefined) {
+                        this.iters[index] = null;
+                        if (--this.active === 0) {
+                            return;
                         }
-                    });
-                    return row;
-                },
-                (error) => {
-                    this.active = 0;
-                    throw error;
+                        item = this.fillvalue;
+                    }
+                    values.push(item);
                 }
-            );
-            return canSuspend ? result : retryOptionalSuspensionOrThrow(result);
+                return new pyTuple(values);
+            },
         },
         slots: {
             tp$doc: "zip_longest(iter1 [,iter2 [...]], [fillvalue=None]) --> zip_longest object\n\nReturn a zip_longest object whose .__next__() method returns a tuple where\nthe i-th element comes from the i-th iterable argument.  The .__next__()\nmethod continues until the longest iterable in the argument sequence\nis exhausted and then it raises StopIteration.  When the shorter iterables\nare exhausted, the fillvalue is substituted in their place.  The fillvalue\ndefaults to None or can be specified by a keyword argument.\n",
