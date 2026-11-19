@@ -555,9 +555,12 @@ Compiler.prototype.ccompgen = function (type, tmpname, generators, genIndex, val
     }
 
     if (genIndex >= generators.length) {
+        if (type === "dict") {
+            // Save the key before evaluating the value, as in CPython 3.8+.
+            lkey = this._gr("key", this.vexpr(key));
+        }
         lvalue = this.vexpr(value);
         if (type === "dict") {
-            lkey = this.vexpr(key);
             out(tmpname, ".mp$ass_subscript(", lkey, ",", lvalue, ");");
         } else if (type === "list") {
             out(tmpname, ".v.push(", lvalue, ");"); // todo;
