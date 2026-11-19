@@ -368,6 +368,269 @@ class ClosingTestCase(unittest.TestCase):
 
 
 
+# CPython Lib/test/test_contextlib.py, TestBaseExitStack and TestExitStack.
+# Run the synchronous cases through the public API.
+class TestExitStack(unittest.TestCase):
+    @property
+    def exit_stack(self):
+        return ExitStack
+
+    def test_no_resources(self):
+        with self.exit_stack():
+            pass
+
+    def test_callback(self):
+        expected = [
+            ((), {}),
+            ((1,), {}),
+            ((1,2), {}),
+            ((), dict(example=1)),
+            ((1,), dict(example=1)),
+            ((1,2), dict(example=1)),
+            ((1,2), dict(self=3, callback=4)),
+        ]
+        result = []
+        def _exit(*args, **kwds):
+            """Test metadata propagation"""
+            result.append((args, kwds))
+        with self.exit_stack() as stack:
+            for args, kwds in reversed(expected):
+                if args and kwds:
+                    f = stack.callback(_exit, *args, **kwds)
+                elif args:
+                    f = stack.callback(_exit, *args)
+                elif kwds:
+                    f = stack.callback(_exit, **kwds)
+                else:
+                    f = stack.callback(_exit)
+                self.assertIs(f, _exit)
+        self.assertEqual(result, expected)
+
+        result = []
+        with self.exit_stack() as stack:
+            with self.assertRaises(TypeError):
+                stack.callback(arg=1)
+            with self.assertRaises(TypeError):
+                self.exit_stack.callback(arg=2)
+            with self.assertRaises(TypeError):
+                stack.callback(callback=_exit, arg=3)
+        self.assertEqual(result, [])
+
+    def test_push(self):
+        exc_raised = ZeroDivisionError
+        def _expect_exc(exc_type, exc, exc_tb):
+            self.assertIs(exc_type, exc_raised)
+        def _suppress_exc(*exc_details):
+            return True
+        def _expect_ok(exc_type, exc, exc_tb):
+            self.assertIsNone(exc_type)
+            self.assertIsNone(exc)
+            self.assertIsNone(exc_tb)
+        class ExitCM(object):
+            def __init__(self, check_exc):
+                self.check_exc = check_exc
+            def __enter__(self):
+                self.fail("Should not be called!")
+            def __exit__(self, *exc_details):
+                self.check_exc(*exc_details)
+        with self.exit_stack() as stack:
+            stack.push(_expect_ok)
+            cm = ExitCM(_expect_ok)
+            stack.push(cm)
+            stack.push(_suppress_exc)
+            cm = ExitCM(_expect_exc)
+            stack.push(cm)
+            stack.push(_expect_exc)
+            stack.push(_expect_exc)
+            1/0
+
+    def test_enter_context(self):
+        class TestCM(object):
+            def __enter__(self):
+                result.append(1)
+            def __exit__(self, *exc_details):
+                result.append(3)
+
+        result = []
+        cm = TestCM()
+        with self.exit_stack() as stack:
+            @stack.callback  # Registered first => cleaned up last
+            def _exit():
+                result.append(4)
+            self.assertIsNotNone(_exit)
+            stack.enter_context(cm)
+            result.append(2)
+        self.assertEqual(result, [1, 2, 3, 4])
+
+    def test_enter_context_errors(self):
+        class LacksEnterAndExit:
+            pass
+        class LacksEnter:
+            def __exit__(self, *exc_info):
+                pass
+        class LacksExit:
+            def __enter__(self):
+                pass
+
+        with self.exit_stack() as stack:
+            with self.assertRaisesRegex(TypeError, 'the context manager'):
+                stack.enter_context(LacksEnterAndExit())
+            with self.assertRaisesRegex(TypeError, 'the context manager'):
+                stack.enter_context(LacksEnter())
+            with self.assertRaisesRegex(TypeError, 'the context manager'):
+                stack.enter_context(LacksExit())
+
+    def test_close(self):
+        result = []
+        with self.exit_stack() as stack:
+            @stack.callback
+            def _exit():
+                result.append(1)
+            self.assertIsNotNone(_exit)
+            stack.close()
+            result.append(2)
+        self.assertEqual(result, [1, 2])
+
+    def test_pop_all(self):
+        result = []
+        with self.exit_stack() as stack:
+            @stack.callback
+            def _exit():
+                result.append(3)
+            self.assertIsNotNone(_exit)
+            new_stack = stack.pop_all()
+            result.append(1)
+        result.append(2)
+        new_stack.close()
+        self.assertEqual(result, [1, 2, 3])
+
+    def test_exit_raise(self):
+        with self.assertRaises(ZeroDivisionError):
+            with self.exit_stack() as stack:
+                stack.push(lambda *exc: False)
+                1/0
+
+    def test_exit_suppress(self):
+        with self.exit_stack() as stack:
+            stack.push(lambda *exc: True)
+            1/0
+
+    @unittest.skip("Skulpt lacks implicit exception chaining")
+    def test_exit_exception_chaining(self):
+        # Ensure exception chaining matches the reference behaviour
+        def raise_exc(exc):
+            raise exc
+
+        saved_details = None
+        def suppress_exc(*exc_details):
+            nonlocal saved_details
+            saved_details = exc_details
+            return True
+
+        try:
+            with self.exit_stack() as stack:
+                stack.callback(raise_exc, IndexError)
+                stack.callback(raise_exc, KeyError)
+                stack.callback(raise_exc, AttributeError)
+                stack.push(suppress_exc)
+                stack.callback(raise_exc, ValueError)
+                1 / 0
+        except IndexError as exc:
+            self.assertIsInstance(exc.__context__, KeyError)
+            self.assertIsInstance(exc.__context__.__context__, AttributeError)
+            # Inner exceptions were suppressed
+            self.assertIsNone(exc.__context__.__context__.__context__)
+        else:
+            self.fail("Expected IndexError, but no exception was raised")
+        # Check the inner exceptions
+        inner_exc = saved_details[1]
+        self.assertIsInstance(inner_exc, ValueError)
+        self.assertIsInstance(inner_exc.__context__, ZeroDivisionError)
+
+    def test_exit_exception_non_suppressing(self):
+        # http://bugs.python.org/issue19092
+        def raise_exc(exc):
+            raise exc
+
+        def suppress_exc(*exc_details):
+            return True
+
+        try:
+            with self.exit_stack() as stack:
+                stack.callback(lambda: None)
+                stack.callback(raise_exc, IndexError)
+        except Exception as exc:
+            self.assertIsInstance(exc, IndexError)
+        else:
+            self.fail("Expected IndexError, but no exception was raised")
+
+        try:
+            with self.exit_stack() as stack:
+                stack.callback(raise_exc, KeyError)
+                stack.push(suppress_exc)
+                stack.callback(raise_exc, IndexError)
+        except Exception as exc:
+            self.assertIsInstance(exc, KeyError)
+        else:
+            self.fail("Expected KeyError, but no exception was raised")
+
+    def test_exit_exception_chaining_suppress(self):
+        with self.exit_stack() as stack:
+            stack.push(lambda *exc: True)
+            stack.push(lambda *exc: 1/0)
+            stack.push(lambda *exc: {}[1])
+
+    def test_excessive_nesting(self):
+        # The original implementation would die with RecursionError here
+        with self.exit_stack() as stack:
+            for i in range(10000):
+                stack.callback(int)
+
+    def test_instance_bypass(self):
+        # Observe the registered exit through close() instead of inspecting
+        # the private callback stack.
+        calls = []
+
+        class Example(object):
+            def __call__(self, *exc_details):
+                calls.append(exc_details)
+
+        cm = Example()
+        cm.__enter__ = object()
+        cm.__exit__ = object()
+        stack = self.exit_stack()
+        with self.assertRaisesRegex(TypeError, 'the context manager'):
+            stack.enter_context(cm)
+        stack.push(cm)
+        stack.close()
+        self.assertEqual(calls, [(None, None, None)])
+
+
+class TestSkulptExitStack(unittest.TestCase):
+    def test_suspended_exit_can_replace_exception(self):
+        import time
+
+        original = ValueError("body")
+        replacement = RuntimeError("exit")
+        observed = []
+
+        def fail(exc_type, exc, traceback):
+            time.sleep(0.001)
+            observed.append(exc)
+            raise replacement
+
+        def suppress_replacement(exc_type, exc, traceback):
+            observed.append(exc)
+            return True
+
+        with ExitStack() as stack:
+            stack.push(suppress_replacement)
+            stack.push(fail)
+            raise original
+
+        self.assertEqual(observed, [original, replacement])
+
+
 class ContextManagerProtocolTests(unittest.TestCase):
     def test_second_yield_cleanup_failure_propagates(self):
         original = StopIteration('body failed')
