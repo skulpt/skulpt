@@ -26,6 +26,7 @@ var $builtinmodule = function (name) {
             none: { none$: pyNone },
             TypeError: pyTypeError,
             ValueError,
+            RuntimeError,
             OverflowError,
             checkNone,
             checkNumber,
@@ -935,8 +936,72 @@ var $builtinmodule = function (name) {
         },
     });
 
-    mod.tee = new pyFunc(function () {
-        throw new Sk.builtin.NotImplementedError("tee is not yet implemented in Skulpt");
+    // Each cursor retains only the unread suffix of the shared buffer.
+    mod._tee = buildIteratorClass("itertools._tee", {
+        constructor: function _tee(source, node) {
+            this.source = source;
+            this.node = node;
+        },
+        iternext() {
+            const node = this.node;
+            if (node.next !== null) {
+                this.node = node.next;
+                return node.value;
+            }
+            if (this.source.running) throw new RuntimeError("cannot re-enter the tee iterator");
+            this.source.running = true;
+            try {
+                const item = this.source.iter.tp$iternext();
+                if (item !== undefined) {
+                    node.value = item;
+                    node.next = this.node = { next: null };
+                }
+                return item;
+            } finally {
+                this.source.running = false;
+            }
+        },
+        slots: {
+            tp$new(args, kwargs) {
+                checkOneArg("_tee", args, kwargs);
+                return teeFromIterable(args[0]);
+            },
+        },
+        methods: {
+            __copy__: {
+                $meth() {
+                    return new mod._tee(this.source, this.node);
+                },
+                $flags: { NoArgs: true },
+                $textsig: null,
+            },
+        },
+    });
+
+    function teeFromIterable(iterable) {
+        const iter = pyIter(iterable);
+        if (iter instanceof mod._tee) {
+            return new mod._tee(iter.source, iter.node);
+        }
+        return new mod._tee({ iter, running: false }, { next: null });
+    }
+
+    mod.tee = new pyFunc(function tee(iterable, n) {
+        checkArgsLen("tee", arguments, 1, 2);
+        n = n === undefined ? 2 : asIndexSized(n, OverflowError);
+        if (n < 0) {
+            throw new ValueError("n must be >= 0");
+        }
+        if (!n) {
+            return new pyTuple([]);
+        }
+        const first = teeFromIterable(iterable);
+        const copies = new Array(n);
+        copies[0] = first;
+        for (let i = 1; i < n; i++) {
+            copies[i] = new mod._tee(first.source, first.node);
+        }
+        return new pyTuple(copies);
     });
 
     mod.zip_longest = buildIteratorClass("itertools.zip_longest", {

@@ -2729,6 +2729,43 @@ class TestSkulptRegressions(unittest.TestCase):
         self.assertRaises(OverflowError, product, repeat=huge)
 
 
+class TestTee(unittest.TestCase):
+    # Adapted from CPython's TestBasicOps.test_tee and test_tee_reenter.
+    def test_independent_cursors(self):
+        source = iter(range(200))
+        first, second = tee(source)
+        self.assertEqual(take(100, first), list(range(100)))
+        nested, = tee(first, 1)
+        copied = copy.copy(second)
+        self.assertEqual(list(nested), list(range(100, 200)))
+        self.assertEqual(list(first), list(range(100, 200)))
+        self.assertEqual(list(second), list(range(200)))
+        self.assertEqual(list(copied), list(range(200)))
+        self.assertEqual(list(source), [])
+        self.assertEqual(tee(None, 0), ())
+        self.assertRaises(ValueError, tee, [], -1)
+        self.assertRaises(TypeError, tee, [], 1.5)
+        self.assertRaises(OverflowError, tee, [], 10 ** 100)
+        self.assertRaises(OverflowError, tee, [], -(10 ** 100))
+
+    def test_reentrant_pull_can_be_retried(self):
+        class Source:
+            first = True
+            def __iter__(self):
+                return self
+            def __next__(self):
+                if self.first:
+                    self.first = False
+                    return next(second)
+                return 42
+
+        first, second = tee(Source())
+        with self.assertRaises(RuntimeError):
+            next(first)
+        self.assertEqual(next(first), 42)
+        self.assertEqual(next(second), 42)
+
+
 if __name__ == "__main__":
     # test_main(verbose=True)
      unittest.main()
