@@ -5,6 +5,7 @@ the unittest module from cpython.
 
 '''
 import re
+import sys
 
 
 class SkipTest(Exception):
@@ -97,6 +98,8 @@ class _AssertRaisesContext(object):
             res = False
             feedback = "{} not raised".format(exp_exc)
         elif not issubclass(exc_type, self.expected):
+            if not self.test_case._legacy_assertions:
+                return False
             res = False
             feedback = "Expected {} but got {}".format(exp_exc, act_exc)
 
@@ -111,8 +114,56 @@ class _AssertRaisesContext(object):
         return True
 
 
+class TestResult(object):
+    def __init__(self, stream=None, descriptions=None, verbosity=None):
+        self.testsRun = 0
+        self.failures = []
+        self.errors = []
+        self.skipped = []
+
+    def startTestRun(self):
+        pass
+
+    def stopTestRun(self):
+        pass
+
+    def startTest(self, test):
+        self.testsRun += 1
+
+    def stopTest(self, test):
+        pass
+
+    def addSuccess(self, test):
+        pass
+
+    def addFailure(self, test, err):
+        self.failures.append((test, self._exc_info_to_string(err)))
+
+    def addError(self, test, err):
+        self.errors.append((test, self._exc_info_to_string(err)))
+
+    def _exc_info_to_string(self, err):
+        if sys.version_info[0] == 2:
+            # Skulpt's traceback module is currently Python 3 only.
+            return '%s: %s\n' % (err[0].__name__, err[1])
+        import traceback
+        return ''.join(traceback.format_exception(*err))
+
+    def addSkip(self, test, reason):
+        self.skipped.append((test, reason))
+
+    def wasSuccessful(self):
+        return not (self.failures or self.errors)
+
+
 class TestCase(object):
-    def __init__(self):
+    failureException = AssertionError
+    _legacy_assertions = False
+
+    def __init__(self, methodName='runTest'):
+        self._testMethodName = methodName
+        if methodName != 'runTest' and not hasattr(self, methodName):
+            raise ValueError('no such test method in %s: %s' % (self.__class__, methodName))
         self.numPassed = 0
         self.numFailed = 0
         self.numSkipped = 0
@@ -120,11 +171,8 @@ class TestCase(object):
         self.assertFailed = 0
         self.verbosity = 1
         self.tlist = []
-        testNames = {}
-        for name in dir(self):
-            if name[:4] == 'test' and name not in testNames:
-                self.tlist.append(getattr(self,name))
-                testNames[name]=True
+        if methodName == 'runTest':
+            self.tlist = [getattr(self, name) for name in dir(self) if name.startswith('test')]
 
     def setUp(self):
         pass
@@ -136,6 +184,15 @@ class TestCase(object):
         return funcName.__func__.__name__
 
     def main(self):
+        # The browser and standalone harnesses consume this runner's counters.
+        previous = self._legacy_assertions
+        self._legacy_assertions = True
+        try:
+            self._run_legacy_tests()
+        finally:
+            self._legacy_assertions = previous
+
+    def _run_legacy_tests(self):
 
         for func in self.tlist:
             # Check if test is marked as skipped
@@ -180,6 +237,57 @@ class TestCase(object):
             else:
                 self.numPassed += 1
         self.showSummary()
+
+    def defaultTestResult(self):
+        return TestResult()
+
+    def _run_test_part(self, function, result):
+        try:
+            function()
+        except KeyboardInterrupt:
+            raise
+        except SkipTest as error:
+            result.addSkip(self, str(error))
+        except BaseException as error:
+            exc_info = (type(error), error, error.__traceback__)
+            if isinstance(error, self.failureException):
+                result.addFailure(self, exc_info)
+            else:
+                result.addError(self, exc_info)
+        else:
+            return True
+        return False
+
+    def run(self, result=None):
+        own_result = result is None
+        if own_result:
+            result = self.defaultTestResult()
+            start = getattr(result, 'startTestRun', None)
+            if start is not None:
+                start()
+
+        result.startTest(self)
+        try:
+            method = getattr(self, self._testMethodName)
+            for item in (type(self), getattr(method, '__func__', method)):
+                if getattr(item, '__unittest_skip__', False):
+                    result.addSkip(self, getattr(item, '__unittest_skip_why__', ''))
+                    return result
+            if self._run_test_part(self.setUp, result):
+                passed = self._run_test_part(method, result)
+                torn_down = self._run_test_part(self.tearDown, result)
+                if passed and torn_down:
+                    result.addSuccess(self)
+            return result
+        finally:
+            result.stopTest(self)
+            if own_result:
+                stop = getattr(result, 'stopTestRun', None)
+                if stop is not None:
+                    stop()
+
+    def __call__(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def assertEqual(self, actual, expected, feedback=""):
         res = actual==expected
@@ -333,12 +441,12 @@ class TestCase(object):
 
     def appendResult(self,res,actual,expected,feedback):
         if res:
-            msg = 'Pass'
             self.assertPassed += 1
-        else:
-            msg = 'Fail: ' +  feedback
-            print(msg)
+        elif self._legacy_assertions:
+            print('Fail: ' + feedback)
             self.assertFailed += 1
+        else:
+            raise self.failureException(feedback)
 
     def assertRaises(self, expected_exception, *args, **kwargs):
         context = _AssertRaisesContext(expected_exception, self)
@@ -354,6 +462,8 @@ class TestCase(object):
         return context.handle('assertRaisesRegex', args, kwargs)
 
     def fail(self, msg=None):
+        if not self._legacy_assertions:
+            raise self.failureException(msg)
         if msg is None:
             msg = 'Fail'
         else:
