@@ -62,19 +62,10 @@ We try to get to pull requests in a very timely way so they don't languish. Noth
 
 -   `npm run build`
 
-    Production, optimized build.
-
--   `npm run build:variants`
-
-    Build the compatibility core at `dist/skulpt.min.js` and the modern core at
-    `dist/modern/skulpt.modern.min.js`. Both use the same `dist/skulpt-stdlib.js`.
-    The modern core targets ES2020 and requires native BigInt and Unicode property
-    escapes; it omits JSBI and the Unicode tables. `npm run build:modern` builds
-    only the modern core, so use `build:variants` for a complete distribution.
-
--   `npm run test:modern`
-
-    Test the modern core and build artifacts after `npm run build:variants`.
+    Production, optimized build at `dist/skulpt.min.js` targeting ES2018 (with
+    JSBI and Unicode fallback tables) alongside `dist/skulpt-stdlib.js`. Pass
+    `-- --env.languageOut=ECMASCRIPT_2020` (or newer) to omit those fallbacks
+    and rely on native BigInt and Unicode property escapes.
 
 -   `npm run devbuild`
 
