@@ -17,7 +17,7 @@ function checkCompatSyntax(source, ecmaVersion) {
 
 if (require.main === module) {
     const coreFile = process.argv[2] || "dist/skulpt.min.js";
-    const ecmaVersion = Number(process.argv[3] || 2015);
+    const ecmaVersion = Number(process.argv[3] || 2018);
     checkCompatSyntax(fs.readFileSync(coreFile, "utf8"), ecmaVersion);
     console.log("Compatibility core parses as ES" + ecmaVersion + " with baseline regex syntax");
 }

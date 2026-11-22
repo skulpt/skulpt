@@ -2,10 +2,13 @@
 // Declare these together to retain V8 fast properties in both build modes.
 var Sk = { // jshint ignore:line
     unicode: undefined,
+    // languageOut is null in dev builds; nativeOnly is true when JSBI and Unicode fallbacks are omitted.
     build: {
         version: SKULPT_VERSION,
         githash: GITHASH,
-        date: BUILDDATE
+        date: BUILDDATE,
+        languageOut: SKULPT_LANGUAGE_OUT,
+        nativeOnly: SKULPT_NATIVE_ONLY
     }
 };
 

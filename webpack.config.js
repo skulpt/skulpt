@@ -31,13 +31,15 @@ module.exports = (env, argv) => {
     var outfile = 'skulpt.js';
     var assertfile = './assert-dev.js';
     var mod = {};
-    var languageOut = (env && env.languageOut) || '';
-    // The modern build requires native BigInt and Unicode property escapes.
-    // This build-time flag lets webpack omit JSBI and the Unicode tables.
-    var nativeOnly = !!(env && env.nativeOnly);
-    if (nativeOnly) {
-        outfile = 'skulpt.modern.js';
-    }
+    var languageOut = (env && env.languageOut) || 'ECMASCRIPT_2018';
+    // Production builds targeting ES2020+ have native BigInt and Unicode
+    // property escapes, so webpack omits JSBI and the Unicode fallback tables.
+    // Older targets and development builds include those fallbacks.
+    var esYear = /^ECMASCRIPT_?(\d{4})$/.exec(languageOut);
+    var nativeOnly = argv.mode === 'production'
+        && (languageOut === 'ECMASCRIPT_NEXT'
+            || languageOut === 'STABLE'
+            || !!(esYear && Number(esYear[1]) >= 2020));
 
     if (argv.mode === 'production') {
         opt = {
@@ -49,7 +51,7 @@ module.exports = (env, argv) => {
                                    'nonStandardJsDocs', 'strictModuleDepCheck', 'undefinedVars',
                                    'unknownDefines', 'visibility'],
                     jscomp_off: ['deprecated', 'uselessCode', 'suspiciousCode', 'checkTypes',],
-                    languageOut: languageOut || (nativeOnly ? 'ECMASCRIPT_2020' : 'ECMASCRIPT_2015'),
+                    languageOut: languageOut,
                     externs: 'support/externs/sk.js',
                     rewritePolyfills: true,
                     // compiler flags here
@@ -63,7 +65,7 @@ module.exports = (env, argv) => {
                 })
             ]
         };
-        outfile = nativeOnly ? 'skulpt.modern.min.js' : 'skulpt.min.js';
+        outfile = 'skulpt.min.js';
         assertfile = './assert-prod.js';
         mod = {
             rules: [
@@ -90,6 +92,7 @@ module.exports = (env, argv) => {
                 { from: 'debugger/debugger.js', to: 'debugger.js' }
             ]),
             new webpack.DefinePlugin({
+                SKULPT_LANGUAGE_OUT: JSON.stringify(argv.mode === 'production' ? languageOut : null),
                 SKULPT_NATIVE_ONLY: nativeOnly,
                 SKULPT_VERSION: JSON.stringify(require('./package.json').version),
                 GITVERSION: JSON.stringify(git.version()),
@@ -98,7 +101,7 @@ module.exports = (env, argv) => {
                 BUILDDATE: JSON.stringify(new Date())
             }),
             new CompressionWebpackPlugin({
-                include: /^skulpt(?:\.modern)?\.min\.js$/,
+                include: /\.min\.js$/,
                 algorithm: 'gzip'
             })
         ],
